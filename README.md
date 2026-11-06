@@ -10,6 +10,18 @@ Versão da ferramenta SCHMIDT publicada num link https, para a equipe usar o **G
 - Tiros e pontos são **planejados/simulados**: confira em campo. "Ponto coletado" marca só o progresso no celular;
   o registro oficial continua no Cropwise.
 
+## iPhone
+
+Use o **link acima no Safari** (no iPhone, o GPS e o "sem internet" funcionam pelo Safari):
+
+1. Abra o link no Safari, com sinal.
+2. Toque em **Compartilhar** (quadrado com seta) › **Adicionar à Tela de Início**. Fica um ícone SCHMIDT que abre em tela cheia.
+3. No guia, toque em **Onde estou?** e **Permitir** a localização. Para a seta girar com o celular, toque em
+   "Girar mapa com a bússola" e permita o acesso ao movimento.
+
+Não há app de loja para iPhone: a Apple só permite instalar app pela App Store/TestFlight, o que exige conta de
+desenvolvedor paga (US$ 99/ano) e revisão da Apple.
+
 ## App Android (APK)
 
 **Baixar:** https://github.com/jhsilvamenezes-netizen/schmidt-campo/releases/latest/download/SCHMIDT-Campo.apk
