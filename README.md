@@ -19,7 +19,10 @@ Versão da ferramenta SCHMIDT publicada num link https, para a equipe usar o **G
 - Na 1ª vez que usar o GPS no guia, toque em **Permitir** (localização precisa).
 - Versão nova: baixe de novo e instale por cima; os planos salvos continuam (a assinatura do app é sempre a mesma).
 - O APK é compilado aqui mesmo, pelo GitHub Actions, a cada versão publicada (`.github/workflows/app-android.yml`).
-- No app, imprimir fichas e baixar arquivos (GPX, KML, cópia de segurança) podem não funcionar como no Chrome:
-  para isso, use o link acima.
+- No app, os arquivos (GPX, KML, cópia de segurança, trajeto caminhado) abrem o **Compartilhar** do Android:
+  mande para o WhatsApp, Drive ou e-mail. "Imprimir fichas" gera um arquivo .html: abra no Chrome e use
+  ⋮ › Compartilhar › Imprimir.
+- Botão **Voltar** do Android fecha o que estiver aberto; na tela inicial, toque duas vezes para sair.
+- A tela fica acesa enquanto o GPS do guia estiver ligado.
 
 Os arquivos são gerados a partir do projeto principal (`npm run build && npm run pacote-web`); não edite aqui.
