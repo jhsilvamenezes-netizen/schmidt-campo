@@ -1,0 +1,10 @@
+{
+  "name": "schmidt-campo-app",
+  "private": true,
+  "description": "App Android do SCHMIDT (a mesma página, empacotada com Capacitor para usar o GPS sem link)",
+  "devDependencies": {
+    "@capacitor/android": "6.2.3",
+    "@capacitor/cli": "6.2.3",
+    "@capacitor/core": "6.2.3"
+  }
+}

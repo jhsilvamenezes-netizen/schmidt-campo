@@ -1,0 +1,6 @@
+{
+  "appId": "io.github.jhsilvamenezes.schmidtcampo",
+  "appName": "SCHMIDT Campo",
+  "webDir": "www",
+  "android": { "allowMixedContent": false }
+}
