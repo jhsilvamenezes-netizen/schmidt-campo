@@ -35,6 +35,7 @@ done
 rm -rf android/app/src/main/res/mipmap-anydpi-v26
 # Abertura do app: fundo verde da marca (no lugar da tela padrão do Capacitor)
 for f in android/app/src/main/res/drawable*/splash.png; do cp splash.png "$f"; done
-# Assinatura fixa: sem ela, cada compilação teria uma chave nova e a atualização exigiria desinstalar (perdendo os planos salvos)
-if [ -f chave/schmidt-debug.keystore ]; then mkdir -p ~/.android && cp chave/schmidt-debug.keystore ~/.android/debug.keystore; fi
+# Auditoria: não instalar nem reutilizar a chave exposta no histórico público.
+# Debug usa a chave de teste do ambiente; não distribuir nem instalar por cima
+# do APK publicado. Migração release: docs/MIGRACAO_ASSINATURA.md.
 echo "Projeto Android pronto: versão ${VERSAO_NOME} (código ${VERSAO_CODIGO})"

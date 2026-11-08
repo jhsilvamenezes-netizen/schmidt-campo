@@ -1,0 +1,7 @@
+audit/node_modules/
+audit/results/
+audit/reference/
+*.keystore
+*.jks
+*.apk
+*.aab

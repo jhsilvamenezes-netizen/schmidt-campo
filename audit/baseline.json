@@ -1,0 +1,46 @@
+{
+  "commit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
+  "version": "1.31.0",
+  "files": {
+    "index.html": {
+      "bytes": 667825,
+      "sha256": "394a31b41382158384ec20d6cf7200974dd697e0eacf1ebaa770af799d9a3fbf"
+    },
+    "sw.js": {
+      "bytes": 993,
+      "sha256": "28e83f0dfe1e38a5dca92d4b8e407cf6762421a36e58254ac4ec86529e854113"
+    },
+    "manifest.webmanifest": {
+      "bytes": 504,
+      "sha256": "c0a143358dac852ff4e94043a272b6b65a3d9e9b8fbf58d4d6066cf9c06c5378"
+    },
+    "icone.svg": {
+      "bytes": 225,
+      "sha256": "d3c76b1d99c7f5d6f257a8d7da9ed7beb493793af70510fbc93da780002ac479"
+    },
+    "icone-180.png": {
+      "bytes": 3068,
+      "sha256": "57865fa408066249bcfe7470cb554fbf3b10eb6bb1f86882c2c565b03676a695"
+    },
+    "icone-192.png": {
+      "bytes": 2488,
+      "sha256": "f12e3fec1f12ea77b051c0d59375adfb8e343471face2169da482c92bead786b"
+    },
+    "icone-512.png": {
+      "bytes": 10154,
+      "sha256": "6a9776fc1f2745682b45a84379d31a6cbc31eb391510c57b82e468493c2135c9"
+    },
+    "app/capacitor.config.json": {
+      "bytes": 149,
+      "sha256": "e6cca8698e4f570eeb2f9d2861dca715b72f67fe939a414e4437cc7f0951e220"
+    },
+    "app/package.json": {
+      "bytes": 483,
+      "sha256": "459d736fe231db3361c9ebe2f66fefc79c712b69d82e7a092a1affda3942b519"
+    },
+    "app/splash.png": {
+      "bytes": 21141,
+      "sha256": "0dfd6e454dc143f17cca70cc62f55246022c273b52f2b282b4d8bbbe100a2ba8"
+    }
+  }
+}
