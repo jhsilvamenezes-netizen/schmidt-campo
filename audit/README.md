@@ -50,3 +50,17 @@ separado com o worker real habilitado, reabertura offline e sentinela no
 localStorage. Atualização/rollback do worker entre versões permanece pendente.
 Mocks GPS usam posição 0,0 e precisão 1000 m, permissão negada ou indisponibilidade;
 não são teste físico nem homologação operacional.
+
+## Estudo de arquitetura e falhas
+
+`CHROMIUM_PATH=/usr/bin/chromium npm run study` executa
+`architecture-study.mjs` contra o bundle atual. Inventaria módulos, caracteriza
+cenários padrão dos 51 lotes e reproduz falhas conhecidas de backup/restauração
+e timestamp GPS, apenas em perfis descartáveis. Observa também a política do
+worker em sandbox JavaScript. Evidência local em `results/architecture-report.json`.
+
+É ferramenta de diagnóstico: algumas asserções comprovam comportamentos
+inadequados do produto. Não faz parte do gate de aceite da CI e não significa
+que os problemas foram corrigidos. Quando corrigidos, os cenários deverão ser
+convertidos em testes que exijam preservação segura. Detalhes e prioridades em
+`docs/ESTUDO_ARQUITETURA_V1_31.md`. Nenhuma coordenada é escrita no relatório.

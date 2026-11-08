@@ -1,0 +1,446 @@
+{
+  "status": "completed-with-reproduced-risks",
+  "purpose": "architecture-diagnosis-not-release-acceptance",
+  "appVersion": "1.31.0",
+  "htmlSha256": "394a31b41382158384ec20d6cf7200974dd697e0eacf1ebaa770af799d9a3fbf",
+  "scriptSha256": "75ea7570e24737f386de19f5041cbdd688be5121b96142e584779b05ef99ed5a",
+  "checks": [
+    {
+      "id": "module-inventory",
+      "modules": 47,
+      "engine": 29,
+      "ui": 17,
+      "main": 1
+    },
+    {
+      "id": "engine-defaults-51",
+      "computed": 51,
+      "errors": 0,
+      "note": "Cenários padrão e round-trip, sem validação independente de CRS ou homologação."
+    },
+    {
+      "id": "worker-cache-policy",
+      "cacheFirst": true,
+      "skipWaiting": true,
+      "claim": true,
+      "onlyPreviousSchmidtCacheRemoved": true,
+      "note": "Sandbox JS, não é atualização multiaba física do PWA."
+    }
+  ],
+  "risks": [
+    {
+      "id": "backup-omits-unreadable-images",
+      "severity": "high",
+      "reproduced": true,
+      "sourceImages": 1,
+      "exportedImages": 0,
+      "statusReportsSuccess": true
+    },
+    {
+      "id": "backup-converts-corrupt-state-to-null",
+      "severity": "high",
+      "reproduced": true,
+      "statusReportsSuccess": true
+    },
+    {
+      "id": "restore-partial-after-quota-error",
+      "severity": "high",
+      "reproduced": true,
+      "stateAlreadyReplaced": true,
+      "preferencesStillOriginal": true,
+      "previousBackupDownloaded": true
+    },
+    {
+      "id": "restore-retains-extra-destination-images",
+      "severity": "medium",
+      "reproduced": true,
+      "sourceImages": 1,
+      "destinationImagesAfterRestore": 2
+    },
+    {
+      "id": "gps-acquisition-time-discarded",
+      "severity": "high",
+      "reproduced": true,
+      "acquiredAgeMs": 600000,
+      "storedAgeMs": 3,
+      "timestampPreserved": false,
+      "gpsMaxAgeMs": 15000,
+      "note": "Mock de callback antigo; não prova ocorrência/frequência em GPS físico."
+    }
+  ],
+  "browser": "156.0.8078.79",
+  "modules": {
+    "__m_engine_tolerances": [
+      "SEGMENT_T_EPS",
+      "PARALLEL_DET_EPS",
+      "MIN_RING_AREA_M2",
+      "ALONG_S_EPS_M",
+      "CUT_MERGE_TOL_M",
+      "SLICE_VERTEX_EPS_M",
+      "ALLOC_EPS_M",
+      "MIN_POINTS_EPS",
+      "OPT_IMPROVE_EPS_M",
+      "OPT_MEAN_TIEBREAK",
+      "OPT_LIMIT_EPS",
+      "BEARING_CHANGED_DEG",
+      "CLOSED_LINE_EPS_M",
+      "SAME_OFFSET_EPS_M",
+      "OPT_SHIFT_RANGE_EPS_M"
+    ],
+    "__m_engine_geometry": [
+      "DEGREE_LIKE_EXTENT",
+      "ringSignedArea",
+      "polygonArea",
+      "geomArea",
+      "pointInRing",
+      "pointInPolygon",
+      "pointInGeom",
+      "geomBounds",
+      "geomCentroid",
+      "segmentIntersectionT",
+      "geomEdges",
+      "validateGeom"
+    ],
+    "__m_engine_polyline": [
+      "assertPolyline",
+      "cumulative",
+      "lengthOf",
+      "pointAt",
+      "locate",
+      "slice",
+      "circlePolyline",
+      "isClosed"
+    ],
+    "__m_engine_clip": [
+      "clipPolylineToGeom"
+    ],
+    "__m_engine_tracks": [
+      "TRACK_KINDS",
+      "trackKindLabel",
+      "trackFrame",
+      "straightOffsets",
+      "buildStraightTracks",
+      "buildCircularTracks",
+      "buildImportedTracks",
+      "selectTracks",
+      "clipTracks",
+      "trackLength"
+    ],
+    "__m_engine_sampling": [
+      "effectiveMargin",
+      "positions",
+      "internalGap",
+      "alongCoverageRadius",
+      "shiftedPositions",
+      "trackPosition",
+      "sampleUnits",
+      "numberSamples"
+    ],
+    "__m_engine_allocation": [
+      "minimumPoints",
+      "allocateBalanced",
+      "allocatePerTrack",
+      "countForSpacing",
+      "allocateBySpacing"
+    ],
+    "__m_engine_metrics": [
+      "summarize",
+      "longitudinal",
+      "coverageGrid",
+      "nearestDistances",
+      "gridStep",
+      "coverage",
+      "quickP95",
+      "transverse",
+      "route"
+    ],
+    "__m_engine_optimize": [
+      "optimizeDistribution"
+    ],
+    "__m_engine_params": [
+      "ENGINE_VERSION",
+      "APP_VERSION",
+      "DEFAULT_PARAMS",
+      "resolveParams",
+      "paramsSignature"
+    ],
+    "__m_engine_dataQuality": [
+      "QUALITY_LIMITS",
+      "axisDifferenceDeg",
+      "selfIntersections",
+      "vertexIssues",
+      "assessField"
+    ],
+    "__m_engine_vocab": [
+      "STATUS",
+      "KIND",
+      "TRACK_MODE",
+      "SELECTION_MODE",
+      "POINT_MODE",
+      "EDGE_POLICY",
+      "OPT_MODE",
+      "ALLOC_STATUS",
+      "LEVEL"
+    ],
+    "__m_engine_numero": [
+      "numBR"
+    ],
+    "__m_engine_diagnostics": [
+      "buildWarnings"
+    ],
+    "__m_engine_evaluate": [
+      "withMetrics",
+      "trackRows"
+    ],
+    "__m_engine_errors": [
+      "ERR",
+      "DomainError"
+    ],
+    "__m_engine_paramCatalog": [
+      "CATALOG",
+      "KNOWN_TOP",
+      "KNOWN_NESTED",
+      "getParam",
+      "checkParams",
+      "assertParams",
+      "displayValue",
+      "sanitizeParams"
+    ],
+    "__m_engine_scenario": [
+      "buildScenario"
+    ],
+    "__m_engine_recommend": [
+      "recommendPlan",
+      "metricsOf",
+      "SHAPE_KEYS"
+    ],
+    "__m_engine_editing": [
+      "moveSample",
+      "addSample",
+      "withSamples",
+      "restoreSamples"
+    ],
+    "__m_engine_tradeoffs": [
+      "effortFrontier",
+      "regularitySummary"
+    ],
+    "__m_engine_route": [
+      "CARDINAIS",
+      "GPS_MAX_AGE_MS",
+      "azimuth",
+      "cardinal",
+      "stepsFor",
+      "buildRoute",
+      "instructions",
+      "guide",
+      "pointLabel",
+      "tiroErrado"
+    ],
+    "__m_engine_team": [
+      "teamPlan"
+    ],
+    "__m_engine_projection": [
+      "lonLatToUtmSouth",
+      "utmSouthToLonLat",
+      "localToLonLat",
+      "lonLatToLocal"
+    ],
+    "__m_engine_exporters": [
+      "previousGaps",
+      "toCSV",
+      "toGPX",
+      "toKML",
+      "pilotCSV",
+      "rfc7946Rings",
+      "toGeoJSON"
+    ],
+    "__m_engine_explain": [
+      "regularityWord",
+      "explainScenario"
+    ],
+    "__m_engine_presets": [
+      "PRESETS",
+      "pointsPerMonitor",
+      "presetParams",
+      "compareTeamSplits"
+    ],
+    "__m_engine_index": [
+      "buildScenario",
+      "trackRows",
+      "withMetrics",
+      "moveSample",
+      "addSample",
+      "withSamples",
+      "restoreSamples",
+      "effortFrontier",
+      "regularitySummary",
+      "assessField",
+      "buildRoute",
+      "guide",
+      "toCSV",
+      "toGeoJSON",
+      "toGPX",
+      "toKML",
+      "localToLonLat",
+      "lonLatToLocal",
+      "trackKindLabel",
+      "DEFAULT_PARAMS",
+      "ENGINE_VERSION",
+      "DomainError",
+      "ERR",
+      "ALLOC_STATUS",
+      "EDGE_POLICY",
+      "KIND",
+      "LEVEL",
+      "POINT_MODE",
+      "STATUS",
+      "TRACK_MODE",
+      "explainScenario",
+      "regularityWord",
+      "compareTeamSplits",
+      "pointsPerMonitor",
+      "presetParams",
+      "PRESETS"
+    ],
+    "__m_engine_basemapGeo": [
+      "COVER_MARGIN_M",
+      "parseWorldFile",
+      "isDegrees",
+      "imageCornersLocal",
+      "coversField",
+      "affineToScreen"
+    ],
+    "__m_ui_format": [
+      "fmt",
+      "m",
+      "pct",
+      "esc",
+      "localStamp",
+      "fileSafe",
+      "glueUnits"
+    ],
+    "__m_ui_comum": [
+      "SCHMIDT",
+      "$",
+      "app",
+      "esc",
+      "n0",
+      "n1",
+      "n2",
+      "pl",
+      "motion",
+      "on",
+      "emit",
+      "quandoPronto",
+      "marcarPronto",
+      "painel"
+    ],
+    "__m_ui_importers": [
+      "LIMITS",
+      "parseNumber",
+      "splitCSV",
+      "parseTrackFile",
+      "validateLines",
+      "toFieldLocal"
+    ],
+    "__m_ui_map": [
+      "createMap"
+    ],
+    "__m_ui_qr": [
+      "qrMatrix",
+      "qrSVG"
+    ],
+    "__m_ui_sheet": [
+      "entryGeoURI",
+      "sheetsHTML"
+    ],
+    "__m_ui_monitor": [
+      "createMonitor"
+    ],
+    "__m_ui_planShare": [
+      "PLAN_SCHEMA",
+      "buildPlanFile",
+      "parsePlanFile"
+    ],
+    "__m_ui_basemap": [
+      "readBasemapFiles",
+      "saveBasemap",
+      "loadBasemap",
+      "deleteBasemap",
+      "listBasemaps",
+      "MAX_IMAGE_BYTES"
+    ],
+    "__m_ui_paramForm": [
+      "decorateForm",
+      "advancedChanged",
+      "clearInvalid",
+      "markInvalid",
+      "paramsTable"
+    ],
+    "__m_ui_texts": [
+      "GLOSSARIO"
+    ],
+    "__m_ui_worker_client": [
+      "optimizeAsync",
+      "recommendAsync"
+    ],
+    "__m_ui_store": [
+      "loadState",
+      "saveState"
+    ],
+    "__m_ui_historico_db": [
+      "MAX_POR_LOTE",
+      "abrir",
+      "listar",
+      "gravar",
+      "ler",
+      "todas",
+      "substituir"
+    ],
+    "__m_ui_recommendCard": [
+      "createRecommendCard"
+    ],
+    "__m_ui_paineis": [
+      "createPaineis"
+    ],
+    "__m_ui_lotes": [
+      "LOTES_KEY",
+      "validateFieldsData",
+      "loadFields"
+    ],
+    "__m_main": []
+  },
+  "staticFindings": [
+    {
+      "id": "export-can-exceed-restore-size-limit",
+      "classification": "static-analysis-not-large-file-reproduction",
+      "imageLimitBytes": 26214400,
+      "restoreLimitBytes": 83886080,
+      "exampleImageCount": 3,
+      "exampleBase64Bytes": 104857608,
+      "note": "Exportação não impõe o limite de importação; imagens base64 ampliam o tamanho."
+    }
+  ],
+  "engine": {
+    "synthetic": {
+      "area": 96,
+      "inside": true,
+      "hole": false,
+      "outside": false
+    },
+    "summary": {
+      "fields": 51,
+      "computed": 51,
+      "errors": 0,
+      "samples": 749,
+      "outside": 0,
+      "nonFinite": 0,
+      "belowMinimum": 0,
+      "maxRoundTripM": 2.284340826394304e-09
+    }
+  },
+  "pageErrors": [],
+  "publicationScope": "Aggregates and API names only; per-field results remain in ignored local results.",
+  "nodeVersion": "24.22.1",
+  "timezone": "America/Sao_Paulo"
+}
