@@ -1,5 +1,10 @@
 # Correções de dados e GPS — candidata preservando a interface
 
+**Entrega autorizada posteriormente:** os mesmos arquivos foram enviados em
+`cbb7b0c` e a CI #17 passou. O bloqueio descrito no registro histórico abaixo
+foi resolvido pela autorização explícita do proprietário. Progresso posterior:
+[PROGRESSO_M2_M3.md](PROGRESSO_M2_M3.md). A evidência local original foi preservada.
+
 08/11/2026. Continuação do estudo em `ESTUDO_ARQUITETURA_V1_31.md` e da
 autorização do proprietário para corrigir os problemas. Trabalho apenas na
 branch de auditoria/PR #2; produção, assinatura e distribuição preservadas.

@@ -1,0 +1,259 @@
+{
+  "referenceCommit": "cbb7b0cfe41f34b1e5234b01bbd582cab2b21634",
+  "versionCodeForTest": 104,
+  "scope": "Projeto gerado sem Gradle/APK; refer\u00eancia do preparador anterior, sem chave hist\u00f3rica.",
+  "files": {
+    "capacitor.settings.gradle": {
+      "sha256": "ee02e6b5552bd32b498deea3ded5e245662fc071e2f73c7c132235253539236e",
+      "mode": "0o600"
+    },
+    "build.gradle": {
+      "sha256": "c05c6e67af5651a56aecb0908027be42c84c03dad529af4839dbdc4393405158",
+      "mode": "0o600"
+    },
+    ".gitignore": {
+      "sha256": "065e4a92a240fe11a0ea230491ad9dabef143f5fd5a3e6884ad6f0395666a971",
+      "mode": "0o600"
+    },
+    "settings.gradle": {
+      "sha256": "6ce098d15ebd69b44c4ecd786bca1bdc366340d2459b2af4d7bb0ab317aa9669",
+      "mode": "0o600"
+    },
+    "gradle.properties": {
+      "sha256": "3bab15c5b8bc4c2f4b6cf525497d15ad4abca53a460e6dd2eb0f0135817d31e6",
+      "mode": "0o600"
+    },
+    "variables.gradle": {
+      "sha256": "47391f3ef8551f8cdeabcc383a99bbee6927d8b4191cfaf3027353fe25741852",
+      "mode": "0o600"
+    },
+    "gradlew": {
+      "sha256": "e0108761fee312b7b373ee96c0870cab5c167e664ac507776814b1d59e9b3bad",
+      "mode": "0o700"
+    },
+    "gradlew.bat": {
+      "sha256": "8e327fcb99d29ce0fe3ee2fec6e6a25de815a2df83a6a44a553dea89ffc92955",
+      "mode": "0o600"
+    },
+    "app/proguard-rules.pro": {
+      "sha256": "1cf8c57e8f79c250b0af9c1a5a4edad71a5c348a79ab70243b6bae086c150ad2",
+      "mode": "0o600"
+    },
+    "app/build.gradle": {
+      "sha256": "d120998fc0245ceb42c2d5c115d301e6dd3095abce4eb22f701c610b0ce72b2d",
+      "mode": "0o600"
+    },
+    "app/capacitor.build.gradle": {
+      "sha256": "c56bdb04ab904ea41d325fa0e8a7d9027ba671f18c4132c7180cdf558d7a64b6",
+      "mode": "0o600"
+    },
+    "app/.gitignore": {
+      "sha256": "99c54e51ee601a60fbde8016b2cbf717483bc2e92773be86c9247d02a7fa6ea4",
+      "mode": "0o600"
+    },
+    "capacitor-cordova-android-plugins/build.gradle": {
+      "sha256": "0fc6605e7e0f9b9ba2e60be539c5a9e42b8ef6841e684439c7061cdaade5837f",
+      "mode": "0o600"
+    },
+    "capacitor-cordova-android-plugins/cordova.variables.gradle": {
+      "sha256": "1a5679e3f7757891431842bbdd89e9570445d4180a23a2d00f101dd8860d77a7",
+      "mode": "0o600"
+    },
+    "app/build/.npmkeep": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": "0o600"
+    },
+    "app/src/main/AndroidManifest.xml": {
+      "sha256": "ba26436881307687c82787e4d11b04f3ff0242b2d343b77d848a7538df403473",
+      "mode": "0o600"
+    },
+    "app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java": {
+      "sha256": "ff50b4c110a7434312f9af54171f9e8523b015836f707c9b387b76d4c38a97f8",
+      "mode": "0o600"
+    },
+    "app/src/main/assets/capacitor.plugins.json": {
+      "sha256": "3c452a17b8a7f5e3f1d6771f25ead4d0d7cc6b2c034cdaf51fc29aad12700a63",
+      "mode": "0o600"
+    },
+    "app/src/main/assets/capacitor.config.json": {
+      "sha256": "14ce545bb5c8204d1a072a877010549a7450e3a3f27436434894ead282e456b9",
+      "mode": "0o600"
+    },
+    "app/src/main/res/xml/file_paths.xml": {
+      "sha256": "a46ed43ef65c90cb6778f4581decf3556e3f0055aad8f36d69dae16f9a0e99aa",
+      "mode": "0o600"
+    },
+    "app/src/main/res/xml/config.xml": {
+      "sha256": "e9dcda493e663c5c4db9e3cb3bd968477a6e90aa8840bcbba40d72ed54b767ce",
+      "mode": "0o600"
+    },
+    "app/src/main/res/drawable-land-xxxhdpi/splash.png": {
+      "sha256": "0dfd6e454dc143f17cca70cc62f55246022c273b52f2b282b4d8bbbe100a2ba8",
+      "mode": "0o600"
+    },
+    "app/src/main/res/drawable-land-xhdpi/splash.png": {
+      "sha256": "0dfd6e454dc143f17cca70cc62f55246022c273b52f2b282b4d8bbbe100a2ba8",
+      "mode": "0o600"
+    },
+    "app/src/main/res/drawable-land-xxhdpi/splash.png": {
+      "sha256": "0dfd6e454dc143f17cca70cc62f55246022c273b52f2b282b4d8bbbe100a2ba8",
+      "mode": "0o600"
+    },
+    "app/src/main/res/drawable-land-mdpi/splash.png": {
+      "sha256": "0dfd6e454dc143f17cca70cc62f55246022c273b52f2b282b4d8bbbe100a2ba8",
+      "mode": "0o600"
+    },
+    "app/src/main/res/drawable-port-hdpi/splash.png": {
+      "sha256": "0dfd6e454dc143f17cca70cc62f55246022c273b52f2b282b4d8bbbe100a2ba8",
+      "mode": "0o600"
+    },
+    "app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png": {
+      "sha256": "f12e3fec1f12ea77b051c0d59375adfb8e343471face2169da482c92bead786b",
+      "mode": "0o600"
+    },
+    "app/src/main/res/mipmap-mdpi/ic_launcher.png": {
+      "sha256": "f12e3fec1f12ea77b051c0d59375adfb8e343471face2169da482c92bead786b",
+      "mode": "0o600"
+    },
+    "app/src/main/res/mipmap-mdpi/ic_launcher_round.png": {
+      "sha256": "f12e3fec1f12ea77b051c0d59375adfb8e343471face2169da482c92bead786b",
+      "mode": "0o600"
+    },
+    "app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png": {
+      "sha256": "f12e3fec1f12ea77b051c0d59375adfb8e343471face2169da482c92bead786b",
+      "mode": "0o600"
+    },
+    "app/src/main/res/mipmap-xxhdpi/ic_launcher.png": {
+      "sha256": "f12e3fec1f12ea77b051c0d59375adfb8e343471face2169da482c92bead786b",
+      "mode": "0o600"
+    },
+    "app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png": {
+      "sha256": "f12e3fec1f12ea77b051c0d59375adfb8e343471face2169da482c92bead786b",
+      "mode": "0o600"
+    },
+    "app/src/main/res/drawable-port-xxhdpi/splash.png": {
+      "sha256": "0dfd6e454dc143f17cca70cc62f55246022c273b52f2b282b4d8bbbe100a2ba8",
+      "mode": "0o600"
+    },
+    "app/src/main/res/drawable-land-hdpi/splash.png": {
+      "sha256": "0dfd6e454dc143f17cca70cc62f55246022c273b52f2b282b4d8bbbe100a2ba8",
+      "mode": "0o600"
+    },
+    "app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png": {
+      "sha256": "f12e3fec1f12ea77b051c0d59375adfb8e343471face2169da482c92bead786b",
+      "mode": "0o600"
+    },
+    "app/src/main/res/mipmap-hdpi/ic_launcher.png": {
+      "sha256": "f12e3fec1f12ea77b051c0d59375adfb8e343471face2169da482c92bead786b",
+      "mode": "0o600"
+    },
+    "app/src/main/res/mipmap-hdpi/ic_launcher_round.png": {
+      "sha256": "f12e3fec1f12ea77b051c0d59375adfb8e343471face2169da482c92bead786b",
+      "mode": "0o600"
+    },
+    "app/src/main/res/drawable/ic_launcher_background.xml": {
+      "sha256": "718ba51adf166bb55c3e9936bb8199a0148457f7f0191aaa2f37a94f3159d6ec",
+      "mode": "0o600"
+    },
+    "app/src/main/res/drawable/splash.png": {
+      "sha256": "0dfd6e454dc143f17cca70cc62f55246022c273b52f2b282b4d8bbbe100a2ba8",
+      "mode": "0o600"
+    },
+    "app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png": {
+      "sha256": "f12e3fec1f12ea77b051c0d59375adfb8e343471face2169da482c92bead786b",
+      "mode": "0o600"
+    },
+    "app/src/main/res/mipmap-xxxhdpi/ic_launcher.png": {
+      "sha256": "f12e3fec1f12ea77b051c0d59375adfb8e343471face2169da482c92bead786b",
+      "mode": "0o600"
+    },
+    "app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png": {
+      "sha256": "f12e3fec1f12ea77b051c0d59375adfb8e343471face2169da482c92bead786b",
+      "mode": "0o600"
+    },
+    "app/src/main/res/layout/activity_main.xml": {
+      "sha256": "5d770feb791313b947020cbfc57e5c733c556dac5e9e49261a1190e527073253",
+      "mode": "0o600"
+    },
+    "app/src/main/res/drawable-port-xhdpi/splash.png": {
+      "sha256": "0dfd6e454dc143f17cca70cc62f55246022c273b52f2b282b4d8bbbe100a2ba8",
+      "mode": "0o600"
+    },
+    "app/src/main/res/drawable-port-xxxhdpi/splash.png": {
+      "sha256": "0dfd6e454dc143f17cca70cc62f55246022c273b52f2b282b4d8bbbe100a2ba8",
+      "mode": "0o600"
+    },
+    "app/src/main/res/values/styles.xml": {
+      "sha256": "e28ada2284b6a8ccfbc3a5a25d684d863e17f8c6a138f425d547068c96473479",
+      "mode": "0o600"
+    },
+    "app/src/main/res/values/ic_launcher_background.xml": {
+      "sha256": "cd40bafe618ff506f4088778b135cb4faa15f25e0c9b475e22d730c74b7be115",
+      "mode": "0o600"
+    },
+    "app/src/main/res/values/strings.xml": {
+      "sha256": "a472e6dcb995f31822b7cf0982ca737475733acddd07112b362f8f946f409962",
+      "mode": "0o600"
+    },
+    "app/src/main/res/drawable-v24/ic_launcher_foreground.xml": {
+      "sha256": "a8514094f754b099d3e55ce1d6e0b2de79db418b2eeacb0fc2a6bb0bfadef221",
+      "mode": "0o600"
+    },
+    "app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png": {
+      "sha256": "f12e3fec1f12ea77b051c0d59375adfb8e343471face2169da482c92bead786b",
+      "mode": "0o600"
+    },
+    "app/src/main/res/mipmap-xhdpi/ic_launcher.png": {
+      "sha256": "f12e3fec1f12ea77b051c0d59375adfb8e343471face2169da482c92bead786b",
+      "mode": "0o600"
+    },
+    "app/src/main/res/mipmap-xhdpi/ic_launcher_round.png": {
+      "sha256": "f12e3fec1f12ea77b051c0d59375adfb8e343471face2169da482c92bead786b",
+      "mode": "0o600"
+    },
+    "app/src/main/res/drawable-port-mdpi/splash.png": {
+      "sha256": "0dfd6e454dc143f17cca70cc62f55246022c273b52f2b282b4d8bbbe100a2ba8",
+      "mode": "0o600"
+    },
+    "app/src/main/java/io/github/jhsilvamenezes/schmidtcampo/MainActivity.java": {
+      "sha256": "d7c2fede453fb45b73f6171e8e49cef0362ff6e7f0bbbee91c4a80b544aaa734",
+      "mode": "0o600"
+    },
+    "app/src/main/assets/public/index.html": {
+      "sha256": "d3faa5abcc4a3a64894040a3b82fcee0efba273a8bd911525fc0617fc6fe4450",
+      "mode": "0o600"
+    },
+    "app/src/main/assets/public/cordova_plugins.js": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": "0o600"
+    },
+    "app/src/main/assets/public/cordova.js": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": "0o600"
+    },
+    "app/src/test/java/com/getcapacitor/myapp/ExampleUnitTest.java": {
+      "sha256": "d4045ae8fac1f0807e6b24eb34e68409a9a235df9d1a3f896fb8c9a49424363d",
+      "mode": "0o600"
+    },
+    "gradle/wrapper/gradle-wrapper.jar": {
+      "sha256": "a8451eeda314d0568b5340498b36edf147a8f0d692c5ff58082d477abe9146e4",
+      "mode": "0o600"
+    },
+    "gradle/wrapper/gradle-wrapper.properties": {
+      "sha256": "252070f2b15e40fd80dc5f8f3a6ae8a2f6928bec943889e189a78b294e8f36a5",
+      "mode": "0o600"
+    },
+    "capacitor-cordova-android-plugins/src/main/AndroidManifest.xml": {
+      "sha256": "2e3e383475f0e6cb76f0a7b46017a546663fba8e5bd1ef2a537412afac2ee9b5",
+      "mode": "0o600"
+    },
+    "capacitor-cordova-android-plugins/src/main/res/.gitkeep": {
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "mode": "0o600"
+    },
+    "capacitor-cordova-android-plugins/src/main/java/.gitkeep": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": "0o600"
+    }
+  }
+}

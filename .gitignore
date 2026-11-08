@@ -1,4 +1,5 @@
 audit/node_modules/
+audit/.venv/
 audit/results/
 audit/reference/
 *.keystore

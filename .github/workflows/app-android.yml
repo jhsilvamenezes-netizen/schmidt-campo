@@ -27,6 +27,11 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: audit/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: audit/requirements-spatial.txt
       - name: Instalação determinística das ferramentas de auditoria
         working-directory: audit
         run: npm ci --ignore-scripts --no-audit --no-fund
@@ -42,6 +47,20 @@ jobs:
       - name: Aceite das correções de persistência e GPS
         working-directory: audit
         run: npm run test:corrections
+      - name: Preparação Android protegida e paridade de recursos (sem APK)
+        working-directory: audit
+        run: npm run test:android
+      - name: Auditoria das dependências de build Android
+        working-directory: app
+        run: npm audit --audit-level=moderate --package-lock-only
+      - name: Ferramentas independentes de conferência espacial
+        run: python -m pip install --disable-pip-version-check -r audit/requirements-spatial.txt
+      - name: Cenários e exports dos 51 lotes (dados intermediários locais)
+        working-directory: audit
+        run: npm run probe:spatial
+      - name: Conferência independente GEOS e PROJ
+        working-directory: audit
+        run: python spatial-check.py
       - name: Sintaxe do empacotador existente
         run: bash -n app/preparar.sh
       # Sem build Android, secrets, upload de dados, tag, Release ou deploy.

@@ -1,0 +1,77 @@
+{
+  "stage": "M2/M3 partial",
+  "previousCorrectionCommit": "cbb7b0cfe41f34b1e5234b01bbd582cab2b21634",
+  "previousCorrectionCISuccess": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/actions/runs/42493759891",
+  "runtimeHTMLUnchanged": true,
+  "workerUnchanged": true,
+  "android": {
+    "contractsPassed": 9,
+    "nativeFilesByteAndModeParity": 63,
+    "capCommandsChecked": [
+      "add android",
+      "sync android"
+    ],
+    "apkCompiled": false,
+    "versions": {
+      "cli": "6.2.3",
+      "core": "6.2.3",
+      "tar": "7.5.22",
+      "glob": "14.0.4",
+      "minimatch": "11.0.5"
+    },
+    "npmAuditVulnerabilitiesBefore": {
+      "moderate": 3,
+      "high": 1,
+      "critical": 1,
+      "total": 5
+    },
+    "npmAuditVulnerabilitiesAfter": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    }
+  },
+  "spatial": {
+    "status": "passed",
+    "htmlSha256": "098fc1028076b2488b6bbcae660ee77abfb4e77706343d86d04732e97a4ce914",
+    "versions": {
+      "pyproj": "3.7.2",
+      "proj": "9.5.1",
+      "shapely": "2.1.2",
+      "geos": "3.13.1"
+    },
+    "crs": "EPSG:32723 (WGS84 / UTM 23S)",
+    "fields": 51,
+    "invalidGeometries": [],
+    "outsideSamples": 0,
+    "samples": 749,
+    "maxAreaDifferenceM2": 3.725290298461914e-09,
+    "maxProjectionDifferenceM": 1.0477378964424133e-09,
+    "exportsWellFormedFields": 51,
+    "notes": [
+      "Verificação matemática não homologa campo, limites legais, área oficial ou safra 2026/27."
+    ],
+    "overallStatus": "passed"
+  },
+  "privateKML": {
+    "checkedLocally": true,
+    "reviewRequired": true,
+    "attachmentAndDetailedResultsPublished": false
+  },
+  "sourceHashes": {
+    "app/package.json": "9fc6e4bc927de997d822fbaefd1fb72d0572909760e99555bbd9c5b8db58b0dd",
+    "app/package-lock.json": "f14a5cb7562d69ee859b114105ad580f8be01d879b261e7e4c116d1a2ca69675",
+    "app/preparar.sh": "fece073a4b48235c30823b09bb84216ae6fecd981f475c16b6b22534bc8042a6",
+    "app/cli-compat.cjs": "173323db182477408de8166523b16e10d43023dd9a1f8fa8415a3597ba89347e",
+    "audit/spatial-probe.mjs": "bbe157906f63b9b599ad7bd5d422ba803b051cfcf441bc04bd2d0b8cfd2fb7cb",
+    "audit/spatial-check.py": "6e0ca0dd3fa019283e652e74411b613c4fbfa1a76304fda4aef02173cdd59d44",
+    "audit/requirements-spatial.txt": "cab555ce030aed65135d465e01956c8a69e9936e90ad0bbb653ea269e24c753e",
+    "audit/android-preparation.test.mjs": "85887b0be53f1f3ffd4947ad714469e995313119b06b6b5687968ae49b4b8df4",
+    "audit/android-baseline-v1_31.json": "4e5c1f0c3913b8cae9e47e1f9e0d32f130dcd308bcf4521c68c47b51e43107b8",
+    "audit/contracts.test.mjs": "4e519ede4e4339dfdd29c5d29c96570b19de70556651f33026aca0a31d9000c4"
+  },
+  "releaseAndPhysicalValidation": false
+}

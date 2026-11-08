@@ -16,10 +16,13 @@ O servidor escuta somente em loopback, em portas temporárias; perfis são desca
 O checkout precisa conter o commit de referência de `baseline.json` (`fetch-depth: 0`
 na CI). Nenhum servidor externo, APK ou dado de usuário é necessário ao teste.
 
-`npm test` executa 14 contratos e 25 testes de correção: oito arquivos preservados
+`npm test` executa 14 contratos e 25 testes de correção: sete arquivos preservados
 por SHA-256/tamanho, build determinístico do HTML/worker, apresentação/dados
 comparados ao original, CSP e barreiras de assinatura/publicação, além das
 regressões de backup/GPS.
+O pacote Android agora preserva as versões diretas e recebe exceções explícitas
+somente para ferramentas de build, com paridade nativa e auditoria; seu JSON
+completo deixa de ser um dos arquivos guardados por igualdade de bytes.
 Não equivale a validar matematicamente os 51 polígonos.
 
 O teste de navegador obtém os arquivos originais diretamente do commit imutável,
@@ -76,3 +79,21 @@ reabertura, legado e isolamento de sessões GPS. Foi adicionado à CI de valida�
 O diagnóstico histórico permanece separado. Para regenerar o artefato:
 `node scripts/build-preserved.mjs` a partir da raiz. Fonte original completa
 ainda ausente; novas fontes e integração parcial descritas em `src/README.md`.
+
+## Build Android e conferência espacial independente
+
+`npm run test:android` testa versionCode, diretórios/symlinks existentes, geração
+e sync reais com comparação de 63 arquivos/modos. Instala dependências de build
+em diretórios temporários; requer Linux/GNU, Node 22 ou 24 e acesso ao npm/cache.
+Não compila ou distribui APK. `app/preparar.sh` recusa sobrescrever projetos.
+
+`npm run probe:spatial` escreve `results/spatial-runtime-private.json` com dados
+intermediários locais. Depois, `python spatial-check.py` compara com GEOS/PROJ.
+Instalação isolada: `python -m venv .venv` e
+`.venv/bin/python -m pip install -r requirements-spatial.txt`. As dependências são
+somente de auditoria. A CI usa Python 3.12 e versões fixadas dessas ferramentas.
+
+O argumento `--kml` é opcional, para arquivo local privado; diferenças de origem
+produzem status de revisão e código 2 em `spatial-kml-private-report.json`.
+Não anexar esse arquivo, o KML ou coordenadas intermediárias a artefatos públicos.
+A matemática pode passar e a comparação de origem permanecer pendente.

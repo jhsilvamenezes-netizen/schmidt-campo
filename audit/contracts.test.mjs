@@ -11,13 +11,23 @@ const read = path => readFileSync(root + path);
 const baseline = JSON.parse(read('audit/baseline.json'));
 
 for (const [path, expected] of Object.entries(baseline.files)) {
-  if (['index.html','sw.js'].includes(path)) continue;
+  if (['index.html','sw.js','app/package.json'].includes(path)) continue;
   test(`baseline 1.31.0 intacto: ${path}`, () => {
     const bytes = read(path);
     assert.equal(bytes.length, expected.bytes);
     assert.equal(createHash('sha256').update(bytes).digest('hex'), expected.sha256);
   });
 }
+
+test('Capacitor e plugins preservados; alterações do pacote são só de ferramentas de build', () => {
+  const original=JSON.parse(execFileSync('git',['show',`${baseline.commit}:app/package.json`],{cwd:root}));
+  const candidate=JSON.parse(read('app/package.json'));
+  assert.deepEqual(candidate.devDependencies,original.devDependencies);
+  const metadata={...candidate};delete metadata.engines;delete metadata.overrides;
+  assert.deepEqual(metadata,original);
+  assert.deepEqual(candidate.overrides,{tar:'7.5.22',glob:'14.0.4',minimatch:'11.0.5'});
+  assert.equal(candidate.engines.node,'>=22 <25');
+});
 
 test('HTML e worker correspondem ao build determinístico das correções', async () => {
   const built = await buildCandidate();

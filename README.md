@@ -46,3 +46,8 @@ correção em `src/` são integradas à referência atual por
 `node scripts/build-preserved.mjs`; não editar o bundle minificado manualmente.
 Validação e limitações: [correções de dados/GPS](docs/CORRECOES_DADOS_GPS.md),
 [fontes de correção](src/README.md) e [testes](audit/README.md).
+
+O preparo Android usa lockfile, ferramentas de build corrigidas e staging,
+preservando Capacitor/plugins e recusando sobrescrita de `app/android`/`app/www`.
+Requer Linux/GNU e Node 22 ou 24. Validação independente de geometria/projeção,
+limites e pendências: [progresso M2/M3](docs/PROGRESSO_M2_M3.md).
