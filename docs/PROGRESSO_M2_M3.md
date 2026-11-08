@@ -26,6 +26,10 @@ anteriores são históricas; não são usadas para afirmar execução remota nov
 - Geração ocorre em staging próprio, limpo em falha. A instalação final não
   sobrescreve destinos. Caminhos Gradle são normalizados para `../node_modules`
   e verificados antes da movimentação; não ficam referências ao staging.
+- A máscara de criação é fixada em `077`: saídas privadas do usuário, com
+  permissões determinísticas em runners diferentes. A CI inicial detectou a
+  diferença `0644`/`0600` causada pelo ambiente; o preparador foi corrigido em
+  vez de remover ou afrouxar a verificação de modos.
 - Preparação conserva CSP Android, permissões, ícones, splash, barras e recursos
   do preparador anterior. Nenhum layout nativo foi redesenhado.
 
@@ -41,6 +45,8 @@ transitivas com overrides fixados: `tar 7.5.22`, `glob 14.0.4`, `minimatch 11.0.
 `app/cli-compat.cjs` fornece esse alias somente durante o build, sem alterar o
 algoritmo de extração, a ponte web ou o código empacotado. Isso foi necessário:
 o primeiro ensaio sem adaptador falhou; não foi considerado sucesso.
+O adaptador também fixa `umask 077` para comandos como `cap sync` chamados fora
+do preparador; assim a regra vale em todo o ensaio, inclusive com caller `022`.
 
 `npm audit --audit-level=moderate --package-lock-only` passou com **zero
 vulnerabilidades reportadas** na árvore nova na data do ensaio. Não significa

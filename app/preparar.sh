@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Monta o projeto Android a partir do index.html da raiz (rodado pelo GitHub Actions; dá para rodar local com Android SDK).
 set -euo pipefail
+# Saídas privadas e determinísticas, independentemente do umask do runner.
+umask 077
 cd "$(dirname "$0")"
 APP_SOURCE_DIR="$PWD"
 VERSAO_CODIGO="${1:-1}"
