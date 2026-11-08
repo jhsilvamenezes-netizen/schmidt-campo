@@ -3,7 +3,7 @@ export const SCHMIDT_BACKUP_KEYS = ['monitoramento.v03', 'schmidt.v07.map.prefer
 export const SCHMIDT_RESTORE_MARKER = 'schmidt.restore.pending.v1';
 export const SCHMIDT_BACKUP_MAX_BYTES = 80 * 1024 * 1024;
 
-export function createSchmidtBackupService({ storage, images, history, journal, maxBytes = SCHMIDT_BACKUP_MAX_BYTES, onCorrupt = () => {} }) {
+export function createSchmidtBackupService({ storage, images, history, journal, maxBytes = SCHMIDT_BACKUP_MAX_BYTES, onCorrupt = () => {}, exclusive = operation => operation() }) {
   let corruptState = false;
   let active = false;
   const invalid = () => new Error('configurações em formato inválido');
@@ -127,6 +127,8 @@ export function createSchmidtBackupService({ storage, images, history, journal, 
     } finally { active = false; }
   }
 
-  return { readJSON, loadAppState, collect, preflightExport, assertExportable, restore, recover,
+  return { readJSON, loadAppState, collect: () => exclusive(collect), preflightExport, assertExportable,
+    restore: value => exclusive(() => restore(value)),
+    recover: () => pending() ? exclusive(recover) : Promise.resolve(false),
     isWriteBlocked: () => corruptState || pending() };
 }

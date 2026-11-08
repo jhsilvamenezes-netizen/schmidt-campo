@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const baseline = JSON.parse(await readFile(root+'audit/baseline.json'));
 export const sourceFiles = ['src/persistence/backup-service.mjs','src/persistence/backup-format.mjs',
-  'src/gps/fix-policy.mjs','src/platform/browser-backup-adapters.mjs','src/platform/legacy-integration.mjs'];
+  'src/gps/fix-policy.mjs','src/platform/browser-backup-adapters.mjs','src/platform/browser-session-lock.mjs','src/platform/legacy-integration.mjs'];
 const sha = text => createHash('sha256').update(text).digest('hex');
 export async function buildCandidate() {
   const original = execFileSync('git',['show',`${baseline.commit}:index.html`],{cwd:root,maxBuffer:4*1024*1024}).toString();
@@ -39,7 +39,7 @@ export async function buildCandidate() {
   replace('__m_ui_lotes:ne,__m_main:J};</script>', '__m_ui_lotes:ne,__m_main:J};\n})();</script>', 'escopo-assíncrono-compatível-com-o-baseline');
   replace('catch(e){'+originalFailureBody+'}}return{loadState:t,saveState:n}',
     'catch(e){return schmidtReportLegacyStoreFailure(e)}}return{loadState:t,saveState:n}', 'reutilização-exata-do-erro-existente');
-  replace('J=(()=>{let{buildScenario:e,','J=(await initialiseSchmidtCorrections(q),(()=>{let{buildScenario:e,','recuperação-antes-da-inicialização');
+  replace('J=(()=>{let{buildScenario:e,','J=(await initialiseSchmidtCorrections(q,z),(()=>{let{buildScenario:e,','recuperação-antes-da-inicialização');
   replace('return Tt(),{}})();(()=>','return Tt(),{}})());(()=>','fechamento-inicialização');
   replace('saved:U(),ui:','saved:schmidtBackupService.loadAppState(),ui:','leitura-sem-destruir-JSON-corrompido');
   replace('function ae(e){let{field:n}=t.ctx(),','function ae(e){if(b.watchId===null)return;let fix=validateSchmidtGPSFix(e,{now:Date.now(),lastTimestamp:b.posAt,maxAgeMs:15e3});if(!fix)return;let{field:n}=t.ctx(),','validação-GPS');

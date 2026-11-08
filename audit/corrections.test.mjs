@@ -28,6 +28,37 @@ function fixture() {
   return { values, faults, state, service, ports, incoming };
 }
 
+test('coordenação recusada impede snapshot, journal e qualquer escrita de restauração', async () => {
+  const f = fixture(), before = new Map(f.values), images = structuredClone(f.state.images);
+  const service = createSchmidtBackupService({ ...f.ports, exclusive: async () => { throw Error('outra sessão'); } });
+  await assert.rejects(service.collect(), /outra sessão/);
+  await assert.rejects(service.restore(f.incoming), /outra sessão/);
+  assert.deepEqual(f.values, before);
+  assert.deepEqual(f.state.images, images);
+  assert.equal(f.state.journal, null);
+});
+test('restauração usa uma única seção exclusiva, incluindo recuperação pendente', async () => {
+  const f = fixture(); let calls = 0, active = false;
+  f.state.journal = { stage:'prepared', before:{raw:Object.fromEntries(f.values),images:structuredClone(f.state.images),history:structuredClone(f.state.history)} };
+  f.values.set(SCHMIDT_RESTORE_MARKER, '1');
+  const service = createSchmidtBackupService({ ...f.ports, exclusive: async operation => {
+    assert.equal(active,false); active=true; calls++;
+    try { return await operation(); } finally { active=false; }
+  } });
+  await service.restore(f.incoming);
+  assert.equal(calls,1);
+  assert.equal(f.values.get(SCHMIDT_RESTORE_MARKER),undefined);
+  assert.deepEqual(f.state.history,f.incoming.history);
+});
+test('abertura saudável não pede exclusividade; recuperação pendente a exige', async () => {
+  const f = fixture(); let calls=0;
+  const service=createSchmidtBackupService({...f.ports,exclusive: async operation=>{calls++;return operation();}});
+  assert.equal(await service.recover(),false); assert.equal(calls,0);
+  f.values.set(SCHMIDT_RESTORE_MARKER,'1');
+  await assert.rejects(service.recover(),/formato inválido/);
+  assert.equal(calls,1); assert.equal(f.values.get(SCHMIDT_RESTORE_MARKER),'1');
+});
+
 test('A03: erro de leitura de imagem impede exportação incompleta', async () => {
   const f = fixture(); f.faults.readImage = true;
   await assert.rejects(f.service.collect(), /imagem ilegível/);

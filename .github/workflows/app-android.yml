@@ -47,6 +47,9 @@ jobs:
       - name: Aceite das correções de persistência e GPS
         working-directory: audit
         run: npm run test:corrections
+      - name: Restauração e abertura simultânea de abas
+        working-directory: audit
+        run: npm run test:sessions
       - name: Preparação Android protegida e paridade de recursos (sem APK)
         working-directory: audit
         run: npm run test:android

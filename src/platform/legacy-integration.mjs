@@ -1,17 +1,20 @@
 // Integrador explícito com APIs do artefato congelado; não altera DOM/CSS/rotas.
 let schmidtBackupService;
-export async function initialiseSchmidtCorrections(historyDB) {
+export async function initialiseSchmidtCorrections(historyDB, basemap) {
+  const session = createSchmidtSessionLock(navigator.locks);
+  const barrier = createSchmidtWriteBarrier(session, localStorage, historyDB, basemap);
   schmidtBackupService = createSchmidtBackupService({
-    storage: localStorage,
+    storage: barrier.storage,
+    exclusive: barrier.exclusive,
     onCorrupt: () => { SCHMIDT.restaurando = true; },
     images: createSchmidtImageRepository(indexedDB),
     history: {
       readAll: async () => schmidtIDBTransaction(await historyDB.abrir(), 'versoes', 'readonly', store => store.getAll()),
-      replaceAll: values => historyDB.substituir(values),
+      replaceAll: barrier.replaceHistory,
     },
     journal: createSchmidtJournal(indexedDB),
   });
-  try { await schmidtBackupService.recover(); }
+  try { await session.enter(); await schmidtBackupService.recover(); }
   catch (error) { schmidtReportLegacyStoreFailure(error); SCHMIDT.restaurando = true; return; }
   schmidtBackupService.loadAppState();
   if (schmidtBackupService.isWriteBlocked()) {

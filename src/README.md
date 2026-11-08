@@ -11,6 +11,9 @@ antigo não é usado como substituto do aplicativo recente.
 - `platform/browser-backup-adapters.mjs`: transações nas bases existentes e
   journal privado em IndexedDB, sem manipular interface.
 - `platform/legacy-integration.mjs`: conexão explícita com APIs do bundle atual.
+- `platform/browser-session-lock.mjs`: presença por Web Locks e barreira dos
+  escritores para snapshot/restauração; escopo e limites em
+  `docs/CONCORRENCIA_RESTAURACAO.md`.
 
 `node scripts/build-preserved.mjs` lê o HTML original diretamente do commit
 imutável registrado em `audit/baseline.json` e gera a candidata. Exige esse

@@ -5,6 +5,7 @@
     "test": "node contracts.test.mjs && node corrections.test.mjs",
     "test:browser": "node browser.mjs",
     "test:corrections": "node corrections-browser.mjs",
+    "test:sessions": "node session-lock-browser.mjs",
     "probe:spatial": "node spatial-probe.mjs",
     "test:android": "node android-preparation.test.mjs",
     "study": "node architecture-study.mjs --baseline"
