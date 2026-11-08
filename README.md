@@ -29,8 +29,8 @@ desenvolvedor paga (US$ 99/ano) e revisão da Apple.
 - Abra o link no celular, baixe e toque no arquivo. O Android pede para permitir instalar "de fonte desconhecida":
   permita para o Chrome (ou o app que baixou).
 - Na 1ª vez que usar o GPS no guia, toque em **Permitir** (localização precisa).
-- Versão nova: baixe de novo e instale por cima; os planos salvos continuam (a assinatura do app é sempre a mesma).
-- O APK é compilado aqui mesmo, pelo GitHub Actions, a cada versão publicada (`.github/workflows/app-android.yml`).
+- Antes de atualizar ou reinstalar, faça uma cópia de segurança em Plano › Arquivos e guarde fora do aparelho. Instalar por cima depende da compatibilidade de assinatura; uma troca de assinatura pode exigir reinstalação. Não desinstale antes de verificar a cópia e o procedimento de migração.
+- O APK distribuído permanece preservado. Nesta branch de auditoria, o GitHub Actions apenas valida; nova distribuição exige aprovação do proprietário.
 - No app, os arquivos (GPX, KML, cópia de segurança, trajeto caminhado) abrem o **Compartilhar** do Android:
   mande para o WhatsApp, Drive ou e-mail. "Imprimir fichas" gera um arquivo .html: abra no Chrome e use
   ⋮ › Compartilhar › Imprimir.
@@ -38,3 +38,11 @@ desenvolvedor paga (US$ 99/ano) e revisão da Apple.
 - A tela fica acesa enquanto o GPS do guia estiver ligado.
 
 Os arquivos são gerados a partir do projeto principal (`npm run build && npm run pacote-web`); não edite aqui.
+
+## Desenvolvimento da candidata
+
+O projeto-fonte gerador completo ainda não foi recuperado. As fontes novas de
+correção em `src/` são integradas à referência atual por
+`node scripts/build-preserved.mjs`; não editar o bundle minificado manualmente.
+Validação e limitações: [correções de dados/GPS](docs/CORRECOES_DADOS_GPS.md),
+[fontes de correção](src/README.md) e [testes](audit/README.md).

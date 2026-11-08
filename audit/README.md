@@ -16,8 +16,10 @@ O servidor escuta somente em loopback, em portas temporárias; perfis são desca
 O checkout precisa conter o commit de referência de `baseline.json` (`fetch-depth: 0`
 na CI). Nenhum servidor externo, APK ou dado de usuário é necessário ao teste.
 
-`npm test` executa 13 contratos: dez arquivos preservados por SHA-256/tamanho,
-contagem/proveniência dos lotes e barreiras de assinatura/publicação.
+`npm test` executa 14 contratos e 25 testes de correção: oito arquivos preservados
+por SHA-256/tamanho, build determinístico do HTML/worker, apresentação/dados
+comparados ao original, CSP e barreiras de assinatura/publicação, além das
+regressões de backup/GPS.
 Não equivale a validar matematicamente os 51 polígonos.
 
 O teste de navegador obtém os arquivos originais diretamente do commit imutável,
@@ -54,7 +56,7 @@ não são teste físico nem homologação operacional.
 ## Estudo de arquitetura e falhas
 
 `CHROMIUM_PATH=/usr/bin/chromium npm run study` executa
-`architecture-study.mjs` contra o bundle atual. Inventaria módulos, caracteriza
+`architecture-study.mjs --baseline` contra o bundle original imutável. Inventaria módulos, caracteriza
 cenários padrão dos 51 lotes e reproduz falhas conhecidas de backup/restauração
 e timestamp GPS, apenas em perfis descartáveis. Observa também a política do
 worker em sandbox JavaScript. Evidência local em `results/architecture-report.json`.
@@ -64,3 +66,13 @@ inadequados do produto. Não faz parte do gate de aceite da CI e não significa
 que os problemas foram corrigidos. Quando corrigidos, os cenários deverão ser
 convertidos em testes que exijam preservação segura. Detalhes e prioridades em
 `docs/ESTUDO_ARQUITETURA_V1_31.md`. Nenhuma coordenada é escrita no relatório.
+
+## Aceite da candidata corrigida
+
+`CHROMIUM_PATH=/usr/bin/chromium npm run test:corrections` executa os cenários
+seguros contra a candidata, incluindo IndexedDB real, journal, rollback,
+reabertura, legado e isolamento de sessões GPS. Foi adicionado à CI de validação.
+`corrections-report.json` é local e ignorado; não publica cópias/imagens.
+O diagnóstico histórico permanece separado. Para regenerar o artefato:
+`node scripts/build-preserved.mjs` a partir da raiz. Fonte original completa
+ainda ausente; novas fontes e integração parcial descritas em `src/README.md`.

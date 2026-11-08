@@ -39,6 +39,9 @@ jobs:
       - name: Comparação visual local e ensaio de backup com dados sintéticos
         working-directory: audit
         run: npm run test:browser
+      - name: Aceite das correções de persistência e GPS
+        working-directory: audit
+        run: npm run test:corrections
       - name: Sintaxe do empacotador existente
         run: bash -n app/preparar.sh
       # Sem build Android, secrets, upload de dados, tag, Release ou deploy.

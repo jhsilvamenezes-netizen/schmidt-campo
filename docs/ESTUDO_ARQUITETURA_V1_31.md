@@ -1,5 +1,10 @@
 # Estudo de estrutura e arquitetura — SCHMIDT Campo atual
 
+**Registro histórico do diagnóstico em `e1f4642`.** A candidata posterior contém
+correções de A03/A04/A05/A06/A07/A08; resultados e limites atualizados em
+[CORRECOES_DADOS_GPS.md](CORRECOES_DADOS_GPS.md). Os defeitos descritos abaixo
+referem-se à referência original, que permanece publicada e preservada.
+
 08/11/2026 — branch `codex/auditoria-evolucao-segura`, evolução do PR #2.
 Base de produto: **app/link 1.31.0 atual**, mantendo seu refinamento e todas as telas.
 Este documento é diagnóstico e plano técnico; **não aplica as correções ao produto**.

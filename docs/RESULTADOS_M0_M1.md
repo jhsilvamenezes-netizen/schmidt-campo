@@ -1,5 +1,10 @@
 # M0/M1 — Auditoria de preservação e segurança
 
+**Resultados históricos da etapa `350f8d3`.** Para a candidata posterior que
+altera somente lógica interna e identificador de cache, consultar
+[CORRECOES_DADOS_GPS.md](CORRECOES_DADOS_GPS.md). A referência deste documento
+não foi substituída.
+
 Data: 08/11/2026. Branch: `codex/auditoria-evolucao-segura`.
 Escopo aprovado: Issue #1, AGENTS.md e BASELINE_V1_31.md.
 **Sem alteração visual, merge, deploy, Release ou APK novo.**

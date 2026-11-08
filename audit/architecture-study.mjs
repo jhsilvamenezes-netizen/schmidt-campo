@@ -9,13 +9,17 @@ import { runInNewContext } from 'node:vm';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { PNG } from 'pngjs';
+import { execFileSync } from 'node:child_process';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const html = await readFile(root + 'index.html', 'utf8');
+if(!process.argv.includes('--baseline'))throw new Error('Diagnóstico histórico: execute com --baseline. Aceite da candidata: npm run test:corrections.');
+const reference='a1ad502c315b4b3d484444f9e2734400abd0b72a';
+const originalAsset=path=>execFileSync('git',['show',`${reference}:${path}`],{cwd:root,maxBuffer:4*1024*1024});
+const html = originalAsset('index.html').toString();
 const hash = value => createHash('sha256').update(value).digest('hex');
 const report = {
   status: 'incomplete', purpose: 'architecture-diagnosis-not-release-acceptance',
-  appVersion: '1.31.0', htmlSha256: hash(html),
+  appVersion: '1.31.0', reference, htmlSha256: hash(html),
   scriptSha256: hash(await readFile(new URL(import.meta.url))),
   checks: [], risks: [],
 };
@@ -27,7 +31,7 @@ const server = createServer(async (req,res) => {
   const path = new URL(req.url,'http://localhost').pathname.slice(1) || 'index.html';
   if (!files.includes(path)) { res.writeHead(404).end(); return; }
   res.setHeader('Content-Type', mime[path.split('.').at(-1)]);
-  res.end(await readFile(root + path));
+  res.end(originalAsset(path));
 });
 await new Promise(resolve => server.listen(0,'127.0.0.1',resolve));
 const url = `http://127.0.0.1:${server.address().port}`;
@@ -206,7 +210,7 @@ try {
   console.log('Cinco riscos reproduzidos em perfis descartáveis (não corrigidos).');
 
   // Exercita o worker original em sandbox JS para observar a política de cache.
-  const worker=await readFile(root+'sw.js','utf8');
+  const worker=originalAsset('sw.js').toString();
   const handlers={}, deleted=[], network=[], flags={};
   const cacheName=worker.match(/const CACHE = '([^']+)'/)[1];
   const scope={URL,location:{origin:'https://example.test'},

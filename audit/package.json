@@ -2,9 +2,10 @@
   "name": "schmidt-preservation-audit",
   "private": true,
   "scripts": {
-    "test": "node contracts.test.mjs",
+    "test": "node contracts.test.mjs && node corrections.test.mjs",
     "test:browser": "node browser.mjs",
-    "study": "node architecture-study.mjs"
+    "test:corrections": "node corrections-browser.mjs",
+    "study": "node architecture-study.mjs --baseline"
   },
   "devDependencies": {
     "playwright": "1.56.1",

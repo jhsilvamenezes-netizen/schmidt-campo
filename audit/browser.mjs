@@ -32,9 +32,10 @@ async function serve(reference) {
 }
 const browser = await chromium.launch({
   ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}),
-  args: ['--no-sandbox', '--disable-gpu', '--force-color-profile=srgb'],
+  args: ['--no-sandbox', '--disable-gpu', '--force-color-profile=srgb', '--disable-skia-runtime-opts'],
 });
 const report = { status: 'failed', functionalOnly, browser: browser.version(), platform: process.platform, reference: baseline.commit,
+  candidateSha256: createHash('sha256').update(await readFile(root+'index.html')).digest('hex'),
   locale: 'pt-BR', timezone: 'UTC', deviceScaleFactor: 1, fixedDate: '2026-11-08T12:00:00Z',
   visual: [], functional: [] };
 const errors = [];
@@ -225,6 +226,7 @@ try {
   assert.deepEqual(errors, []);
   report.pageErrors = errors;
   await ctx.close(); await target.ctx.close();
+  assert.equal(createHash('sha256').update(await readFile(root+'index.html')).digest('hex'),report.candidateSha256,'Candidata mudou durante o teste');
   report.status = 'passed';
   console.log('Backup/restauração: todos os cenários passaram.');
 } catch (error) {
