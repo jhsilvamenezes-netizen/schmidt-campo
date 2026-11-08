@@ -63,8 +63,13 @@ jobs:
         run: npm run probe:spatial
       - name: Conferência independente GEOS e PROJ
         working-directory: audit
-        run: python spatial-check.py
+        run: |
+          python -m unittest geometry_diagnostics_test.py
+          python spatial-check.py
       - name: Sintaxe do empacotador existente
         run: bash -n app/preparar.sh
+      - name: Medição comparativa de desempenho (sem limite absoluto de tempo)
+        working-directory: audit
+        run: npm run measure:performance
       # Sem build Android, secrets, upload de dados, tag, Release ou deploy.
       # Publicação futura exige workflow separado e aprovação do proprietário.

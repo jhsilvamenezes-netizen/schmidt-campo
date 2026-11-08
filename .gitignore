@@ -6,3 +6,4 @@ audit/reference/
 *.jks
 *.apk
 *.aab
+__pycache__/

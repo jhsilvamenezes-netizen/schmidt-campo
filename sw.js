@@ -1,5 +1,5 @@
 // SCHMIDT 1.31 · gerado por scripts/pacote-web.mjs
-const CACHE = 'schmidt-1.31-62bf2c30a1';
+const CACHE = 'schmidt-1.31-ac30bdd90a';
 const ARQUIVOS = ["./","index.html","manifest.webmanifest","icone.svg","icone-192.png","icone-512.png","icone-180.png"];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ARQUIVOS)).then(() => self.skipWaiting()));

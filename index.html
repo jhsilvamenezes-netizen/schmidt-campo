@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/><meta name="schmidt-web" content="1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#17594a"><link rel="apple-touch-icon" href="icone-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="SCHMIDT"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <!-- 1.8: só código e imagens embutidos; nenhuma conexão com a internet (app offline) -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-JtGstlT67aP7M5M4UYku0lGyVMDvb58tUagqL+NJfaI=' 'sha256-NVqkuWANoDOmSJXJG0zwfexIHzTpz44QZtuPs+aUCwc='; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob: 'self'; connect-src 'self' blob: data:; font-src data:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-RYuxTsCZM6WyC027fSDu0lBaoKp2vX+7IWs2Sm9PBZ0=' 'sha256-NVqkuWANoDOmSJXJG0zwfexIHzTpz44QZtuPs+aUCwc='; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob: 'self'; connect-src 'self' blob: data:; font-src data:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#123b33" name="theme-color"/>
 <title>SCHMIDT · Planejamento de amostragem v1.31.0</title>
@@ -294,21 +294,36 @@ function createSchmidtImageRepository(indexedDB) {
 function createSchmidtSessionLock(locks) {
   const presence = 'schmidt.storage.session.v1';
   const gate = 'schmidt.storage.operation.v1';
+  const writer = 'schmidt.storage.writer.v1';
+  let writerChecked = false, writeOwner = false, releaseWriter, invalidated = false;
   let releasePresence, presenceDone, busy = false;
   const invalid = () => new Error('IndexedDB bloqueado');
 
   async function enter() {
-    if (!locks?.request || releasePresence) return;
+    if (invalidated || !locks?.request || releasePresence) return;
     let ready;
     const acquired = new Promise(resolve => { ready = resolve; });
     presenceDone = locks.request(presence, { mode: 'shared' }, async () => {
       await new Promise(resolve => { releasePresence = resolve; ready(); });
     });
     await Promise.race([acquired, presenceDone.then(() => { throw invalid(); })]);
+    if (!writerChecked) {
+      // A aquisição ocorre antes de carregar estado na memória. Sem promoção
+      // automática: uma aba antiga precisa recarregar para ler o estado atual.
+      let inspected;
+      const checked = new Promise(resolve => { inspected = resolve; });
+      const held = locks.request(writer, { ifAvailable: true }, lock => {
+        writerChecked = true;
+        writeOwner = !!lock && !invalidated;
+        inspected();
+        if (writeOwner) return new Promise(resolve => { releaseWriter = resolve; });
+      });
+      await Promise.race([checked, held]);
+    }
   }
 
   async function exclusive(operation) {
-    if (busy || !locks?.request) throw invalid();
+    if (busy || !writeOwner || !locks?.request) throw invalid();
     busy = true;
     try {
       return await locks.request(gate, { ifAvailable: true }, async token => {
@@ -318,23 +333,33 @@ function createSchmidtSessionLock(locks) {
         await presenceDone;
         try {
           return await locks.request(presence, { ifAvailable: true }, lock => {
-            if (!lock) throw invalid();
+            if (!lock || invalidated) throw invalid();
             return operation();
           });
         } finally { await enter(); }
       });
     } finally { busy = false; }
   }
-  return { enter, exclusive, isBusy: () => busy };
+  function invalidate() {
+    // Um documento mantido no histórico não pode retomar com estado antigo.
+    invalidated = true;
+    writeOwner = false;
+    releaseWriter?.();
+    if (!busy) { releasePresence?.(); releasePresence = undefined; }
+  }
+  // Sem Web Locks, conserva gravações comuns legadas; não promete exclusividade.
+  // Snapshot/restauração continuam recusados por exclusive().
+  return { enter, exclusive, invalidate, isBusy: () => busy, canWrite: () => !invalidated && (!locks?.request || writeOwner) };
 }
 
+// src/platform/browser-write-barrier.mjs
 // Bloqueia escritores da própria página e drena mutações assíncronas já iniciadas.
 // As portas privadas da restauração continuam usando as APIs originais.
 function createSchmidtWriteBarrier(session, storage, historyDB, basemap) {
   const pending = new Set();
   const originals = { setItem: Storage.prototype.setItem, removeItem: Storage.prototype.removeItem, clear: Storage.prototype.clear };
   let internal = false;
-  const blocked = () => session.isBusy() && !internal;
+  const blocked = () => (!session.canWrite() || session.isBusy()) && !internal;
   const invalid = () => new Error('IndexedDB bloqueado');
   for (const method of ['setItem', 'removeItem', 'clear']) {
     Storage.prototype[method] = function(key, ...args) {
@@ -373,6 +398,7 @@ function createSchmidtWriteBarrier(session, storage, historyDB, basemap) {
 let schmidtBackupService;
 async function initialiseSchmidtCorrections(historyDB, basemap) {
   const session = createSchmidtSessionLock(navigator.locks);
+  window.addEventListener('pagehide', () => session.invalidate(), { once: true });
   const barrier = createSchmidtWriteBarrier(session, localStorage, historyDB, basemap);
   schmidtBackupService = createSchmidtBackupService({
     storage: barrier.storage,

@@ -199,7 +199,7 @@ try {
 
   const gps=await open(() => {
     Object.defineProperty(navigator,'geolocation',{value:{
-      watchPosition(success) { window.auditLocationCallback=success; return 1; },
+      watchPosition(success,error) { window.auditLocationCallback=success;window.auditLocationError=error; return 1; },
       clearWatch() {}, getCurrentPosition(success) { window.auditLocationCallback=success; },
     }});
   });
@@ -228,15 +228,38 @@ try {
     return {ignored:SCHMIDT.monitor.state.pos===null && SCHMIDT.monitor.state.posAt===before};
   });
   assert.equal(stopped.ignored,true);
-  await gps.evaluate(()=>window.previousGPSCallback=window.auditLocationCallback);
+  await gps.evaluate(()=>{window.previousGPSCallback=window.auditLocationCallback;window.previousGPSError=window.auditLocationError;});
   await gps.locator('#mon-pick-gps').click();
   const restarted=await gps.evaluate(()=>{
     const before=SCHMIDT.monitor.state.posAt;
     window.previousGPSCallback({coords:{longitude:0,latitude:0,accuracy:5},timestamp:Date.now()});
-    return SCHMIDT.monitor.state.pos===null && SCHMIDT.monitor.state.posAt===before;
+    window.previousGPSError({code:1,message:'erro atrasado da sessão anterior'});
+    return SCHMIDT.monitor.state.pos===null && SCHMIDT.monitor.state.posAt===before && SCHMIDT.monitor.state.watchId!==null;
   });
   assert.equal(restarted,true);
-  report.corrections.push({id:'A06',passed:true,...stale,stoppedWatchIgnored:true,previousSessionIgnored:true});
+  const resilient=await gps.evaluate(()=>{
+    const state=SCHMIDT.monitor.state, now=Date.now();
+    const [longitude,latitude]=SCHMIDT.modulos.__m_engine_projection.localToLonLat(0,0,SCHMIDT.app.field.centroidUTM);
+    const fix={coords:{longitude,latitude,accuracy:1000},timestamp:now-100};
+    window.auditLocationCallback(fix);
+    const approximatePreserved=state.pos?.accuracyM===1000 && state.posAt===fix.timestamp;
+    const before=JSON.stringify(state.pos), at=state.posAt;
+    const malformed=[{...fix,timestamp:now-30000},{...fix,timestamp:undefined},{...fix,timestamp:now+10000},
+      {...fix,coords:{...fix.coords,latitude:91}},{...fix,coords:{...fix.coords,longitude:181}},
+      {...fix,coords:{...fix.coords,accuracy:-1}},{...fix,coords:{...fix.coords,accuracy:NaN}}];
+    for(const position of malformed)window.auditLocationCallback(position);
+    const rejectedMalformed=JSON.stringify(state.pos)===before && state.posAt===at;
+    window.auditLocationError({code:2,message:'sinal sintético indisponível'});
+    window.auditLocationError({code:3,message:'timeout sintético'});
+    const transientKeptSession=state.watchId!==null;
+    window.auditLocationError({code:1,message:'permissão sintética negada'});
+    const permissionStoppedSession=state.watchId===null;
+    window.auditLocationCallback({...fix,timestamp:Date.now()});
+    const callbackAfterDenialIgnored=state.pos===null;
+    return {approximatePreserved,rejectedMalformed,transientKeptSession,permissionStoppedSession,callbackAfterDenialIgnored};
+  });
+  assert.deepEqual(resilient,{approximatePreserved:true,rejectedMalformed:true,transientKeptSession:true,permissionStoppedSession:true,callbackAfterDenialIgnored:true});
+  report.corrections.push({id:'A06',passed:true,...stale,...resilient,stoppedWatchIgnored:true,previousSessionIgnored:true});
   // Journal real com Blobs: simula interrupção entre fases sem encerrar processo
   // durante um commit IndexedDB. O teste não representa corte elétrico físico.
   async function seedInterrupted(page,stage) {

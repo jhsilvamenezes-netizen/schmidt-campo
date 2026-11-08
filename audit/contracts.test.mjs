@@ -4,11 +4,18 @@ import { readFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
-import { buildCandidate } from '../scripts/build-preserved.mjs';
+import { buildCandidate, sourceFiles } from '../scripts/build-preserved.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const read = path => readFileSync(root + path);
 const baseline = JSON.parse(read('audit/baseline.json'));
+
+test('fontes legíveis têm imports ESM resolvidos e carregam sem DOM', async () => {
+  for (const path of sourceFiles) {
+    const module = await import(new URL('../'+path,import.meta.url));
+    assert.ok(Object.values(module).some(value=>typeof value==='function'),path);
+  }
+});
 
 for (const [path, expected] of Object.entries(baseline.files)) {
   if (['index.html','sw.js','app/package.json'].includes(path)) continue;

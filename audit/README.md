@@ -16,7 +16,7 @@ O servidor escuta somente em loopback, em portas temporárias; perfis são desca
 O checkout precisa conter o commit de referência de `baseline.json` (`fetch-depth: 0`
 na CI). Nenhum servidor externo, APK ou dado de usuário é necessário ao teste.
 
-`npm test` executa 14 contratos e 25 testes de correção: sete arquivos preservados
+`npm test` executa 15 contratos e 28 testes de correção: sete arquivos preservados
 por SHA-256/tamanho, build determinístico do HTML/worker, apresentação/dados
 comparados ao original, CSP e barreiras de assinatura/publicação, além das
 regressões de backup/GPS.

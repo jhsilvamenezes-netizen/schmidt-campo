@@ -4,18 +4,27 @@ import { execFileSync } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { posix } from 'node:path';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const baseline = JSON.parse(await readFile(root+'audit/baseline.json'));
 export const sourceFiles = ['src/persistence/backup-service.mjs','src/persistence/backup-format.mjs',
-  'src/gps/fix-policy.mjs','src/platform/browser-backup-adapters.mjs','src/platform/browser-session-lock.mjs','src/platform/legacy-integration.mjs'];
+  'src/gps/fix-policy.mjs','src/platform/browser-backup-adapters.mjs','src/platform/browser-session-lock.mjs','src/platform/browser-write-barrier.mjs','src/platform/legacy-integration.mjs'];
 const sha = text => createHash('sha256').update(text).digest('hex');
 export async function buildCandidate() {
   const original = execFileSync('git',['show',`${baseline.commit}:index.html`],{cwd:root,maxBuffer:4*1024*1024}).toString();
   if(sha(original)!==baseline.files['index.html'].sha256) throw new Error('Baseline HTML inesperado');
   const blocks=[];
+  const available = new Set();
   for(const file of sourceFiles) {
     const source=await readFile(root+file,'utf8');
+    for (const line of source.match(/^import[^\n]*(?:\n|$)/gm) || []) {
+      const match = /^import \{[^}]+\} from ['"]([^'"]+)['"];?\s*$/.exec(line);
+      if (!match) throw new Error(`Importação fora do contrato de integração: ${file}`);
+      const dependency = posix.normalize(posix.join(posix.dirname(file), match[1]));
+      if (!available.has(dependency)) throw new Error(`Dependência ausente ou fora de ordem: ${file} → ${dependency}`);
+    }
+    available.add(file);
     blocks.push(`// ${file}\n`+source.replace(/^import[^\n]+\n/gm,'').replace(/^export /gm,''));
   }
   let candidate=original;

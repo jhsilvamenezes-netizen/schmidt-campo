@@ -3,6 +3,11 @@
 08/11/2026, somente na branch `codex/auditoria-evolucao-segura`, PR #2.
 Não constitui autorização para merge, Pages, Release ou distribuição de APK.
 
+Registro da etapa `8232d79`. A continuação em
+`docs/MELHORIAS_1_3_4_5.md` acrescenta propriedade única de gravação, protegendo
+também a edição comum em clientes corrigidos com Web Locks. Os resultados e
+pendências abaixo descrevem a etapa anterior, sem reescrever suas evidências.
+
 ## Problema reproduzido
 
 O commit anterior `75ce803` já tinha journal e rollback, mas o sinalizador

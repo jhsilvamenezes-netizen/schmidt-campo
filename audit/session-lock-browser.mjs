@@ -8,8 +8,10 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const baseline = process.argv.includes('--baseline');
-const html = baseline ? execFileSync('git',['show','75ce803:index.html'],{cwd:root,maxBuffer:4*1024*1024}) : await readFile(root+'index.html');
+const editingBaseline = process.argv.includes('--editing-baseline');
+const baseline = process.argv.includes('--baseline') || editingBaseline;
+const baselineRef = editingBaseline ? '8232d79' : '75ce803';
+const html = baseline ? execFileSync('git',['show',`${baselineRef}:index.html`],{cwd:root,maxBuffer:4*1024*1024}) : await readFile(root+'index.html');
 const report = { baseline, htmlSha256:createHash('sha256').update(html).digest('hex'), checks:[] };
 const server = createServer(async (req,res) => {
   const path = new URL(req.url,'http://localhost').pathname.slice(1);
@@ -74,6 +76,15 @@ async function preview(page) {
   await page.locator('#schmidt-backup-preview').waitFor({state:'visible'});
 }
 try {
+  if(editingBaseline) {
+    const ctx=await context(), first=await open(ctx);
+    await first.evaluate(()=>SCHMIDT.modulos.__m_ui_store.saveState({...SCHMIDT.app.saved,auditWriter:'original'}));
+    const old=await open(ctx);
+    await first.evaluate(()=>SCHMIDT.modulos.__m_ui_store.saveState({...SCHMIDT.app.saved,auditWriter:'mais-recente'}));
+    assert.equal(await old.evaluate(()=>SCHMIDT.modulos.__m_ui_store.saveState(SCHMIDT.app.saved)),true);
+    assert.equal(await old.evaluate(()=>JSON.parse(localStorage.getItem('monitoramento.v03')).auditWriter),'original');
+    report.checks.push({id:'stale-tab-overwrites-newer-state',reproduced:true,reference:baselineRef});
+  } else {
   // Reproduz a recuperação prematura de um journal ainda em uso por outra aba.
   const ctx=await context(), a=await open(ctx);
   await preview(a);
@@ -126,6 +137,35 @@ try {
   }
   await ctx.close();
   if(!baseline) {
+    const editing=await context(), first=await open(editing);
+    assert.equal(await first.evaluate(()=>SCHMIDT.modulos.__m_ui_store.saveState({...SCHMIDT.app.saved,auditWriter:'primeiro'})),true);
+    const old=await open(editing);
+    assert.equal(await old.evaluate(()=>SCHMIDT.app.saved.auditWriter),'primeiro');
+    assert.equal(await first.evaluate(()=>SCHMIDT.modulos.__m_ui_store.saveState({...SCHMIDT.app.saved,auditWriter:'mais-recente'})),true);
+    const protectedRaw=await old.evaluate(()=>localStorage.getItem('monitoramento.v03'));
+    assert.equal(await old.evaluate(()=>SCHMIDT.modulos.__m_ui_store.saveState({...SCHMIDT.app.saved,auditWriter:'obsoleto'})),false);
+    assert.equal(await old.evaluate(()=>localStorage.getItem('monitoramento.v03')),protectedRaw);
+    for(const action of ['removeItem','clear']) {
+      assert.equal(await old.evaluate(action=>{try{localStorage[action]('monitoramento.v03');return false;}catch{return true;}},action),true);
+    }
+    assert.equal(await old.evaluate(()=>SCHMIDT.modulos.__m_ui_historico_db.gravar('TESTE|OBSOLETO',{},{})),null);
+    assert.equal(await old.evaluate(async()=>{try{await SCHMIDT.modulos.__m_ui_basemap.deleteBasemap('TESTE|OBSOLETO');return false;}catch{return true;}}),true);
+    await first.close();
+    // Não promove o estado antigo em memória depois que o proprietário fecha.
+    assert.equal(await old.evaluate(()=>SCHMIDT.modulos.__m_ui_store.saveState({...SCHMIDT.app.saved,auditWriter:'obsoleto'})),false);
+    await old.reload(); await old.waitForFunction(()=>SCHMIDT.app?.sc);
+    assert.equal(await old.evaluate(()=>SCHMIDT.app.saved.auditWriter),'mais-recente');
+    assert.equal(await old.evaluate(()=>SCHMIDT.modulos.__m_ui_store.saveState({...SCHMIDT.app.saved,auditWriter:'recarregado'})),true);
+    report.checks.push({id:'single-writer-rejects-stale-tab-and-requires-fresh-reload',passed:true});
+    // Eventos de ciclo de vida simulados; não equivale a ensaiar BFCache em Android.
+    await old.evaluate(()=>dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true})));
+    const next=await open(editing);
+    assert.equal(await next.evaluate(()=>SCHMIDT.modulos.__m_ui_store.saveState({...SCHMIDT.app.saved,auditWriter:'novo-documento'})),true);
+    await old.evaluate(()=>dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true})));
+    assert.equal(await old.evaluate(()=>SCHMIDT.modulos.__m_ui_store.saveState({...SCHMIDT.app.saved,auditWriter:'histórico-obsoleto'})),false);
+    assert.equal(await old.evaluate(()=>JSON.parse(localStorage.getItem('monitoramento.v03')).auditWriter),'novo-documento');
+    report.checks.push({id:'pagehide-invalidates-owner-before-simulated-history-resume',passed:true});
+    await editing.close();
     const draining=await context(), writer=await open(draining);
     await panel(writer);
     await writer.evaluate(()=>{
@@ -168,6 +208,7 @@ try {
     assert.deepEqual(await p.evaluate(()=>({...localStorage})),before);
     report.checks.push({id:'unsupported-web-locks-preserves-data',passed:true});
   }
+  }
   if(!baseline) assert.equal(createHash('sha256').update(await readFile(root+'index.html')).digest('hex'),report.htmlSha256);
   assert.deepEqual(pageErrors,[]);
   report.unhandledPageErrors=pageErrors.length;
@@ -175,6 +216,6 @@ try {
 } finally {
   await Promise.all(contexts.map(ctx=>ctx.close())); await browser.close(); server.close();
   await mkdir(root+'audit/results',{recursive:true});
-  await writeFile(root+`audit/results/session-lock-${baseline?'baseline':'candidate'}.json`,JSON.stringify(report,null,2)+'\n');
+  await writeFile(root+`audit/results/session-lock-${editingBaseline?'editing-baseline':baseline?'baseline':'candidate'}.json`,JSON.stringify(report,null,2)+'\n');
 }
 console.log(JSON.stringify(report));

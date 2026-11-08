@@ -1,24 +1,38 @@
-import { SCHMIDT_BACKUP_KEYS } from '../persistence/backup-service.mjs';
 // Clientes desta versão mantêm presença compartilhada durante a vida da página.
 // Uma operação destrutiva exige presença exclusiva; não usa prazo/lease renovável.
 export function createSchmidtSessionLock(locks) {
   const presence = 'schmidt.storage.session.v1';
   const gate = 'schmidt.storage.operation.v1';
+  const writer = 'schmidt.storage.writer.v1';
+  let writerChecked = false, writeOwner = false, releaseWriter, invalidated = false;
   let releasePresence, presenceDone, busy = false;
   const invalid = () => new Error('IndexedDB bloqueado');
 
   async function enter() {
-    if (!locks?.request || releasePresence) return;
+    if (invalidated || !locks?.request || releasePresence) return;
     let ready;
     const acquired = new Promise(resolve => { ready = resolve; });
     presenceDone = locks.request(presence, { mode: 'shared' }, async () => {
       await new Promise(resolve => { releasePresence = resolve; ready(); });
     });
     await Promise.race([acquired, presenceDone.then(() => { throw invalid(); })]);
+    if (!writerChecked) {
+      // A aquisição ocorre antes de carregar estado na memória. Sem promoção
+      // automática: uma aba antiga precisa recarregar para ler o estado atual.
+      let inspected;
+      const checked = new Promise(resolve => { inspected = resolve; });
+      const held = locks.request(writer, { ifAvailable: true }, lock => {
+        writerChecked = true;
+        writeOwner = !!lock && !invalidated;
+        inspected();
+        if (writeOwner) return new Promise(resolve => { releaseWriter = resolve; });
+      });
+      await Promise.race([checked, held]);
+    }
   }
 
   async function exclusive(operation) {
-    if (busy || !locks?.request) throw invalid();
+    if (busy || !writeOwner || !locks?.request) throw invalid();
     busy = true;
     try {
       return await locks.request(gate, { ifAvailable: true }, async token => {
@@ -28,52 +42,21 @@ export function createSchmidtSessionLock(locks) {
         await presenceDone;
         try {
           return await locks.request(presence, { ifAvailable: true }, lock => {
-            if (!lock) throw invalid();
+            if (!lock || invalidated) throw invalid();
             return operation();
           });
         } finally { await enter(); }
       });
     } finally { busy = false; }
   }
-  return { enter, exclusive, isBusy: () => busy };
-}
-
-// Bloqueia escritores da própria página e drena mutações assíncronas já iniciadas.
-// As portas privadas da restauração continuam usando as APIs originais.
-export function createSchmidtWriteBarrier(session, storage, historyDB, basemap) {
-  const pending = new Set();
-  const originals = { setItem: Storage.prototype.setItem, removeItem: Storage.prototype.removeItem, clear: Storage.prototype.clear };
-  let internal = false;
-  const blocked = () => session.isBusy() && !internal;
-  const invalid = () => new Error('IndexedDB bloqueado');
-  for (const method of ['setItem', 'removeItem', 'clear']) {
-    Storage.prototype[method] = function(key, ...args) {
-      if (this === storage && blocked() && (method === 'clear' || SCHMIDT_BACKUP_KEYS.includes(String(key)))) throw invalid();
-      return originals[method].call(this, key, ...args);
-    };
+  function invalidate() {
+    // Um documento mantido no histórico não pode retomar com estado antigo.
+    invalidated = true;
+    writeOwner = false;
+    releaseWriter?.();
+    if (!busy) { releasePresence?.(); releasePresence = undefined; }
   }
-  const privateStorage = {
-    getItem: key => storage.getItem(key),
-    ...Object.fromEntries(['setItem','removeItem'].map(method => [method, (...args) => {
-      internal = true;
-      try { return storage[method](...args); } finally { internal = false; }
-    }])),
-  };
-  const replaceHistory = historyDB.substituir.bind(historyDB);
-  for (const [object, method, quiet] of [[historyDB,'gravar',true], [historyDB,'substituir',false],
-    [basemap,'saveBasemap',false], [basemap,'deleteBasemap',false]]) {
-    const original = object[method].bind(object);
-    object[method] = async (...args) => {
-      if (blocked()) { if (quiet) return null; throw invalid(); }
-      const operation = Promise.resolve(original(...args));
-      pending.add(operation);
-      try { return await operation; } finally { pending.delete(operation); }
-    };
-  }
-  return { storage: privateStorage, replaceHistory,
-    exclusive: operation => session.exclusive(async () => {
-      await Promise.allSettled([...pending]);
-      return operation();
-    }),
-  };
+  // Sem Web Locks, conserva gravações comuns legadas; não promete exclusividade.
+  // Snapshot/restauração continuam recusados por exclusive().
+  return { enter, exclusive, invalidate, isBusy: () => busy, canWrite: () => !invalidated && (!locks?.request || writeOwner) };
 }

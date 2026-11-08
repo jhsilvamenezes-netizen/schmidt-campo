@@ -14,11 +14,15 @@ from shapely.ops import transform, unary_union
 from shapely.affinity import translate
 from shapely.validation import explain_validity
 from defusedxml import ElementTree as ET
+from geometry_diagnostics import compare_boundaries
 
 ROOT = Path(__file__).resolve().parent.parent
 parser = argparse.ArgumentParser()
 parser.add_argument('--kml', type=Path, help='Anexo local opcional; não será copiado/publicado')
+parser.add_argument('--diagnose-simplification', action='store_true', help='Hipóteses exploratórias; não mudam o gate de origem')
 args = parser.parse_args()
+if args.diagnose_simplification and not args.kml:
+    parser.error('--diagnose-simplification exige --kml')
 html = (ROOT / 'index.html').read_bytes()
 fields = json.loads(re.search(r'<script[^>]*id="fields-data"[^>]*>(.*?)</script>', html.decode(), re.S)[1])['fields']
 runtime = json.loads((ROOT / 'audit/results/spatial-runtime-private.json').read_text())
@@ -93,9 +97,27 @@ if args.kml:
         centroid = fields[key]['centroidUTM']
         local = translate(merged, xoff=-centroid[0], yoff=-centroid[1])
         current = geometries[key]
-        comparisons.append({'key': key, 'status': 'compared', 'sourceComponents': len(polys),
-                            'boundaryHausdorffM': current.boundary.hausdorff_distance(local.boundary),
-                            'symmetricDifferenceM2': current.symmetric_difference(local).area})
+        comparison = {'key': key, 'status': 'compared', 'sourceComponents': len(polys),
+                      **compare_boundaries(current, local)}
+        if args.diagnose_simplification:
+            # Exploração declarada: escolher o melhor ajuste NÃO comprova a
+            # origem e NÃO substitui a comparação com o KML sem transformação.
+            hypotheses = []
+            for tolerance in [0.1, 0.25, 0.5, 1.0]:
+                simplified = local.simplify(tolerance, preserve_topology=True)
+                hypotheses.append({'space':'UTM-m', 'tolerance':tolerance,
+                    'residualM':current.boundary.hausdorff_distance(simplified.boundary),
+                    'vertices':int(shapely.get_num_coordinates(simplified))})
+            geographic = unary_union(polys)
+            for tolerance in [0.000001, 0.000002, 0.000005, 0.00001]:
+                simplified = transform(to_utm.transform, geographic.simplify(tolerance, preserve_topology=True))
+                simplified = translate(simplified, xoff=-centroid[0], yoff=-centroid[1])
+                hypotheses.append({'space':'lon-lat-deg', 'tolerance':tolerance,
+                    'residualM':current.boundary.hausdorff_distance(simplified.boundary),
+                    'vertices':int(shapely.get_num_coordinates(simplified))})
+            comparison['simplificationHypotheses'] = hypotheses
+            comparison['bestExploratoryFit'] = min(hypotheses, key=lambda row:row['residualM'])
+        comparisons.append(comparison)
     report['kmlComparison'] = {'inputSha256': hashlib.sha256(args.kml.read_bytes()).hexdigest(),
         'matchedFields': len(source), 'missingPublicFields': sorted(set(fields)-set(source)),
         'comparedFields': sum(r['status']=='compared' for r in comparisons),
@@ -106,6 +128,11 @@ if args.kml:
     report['kmlComparison']['status'] = 'requires-review' if source_review else 'within-comparison-threshold'
     report['kmlComparison']['comparisonThresholdM'] = 0.05
     report['kmlComparison']['fieldsAboveThreshold'] = sum(r.get('boundaryHausdorffM', 0) > 0.05 for r in comparisons)
+    report['kmlComparison']['translationDiagnostics'] = {
+        'fieldsWithResidualAtMost1cm': sum(r.get('translationResidualM', math.inf) <= 0.01 for r in comparisons),
+        'fieldsWithResidualAbove5cm': sum(r.get('translationResidualM', 0) > 0.05 for r in comparisons),
+        'maxResidualM': max((r.get('translationResidualM', 0) for r in comparisons), default=0),
+        'note': 'Alinhamento apenas na cópia de diagnóstico; não identifica datum/origem nem autoriza correção.'}
 
 report['status'] = 'passed' if not report['invalidGeometries'] and report['outsideSamples']==0 and report['maxAreaDifferenceM2']<0.01 and report['maxProjectionDifferenceM']<0.01 else 'requires-review'
 report['overallStatus'] = 'requires-source-review' if args.kml and report['kmlComparison']['status']=='requires-review' else report['status']
