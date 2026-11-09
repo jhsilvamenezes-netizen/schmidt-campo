@@ -40,8 +40,11 @@ try {
       controls:sections.flatMap(section=>[...section.querySelectorAll('input,select,button,summary')]).filter(e=>e.getBoundingClientRect().height>0).map(e=>({
         id:e.id,tag:e.tagName,type:e.type,label:e.getAttribute('aria-label')||e.closest('label')?.innerText.split('\n')[0]||e.innerText,
         value:e.value,top:e.getBoundingClientRect().top,bottom:e.getBoundingClientRect().bottom,
+        width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height,
+        tabIndex:e.tabIndex,expanded:e.tagName==='SUMMARY'?e.closest('details')?.open:e.getAttribute('aria-expanded'),
       })),
     };},stage);
+    await writeFile(output+stage+'-aria-private.yaml',await page.locator('body').ariaSnapshot());
     await page.screenshot({path:output+stage+'-original.png'});
     if(stage==='inicio'){
       const team=page.locator('#qMonitors');
@@ -114,12 +117,24 @@ try {
   report.onePersonUI=await page.evaluate(()=>({people:document.getElementById('qMonitors').value,
     fitTeam:SCHMIDT.app.saved.fitTeam,tracks:SCHMIDT.app.sc.selected.length,points:SCHMIDT.app.sc.samples.length,
     planText:document.getElementById('param-stage-inicio').innerText}));
+  await page.evaluate(()=>{
+    let element=document.getElementById('qMonitors');
+    while(element){element.scrollTop=0;element=element.parentElement;}
+    window.scrollTo(0,0);
+  });
+  await page.screenshot({path:output+'equipe-reduzida-original.png'});
   for(const [path,expected] of Object.entries(protectedFiles))assert.equal(hash(await readFile(root+path)),expected);
   assert.deepEqual(report.pageErrors,[]);
   report.runtimePreserved=protectedFiles;
+  const controls=report.states.flatMap(s=>s.controls);
+  report.interactionBaseline={renderedControlObservations:controls.length,
+    boundingBoxesUnder24:controls.filter(c=>c.width<24||c.height<24).length,
+    boundingBoxesUnder44:controls.filter(c=>c.width<44||c.height<44).length,
+    scope:'Inventário geométrico, inclui controles fora da dobra. Não decide conformidade WCAG: espaçamento, exceções, alvos efetivos e uso real precisam de avaliação.'};
   await writeFile(output+'inventory-private.json',JSON.stringify(report,null,2)+'\n');
   console.log(JSON.stringify({reference,stages:report.states.map(e=>({stage:e.stage,visibleControls:e.controls.length})),
     essentialControlTops:report.states[0].controls.filter(c=>['haPerPoint','qMonitors'].includes(c.id)).map(c=>({id:c.id,top:Math.round(c.top)})),
     orientation:{fields:report.orientation.fields,groups:report.orientation.groups,maxAxisErrorDeg:report.orientation.maxAxisErrorDeg},
-    onePersonUI:{people:report.onePersonUI.people,fitTeam:report.onePersonUI.fitTeam,tracks:report.onePersonUI.tracks,points:report.onePersonUI.points},runtimeUnchanged:true}));
+    onePersonUI:{people:report.onePersonUI.people,fitTeam:report.onePersonUI.fitTeam,tracks:report.onePersonUI.tracks,points:report.onePersonUI.points},
+    interactionBaseline:report.interactionBaseline,runtimeUnchanged:true}));
 } finally {await ctx.close();await browser.close();await new Promise(resolve=>server.close(resolve));}
