@@ -187,3 +187,14 @@ componentes, dados, algoritmo proposto, persistência e marcos de implementaçã
 `plot-block-pilot.py` desenha o comparativo técnico com Matplotlib, sem editar
 screenshots ou o aplicativo. Detalhes e limitações em
 `docs/PILOTO_GEOMETRICO_BB1_BC1.md`. Resultados detalhados permanecem ignorados.
+
+## Revalidação dos anexos de KML, guia e coordenadas
+
+`extract-revalidation-sources.py` lê somente o escopo Bananal/Rio de Janeiro e
+normaliza referências, sem executar fórmulas ou instruções dos anexos.
+`revalidate-operational-sources.py` cruza os 51 lotes e 27 grupos usando GEOS/PROJ.
+`project-source-ab-pilot.py` recalcula BB1/BC1 com o A/B da planilha;
+`export-revalidation-workbook.py` gera a tabela local de revisão.
+`source_reference_rules_test.py` e `shared_grid_pilot_test.py` têm 14 testes.
+Ver `docs/REVALIDACAO_KML_GUIA_PLANILHA_2026.md`; coordenadas e anexos não são
+versionados, publicados ou incorporados ao runtime.

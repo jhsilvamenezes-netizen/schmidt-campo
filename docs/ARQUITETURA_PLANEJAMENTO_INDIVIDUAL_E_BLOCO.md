@@ -222,3 +222,13 @@ Nenhum módulo novo é importado por `src/` ou pelo build do site.
 
 Reprodução em `audit/`: `npm run test:planning-contract`.
 O runtime publicado 1.31.0-r1 e os pacotes existentes permanecem intactos.
+
+## Revalidação posterior com anexos
+
+O cruzamento de KML, guia e planilha foi executado e está documentado em
+[revalidação das fontes](REVALIDACAO_KML_GUIA_PLANILHA_2026.md). Os 27 grupos A/B
+cobrem os 51 lotes; BB1/BC1 foi recalculado com a referência compartilhada da
+planilha. As referências devem ter proveniência e qualidade próprias, sem
+obrigar executar todos os membros em bloco. Referência curta, datum não declarado
+ou rumo contraditório precisam permanecer identificados. O Pivô-6 não deve ser
+promovido automaticamente a referência operacional corrigida.
