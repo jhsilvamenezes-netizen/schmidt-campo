@@ -178,3 +178,12 @@ dos escopos, snapshots, conectividade direcionada, retorno e comparação de
 esforço. O módulo não gera grade, cobertura ou rota real; as métricas dos testes
 são sintéticas. Ver `docs/ARQUITETURA_PLANEJAMENTO_INDIVIDUAL_E_BLOCO.md` para
 componentes, dados, algoritmo proposto, persistência e marcos de implementação.
+
+## Piloto geométrico BB1 / BC1
+
+`block-pilot-reference.mjs` captura os dois planos iniciais reais;
+`block-pilot-project.py` calcula uma grade comum restrita aos dois lotes;
+`shared_grid_pilot_test.py` contém oito testes do recorte/projeção.
+`plot-block-pilot.py` desenha o comparativo técnico com Matplotlib, sem editar
+screenshots ou o aplicativo. Detalhes e limitações em
+`docs/PILOTO_GEOMETRICO_BB1_BC1.md`. Resultados detalhados permanecem ignorados.

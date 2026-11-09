@@ -1,0 +1,74 @@
+{
+  "status": "computed-projection-not-operational-plan",
+  "htmlSha256": "4b162e63190a95780b993be853c6dd357adeafa08b9238a419ed02317921c76e",
+  "spacingM": 401.28,
+  "anchor": "BB1",
+  "testClearanceM": 50,
+  "sharedAxes": 5,
+  "clippedSegments": 10,
+  "fields": {
+    "BB1": {
+      "points": 26,
+      "minimum": 26,
+      "segments": 5,
+      "maxPointShiftM": 2.2737367544323206e-13,
+      "clearance": {
+        "points": 26,
+        "outside": 0,
+        "minimumPointToBoundaryM": 185.7312559940964,
+        "maximumPointToBoundaryM": 988.7194747086572
+      },
+      "coverageBefore": {
+        "method": "same-fixed-cell-centres-per-field",
+        "gridStepM": 57.5699553931273,
+        "cells": 1502,
+        "p95M": 267.9913171619077,
+        "maximumAtCellCentresM": 316.1393216487934
+      },
+      "coverageAfter": {
+        "method": "same-fixed-cell-centres-per-field",
+        "gridStepM": 57.5699553931273,
+        "cells": 1502,
+        "p95M": 267.99131716190766,
+        "maximumAtCellCentresM": 316.1393216487934
+      }
+    },
+    "BC1": {
+      "points": 23,
+      "minimum": 23,
+      "segments": 5,
+      "maxPointShiftM": 36.59420754986331,
+      "clearance": {
+        "points": 23,
+        "outside": 0,
+        "minimumPointToBoundaryM": 186.57663533667653,
+        "maximumPointToBoundaryM": 989.4261785453707
+      },
+      "coverageBefore": {
+        "method": "same-fixed-cell-centres-per-field",
+        "gridStepM": 54.63861838998738,
+        "cells": 1504,
+        "p95M": 266.2833236638326,
+        "maximumAtCellCentresM": 345.9268438550471
+      },
+      "coverageAfter": {
+        "method": "same-fixed-cell-centres-per-field",
+        "gridStepM": 54.63861838998738,
+        "cells": 1504,
+        "p95M": 267.15474017695266,
+        "maximumAtCellCentresM": 324.9299158877572
+      }
+    }
+  },
+  "accessValidated": false,
+  "routeGenerated": false,
+  "timeSavingMeasured": false,
+  "baselineAxisMismatchNearDivisionM": 36.52165562150823,
+  "testsPassed": 8,
+  "testCommand": ".venv/bin/python -m unittest shared_grid_pilot_test.py",
+  "runtimeIntegrated": false,
+  "imageFiles": {
+    "BB1-BC1-comparativo-projecao.png": "e18a66cb872a91245b3fcc80b82bf701a90c5a381e5f8e9ef71aded19b62146a",
+    "BB1-BC1-comparativo-projecao.pdf": "9012d9c6792e637c1aa3fae4b5c07ba37a1b0e7908382766a9cc6e86ef331ab2"
+  }
+}
