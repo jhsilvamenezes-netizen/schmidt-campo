@@ -21,6 +21,22 @@
 6. **Marco visual futuro (bloqueado):** apenas conceito e imagens para validação, sem implementação até novo comando expresso.
 
 ## Escopo e fonte de verdade
+### Implementação local de blocos por referência comum — 09/11/2026
+
+O proprietário determinou: “Todos lotes que tem coordenas iguais e da pra fazer
+bloco tbm vamos adequar e por em pratica [...] p6 pode seguir como ja estava
+sem nenhuma observação no momento [...] exevute e me entregue”. Implementar
+na candidata isolada o seletor individual/bloco, preparação, visão conjunta e
+execução por membro, preservando planos e coletas individuais. Incluir os
+subconjuntos de referências compartilhadas. Não considerar proximidade ou
+coordenada compartilhada como prova de acesso físico entre os lotes.
+
+Manter o cálculo/configuração do P6 e suspender sua observação específica na
+apresentação desta candidata. Conservar os valores brutos e a trilha histórica
+de auditoria, sem declarar correção do rumo. A autorização é para esta entrega
+concreta; não altera o Pages/main nem resolve a assinatura do APK.
+Registro e validação: `docs/IMPLEMENTACAO_BLOCOS_REFERENCIA_COMUM.md`.
+
 ### Continuidade com P6 preservado — 09/11/2026
 
 Após a explicação da divergência, o proprietário determinou: “Pode seguir

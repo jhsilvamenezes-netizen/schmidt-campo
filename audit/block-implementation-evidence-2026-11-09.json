@@ -1,0 +1,850 @@
+{
+  "date": "2026-11-09",
+  "status": "local-candidate-tested-not-published",
+  "sourceGroups": 16,
+  "blockOptions": 40,
+  "individualPlansPreserved": 51,
+  "nodeTestsPassed": 16,
+  "gridCandidatesTested": 5957,
+  "runtimeChecks": [
+    "individual-maps-identical-after-block",
+    "collections-and-names-isolated",
+    "reload-opens-individual",
+    "saved-block-resumes-own-collections"
+  ],
+  "runtimeErrors": [],
+  "ui": {
+    "checks": [
+      "51-individual-snapshots-identical",
+      "p6-same-plan-without-specific-visible-note",
+      "ui-prepare-apply-member-selection-and-complete-gpx",
+      "real-monitor-ui-collects-in-block",
+      "backup-hash-covers-individual-and-block",
+      "backup-restores-block-collection-in-clean-profile",
+      "candidate-offline-reload-with-40-options"
+    ],
+    "errors": [],
+    "viewports": [
+      360,
+      390,
+      412,
+      768
+    ]
+  },
+  "independentSpatial": {
+    "blocks": 40,
+    "fieldComparisons": 88,
+    "outsidePoints": 0,
+    "segmentsOutside": 0,
+    "duplicatePointsWithinLot": 0,
+    "commonAxesAndPhaseVerified": true,
+    "coverageNotWorseAtCellCentres": true,
+    "clearanceIndependentlyVerified": true,
+    "relativeNumericalTolerance": 1e-06,
+    "datumOrFieldCertification": false
+  },
+  "groups": [
+    {
+      "id": "Bananal|BA-1-2-3",
+      "members": [
+        "Bananal|BA1",
+        "Bananal|BA2",
+        "Bananal|BA3"
+      ],
+      "pointsByLot": {
+        "Bananal|BA1": {
+          "points": 11,
+          "minimum": 10
+        },
+        "Bananal|BA2": {
+          "points": 19,
+          "minimum": 17
+        },
+        "Bananal|BA3": {
+          "points": 28,
+          "minimum": 25
+        }
+      },
+      "spacingM": 364.79999999999995,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Bananal|BA-1-2-3::BA1+BA2",
+      "members": [
+        "Bananal|BA1",
+        "Bananal|BA2"
+      ],
+      "pointsByLot": {
+        "Bananal|BA1": {
+          "points": 10,
+          "minimum": 10
+        },
+        "Bananal|BA2": {
+          "points": 17,
+          "minimum": 17
+        }
+      },
+      "spacingM": 437.76,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Bananal|BA-1-2-3::BA1+BA3",
+      "members": [
+        "Bananal|BA1",
+        "Bananal|BA3"
+      ],
+      "pointsByLot": {
+        "Bananal|BA1": {
+          "points": 11,
+          "minimum": 10
+        },
+        "Bananal|BA3": {
+          "points": 26,
+          "minimum": 25
+        }
+      },
+      "spacingM": 437.76,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Bananal|BA-1-2-3::BA2+BA3",
+      "members": [
+        "Bananal|BA2",
+        "Bananal|BA3"
+      ],
+      "pointsByLot": {
+        "Bananal|BA2": {
+          "points": 19,
+          "minimum": 17
+        },
+        "Bananal|BA3": {
+          "points": 28,
+          "minimum": 25
+        }
+      },
+      "spacingM": 364.79999999999995,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Bananal|BB1-BC1",
+      "members": [
+        "Bananal|BB1",
+        "Bananal|BC1"
+      ],
+      "pointsByLot": {
+        "Bananal|BB1": {
+          "points": 26,
+          "minimum": 26
+        },
+        "Bananal|BC1": {
+          "points": 24,
+          "minimum": 23
+        }
+      },
+      "spacingM": 401.28,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Bananal|BB2-BC2",
+      "members": [
+        "Bananal|BB2",
+        "Bananal|BC2"
+      ],
+      "pointsByLot": {
+        "Bananal|BB2": {
+          "points": 26,
+          "minimum": 26
+        },
+        "Bananal|BC2": {
+          "points": 31,
+          "minimum": 31
+        }
+      },
+      "spacingM": 401.28,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Bananal|BC3-4",
+      "members": [
+        "Bananal|BC3",
+        "Bananal|BC4"
+      ],
+      "pointsByLot": {
+        "Bananal|BC3": {
+          "points": 25,
+          "minimum": 25
+        },
+        "Bananal|BC4": {
+          "points": 10,
+          "minimum": 10
+        }
+      },
+      "spacingM": 401.28,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Bananal|BD1-2",
+      "members": [
+        "Bananal|BD1",
+        "Bananal|BD2"
+      ],
+      "pointsByLot": {
+        "Bananal|BD1": {
+          "points": 15,
+          "minimum": 15
+        },
+        "Bananal|BD2": {
+          "points": 20,
+          "minimum": 19
+        }
+      },
+      "spacingM": 364.79999999999995,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Bananal|BD3-4",
+      "members": [
+        "Bananal|BD3",
+        "Bananal|BD4"
+      ],
+      "pointsByLot": {
+        "Bananal|BD3": {
+          "points": 25,
+          "minimum": 24
+        },
+        "Bananal|BD4": {
+          "points": 12,
+          "minimum": 11
+        }
+      },
+      "spacingM": 437.76,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Bananal|BE-1-2-3",
+      "members": [
+        "Bananal|BE1",
+        "Bananal|BE2",
+        "Bananal|BE3"
+      ],
+      "pointsByLot": {
+        "Bananal|BE1": {
+          "points": 17,
+          "minimum": 14
+        },
+        "Bananal|BE2": {
+          "points": 41,
+          "minimum": 30
+        },
+        "Bananal|BE3": {
+          "points": 36,
+          "minimum": 29
+        }
+      },
+      "spacingM": 291.84,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Bananal|BE-1-2-3::BE1+BE2",
+      "members": [
+        "Bananal|BE1",
+        "Bananal|BE2"
+      ],
+      "pointsByLot": {
+        "Bananal|BE1": {
+          "points": 17,
+          "minimum": 14
+        },
+        "Bananal|BE2": {
+          "points": 41,
+          "minimum": 30
+        }
+      },
+      "spacingM": 291.84,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Bananal|BE-1-2-3::BE1+BE3",
+      "members": [
+        "Bananal|BE1",
+        "Bananal|BE3"
+      ],
+      "pointsByLot": {
+        "Bananal|BE1": {
+          "points": 16,
+          "minimum": 14
+        },
+        "Bananal|BE3": {
+          "points": 32,
+          "minimum": 29
+        }
+      },
+      "spacingM": 364.79999999999995,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Bananal|BE-1-2-3::BE2+BE3",
+      "members": [
+        "Bananal|BE2",
+        "Bananal|BE3"
+      ],
+      "pointsByLot": {
+        "Bananal|BE2": {
+          "points": 33,
+          "minimum": 30
+        },
+        "Bananal|BE3": {
+          "points": 31,
+          "minimum": 29
+        }
+      },
+      "spacingM": 364.79999999999995,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RA-1-2-3",
+      "members": [
+        "Rio de Janeiro|RA1",
+        "Rio de Janeiro|RA2",
+        "Rio de Janeiro|RA3"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RA1": {
+          "points": 12,
+          "minimum": 12
+        },
+        "Rio de Janeiro|RA2": {
+          "points": 21,
+          "minimum": 20
+        },
+        "Rio de Janeiro|RA3": {
+          "points": 21,
+          "minimum": 20
+        }
+      },
+      "spacingM": 401.28,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RA-1-2-3::RA1+RA2",
+      "members": [
+        "Rio de Janeiro|RA1",
+        "Rio de Janeiro|RA2"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RA1": {
+          "points": 12,
+          "minimum": 12
+        },
+        "Rio de Janeiro|RA2": {
+          "points": 21,
+          "minimum": 20
+        }
+      },
+      "spacingM": 401.28,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RA-1-2-3::RA1+RA3",
+      "members": [
+        "Rio de Janeiro|RA1",
+        "Rio de Janeiro|RA3"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RA1": {
+          "points": 12,
+          "minimum": 12
+        },
+        "Rio de Janeiro|RA3": {
+          "points": 21,
+          "minimum": 20
+        }
+      },
+      "spacingM": 401.28,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RA-1-2-3::RA2+RA3",
+      "members": [
+        "Rio de Janeiro|RA2",
+        "Rio de Janeiro|RA3"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RA2": {
+          "points": 20,
+          "minimum": 20
+        },
+        "Rio de Janeiro|RA3": {
+          "points": 21,
+          "minimum": 20
+        }
+      },
+      "spacingM": 401.28,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RA-4-5-6",
+      "members": [
+        "Rio de Janeiro|RA4",
+        "Rio de Janeiro|RA5",
+        "Rio de Janeiro|RA6"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RA4": {
+          "points": 12,
+          "minimum": 11
+        },
+        "Rio de Janeiro|RA5": {
+          "points": 20,
+          "minimum": 20
+        },
+        "Rio de Janeiro|RA6": {
+          "points": 20,
+          "minimum": 20
+        }
+      },
+      "spacingM": 510.71999999999997,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RA-4-5-6::RA4+RA5",
+      "members": [
+        "Rio de Janeiro|RA4",
+        "Rio de Janeiro|RA5"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RA4": {
+          "points": 11,
+          "minimum": 11
+        },
+        "Rio de Janeiro|RA5": {
+          "points": 20,
+          "minimum": 20
+        }
+      },
+      "spacingM": 401.28,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RA-4-5-6::RA4+RA6",
+      "members": [
+        "Rio de Janeiro|RA4",
+        "Rio de Janeiro|RA6"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RA4": {
+          "points": 12,
+          "minimum": 11
+        },
+        "Rio de Janeiro|RA6": {
+          "points": 20,
+          "minimum": 20
+        }
+      },
+      "spacingM": 510.71999999999997,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RA-4-5-6::RA5+RA6",
+      "members": [
+        "Rio de Janeiro|RA5",
+        "Rio de Janeiro|RA6"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RA5": {
+          "points": 20,
+          "minimum": 20
+        },
+        "Rio de Janeiro|RA6": {
+          "points": 20,
+          "minimum": 20
+        }
+      },
+      "spacingM": 510.71999999999997,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RA-7-8",
+      "members": [
+        "Rio de Janeiro|RA7",
+        "Rio de Janeiro|RA8"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RA7": {
+          "points": 12,
+          "minimum": 11
+        },
+        "Rio de Janeiro|RA8": {
+          "points": 15,
+          "minimum": 13
+        }
+      },
+      "spacingM": 510.71999999999997,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RB-1-2-3",
+      "members": [
+        "Rio de Janeiro|RB1",
+        "Rio de Janeiro|RB2",
+        "Rio de Janeiro|RB3"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RB1": {
+          "points": 10,
+          "minimum": 10
+        },
+        "Rio de Janeiro|RB2": {
+          "points": 22,
+          "minimum": 21
+        },
+        "Rio de Janeiro|RB3": {
+          "points": 21,
+          "minimum": 21
+        }
+      },
+      "spacingM": 401.28,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RB-1-2-3::RB1+RB2",
+      "members": [
+        "Rio de Janeiro|RB1",
+        "Rio de Janeiro|RB2"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RB1": {
+          "points": 10,
+          "minimum": 10
+        },
+        "Rio de Janeiro|RB2": {
+          "points": 22,
+          "minimum": 21
+        }
+      },
+      "spacingM": 401.28,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RB-1-2-3::RB1+RB3",
+      "members": [
+        "Rio de Janeiro|RB1",
+        "Rio de Janeiro|RB3"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RB1": {
+          "points": 10,
+          "minimum": 10
+        },
+        "Rio de Janeiro|RB3": {
+          "points": 21,
+          "minimum": 21
+        }
+      },
+      "spacingM": 401.28,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RB-1-2-3::RB2+RB3",
+      "members": [
+        "Rio de Janeiro|RB2",
+        "Rio de Janeiro|RB3"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RB2": {
+          "points": 21,
+          "minimum": 21
+        },
+        "Rio de Janeiro|RB3": {
+          "points": 21,
+          "minimum": 21
+        }
+      },
+      "spacingM": 401.28,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RB-4-5-6",
+      "members": [
+        "Rio de Janeiro|RB4",
+        "Rio de Janeiro|RB5",
+        "Rio de Janeiro|RB6"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RB4": {
+          "points": 11,
+          "minimum": 11
+        },
+        "Rio de Janeiro|RB5": {
+          "points": 22,
+          "minimum": 21
+        },
+        "Rio de Janeiro|RB6": {
+          "points": 22,
+          "minimum": 21
+        }
+      },
+      "spacingM": 401.28,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RB-4-5-6::RB4+RB5",
+      "members": [
+        "Rio de Janeiro|RB4",
+        "Rio de Janeiro|RB5"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RB4": {
+          "points": 11,
+          "minimum": 11
+        },
+        "Rio de Janeiro|RB5": {
+          "points": 22,
+          "minimum": 21
+        }
+      },
+      "spacingM": 401.28,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RB-4-5-6::RB4+RB6",
+      "members": [
+        "Rio de Janeiro|RB4",
+        "Rio de Janeiro|RB6"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RB4": {
+          "points": 11,
+          "minimum": 11
+        },
+        "Rio de Janeiro|RB6": {
+          "points": 22,
+          "minimum": 21
+        }
+      },
+      "spacingM": 401.28,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RB-4-5-6::RB5+RB6",
+      "members": [
+        "Rio de Janeiro|RB5",
+        "Rio de Janeiro|RB6"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RB5": {
+          "points": 21,
+          "minimum": 21
+        },
+        "Rio de Janeiro|RB6": {
+          "points": 22,
+          "minimum": 21
+        }
+      },
+      "spacingM": 401.28,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RB-7-8",
+      "members": [
+        "Rio de Janeiro|RB7",
+        "Rio de Janeiro|RB8"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RB7": {
+          "points": 11,
+          "minimum": 10
+        },
+        "Rio de Janeiro|RB8": {
+          "points": 9,
+          "minimum": 9
+        }
+      },
+      "spacingM": 437.76,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RC-1-2-3",
+      "members": [
+        "Rio de Janeiro|RC1",
+        "Rio de Janeiro|RC2",
+        "Rio de Janeiro|RC3"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RC1": {
+          "points": 9,
+          "minimum": 8
+        },
+        "Rio de Janeiro|RC2": {
+          "points": 11,
+          "minimum": 11
+        },
+        "Rio de Janeiro|RC3": {
+          "points": 12,
+          "minimum": 11
+        }
+      },
+      "spacingM": 510.71999999999997,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RC-1-2-3::RC1+RC2",
+      "members": [
+        "Rio de Janeiro|RC1",
+        "Rio de Janeiro|RC2"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RC1": {
+          "points": 8,
+          "minimum": 8
+        },
+        "Rio de Janeiro|RC2": {
+          "points": 12,
+          "minimum": 11
+        }
+      },
+      "spacingM": 364.79999999999995,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RC-1-2-3::RC1+RC3",
+      "members": [
+        "Rio de Janeiro|RC1",
+        "Rio de Janeiro|RC3"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RC1": {
+          "points": 8,
+          "minimum": 8
+        },
+        "Rio de Janeiro|RC3": {
+          "points": 12,
+          "minimum": 11
+        }
+      },
+      "spacingM": 401.28,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RC-1-2-3::RC2+RC3",
+      "members": [
+        "Rio de Janeiro|RC2",
+        "Rio de Janeiro|RC3"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RC2": {
+          "points": 11,
+          "minimum": 11
+        },
+        "Rio de Janeiro|RC3": {
+          "points": 12,
+          "minimum": 11
+        }
+      },
+      "spacingM": 510.71999999999997,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RC-4-5-6",
+      "members": [
+        "Rio de Janeiro|RC4",
+        "Rio de Janeiro|RC5",
+        "Rio de Janeiro|RC6"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RC4": {
+          "points": 6,
+          "minimum": 6
+        },
+        "Rio de Janeiro|RC5": {
+          "points": 11,
+          "minimum": 11
+        },
+        "Rio de Janeiro|RC6": {
+          "points": 12,
+          "minimum": 11
+        }
+      },
+      "spacingM": 510.71999999999997,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RC-4-5-6::RC4+RC5",
+      "members": [
+        "Rio de Janeiro|RC4",
+        "Rio de Janeiro|RC5"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RC4": {
+          "points": 6,
+          "minimum": 6
+        },
+        "Rio de Janeiro|RC5": {
+          "points": 11,
+          "minimum": 11
+        }
+      },
+      "spacingM": 510.71999999999997,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RC-4-5-6::RC4+RC6",
+      "members": [
+        "Rio de Janeiro|RC4",
+        "Rio de Janeiro|RC6"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RC4": {
+          "points": 6,
+          "minimum": 6
+        },
+        "Rio de Janeiro|RC6": {
+          "points": 12,
+          "minimum": 11
+        }
+      },
+      "spacingM": 510.71999999999997,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RC-4-5-6::RC5+RC6",
+      "members": [
+        "Rio de Janeiro|RC5",
+        "Rio de Janeiro|RC6"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RC5": {
+          "points": 11,
+          "minimum": 11
+        },
+        "Rio de Janeiro|RC6": {
+          "points": 12,
+          "minimum": 11
+        }
+      },
+      "spacingM": 510.71999999999997,
+      "coverageTradeoff": false
+    },
+    {
+      "id": "Rio de Janeiro|RC-7-8",
+      "members": [
+        "Rio de Janeiro|RC7",
+        "Rio de Janeiro|RC8"
+      ],
+      "pointsByLot": {
+        "Rio de Janeiro|RC7": {
+          "points": 8,
+          "minimum": 5
+        },
+        "Rio de Janeiro|RC8": {
+          "points": 13,
+          "minimum": 8
+        }
+      },
+      "spacingM": 218.88,
+      "coverageTradeoff": false
+    }
+  ],
+  "publishedFilesUnchanged": true,
+  "apkDistributed": false
+}

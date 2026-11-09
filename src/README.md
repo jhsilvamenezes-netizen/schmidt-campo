@@ -4,6 +4,11 @@ Estes módulos foram escritos para corrigir problemas comprovados na versão
 1.31.0. **Não são a recuperação do projeto-fonte original completo.** O piloto
 antigo não é usado como substituto do aplicativo recente.
 
+O modo bloco solicitado posteriormente tem build **separado** em
+`scripts/build-block-candidate.mjs`, com módulos `application/block-planning.mjs`
+e `ui/block-planning.mjs`. Não integra o build publicado. Ver
+[implementação e validação](../docs/IMPLEMENTACAO_BLOCOS_REFERENCIA_COMUM.md).
+
 - `persistence/backup-service.mjs`: leitura estrita, limites, journal, compensação
   e recuperação da restauração, com dependências de armazenamento injetadas.
 - `persistence/backup-format.mjs`: formato v2 compatível e validação adicional.
