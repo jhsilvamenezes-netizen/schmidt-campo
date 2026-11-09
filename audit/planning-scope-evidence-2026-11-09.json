@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-09",
+  "status": "study-structured-not-integrated",
+  "architecture": "docs/ARQUITETURA_PLANEJAMENTO_INDIVIDUAL_E_BLOCO.md",
+  "testsPassed": 14,
+  "testCommand": "npm run test:planning-contract",
+  "individualPlanningPreserved": true,
+  "blockOptional": true,
+  "comparisonIncludes": [
+    "sampling",
+    "within-field-transfers",
+    "between-field-transfers",
+    "approach-and-return",
+    "per-person-workload",
+    "sample-count-delta"
+  ],
+  "sharedGridGeneratorImplemented": false,
+  "routeGeneratorImplemented": false,
+  "persistenceIntegrated": false,
+  "uiChanged": false,
+  "publishedRuntimeSha256": "4b162e63190a95780b993be853c6dd357adeafa08b9238a419ed02317921c76e",
+  "publishedRuntimeUnchanged": true,
+  "metricsAreSynthetic": true,
+  "operationalGainMeasured": false
+}

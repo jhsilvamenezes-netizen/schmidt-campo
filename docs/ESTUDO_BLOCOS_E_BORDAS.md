@@ -1,5 +1,9 @@
 # Planejamento por bloco e distâncias de borda
 
+Continuação estruturada para implementação, após a publicação web r1:
+[arquitetura individual/bloco](ARQUITETURA_PLANEJAMENTO_INDIVIDUAL_E_BLOCO.md).
+Este diagnóstico é preservado como registro histórico.
+
 Estudo local solicitado pelo proprietário em 09/11/2026. Nenhuma mudança de
 interface, método de produção, contorno, plano salvo ou distribuição. A pergunta
 à equipe sobre amostragem versus aplicação e o significado de borda continua
@@ -120,5 +124,6 @@ node border-policy-browser.mjs
 Próximo passo: confirmar com a equipe operação, acesso entre os dois lotes e
 regra de borda; depois criar um protótipo de cálculo isolado com comparação
 individual/bloco. Antes de qualquer nova interface, apresentar imagens
-comparadas e obter aprovação específica. A publicação anterior continua
-bloqueada pelo envio do HTML público; esta demanda não implica aquela aprovação.
+comparadas e obter aprovação específica. O bloqueio de envio registrado nesta
+etapa foi resolvido posteriormente: a web r1 foi publicada. Isso não implantou
+o modo bloco, que continua em estudo.

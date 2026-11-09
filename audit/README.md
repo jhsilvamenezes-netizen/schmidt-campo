@@ -170,3 +170,11 @@ O gate do Plano também roda com DejaVu Sans isolada por
 As duas distâncias precisam terminar ao menos 8 px antes do fim do viewport.
 Esse ensaio reproduz a quebra de linha que a CI encontrou em 360 × 800;
 as fontes são copiadas apenas para results/, sem alterar a tipografia do app.
+
+## Contratos de planejamento individual e bloco
+
+`npm run test:planning-contract` executa 14 testes isolados de coexistência
+dos escopos, snapshots, conectividade direcionada, retorno e comparação de
+esforço. O módulo não gera grade, cobertura ou rota real; as métricas dos testes
+são sintéticas. Ver `docs/ARQUITETURA_PLANEJAMENTO_INDIVIDUAL_E_BLOCO.md` para
+componentes, dados, algoritmo proposto, persistência e marcos de implementação.
