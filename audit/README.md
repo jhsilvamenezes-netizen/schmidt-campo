@@ -2,6 +2,11 @@
 
 Ferramentas isoladas do PWA/APK. Não são o projeto-fonte gerador.
 
+Validação local dos 51 individuais e 202 alternativas de blocos, scripts de
+reprodução e limites: [relatório](../docs/VALIDACAO_TODOS_LOTES_INDIVIDUAL_BLOCO.md).
+O resultado inclui uma prévia interativa separada do aplicativo; não libera
+operação em bloco nem altera a versão publicada.
+
 ```sh
 cd audit
 npm ci --ignore-scripts --no-audit --no-fund
