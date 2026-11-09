@@ -2,6 +2,16 @@
 
 Ferramentas isoladas do PWA/APK. Não são o projeto-fonte gerador.
 
+Implementação posterior solicitada: [candidata de blocos por referência comum](../docs/IMPLEMENTACAO_BLOCOS_REFERENCIA_COMUM.md).
+Revisão atual e integração para PR: [r3](../docs/REVISAO_E_ENTREGA_BLOCOS_R3.md).
+Testes: `node --test block-planning.test.mjs`, `node blocks-runtime-browser.mjs`,
+`.venv/bin/python validate-runtime-blocks.py` e `node blocks-ui-browser.mjs`.
+
+Validação local dos 51 individuais e 202 alternativas de blocos, scripts de
+reprodução e limites: [relatório](../docs/VALIDACAO_TODOS_LOTES_INDIVIDUAL_BLOCO.md).
+O resultado inclui uma prévia interativa separada do aplicativo; não libera
+operação em bloco nem altera a versão publicada.
+
 ```sh
 cd audit
 npm ci --ignore-scripts --no-audit --no-fund
@@ -170,3 +180,36 @@ O gate do Plano também roda com DejaVu Sans isolada por
 As duas distâncias precisam terminar ao menos 8 px antes do fim do viewport.
 Esse ensaio reproduz a quebra de linha que a CI encontrou em 360 × 800;
 as fontes são copiadas apenas para results/, sem alterar a tipografia do app.
+
+## Contratos de planejamento individual e bloco
+
+`npm run test:planning-contract` executa 14 testes isolados de coexistência
+dos escopos, snapshots, conectividade direcionada, retorno e comparação de
+esforço. O módulo não gera grade, cobertura ou rota real; as métricas dos testes
+são sintéticas. Ver `docs/ARQUITETURA_PLANEJAMENTO_INDIVIDUAL_E_BLOCO.md` para
+componentes, dados, algoritmo proposto, persistência e marcos de implementação.
+
+## Piloto geométrico BB1 / BC1
+
+`block-pilot-reference.mjs` captura os dois planos iniciais reais;
+`block-pilot-project.py` calcula uma grade comum restrita aos dois lotes;
+`shared_grid_pilot_test.py` contém oito testes do recorte/projeção.
+`plot-block-pilot.py` desenha o comparativo técnico com Matplotlib, sem editar
+screenshots ou o aplicativo. Detalhes e limitações em
+`docs/PILOTO_GEOMETRICO_BB1_BC1.md`. Resultados detalhados permanecem ignorados.
+
+## Revalidação dos anexos de KML, guia e coordenadas
+
+`extract-revalidation-sources.py` lê somente o escopo Bananal/Rio de Janeiro e
+normaliza referências, sem executar fórmulas ou instruções dos anexos.
+`revalidate-operational-sources.py` cruza os 51 lotes e 27 grupos usando GEOS/PROJ.
+`project-source-ab-pilot.py` recalcula BB1/BC1 com o A/B da planilha;
+`export-revalidation-workbook.py` gera a tabela local de revisão.
+`source_reference_rules_test.py` e `shared_grid_pilot_test.py` têm 14 testes.
+Ver `docs/REVALIDACAO_KML_GUIA_PLANILHA_2026.md`; coordenadas e anexos não são
+versionados, publicados ou incorporados ao runtime.
+
+`phase_comparison.py` e seus seis testes comparam P95 e maior distância nas
+mesmas células de cada lote, sem permitir que médias escondam perdas.
+`search-shared-phase.py` ensaia onze fases de BB1/BC1 sem mudar o P6 ou o app.
+Decisão do proprietário e resultados: `docs/CONTINUIDADE_P6_E_FASE_COMUM.md`.

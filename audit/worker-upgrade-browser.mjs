@@ -8,7 +8,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { PNG } from 'pngjs';
 const root=fileURLToPath(new URL('../',import.meta.url));
-const ref='a1ad502c315b4b3d484444f9e2734400abd0b72a';
+const ref='5e03a8b3a1400054627d825ed749ea45bbd04cf8'; // r1 atualmente publicada
 const names=['index.html','sw.js','manifest.webmanifest','icone.svg','icone-180.png','icone-192.png','icone-512.png'];
 const old=Object.fromEntries(names.map(name=>[name,execFileSync('git',['show',`${ref}:${name}`],{cwd:root,maxBuffer:4*1024*1024})]));
 const next=Object.fromEntries(await Promise.all(names.map(async name=>[name,await readFile(root+name)])));
@@ -69,17 +69,17 @@ try{
  const neighbor=await context.newPage();await neighbor.goto(origin+'/app/');await neighbor.waitForFunction(()=>window.SCHMIDT?.app?.sc&&navigator.serviceWorker.controller);
  mode='new';stale=true;
  assert.equal(await update(page),'redundant');
- assert.equal(await page.locator('.op-counts').count(),0);
+ assert.equal(await page.locator('#block-planning').count(),0);
  assert.equal(await observer.evaluate(name=>caches.has(name),cacheName),false);
  report.checks.push('HTML antigo sob worker novo é recusado; cache e cliente anteriores permanecem');
  stale=false;
  assert.equal(await update(page),'installed');
  assert.equal(await page.evaluate(async()=>!!(await navigator.serviceWorker.getRegistration()).waiting),true);
- assert.equal(await page.locator('.op-counts').count(),0);
+ assert.equal(await page.locator('#block-planning').count(),0);
  report.checks.push('worker novo espera; aba antiga continua na versão antiga');
  await page.close();
  assert.equal(await neighbor.evaluate(async()=>!!(await navigator.serviceWorker.getRegistration()).waiting),true);
- assert.equal(await neighbor.locator('.op-counts').count(),0);
+ assert.equal(await neighbor.locator('#block-planning').count(),0);
  await neighbor.close();
  const previousCache=old['sw.js'].toString().match(/const CACHE = '([^']+)'/)[1];
  let activated=false;const deadline=Date.now()+30000;
@@ -92,7 +92,7 @@ try{
  assert.equal(await observer.evaluate(async()=>await(await(await caches.open('keep-unrelated')).match('/unrelated-sentinel')).text()),'preservar');
  report.checks.push('ativação após fechar cliente antigo; somente o cache SCHMIDT anterior é removido');
  await context.setOffline(true);
- const upgraded=await context.newPage();await upgraded.goto(origin+'/app/');await upgraded.waitForFunction(()=>window.SCHMIDT?.app?.sc&&document.querySelector('.op-counts'));
+ const upgraded=await context.newPage();await upgraded.goto(origin+'/app/');await upgraded.waitForFunction(()=>window.SCHMIDT?.app?.sc&&document.querySelector('#block-planning'));
  assert.equal(await upgraded.evaluate(()=>localStorage.getItem('schmidt.upgrade.sentinel')),'preservado');
  const after=await backup(upgraded);assert.deepEqual(after.dados,before.dados);assert.deepEqual(after.imagens,before.imagens);
  for(const row of before.historico)assert.ok(after.historico.some(other=>JSON.stringify(other)===JSON.stringify(row)));

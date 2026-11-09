@@ -4,6 +4,13 @@ Estes módulos foram escritos para corrigir problemas comprovados na versão
 1.31.0. **Não são a recuperação do projeto-fonte original completo.** O piloto
 antigo não é usado como substituto do aplicativo recente.
 
+O modo bloco solicitado posteriormente tem pacote separado em
+`scripts/build-block-candidate.mjs`, com módulos `application/block-planning.mjs`
+e `ui/block-planning.mjs`. A r3 integra o build da branch por
+`VERSAO.json.runtimeBlocks`; a ativação publicada depende do PR aprovado. Ver
+[implementação e validação](../docs/IMPLEMENTACAO_BLOCOS_REFERENCIA_COMUM.md).
+Revisão atual: [entrega r3](../docs/REVISAO_E_ENTREGA_BLOCOS_R3.md).
+
 - `persistence/backup-service.mjs`: leitura estrita, limites, journal, compensação
   e recuperação da restauração, com dependências de armazenamento injetadas.
 - `persistence/backup-format.mjs`: formato v2 compatível e validação adicional.

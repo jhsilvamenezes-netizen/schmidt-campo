@@ -1,0 +1,81 @@
+{
+  "date": "2026-11-09",
+  "scope": "local-study-read-only-no-deployment",
+  "summary": {
+    "status": "all-fields-scanned-no-runtime-change",
+    "htmlSha256": "4b162e63190a95780b993be853c6dd357adeafa08b9238a419ed02317921c76e",
+    "individualSnapshotFingerprint": "2d01be34073794a0945417c3f9af61d8427ba33f9413ea79d2e4794e1b66b00e",
+    "analysisFingerprint": "b6b7c48da2e2729c0d9fc7944f18c3adbeee7edda070d98489bbc65f633a96b7",
+    "individualFields": 51,
+    "individualPoints": 749,
+    "allIndividualMinimumsMet": true,
+    "individualSnapshotsUnchanged": true,
+    "sourceGroups": 27,
+    "multiFieldSourceGroups": 16,
+    "catalogProposals": 202,
+    "nearCompatiblePairsWithin100M": 46,
+    "statusCounts": {
+      "needs-redistribution-in-restricted-search": 30,
+      "sampled-geometry-pass-access-pending": 12,
+      "geometry-feasible-coverage-tradeoff-review": 160
+    },
+    "testedGridCandidates": 3153,
+    "individualModeAvailable": true,
+    "p6Preserved": true,
+    "operationallyApprovedBlocks": 0,
+    "accessThresholdNote": "100 m is only the nearby-pair search bound, never an access permission",
+    "coverageNote": "P95 and max evaluated at fixed cell centres per lot; no field or continuous coverage certification",
+    "scopeNote": "All 51 individuals, all source groups/subsets and all connected subsets of nearby-compatible components (largest at most 10); not all possible physical routes",
+    "clearanceMForStudy": 50,
+    "routeGenerated": false,
+    "timeSavingMeasured": false,
+    "runtimeChanged": false,
+    "individualSelectionsChecked": 51,
+    "blockSelectionsChecked": 202
+  },
+  "pythonTestsPassed": 36,
+  "javascriptContractTestsPassed": 14,
+  "previewBrowser": {
+    "individualOptions": 51,
+    "blockOptions": 12,
+    "renderedChecks": 72,
+    "viewports": [
+      360,
+      390,
+      1280
+    ],
+    "storageOrGPSCalls": 0,
+    "externalRequests": 0,
+    "errors": [],
+    "htmlSha256": "4b162e63190a95780b993be853c6dd357adeafa08b9238a419ed02317921c76e",
+    "runtimeUnchanged": true
+  },
+  "artifacts": {
+    "Previa-Bloco-4-Lotes.png": {
+      "bytes": 136182,
+      "sha256": "dde17467e4a195baae1d320e1a2ab7c80e9d79953f316a63d755a20335ce0b80"
+    },
+    "Previa-Individual-BB1.png": {
+      "bytes": 94283,
+      "sha256": "8d880ac723fab0f9b2c990feeee6ac9aac4ce1792ef0912c6d92fa4aad847a92"
+    },
+    "Previa_Individual_Bloco.html": {
+      "bytes": 310903,
+      "sha256": "8e52bb0ad8faf864f01ed1f4e2fa7c69e81ef3bcfa3b2663c7d1f228f971cf23"
+    },
+    "RESUMO-VALIDACAO.json": {
+      "bytes": 1469,
+      "sha256": "7c6a5640131d4aac9ae6554052e81b1d74916859e9773452134410d6583bcd85"
+    },
+    "TESTE-PREVIA.json": {
+      "bytes": 304,
+      "sha256": "eb65b8db1af601fda9c1575f17d48a88ee93fa45e6112cb08ad560c288fc4eea"
+    },
+    "Validacao_Todos_Lotes_Individual_Bloco.xlsx": {
+      "bytes": 40252,
+      "sha256": "abdc1dc8ca6b7402d8b6441253d2324f0088ab7fcdb84df535f51de44d7e382f"
+    }
+  },
+  "runtimeDiffAgainstOriginMain": "empty: index.html sw.js src app .github VERSAO.json",
+  "privateSourcesUploaded": false
+}

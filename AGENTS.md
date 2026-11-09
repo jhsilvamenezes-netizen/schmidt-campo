@@ -21,6 +21,43 @@
 6. **Marco visual futuro (bloqueado):** apenas conceito e imagens para validação, sem implementação até novo comando expresso.
 
 ## Escopo e fonte de verdade
+### Revisão e envio da entrega de blocos — 09/11/2026
+
+Após confirmar que o modo bloco estava na candidata, o proprietário pediu:
+“Certo vamos revisar melhorar e enviar e entregar”. Preparar a revisão r3,
+enviar a branch e o PR com o runtime integrado e entregar os pacotes testados.
+O PR torna concreta a ativação do modo bloco; main/Pages permanecem na r1
+até a aprovação do merge, conforme a instrução original do proprietário.
+Não ampliar o escopo visual além do modo solicitado nem distribuir APK sem
+assinatura privada e migração. Registro: `docs/REVISAO_E_ENTREGA_BLOCOS_R3.md`.
+
+### Implementação local de blocos por referência comum — 09/11/2026
+
+O proprietário determinou: “Todos lotes que tem coordenas iguais e da pra fazer
+bloco tbm vamos adequar e por em pratica [...] p6 pode seguir como ja estava
+sem nenhuma observação no momento [...] exevute e me entregue”. Implementar
+na candidata isolada o seletor individual/bloco, preparação, visão conjunta e
+execução por membro, preservando planos e coletas individuais. Incluir os
+subconjuntos de referências compartilhadas. Não considerar proximidade ou
+coordenada compartilhada como prova de acesso físico entre os lotes.
+
+Manter o cálculo/configuração do P6 e suspender sua observação específica na
+apresentação desta candidata. Conservar os valores brutos e a trilha histórica
+de auditoria, sem declarar correção do rumo. A autorização é para esta entrega
+concreta; não altera o Pages/main nem resolve a assinatura do APK.
+Registro e validação: `docs/IMPLEMENTACAO_BLOCOS_REFERENCIA_COMUM.md`.
+
+### Continuidade com P6 preservado — 09/11/2026
+
+Após a explicação da divergência, o proprietário determinou: “Pode seguir
+porque estava dando certo pessoal fazer,depois eu ajeito se precisar essa
+questão”. Preservar a configuração/referência operacional atual do P6, sem
+alterar rumo/A/B ou introduzir bloqueio novo ao uso individual. A revisão da
+divergência fica adiada, sem declarar homologação e sem bloquear os demais
+lotes ou o estudo BB1/BC1. Não escolher uma direção nova automaticamente.
+Isso não implanta o modo bloco nem autoriza mudanças visuais diferentes das
+projeções aprovadas. Registro: `docs/CONTINUIDADE_P6_E_FASE_COMUM.md`.
+
 ### Confirmação de publicação do payload — 09/11/2026
 
 Em resposta direta à pergunta que identificou o HTML da entrega 1.31.0-r1,

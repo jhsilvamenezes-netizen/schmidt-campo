@@ -1,28 +1,29 @@
 {
-  "entrega": "1.31.0-r1",
-  "nome": "SCHMIDT Campo — revisão segura 1",
+  "entrega": "1.31.0-r3-blocos-revisada",
+  "nome": "SCHMIDT Campo — individual e blocos por referência comum",
   "data": "2026-11-09",
-  "versaoDoApp": "1.31.0",
+  "versaoDoApp": "1.31.0-r3-blocos-revisada",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "4b162e63190a95780b993be853c6dd357adeafa08b9238a419ed02317921c76e",
-  "workerSha256": "aaa0e508d6252ceaf6d8f66c7286c63d0a549e148ae3a87c82a096eec0546eea",
+  "htmlSha256": "83f8d0c3023ea1f76decf06e486d9147ea8298a0dfa98730d8ec87d5bf28b18c",
+  "workerSha256": "099f803a6f8a1611e986116ad222f8bd724aeb4d4d0ed20fa19ca15f91de0262",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
     "organização aprovada do Plano com distâncias em destaque",
     "referência de barra de 36,48 m",
-    "atualização PWA com verificação de integridade e espera das abas antigas"
+    "atualização PWA com verificação de integridade e espera das abas antigas",
+    "modo bloco por referência comum, mantendo planos e coletas individuais separados"
   ],
   "somenteEstudoSemIntegracao": [
-    "planejamento conjunto de lotes em bloco",
     "recuo mínimo obrigatório por divisa",
-    "validação estrita proposta para os 37 parâmetros",
-    "projeções visuais de bloco e bordas"
+    "validação estrita proposta para os 37 parâmetros"
   ],
   "android": {
     "publicado": "1.31.0-11",
-    "buildPreparado": "1.31.0-12-unsigned",
-    "distribuicaoNova": "pendente de chave privada estável, backup verificado e migração"
+    "buildPreparado": null,
+    "distribuicaoNova": "pendente de chave privada estável, backup verificado e migração",
+    "buildAnterior": "1.31.0-12-unsigned (HTML r1, não distribuído)"
   },
-  "registro": "docs/VERSOES_E_ENTREGAS.md"
+  "registro": "docs/VERSOES_E_ENTREGAS.md",
+  "runtimeBlocks": true
 }

@@ -1,0 +1,84 @@
+{
+  "version": "1.31.0-r3-blocos-revisada",
+  "status": "prepared-for-review-not-deployed",
+  "nodeBlockTestsPassed": 25,
+  "existingUnitTestsPassed": 52,
+  "androidPreparationTestsPassed": 9,
+  "individualPlansPreserved": 51,
+  "sourceGroups": 16,
+  "blockOptions": 40,
+  "gridCandidatesTested": 5957,
+  "runtimeChecks": [
+    "individual-maps-identical-after-block",
+    "collections-and-names-isolated",
+    "reload-opens-individual",
+    "saved-block-resumes-own-collections"
+  ],
+  "runtimeErrors": [],
+  "ui": {
+    "checks": [
+      "51-individual-snapshots-identical",
+      "p6-same-plan-without-specific-visible-note",
+      "preparation-locks-selection-and-cancel-saves-no-block",
+      "pending-individual-parameter-saved-before-preparation",
+      "changed-parameters-invalidate-prepared-block-without-activating-it",
+      "common-grid-protected-from-other-stages-and-history",
+      "overview-restores-current-manual-points-and-distances",
+      "ui-prepare-apply-member-selection-and-complete-gpx",
+      "real-monitor-ui-collects-in-block",
+      "backup-hash-covers-individual-and-block",
+      "backup-restores-block-collection-in-clean-profile",
+      "all-40-active-options-fit-360px-and-return-to-individual",
+      "candidate-offline-reload-with-40-options"
+    ],
+    "errors": [],
+    "viewports": [
+      360,
+      390,
+      412,
+      768
+    ]
+  },
+  "independentSpatial": {
+    "blocks": 40,
+    "fieldComparisons": 88,
+    "outsidePoints": 0,
+    "segmentsOutside": 0,
+    "duplicatePointsWithinLot": 0,
+    "commonAxesAndPhaseVerified": true,
+    "coverageNotWorseAtCellCentres": true,
+    "clearanceIndependentlyVerified": true,
+    "relativeNumericalTolerance": 1e-06,
+    "datumOrFieldCertification": false
+  },
+  "htmlSha256": "83f8d0c3023ea1f76decf06e486d9147ea8298a0dfa98730d8ec87d5bf28b18c",
+  "workerSha256": "099f803a6f8a1611e986116ad222f8bd724aeb4d4d0ed20fa19ca15f91de0262",
+  "privateAttachmentsUploaded": false,
+  "apkPublished": false,
+  "upgradeFromPublishedR1": {
+    "status": "passed",
+    "reference": "5e03a8b3a1400054627d825ed749ea45bbd04cf8",
+    "htmlSha256": "83f8d0c3023ea1f76decf06e486d9147ea8298a0dfa98730d8ec87d5bf28b18c",
+    "workerSha256": "099f803a6f8a1611e986116ad222f8bd724aeb4d4d0ed20fa19ca15f91de0262",
+    "browser": "141.0.7390.37",
+    "checks": [
+      "HTML antigo sob worker novo é recusado; cache e cliente anteriores permanecem",
+      "worker novo espera; aba antiga continua na versão antiga",
+      "ativação após fechar cliente antigo; somente o cache SCHMIDT anterior é removido",
+      "versão nova abre offline e conserva três chaves, coleta, imagem e histórico"
+    ],
+    "pageErrors": [],
+    "defaultBoomWidth": {
+      "fields": 51,
+      "metres": 36.48
+    }
+  },
+  "branchRuntimeIncludesBlocks": true,
+  "rootAndPackageBytesMatch": true,
+  "ciStatus": "not-yet-submitted",
+  "legacyR1BuildReproduced": true,
+  "publishedBeforeReview": {
+    "status": 200,
+    "htmlSha256": "4b162e63190a95780b993be853c6dd357adeafa08b9238a419ed02317921c76e"
+  }
+}

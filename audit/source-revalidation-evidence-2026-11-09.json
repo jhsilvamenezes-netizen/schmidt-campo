@@ -1,0 +1,139 @@
+{
+  "status": "crosschecked-not-homologated",
+  "htmlSha256": "4b162e63190a95780b993be853c6dd357adeafa08b9238a419ed02317921c76e",
+  "scopeFields": 51,
+  "kmlMatchedFields": 51,
+  "pdfMatchedFields": 51,
+  "xlsxGroups": 27,
+  "groupMemberships": 51,
+  "allFieldsCoveredExactlyOnce": true,
+  "sourceInvalidPolygonFields": [],
+  "sourceOverlappingCollections": [
+    "Bananal|BD3",
+    "Bananal|BD4",
+    "Rio de Janeiro|RB8",
+    "Rio de Janeiro|RC8"
+  ],
+  "fieldsBoundaryDifferenceAbove5cm": 42,
+  "maximumBoundaryDifferenceM": 0.6224625581440145,
+  "pdfOfficialAreasDifferentFromApp": [],
+  "pdfKMLAreaMissing": [],
+  "pdfKMLAreaDiffAbove001Ha": [],
+  "groupAreaDiffAbove002Ha": [
+    {
+      "group": "BB2-BC2",
+      "differenceHa": 0.049999999999954525
+    },
+    {
+      "group": "RB-1-2-3",
+      "differenceHa": -0.029999999999972715
+    },
+    {
+      "group": "RC-4-5-6",
+      "differenceHa": 0.10000000000002274
+    },
+    {
+      "group": "Pivô-1",
+      "differenceHa": -5.609999999999999
+    },
+    {
+      "group": "Pivô-2",
+      "differenceHa": -4.359999999999999
+    },
+    {
+      "group": "Pivô-3",
+      "differenceHa": -5.920000000000002
+    },
+    {
+      "group": "Pivô-4",
+      "differenceHa": -5.219999999999999
+    },
+    {
+      "group": "Pivô-5",
+      "differenceHa": -4.109999999999999
+    },
+    {
+      "group": "Pivô-6",
+      "differenceHa": -4.109999999999999
+    },
+    {
+      "group": "Pivô-7",
+      "differenceHa": -6.739999999999995
+    }
+  ],
+  "shortABGroups": [
+    "BD1-2",
+    "BD3-4",
+    "BD5",
+    "RA-4-5-6",
+    "RA-7-8",
+    "RB-1-2-3",
+    "RB-4-5-6",
+    "RB-7-8",
+    "RC-4-5-6",
+    "RC-7-8",
+    "Pivô-1",
+    "Pivô-3",
+    "Pivô-4",
+    "Pivô-5",
+    "Pivô-6",
+    "Pivô-7"
+  ],
+  "axisDisagreementAbove005deg": [
+    {
+      "group": "Pivô-6",
+      "differenceDeg": 60.80024517006299
+    }
+  ],
+  "maxAppReferenceAResidualM": 0.0071585336490000975,
+  "inputs": {
+    "kml": {
+      "fileName": "Mapa_Lotes_2026-27_Compacto.kml",
+      "sha256": "fd1768ad25202985db2c82eda060a7828f8fbfee951e49736af27869aec57d87",
+      "bytes": 1464337
+    },
+    "xlsx": {
+      "fileName": "SCHMIDT_COORDENADAS_OPERACIONAIS-BAHIA.xlsx",
+      "sha256": "e837419c513419672b014a91d37aef9ceac90b67a97e017f9336444e63af6d24",
+      "bytes": 131517
+    },
+    "pdf": {
+      "fileName": "Guia_Campo_Bananal_RJ.pdf",
+      "sha256": "47d5e8084135a83c57fb4bd36158395580807292f007784ccd35f63d23a50eb1",
+      "bytes": 536945
+    }
+  },
+  "runtimeChanged": false,
+  "sourceAttachmentsPublished": false,
+  "xlsxDatumExplicitlyDeclared": false,
+  "coordinateInterpretationForCheck": "Longitude/latitude decimal interpreted as EPSG:4326; workbook datum confirmation pending",
+  "testsPassed": 14,
+  "testGroups": {
+    "sourceIdentificationAnglesAndNumbers": 6,
+    "sharedGridGeometry": 8
+  },
+  "pilot": {
+    "declaredTrueBearingDeg": 333.1691,
+    "computedTrueBearingDeg": 333.168529608777,
+    "computedGridBearingDeg": 332.9681784697503,
+    "abLengthM": 699.4640131458098,
+    "spacingM": 401.28,
+    "sharedAxes": 5,
+    "clippedSegments": 10,
+    "testClearanceM": 50,
+    "accessValidated": false,
+    "workbookDatumConfirmed": false,
+    "routeGenerated": false,
+    "timeSavingMeasured": false,
+    "countsByField": {
+      "BB1": 26,
+      "BC1": 23
+    }
+  },
+  "operationalHomologation": false,
+  "artifacts": {
+    "BB1-BC1-projecao-AB-fontes.png": "51f8aff17c55b8c27042c0296945c7fe6d59d7d0a5854dfb680d2dfe0561a22d",
+    "BB1-BC1-projecao-AB-fontes.pdf": "b062268e64db16e7a0b5c5486b9e669870278073406c474429a83dd301848948",
+    "Revalidacao_Bananal_RJ_Fontes_2026.xlsx": "c0854851c3b8cfd23c60f9b5b7693165233e87f1bda78bb6f1792ffc97704490"
+  }
+}

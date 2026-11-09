@@ -59,6 +59,16 @@ test('CSP contém hashes corretos de todos os scripts executáveis, sem liberar 
     assert.ok(policy.includes(`sha256-${createHash('sha256').update(m[2]).digest('base64')}`));
   }
 });
+test('VERSAO identifica os mesmos artefatos e a opção de blocos do build',()=>{
+  const version=JSON.parse(read('VERSAO.json'));
+  assert.equal(version.htmlSha256,createHash('sha256').update(read('index.html')).digest('hex'));
+  assert.equal(version.workerSha256,createHash('sha256').update(read('sw.js')).digest('hex'));
+  assert.ok(read('index.html').toString().includes('APP_VERSION:`'+version.versaoDoApp+'`'));
+  if(version.runtimeBlocks){
+    assert.equal(version.versaoDoApp,JSON.parse(read('audit/block-candidate.json')).version);
+    assert.ok(read('index.html').toString().includes('installSchmidtBlockPlanning({document,schmidt:SCHMIDT'));
+  }
+});
 
 test('contrato de dados históricos: 51 lotes, 18 Bananal e 33 RJ', () => {
   const html = read('index.html').toString();
