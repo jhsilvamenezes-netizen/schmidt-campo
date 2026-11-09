@@ -21,6 +21,17 @@
 6. **Marco visual futuro (bloqueado):** apenas conceito e imagens para validação, sem implementação até novo comando expresso.
 
 ## Escopo e fonte de verdade
+### Continuidade com P6 preservado — 09/11/2026
+
+Após a explicação da divergência, o proprietário determinou: “Pode seguir
+porque estava dando certo pessoal fazer,depois eu ajeito se precisar essa
+questão”. Preservar a configuração/referência operacional atual do P6, sem
+alterar rumo/A/B ou introduzir bloqueio novo ao uso individual. A revisão da
+divergência fica adiada, sem declarar homologação e sem bloquear os demais
+lotes ou o estudo BB1/BC1. Não escolher uma direção nova automaticamente.
+Isso não implanta o modo bloco nem autoriza mudanças visuais diferentes das
+projeções aprovadas. Registro: `docs/CONTINUIDADE_P6_E_FASE_COMUM.md`.
+
 ### Confirmação de publicação do payload — 09/11/2026
 
 Em resposta direta à pergunta que identificou o HTML da entrega 1.31.0-r1,

@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-09",
+  "status": "local-study-only",
+  "testedPhases": 11,
+  "feasibleProjections": 7,
+  "notWorseInBothSampledCoverageMetricsPerField": 1,
+  "selectedCandidate": {
+    "phaseIndex": 6,
+    "offsetFromABM": 218.88,
+    "feasible": true,
+    "coverage": {
+      "BB1": {
+        "p95M": 265.78007913171825,
+        "maximumAtCellCentresM": 315.56449817874653
+      },
+      "BC1": {
+        "p95M": 266.27337189544,
+        "maximumAtCellCentresM": 345.89648695223786
+      }
+    },
+    "assessment": {
+      "notWorseOnFixedGrid": true,
+      "deltasByFieldM": {
+        "BB1": {
+          "p95M": -2.5586483894404637,
+          "maximumAtCellCentresM": -0.08359930107297942
+        },
+        "BC1": {
+          "p95M": -0.01091238076440959,
+          "maximumAtCellCentresM": -0.027567535138189214
+        }
+      },
+      "numericalToleranceM": 1e-06,
+      "operationalRecommendation": false
+    },
+    "maximumPointShiftM": 36.501046902909025
+  },
+  "testsPassed": 20,
+  "newComparisonTests": 6,
+  "p6ReferencePreserved": true,
+  "p6ReviewDeferredByOwner": true,
+  "p6DiscrepancyResolved": false,
+  "routeGenerated": false,
+  "timeSavingMeasured": false,
+  "runtimeChanged": false,
+  "runtimeSha256": "4b162e63190a95780b993be853c6dd357adeafa08b9238a419ed02317921c76e",
+  "report": "docs/CONTINUIDADE_P6_E_FASE_COMUM.md",
+  "files": {
+    "BB1-BC1-fase-comum-comparativo.pdf": "bd0683b9b7c8d44d88bc323af97f7848d6ecb98157dc25d17ef960da8bf9bbdb",
+    "BB1-BC1-fase-comum-comparativo.png": "c58a989ac86a035fcc437464cb9cfc348137f539b9df30767c14094a6bda52f0"
+  }
+}

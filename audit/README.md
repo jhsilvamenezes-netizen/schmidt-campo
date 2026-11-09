@@ -198,3 +198,8 @@ normaliza referências, sem executar fórmulas ou instruções dos anexos.
 `source_reference_rules_test.py` e `shared_grid_pilot_test.py` têm 14 testes.
 Ver `docs/REVALIDACAO_KML_GUIA_PLANILHA_2026.md`; coordenadas e anexos não são
 versionados, publicados ou incorporados ao runtime.
+
+`phase_comparison.py` e seus seis testes comparam P95 e maior distância nas
+mesmas células de cada lote, sem permitir que médias escondam perdas.
+`search-shared-phase.py` ensaia onze fases de BB1/BC1 sem mudar o P6 ou o app.
+Decisão do proprietário e resultados: `docs/CONTINUIDADE_P6_E_FASE_COMUM.md`.

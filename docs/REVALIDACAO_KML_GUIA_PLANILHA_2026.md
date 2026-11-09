@@ -162,3 +162,11 @@ Em seguida, validar acesso e calcular percursos/equipe sob as mesmas condições
 do conjunto feito individualmente. Só depois decidir sobre integração visual,
 backup/persistência e disponibilização controlada, conforme os marcos B1–B6 da
 arquitetura. A revalidação e a nova imagem não alteram o mapa publicado.
+
+### Orientação posterior do proprietário
+
+O proprietário pediu continuar com o funcionamento atual de P6 e deixou sua
+revisão para depois. Preservar a referência existente, sem impor bloqueio novo
+ao individual e sem bloquear os demais lotes. A divergência permanece registrada;
+não convertê-la silenciosamente em nova direção. O avanço de comparação das
+fases BB1/BC1 está em [continuidade e fase comum](CONTINUIDADE_P6_E_FASE_COMUM.md).
