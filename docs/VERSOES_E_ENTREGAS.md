@@ -44,6 +44,14 @@ node_modules, SDK, caches, APK unsigned e todo arquivo de assinatura. As
 projeções ficam disponíveis na conversa/workspace e são referenciadas nos docs.
 Nenhum pacote inclui o keystore histórico; isso não apaga o histórico público.
 
+Após a publicação, o snapshot final pode ser preparado em
+`/workspace/entregas-schmidt/1.31.0-r1-publicada/` com
+`python scripts/package-delivery.py --output /workspace/entregas-schmidt/1.31.0-r1-publicada`.
+O diretório preliminar permanece preservado; o empacotador recusa substituir
+arquivos de mesmo nome com bytes diferentes e conserva permissões executáveis
+dos scripts no ZIP de fonte. O comprovante de publicação e hashes fica ao lado
+dos pacotes finais, sem alterar o runtime.
+
 ## O que está pronto e o que continua em estudo
 
 O runtime r1 mantém o mesmo conjunto de dados agrícolas já públicos. A barra
