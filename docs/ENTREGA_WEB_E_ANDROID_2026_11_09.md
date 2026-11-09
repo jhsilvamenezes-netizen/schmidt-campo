@@ -125,3 +125,20 @@ O bloqueio anterior fica registrado como histórico; não houve contorno por
 git/gh ou outro canal. Prosseguir com a CI e o merge da candidata validada.
 A confirmação de CI, commit e hash do Pages será registrada na Issue #1 após
 acontecer. A assinatura Android e os estudos não integrados continuam pendentes.
+
+## Correção de encaixe detectada pela CI
+
+As execuções remotas #31 e #33 recusaram o Plano: com outra fonte de sistema,
+o valor longitudinal quebra em duas linhas e termina abaixo do viewport
+360 × 800. A falha foi reproduzida localmente usando DejaVu Sans isolada,
+sem trocar a fonte do aplicativo. Foram reduzidos somente espaços verticais
+do resumo dentro do Plano aprovado; números continuam em 20 px e os controles
+originais foram preservados. O teste agora exige oito pixels de folga abaixo
+de ambos os valores, sem aumentar tolerância de comparação visual.
+
+Os testes do Plano passaram em cinco larguras com a fonte padrão e DejaVu Sans.
+A CI inclui o segundo ensaio; fontes/capturas ficam apenas em results/ ignorado.
+Os 51 testes de contrato/módulo, 13 de parâmetros e o ciclo real de atualização
+PWA passaram novamente com o HTML final. O APK unsigned foi recompilado offline
+com o HTML final, seus assets conferidos byte a byte e a ausência de assinatura
+confirmada. O intermediário anterior foi preservado fora do repositório.

@@ -1,11 +1,11 @@
 {
   "date": "2026-11-09",
-  "status": "awaiting-remote-ci",
+  "status": "awaiting-ci-after-plan-font-fit",
   "authorization": "Solicitação do proprietário de aplicar as mudanças ao link e APK após refinamentos",
   "webURL": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "repository": "jhsilvamenezes-netizen/schmidt-campo",
-  "htmlSha256": "18fa7da1171b4612e6b9fc6427fe950e1bc78bbacb1e74396f7305b26a0c7c68",
-  "workerSha256": "b2b775da51a568fd02617c2b97b5ca36a768ecdc0aa29fbda233a686b99de21e",
+  "htmlSha256": "4b162e63190a95780b993be853c6dd357adeafa08b9238a419ed02317921c76e",
+  "workerSha256": "aaa0e508d6252ceaf6d8f66c7286c63d0a549e148ae3a87c82a096eec0546eea",
   "publishedDataScriptsUnchanged": true,
   "unitTests": 51,
   "visualComparisons": 23,
@@ -40,13 +40,15 @@
   "android": {
     "status": "built-unsigned-not-distributable",
     "package": "package: name='io.github.jhsilvamenezes.schmidtcampo' versionCode='12' versionName='1.31.0' platformBuildVersionName='14' platformBuildVersionCode='34' compileSdkVersion='34' compileSdkVersionCodename='14'",
-    "bytes": 3663580,
-    "sha256": "7a824a4964a26b537c5a9873f336584c3d556558023e189aae5946abe020551d",
-    "inputWebHtmlSha256": "18fa7da1171b4612e6b9fc6427fe950e1bc78bbacb1e74396f7305b26a0c7c68",
+    "bytes": 3663576,
+    "sha256": "969e32ae59c5456bd7c8e3defea9f7ee9a2f807079d8443e2736e221aece357c",
+    "inputWebHtmlSha256": "4b162e63190a95780b993be853c6dd357adeafa08b9238a419ed02317921c76e",
     "nativeAssetMatchesPreparedWeb": true,
     "signed": false,
     "published": false,
-    "privateKeyGenerated": false
+    "privateKeyGenerated": false,
+    "rebuild": "assembleRelease --offline; 290 tasks, 14 executed; successful",
+    "inputMatchesCurrentCandidate": true
   },
   "existingAPK": {
     "versionCode": 11,

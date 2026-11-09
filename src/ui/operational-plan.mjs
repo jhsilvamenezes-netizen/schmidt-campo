@@ -27,11 +27,11 @@ export function installSchmidtOperationalPlan({ document, schmidt, events, measu
     #param-stage-inicio .fx-row #meta-haPerPoint {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
     #param-stage-inicio .fx-row #real-haPerPoint {display:none}
     #param-stage-inicio .op-density-help {font-size:12px;line-height:16px;font-weight:400;color:var(--sx-muted);margin:0}
-    #param-stage-inicio .op-current {margin-top:7px;padding-top:7px;border-top:1px solid var(--sx-line)}
+    #param-stage-inicio .op-current {margin-top:3px;padding-top:2px;border-top:1px solid var(--sx-line)}
     #param-stage-inicio .op-plan-head {display:flex;flex-wrap:wrap;align-items:center;gap:5px 8px}
     #param-stage-inicio .op-active-tag {font-size:12px;font-weight:700;color:var(--sx-brand)}
     #param-stage-inicio .op-counts {font-size:20px;font-weight:750;margin:0;line-height:1.25;color:var(--sx-brand)}
-    #param-stage-inicio .op-caption {font-size:13px;line-height:18px;margin:3px 0 6px;color:var(--sx-muted)}
+    #param-stage-inicio .op-caption {font-size:13px;line-height:18px;margin:2px 0 4px;color:var(--sx-muted)}
     #param-stage-inicio .op-distances {display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:5px 0}
     #param-stage-inicio .op-distance {border:1px solid var(--sx-line);border-radius:10px;padding:8px;min-width:0}
     #param-stage-inicio .op-distance span {display:block;font-size:13px;line-height:17px}

@@ -53,6 +53,11 @@ jobs:
       - name: Organização aprovada do Plano e controles originais
         working-directory: audit
         run: npm run test:plan
+      - name: Plano com fonte de sistema alternativa
+        working-directory: audit
+        run: |
+          python create-test-fontconfig.py
+          FONTCONFIG_FILE="$PWD/results/font-variant/fonts.conf" npm run test:plan
       - name: Restauração e abertura simultânea de abas
         working-directory: audit
         run: npm run test:sessions

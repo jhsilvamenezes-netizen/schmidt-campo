@@ -4,8 +4,8 @@
   "data": "2026-11-09",
   "versaoDoApp": "1.31.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "18fa7da1171b4612e6b9fc6427fe950e1bc78bbacb1e74396f7305b26a0c7c68",
-  "workerSha256": "b2b775da51a568fd02617c2b97b5ca36a768ecdc0aa29fbda233a686b99de21e",
+  "htmlSha256": "4b162e63190a95780b993be853c6dd357adeafa08b9238a419ed02317921c76e",
+  "workerSha256": "aaa0e508d6252ceaf6d8f66c7286c63d0a549e148ae3a87c82a096eec0546eea",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",

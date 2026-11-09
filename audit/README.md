@@ -163,3 +163,10 @@ vinculada ao hash da candidata; não é um novo arquivo de configuração do app
 Ver `docs/REVISAO_PARAMETROS_PLANO_BLOCOS.md` para a matriz dos 37 parâmetros,
 limites, dependências e separação de equipe, borda e bloco. Nada foi integrado
 ao aplicativo ou ao workflow de publicação.
+
+O gate do Plano também roda com DejaVu Sans isolada por
+`python create-test-fontconfig.py` e
+`FONTCONFIG_FILE="$PWD/results/font-variant/fonts.conf" npm run test:plan`.
+As duas distâncias precisam terminar ao menos 8 px antes do fim do viewport.
+Esse ensaio reproduz a quebra de linha que a CI encontrou em 360 × 800;
+as fontes são copiadas apenas para results/, sem alterar a tipografia do app.

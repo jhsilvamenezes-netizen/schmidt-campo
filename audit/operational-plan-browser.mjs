@@ -36,7 +36,11 @@ try {
   assert.equal(await page.locator('.op-settings>summary').innerText(),'Ajustes');
   const distanceBoxes=await page.locator('.op-distance strong').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().toJSON()));
   assert.equal(distanceBoxes.length,2);
-  for(const box of distanceBoxes)assert.ok(box.top>=0&&box.bottom<=height,`Distância inteira visível em ${width}px`);
+  const layout=await page.evaluate(()=>({font:getComputedStyle(document.body).font,
+   blocks:['.stage-intro','.op-context','.fx-params>.fx-row','.op-current','.op-plan-head','.op-caption','.op-distances'].map(selector=>{
+    const e=document.querySelector('#param-stage-inicio '+selector);return {selector,rect:e?.getBoundingClientRect().toJSON(),font:e?getComputedStyle(e).font:null};
+   })}));
+  for(const box of distanceBoxes)assert.ok(box.top>=0&&box.bottom<=height-8,`Distância inteira visível com 8px de folga em ${width}px: ${JSON.stringify({height,distanceBoxes,layout})}`);
   assert.deepEqual(await page.locator('.op-distance strong').allTextContents(),['438 m','438 a 515 m']);
   assert.ok(await page.locator('.op-schematic').count());
   assert.equal(await page.locator('#qMonitors').count(),1);assert.equal(await page.locator('#haPerPoint').count(),1);
