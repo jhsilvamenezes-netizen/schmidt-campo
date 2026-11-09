@@ -1,0 +1,28 @@
+{
+  "entrega": "1.31.0-r1",
+  "nome": "SCHMIDT Campo — revisão segura 1",
+  "data": "2026-11-09",
+  "versaoDoApp": "1.31.0",
+  "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
+  "htmlSha256": "4b162e63190a95780b993be853c6dd357adeafa08b9238a419ed02317921c76e",
+  "workerSha256": "aaa0e508d6252ceaf6d8f66c7286c63d0a549e148ae3a87c82a096eec0546eea",
+  "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
+  "incluidoNoRuntime": [
+    "correções de backup, persistência, concorrência e GPS",
+    "organização aprovada do Plano com distâncias em destaque",
+    "referência de barra de 36,48 m",
+    "atualização PWA com verificação de integridade e espera das abas antigas"
+  ],
+  "somenteEstudoSemIntegracao": [
+    "planejamento conjunto de lotes em bloco",
+    "recuo mínimo obrigatório por divisa",
+    "validação estrita proposta para os 37 parâmetros",
+    "projeções visuais de bloco e bordas"
+  ],
+  "android": {
+    "publicado": "1.31.0-11",
+    "buildPreparado": "1.31.0-12-unsigned",
+    "distribuicaoNova": "pendente de chave privada estável, backup verificado e migração"
+  },
+  "registro": "docs/VERSOES_E_ENTREGAS.md"
+}

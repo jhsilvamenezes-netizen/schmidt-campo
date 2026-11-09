@@ -1,0 +1,187 @@
+{
+  "date": "2026-11-09",
+  "scope": "Implementação do Plano essencial e simplificação do retorno normal de alteração",
+  "approval": {
+    "ownerCommand": "Pronto vamos por em pratica",
+    "projectionLocalPath": "/workspace/generated_images/exec-f6ef9652-edea-4b15-8758-cccb82205e8f.png",
+    "projectionSha256": "969a81bbc989bd1975fb1195d2ffe5496b056f6c580a74582b116b7af791f68d",
+    "reference": "docs/INFORMACAO_ESSENCIAL_PLANO.md"
+  },
+  "previousLocalCommit": "44109c3",
+  "htmlSha256": "f1e3e928a42847ad7b5888f6fab86a8e98039de897dafff53b75e69e872e9969",
+  "workerSha256": "fb8a1fb2cb64c7e5f3aa082bccee52c0a0846de44d8352d09dedd4046f022ca1",
+  "status": "local-acceptance-passed",
+  "unit": {
+    "contracts": 15,
+    "corrections": 28,
+    "operationalSummary": 4,
+    "presentation": 3,
+    "total": 50
+  },
+  "plan": {
+    "viewports": [
+      {
+        "width": 360,
+        "height": 800,
+        "distanceValueBottomsCssPx": [
+          777.19,
+          777.19
+        ]
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "distanceValueBottomsCssPx": [
+          792.59,
+          792.59
+        ]
+      },
+      {
+        "width": 412,
+        "height": 915,
+        "distanceValueBottomsCssPx": [
+          817.44,
+          817.44
+        ]
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "distanceValueBottomsCssPx": [
+          901.19,
+          901.19
+        ]
+      },
+      {
+        "width": 1280,
+        "height": 1024,
+        "distanceValueBottomsCssPx": [
+          565.73,
+          565.73
+        ]
+      }
+    ],
+    "scenarioAndPersistenceParityStates": 6,
+    "desktopProtected": {
+      "width": 1280,
+      "height": 1024,
+      "scale": 2,
+      "differingPixels": 0,
+      "maxDelta": 0
+    },
+    "cases": [
+      "controle original/IDs únicos",
+      "distâncias completas na abertura",
+      "equipe reduzida sem redução de pontos",
+      "teclado/ajuda/entrada inválida",
+      "troca BA1/BD3",
+      "barra e densidade personalizadas",
+      "alternativa aplicada explicitamente",
+      "Desfazer restaura parâmetros",
+      "avanço e recarga"
+    ],
+    "unhandledPageErrors": 0
+  },
+  "visual": {
+    "comparisons": 23,
+    "fullImageComparisons": 19,
+    "approvedPlanRegionComparisons": 4,
+    "unchangedTolerance": {
+      "pixels": 20,
+      "maxChannelDelta": 1
+    },
+    "differingPixelsOutsideApprovalTotal": 20,
+    "maxChannelDeltaOutsideApproval": 1
+  },
+  "backupAndGPS": {
+    "groups": 9,
+    "status": "passed",
+    "pageErrors": 0
+  },
+  "sessions": {
+    "cases": 8,
+    "status": "passed",
+    "pageErrors": 0
+  },
+  "androidPreparation": {
+    "tests": 9,
+    "filesCompared": 63,
+    "apkBuilt": false,
+    "physicalDeviceTested": false
+  },
+  "spatial": {
+    "fields": 51,
+    "samples": 749,
+    "outsideSamples": 0,
+    "invalidGeometries": 0,
+    "exportsWellFormedFields": 51,
+    "pythonDiagnosticTests": 4,
+    "status": "passed"
+  },
+  "readability": {
+    "themes": [
+      {
+        "theme": "normal",
+        "observations": 54,
+        "smallestSampledFontPx": 12,
+        "belowSampleThreshold": 0,
+        "interactionChecks": {
+          "invalidInputReported": true,
+          "decimalCommaAccepted": true,
+          "rapidEditsFinalValueRetained": true
+        }
+      },
+      {
+        "theme": "sol",
+        "observations": 54,
+        "smallestSampledFontPx": 12,
+        "belowSampleThreshold": 0,
+        "interactionChecks": {
+          "invalidInputReported": true,
+          "decimalCommaAccepted": true,
+          "rapidEditsFinalValueRetained": true
+        }
+      }
+    ],
+    "distanceSupportFontPx": 13,
+    "fullAccessibilityCertification": false
+  },
+  "performance": {
+    "runs": 20,
+    "reference": "8232d79",
+    "cpuRates": [
+      1,
+      4
+    ],
+    "status": "passed",
+    "physicalDevice": false,
+    "statisticalImprovementClaimed": false
+  },
+  "gallery": {
+    "localPath": "audit/results/plan-essential-delivery/comparacao-real.html",
+    "imagesDecoded": 10,
+    "externalHTTPRequests": 0,
+    "horizontalOverflowAt390": false
+  },
+  "delivery": {
+    "localOnly": true,
+    "remoteUploadAttempted": false,
+    "remoteCIForThisChange": false,
+    "previousUploadBlockNotBypassed": true,
+    "merged": false,
+    "deployed": false,
+    "apkPublished": false,
+    "remoteHeadUnchanged": "e779f28fce8019319ca4e7268664738eb9ea19a3",
+    "mainCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
+    "prNumber": 2,
+    "prDraft": true
+  },
+  "report": "docs/EXECUCAO_PLANO_ESSENCIAL.md",
+  "pending": [
+    "aparelho Android/WebView e campo",
+    "sessões com operadores e acessibilidade completa",
+    "comportamento em zoom/texto do sistema e importações grandes",
+    "fonte geradora completa",
+    "migração de assinatura e atualização segura do worker"
+  ]
+}

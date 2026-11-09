@@ -1,0 +1,87 @@
+{
+  "date": "2026-11-09",
+  "status": "awaiting-ci-after-plan-font-fit",
+  "authorization": "Solicitação do proprietário de aplicar as mudanças ao link e APK após refinamentos",
+  "webURL": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
+  "repository": "jhsilvamenezes-netizen/schmidt-campo",
+  "htmlSha256": "4b162e63190a95780b993be853c6dd357adeafa08b9238a419ed02317921c76e",
+  "workerSha256": "aaa0e508d6252ceaf6d8f66c7286c63d0a549e148ae3a87c82a096eec0546eea",
+  "publishedDataScriptsUnchanged": true,
+  "unitTests": 51,
+  "visualComparisons": 23,
+  "backupGPSGroups": 9,
+  "workerUpgrade": {
+    "checks": [
+      "HTML antigo sob worker novo é recusado; cache e cliente anteriores permanecem",
+      "worker novo espera; aba antiga continua na versão antiga",
+      "ativação após fechar cliente antigo; somente o cache SCHMIDT anterior é removido",
+      "versão nova abre offline e conserva três chaves, coleta, imagem e histórico"
+    ],
+    "oldClients": 2,
+    "dataPreserved": [
+      "três chaves",
+      "coleta",
+      "imagem",
+      "histórico",
+      "cache não relacionado"
+    ],
+    "defaultBoomWidth": {
+      "fields": 51,
+      "metres": 36.48
+    },
+    "pageErrors": []
+  },
+  "spatial": {
+    "fields": 51,
+    "samples": 749,
+    "outsideSamples": 0,
+    "invalidGeometries": 0
+  },
+  "android": {
+    "status": "built-unsigned-not-distributable",
+    "package": "package: name='io.github.jhsilvamenezes.schmidtcampo' versionCode='12' versionName='1.31.0' platformBuildVersionName='14' platformBuildVersionCode='34' compileSdkVersion='34' compileSdkVersionCodename='14'",
+    "bytes": 3663576,
+    "sha256": "969e32ae59c5456bd7c8e3defea9f7ee9a2f807079d8443e2736e221aece357c",
+    "inputWebHtmlSha256": "4b162e63190a95780b993be853c6dd357adeafa08b9238a419ed02317921c76e",
+    "nativeAssetMatchesPreparedWeb": true,
+    "signed": false,
+    "published": false,
+    "privateKeyGenerated": false,
+    "rebuild": "assembleRelease --offline; 290 tasks, 14 executed; successful",
+    "inputMatchesCurrentCandidate": true
+  },
+  "existingAPK": {
+    "versionCode": 11,
+    "versionName": "1.31.0",
+    "certificateSHA256": "2e84866d96161191956b6c76fd6cc1f672c2bca1ebd9b9695b734f1c766d9580",
+    "v1Verified": true,
+    "v2Verified": true,
+    "privateKeyAvailable": false,
+    "ownerReportedNoKey": true,
+    "releasePreserved": true
+  },
+  "pendingAndroid": [
+    "nova chave privada estável e cópia segura",
+    "backup de dados verificado antes de reinstalação",
+    "ensaio Android físico"
+  ],
+  "report": "docs/ENTREGA_WEB_E_ANDROID_2026_11_09.md",
+  "webPublished": false,
+  "remoteBranchUpdated": false,
+  "publicationBlock": {
+    "action": "github_create_blob index.html",
+    "destination": "public repository jhsilvamenezes-netizen/schmidt-campo and its Pages",
+    "reason": "A revisão automática exige autorização explícita para o HTML com coordenadas, geometrias e dados operacionais agrícolas, além da autorização geral de atualizar o link.",
+    "bypassAttempted": false,
+    "requiredApproval": "Enviar publicamente o index.html candidato, com os mesmos dados agrícolas já públicos, ao repositório e Pages indicados.",
+    "attempts": 2,
+    "latestReason": "A revisão automática considerou que o pedido geral de atualizar arquivo e link ainda não autoriza explicitamente o payload agrícola no repositório público.",
+    "historical": true,
+    "resolved": true,
+    "resolution": "Proprietário confirmou após pergunta explícita sobre HTML, dados agrícolas e destinos públicos; envio aceito pelo mesmo conector."
+  },
+  "delivery": "1.31.0-r1",
+  "publicDataRecheckedAgainstLiveSite": true,
+  "latestAuthorization": "Pedido do proprietário para atualizar arquivo e link e manter versões organizadas",
+  "payloadExplicitlyAuthorized": true
+}

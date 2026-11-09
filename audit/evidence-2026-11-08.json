@@ -1,0 +1,229 @@
+{
+  "status": "passed",
+  "functionalOnly": false,
+  "browser": "156.0.8078.79",
+  "platform": "linux",
+  "reference": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
+  "locale": "pt-BR",
+  "timezone": "UTC",
+  "deviceScaleFactor": 1,
+  "fixedDate": "2026-11-08T12:00:00Z",
+  "visual": [
+    {
+      "width": 360,
+      "height": 800,
+      "state": "mapa",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "c66b04d3cd5ca772436016a9fb9c5a82d6921b6d2c7f47e8e62364a8dea6bdd9"
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "state": "plano",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "eb5a67205b0ca4642d5d4dfdb6294a81fd7df4b1f73e3ad10c926ed77b84c90a"
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "state": "tiros",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "b2e299c0a1ba422d007089035701c71f405546b5f3798bec5b996adb7bd103eb"
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "state": "monitoramento",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "752dfaf289382f51a3c06f1b045c1c8a718030962530fc7cabcf877919a5874f"
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "state": "auditoria",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "355ffbb0c18bff0a6f1b5062c2f833e9b732574af158173eab77c4353ea94f90"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "state": "mapa",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "a1013a3339f744a9b1469194d23ec059cba49851f004cad37eb9c1843da7bd64"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "state": "plano",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "438ec29176f0516e4481fb8b6d0ca789c6fe209aa95a92fd3ff6dc05a6631f85"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "state": "tiros",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "d9f1d801ba709397fb37b6cf9956d66c984420c571d3812a76bceb48e4437ac8"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "state": "monitoramento",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "dd1e4980fda6d6a090b78351cefe28bed19c81fe2c4555d4db8b95420e8c8bb2"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "state": "auditoria",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "1903d92b3570271b5fb0a4468d975a9d2fa736466bdbc96106e40734c8bcb727"
+    },
+    {
+      "width": 412,
+      "height": 915,
+      "state": "mapa",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "2a02aa919900ef08e7a1340e36a5ba73046522ac5a5373b170ff3d94552886f0"
+    },
+    {
+      "width": 412,
+      "height": 915,
+      "state": "plano",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "90eccc1169f617967c0632a4906a3b8855392f2158966be35d6433b0bbfb3f9e"
+    },
+    {
+      "width": 412,
+      "height": 915,
+      "state": "tiros",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "e0159e0c10cd7d4f83c2eea4806c92a1a47fced336e61f4323501108d99428c2"
+    },
+    {
+      "width": 412,
+      "height": 915,
+      "state": "monitoramento",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "62c7b32413be4085aa9996afbb35c9d75a482cbc692124112682475563eaa32a"
+    },
+    {
+      "width": 412,
+      "height": 915,
+      "state": "auditoria",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "21556b5170e821552fc2822cec3f58883d95aafc6391e13aa87949aeefbf8ee5"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "state": "mapa",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "1858431a5e5333eee5c6475b28dd19a9a7b860f85bd71136239c533085042d77"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "state": "plano",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "fb718dc4cb03919c2b3ca2c7a0682373446f1877c1006492ef06889d8f73807a"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "state": "tiros",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "71eafdba71a77a81cfa155208738c3b49d07ba3e5c72a52377d31c4dff9b505b"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "state": "monitoramento",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "757d447abc538ebb9b305194e2d1578018828b6b74c4c98db071348bb235dcfa"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "state": "auditoria",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "d4c75f935ae8854c4ed9cd0d183ef2cee250634f45c056c55d676dbb678e944b"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "state": "gps-negado",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "state": "gps-indisponivel",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "state": "gps-aproximado",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0
+    }
+  ],
+  "functional": [
+    "exportação real: hash SHA-256, três chaves, imagem e histórico",
+    "backup adulterado recusado sem alterar dados",
+    "cancelamento da restauração preserva dados",
+    "restauração em perfil separado, cópia anterior e reabertura: dados/imagens/histórico preservados",
+    "PWA reabre offline via service worker sem apagar armazenamento local"
+  ],
+  "pageErrors": [],
+  "harnessSha256": "46411445c54411e4d6908efbc2c9dbdfa0883ea063f4fdb1270b682865bc8ac5",
+  "execution": "CHROMIUM_PATH=/usr/bin/chromium npm run test:browser",
+  "node": "24.22.1",
+  "rendering": "software; sRGB"
+}

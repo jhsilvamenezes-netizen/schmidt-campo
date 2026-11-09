@@ -1,0 +1,487 @@
+{
+  "htmlSha256": "4b162e63190a95780b993be853c6dd357adeafa08b9238a419ed02317921c76e",
+  "defaults": {
+    "boomWidthM": 36.48,
+    "trackMode": "espacamento",
+    "trackSpacingM": 300,
+    "trackCount": 5,
+    "alignToBoom": true,
+    "bearingDeg": null,
+    "minPieceM": 60,
+    "selectionMode": "todos",
+    "selectionCount": 5,
+    "selectionIds": [],
+    "haPerPoint": 20,
+    "pointMode": "total",
+    "totalPoints": null,
+    "pointsPerTrack": 5,
+    "targetSpacingM": 400,
+    "edgePolicy": "meia_margem",
+    "edgeMarginM": 50,
+    "gapToleranceFrac": 0.1,
+    "maxAcceptableGapM": null,
+    "snapToleranceM": 30,
+    "maxPointsCap": 600,
+    "monitor": {
+      "stepLengthM": 0.75,
+      "arrivalRadiusM": 10,
+      "gpsAccuracyMaxM": 15,
+      "offLineWarnM": 25
+    },
+    "coverage": {
+      "gridTargetCells": 1500,
+      "minStepM": 15,
+      "maxStepM": 150
+    },
+    "optimizer": {
+      "mode": "qualidade_espacial",
+      "maxGapIncreaseFrac": 0.1,
+      "maxCvIncrease": 0.05,
+      "edgeShiftFrac": 0.5,
+      "phaseSteps": 9,
+      "maxIterations": 6,
+      "allowCountMoves": true,
+      "searchGridCells": 700
+    }
+  },
+  "catalog": {
+    "trackMode": {
+      "label": "Como gerar os tiros",
+      "nivel": "basico",
+      "options": [
+        "espacamento",
+        "quantidade",
+        "circular",
+        "importado"
+      ],
+      "ajuda": "Retas na direção da planilha, nas passadas da barra (vale também para pivô), ou trajetos importados de um GPS.",
+      "calibrado": true,
+      "fonte": "informação operacional"
+    },
+    "trackSpacingM": {
+      "label": "Distância máxima entre tiros",
+      "unit": "m",
+      "min": 40,
+      "max": 2000,
+      "step": 10,
+      "nivel": "basico",
+      "ajuda": "Distância de um tiro ao vizinho, medida de lado (não é a distância entre pontos). Tiros vizinhos ficam no máximo a esta distância. Com \"múltiplos da barra\", o valor é arredondado para baixo.",
+      "calibrado": false,
+      "fonte": "valor inicial de simulação"
+    },
+    "trackCount": {
+      "label": "Quantidade de tiros",
+      "unit": "tiros",
+      "min": 1,
+      "max": 60,
+      "step": 1,
+      "integer": true,
+      "nivel": "basico",
+      "ajuda": "Divide a largura do lote em faixas iguais, um tiro no meio de cada faixa.",
+      "calibrado": true,
+      "fonte": "informação operacional"
+    },
+    "selectionMode": {
+      "label": "Tiros que recebem pontos",
+      "nivel": "basico",
+      "options": [
+        "todos",
+        "quantidade",
+        "manual"
+      ],
+      "ajuda": "Todos os tiros, um por pessoa (espalhados pelo lote) ou escolhidos à mão.",
+      "calibrado": true,
+      "fonte": "informação operacional"
+    },
+    "selectionCount": {
+      "label": "Pessoas / tiros",
+      "unit": "pessoas",
+      "min": 1,
+      "max": 60,
+      "step": 1,
+      "integer": true,
+      "nivel": "basico",
+      "ajuda": "Cada pessoa caminha um tiro.",
+      "calibrado": true,
+      "fonte": "informação operacional"
+    },
+    "haPerPoint": {
+      "label": "Hectares por ponto",
+      "unit": "ha",
+      "min": 1,
+      "max": 1000,
+      "step": 1,
+      "nivel": "basico",
+      "ajuda": "Regra da soja: 1 ponto a cada 20 ha, arredondando para cima. Outras culturas: exploratório.",
+      "calibrado": true,
+      "fonte": "regra operacional informada para soja"
+    },
+    "pointMode": {
+      "label": "Como repartir os pontos",
+      "nivel": "basico",
+      "options": [
+        "total",
+        "por_tiro",
+        "espacamento"
+      ],
+      "ajuda": "Proporcional ao tamanho de cada tiro, o mesmo número por pessoa, ou pela distância desejada entre pontos.",
+      "calibrado": true,
+      "fonte": "informação operacional"
+    },
+    "totalPoints": {
+      "label": "Total de pontos",
+      "unit": "pontos",
+      "nivel": "basico",
+      "ajuda": "Vazio = mínimo da regra. Pode aumentar para dividir igual entre monitores; nunca é reduzido sozinho.",
+      "calibrado": true,
+      "fonte": "informação operacional",
+      "validadoNa": "alocação"
+    },
+    "pointsPerTrack": {
+      "label": "Pontos por tiro",
+      "unit": "pontos",
+      "min": 1,
+      "max": 100,
+      "step": 1,
+      "integer": true,
+      "nivel": "basico",
+      "ajuda": "Mesmo número de pontos em cada tiro. Tiros mais longos ficam com pontos mais espaçados.",
+      "calibrado": true,
+      "fonte": "informação operacional"
+    },
+    "targetSpacingM": {
+      "label": "Distância desejada entre pontos",
+      "unit": "m",
+      "min": 20,
+      "max": 5000,
+      "step": 10,
+      "nivel": "basico",
+      "ajuda": "Distância de um ponto ao seguinte, andando sobre o mesmo tiro (não é a distância entre tiros). O app calcula quantos pontos cabem em cada tiro e mostra a distância que de fato ficou.",
+      "calibrado": false,
+      "fonte": "valor inicial de simulação"
+    },
+    "boomWidthM": {
+      "label": "Largura da barra",
+      "unit": "m",
+      "min": 1,
+      "max": 80,
+      "step": 0.01,
+      "nivel": "avancado",
+      "ajuda": "Barra do pulverizador M4040 (36,48 m). Não é a bitola entre rodas.",
+      "calibrado": true,
+      "fonte": "informação operacional"
+    },
+    "alignToBoom": {
+      "label": "Tiros em múltiplos da barra",
+      "nivel": "avancado",
+      "ajuda": "Coloca os tiros a múltiplos da barra a partir do ponto A, imitando passadas da máquina (estimativa).",
+      "calibrado": false,
+      "fonte": "valor inicial de simulação"
+    },
+    "bearingDeg": {
+      "label": "Direção dos tiros",
+      "unit": "°",
+      "min": 0,
+      "max": 180,
+      "step": 0.5,
+      "nivel": "avancado",
+      "ui": "bearing",
+      "ajuda": "Graus a partir do Norte. Vazio = direção da planilha. Mudar só se houver pista nessa direção.",
+      "calibrado": false,
+      "fonte": "planilha de coordenadas (referência, não rastro)"
+    },
+    "minPieceM": {
+      "label": "Trecho mínimo com ponto",
+      "unit": "m",
+      "min": 0,
+      "max": 1000,
+      "step": 10,
+      "nivel": "avancado",
+      "ajuda": "Partes de tiro mais curtas que isto não recebem ponto (aparecem listadas).",
+      "calibrado": false,
+      "fonte": "valor inicial de simulação"
+    },
+    "edgePolicy": {
+      "label": "Distância das pontas",
+      "nivel": "avancado",
+      "options": [
+        "meia_margem",
+        "margens_iguais",
+        "margem_fixa"
+      ],
+      "ajuda": "Meia margem: o 1º ponto fica a meio intervalo da borda. Margens iguais: borda e intervalos iguais. Fixa: metros da borda.",
+      "calibrado": false,
+      "fonte": "valor inicial de simulação"
+    },
+    "edgeMarginM": {
+      "label": "Margem fixa da borda",
+      "unit": "m",
+      "min": 0,
+      "max": 1000,
+      "step": 5,
+      "nivel": "avancado",
+      "ajuda": "Usada só com \"margem fixa\": distância do 1º e do último ponto até a borda.",
+      "calibrado": false,
+      "fonte": "valor inicial de simulação"
+    },
+    "maxAcceptableGapM": {
+      "label": "Distância máxima aceitável entre pontos",
+      "unit": "m",
+      "min": 0,
+      "max": 5000,
+      "step": 10,
+      "nivel": "avancado",
+      "ajuda": "Se algum intervalo passar disto, o tiro aparece com alerta. Vazio = sem limite.",
+      "calibrado": false,
+      "fonte": "valor inicial de simulação"
+    },
+    "optimizer.mode": {
+      "label": "Prioridade da busca",
+      "nivel": "basico",
+      "ui": "optMode",
+      "options": [
+        "qualidade_espacial",
+        "regularidade",
+        "esforco"
+      ],
+      "ajuda": "Qualidade espacial: reduz áreas longe de ponto. Regularidade: não mexe. Esforço: compara nº de tiros.",
+      "calibrado": true,
+      "fonte": "informação operacional"
+    },
+    "optimizer.maxGapIncreaseFrac": {
+      "label": "Busca: aumento máximo do maior intervalo",
+      "unit": "%",
+      "scale": 100,
+      "min": 0,
+      "max": 1,
+      "nivel": "avancado",
+      "ui": "maxGapIncreasePct",
+      "ajuda": "A busca não pode deixar o maior intervalo de um tiro maior que isto.",
+      "calibrado": false,
+      "fonte": "valor inicial de simulação"
+    },
+    "optimizer.maxCvIncrease": {
+      "label": "Busca: aumento máximo da irregularidade",
+      "unit": "p.p.",
+      "scale": 100,
+      "min": 0,
+      "max": 1,
+      "nivel": "avancado",
+      "ui": "maxCvIncreasePp",
+      "ajuda": "Quanto a variação dos intervalos (CV) pode crescer, em pontos percentuais.",
+      "calibrado": false,
+      "fonte": "valor inicial de simulação"
+    },
+    "gapToleranceFrac": {
+      "label": "Folga sobre o intervalo-alvo",
+      "unit": "%",
+      "scale": 100,
+      "min": 0,
+      "max": 1,
+      "nivel": "especialista",
+      "ajuda": "Intervalo acima do alvo + esta folga gera alerta.",
+      "calibrado": false,
+      "fonte": "valor inicial de simulação"
+    },
+    "snapToleranceM": {
+      "label": "Encaixe ao arrastar ponto",
+      "unit": "m",
+      "min": 1,
+      "max": 500,
+      "nivel": "especialista",
+      "ajuda": "Ponto solto a até esta distância do tiro é puxado para a linha.",
+      "calibrado": false,
+      "fonte": "valor inicial de simulação"
+    },
+    "maxPointsCap": {
+      "label": "Teto de pontos por lote",
+      "unit": "pontos",
+      "min": 1,
+      "max": 5000,
+      "integer": true,
+      "nivel": "especialista",
+      "ajuda": "Protege contra digitação errada (ex.: 5000 pontos).",
+      "calibrado": true,
+      "fonte": "proteção do sistema"
+    },
+    "monitor.stepLengthM": {
+      "label": "Comprimento do passo",
+      "unit": "m",
+      "min": 0.3,
+      "max": 1.5,
+      "nivel": "avancado",
+      "ui": "monStepLengthM",
+      "ajuda": "Converte metros em passos no roteiro do monitor.",
+      "calibrado": false,
+      "fonte": "valor inicial de simulação"
+    },
+    "monitor.arrivalRadiusM": {
+      "label": "Distância para \"chegou ao ponto\"",
+      "unit": "m",
+      "min": 1,
+      "max": 100,
+      "nivel": "avancado",
+      "ui": "monArrivalRadiusM",
+      "ajuda": "O aviso de chegada dispara a esta distância do ponto.",
+      "calibrado": false,
+      "fonte": "valor inicial de simulação"
+    },
+    "monitor.gpsAccuracyMaxM": {
+      "label": "Precisão de GPS aceitável",
+      "unit": "m",
+      "min": 1,
+      "max": 200,
+      "nivel": "avancado",
+      "ui": "monGpsAccuracyMaxM",
+      "ajuda": "Acima disto o app avisa que o GPS está impreciso.",
+      "calibrado": false,
+      "fonte": "valor inicial de simulação"
+    },
+    "monitor.offLineWarnM": {
+      "label": "Aviso de saída da linha",
+      "unit": "m",
+      "min": 1,
+      "max": 500,
+      "nivel": "avancado",
+      "ui": "monOffLineWarnM",
+      "ajuda": "Avisa quando o monitor se afasta mais que isto da linha do tiro.",
+      "calibrado": false,
+      "fonte": "valor inicial de simulação"
+    },
+    "trackPhaseM": {
+      "label": "Deslocamento do conjunto de tiros",
+      "unit": "m",
+      "min": -5000,
+      "max": 5000,
+      "nivel": "sistema",
+      "ajuda": "Escolhido pela recomendação: passadas inteiras da barra a partir do ponto A.",
+      "calibrado": true,
+      "fonte": "recomendação do lote"
+    },
+    "coverage.gridTargetCells": {
+      "label": "Cobertura: células da grade",
+      "unit": "células",
+      "min": 200,
+      "max": 20000,
+      "integer": true,
+      "nivel": "sistema",
+      "ajuda": "Resolução da grade usada no P95.",
+      "calibrado": true,
+      "fonte": "proteção do sistema"
+    },
+    "coverage.minStepM": {
+      "label": "Cobertura: passo mínimo da grade",
+      "unit": "m",
+      "min": 5,
+      "max": 500,
+      "nivel": "sistema",
+      "ajuda": "Menor lado de célula da grade de cobertura.",
+      "calibrado": true,
+      "fonte": "proteção do sistema"
+    },
+    "coverage.maxStepM": {
+      "label": "Cobertura: passo máximo da grade",
+      "unit": "m",
+      "min": 5,
+      "max": 2000,
+      "nivel": "sistema",
+      "ajuda": "Maior lado de célula da grade de cobertura.",
+      "calibrado": true,
+      "fonte": "proteção do sistema"
+    },
+    "optimizer.edgeShiftFrac": {
+      "label": "Busca: deslocamento máximo da margem",
+      "unit": "%",
+      "scale": 100,
+      "min": 0,
+      "max": 1,
+      "nivel": "sistema",
+      "ajuda": "Quanto a busca pode mover a margem inicial.",
+      "calibrado": false,
+      "fonte": "valor inicial de simulação"
+    },
+    "optimizer.phaseSteps": {
+      "label": "Busca: candidatos por trecho",
+      "unit": "candidatos",
+      "min": 1,
+      "max": 41,
+      "integer": true,
+      "nivel": "sistema",
+      "ajuda": "Deslocamentos testados em cada trecho.",
+      "calibrado": true,
+      "fonte": "proteção do sistema"
+    },
+    "optimizer.maxIterations": {
+      "label": "Busca: rodadas",
+      "unit": "rodadas",
+      "min": 1,
+      "max": 30,
+      "integer": true,
+      "nivel": "sistema",
+      "ajuda": "Rodadas de descida coordenada.",
+      "calibrado": true,
+      "fonte": "proteção do sistema"
+    },
+    "optimizer.searchGridCells": {
+      "label": "Busca: células da grade",
+      "unit": "células",
+      "min": 100,
+      "max": 5000,
+      "integer": true,
+      "nivel": "sistema",
+      "ajuda": "Grade reduzida usada durante a busca.",
+      "calibrado": true,
+      "fonte": "proteção do sistema"
+    }
+  },
+  "knownTop": [
+    "boomWidthM",
+    "trackMode",
+    "trackSpacingM",
+    "trackCount",
+    "alignToBoom",
+    "bearingDeg",
+    "minPieceM",
+    "selectionMode",
+    "selectionCount",
+    "selectionIds",
+    "haPerPoint",
+    "pointMode",
+    "totalPoints",
+    "pointsPerTrack",
+    "targetSpacingM",
+    "edgePolicy",
+    "edgeMarginM",
+    "gapToleranceFrac",
+    "maxAcceptableGapM",
+    "snapToleranceM",
+    "maxPointsCap",
+    "monitor",
+    "coverage",
+    "optimizer",
+    "trackPhaseM"
+  ],
+  "knownNested": {
+    "monitor": [
+      "stepLengthM",
+      "arrivalRadiusM",
+      "gpsAccuracyMaxM",
+      "offLineWarnM"
+    ],
+    "coverage": [
+      "gridTargetCells",
+      "minStepM",
+      "maxStepM"
+    ],
+    "optimizer": [
+      "mode",
+      "maxGapIncreaseFrac",
+      "maxCvIncrease",
+      "edgeShiftFrac",
+      "phaseSteps",
+      "maxIterations",
+      "allowCountMoves",
+      "searchGridCells"
+    ]
+  }
+}

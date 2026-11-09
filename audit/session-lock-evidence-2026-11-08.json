@@ -1,0 +1,298 @@
+{
+  "status": "passed-local",
+  "stage": "M2/M3 partial: snapshot and restore session safety",
+  "previousCommit": "75ce803f45d0dfaba4306010b6556de83a574993",
+  "candidateHtmlSha256": "62bf2c30a1584894a0887cd0da8f95c4ea8ae558bef55cff02190f1b563a23b4",
+  "candidateWorkerSha256": "1db34b7ed8ef900d0b38b9bf0f35b0c08f47766a7a58478efe9eb835d16b31f1",
+  "browser": "141.0.7390.37",
+  "baselineReproduction": {
+    "baseline": true,
+    "htmlSha256": "098fc1028076b2488b6bbcae660ee77abfb4e77706343d86d04732e97a4ce914",
+    "checks": [
+      {
+        "id": "active-restore-recovery-race",
+        "reproduced": true
+      }
+    ],
+    "browser": "141.0.7390.37",
+    "status": "passed"
+  },
+  "sessionChecks": [
+    {
+      "id": "active-restore-not-recovered-by-neighbor",
+      "passed": true
+    },
+    {
+      "id": "second-session-refuses-restore-without-writes",
+      "passed": true
+    },
+    {
+      "id": "closed-session-releases-lock",
+      "passed": true
+    },
+    {
+      "id": "snapshot-drains-in-flight-history-and-blocks-new-writes",
+      "passed": true
+    },
+    {
+      "id": "closed-owner-recovers-prepared-journal",
+      "passed": true
+    },
+    {
+      "id": "unsupported-web-locks-preserves-data",
+      "passed": true
+    }
+  ],
+  "unhandledSessionPageErrors": 0,
+  "contractsPassed": 14,
+  "unitCorrectionsPassed": 28,
+  "existingBrowserAcceptanceGroupsPassed": 9,
+  "backupOfflineGroupsPassed": 5,
+  "androidPreparationPassed": 9,
+  "nativeFilesByteAndModeParity": 63,
+  "visual": [
+    {
+      "width": 360,
+      "height": 800,
+      "state": "mapa",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "c033a52628798c5935eb09b1b6cca714418ed8913c315a4bb58be20e0d4acf76"
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "state": "plano",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "12d3a03bddf1cf598dea1e2d36fe35c836c703a10a599f49d71af14b1e000f70"
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "state": "tiros",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "382d1ab4c37d433c0d57db59a6de09cdfe4adaa116a5279db53a956a37d6ae71"
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "state": "monitoramento",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "16737a108ef222c2c2ebc81ef68d7ee973bbd12c6dacd9b397a10ef05a95810d"
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "state": "auditoria",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "17466708d432f0a67f6055f3c4909acd6151f33ecc2105f6e11bac791c38075e"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "state": "mapa",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "8dfa7dd6f24b96945a4b22d22361f46467f7ffdd2cc3a1ffec90142b3cabe34d"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "state": "plano",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "472e1c8e8625414e3bd9c76945cf3bba325aebb70a915eb99b5bc2290b98012f"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "state": "tiros",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "cc40ccc18a14efc0dbbb0909b83ed0e2a142751d36b06dcfd4837f68fdf4535d"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "state": "monitoramento",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "fcb136a597f5bc0566769d2f87d15201da8f665eda9f4bb1e42e1da132337fe4"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "state": "auditoria",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "722fa567f9e9cfb9e79f489660760746c846867ca740b544eea51e3085246921"
+    },
+    {
+      "width": 412,
+      "height": 915,
+      "state": "mapa",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "a943c5a5b4e05fb71f1489fec1cc36bfd4701bcccdb4c04f3e22d11d7e5c9326"
+    },
+    {
+      "width": 412,
+      "height": 915,
+      "state": "plano",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "5b3a46f9d1a2d35ddd87a9ddd5014b3a382eb3174023f586d7363663de642c61"
+    },
+    {
+      "width": 412,
+      "height": 915,
+      "state": "tiros",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "a199578df1310ca6734a5a11dfe7a7e86cc3fd23a52abe5dbc69b670aa2b5cd6"
+    },
+    {
+      "width": 412,
+      "height": 915,
+      "state": "monitoramento",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "893ee10aaef0963f62ba638fa0daf3993aee22c06ca453406f49150a201bb641"
+    },
+    {
+      "width": 412,
+      "height": 915,
+      "state": "auditoria",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "daab970ddd40ee768b58395cdd2cff83d14b567d3069b42a432bd6252cd4da58"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "state": "mapa",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "5b9f5c627ad58dbbd3dc1ef4ff9adcc47f2e1ea56488f78a1fa27703c827d59e"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "state": "plano",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "8c5dc8754be476d44b35e221b3c2f3c02e3721de3d5930afb53ecf426fb358a0"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "state": "tiros",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "1e11119096d4224c988f71ae4fef83027cde42fbb7cee0dc55cf9c8f3757ef63"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "state": "monitoramento",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0,
+      "sha256": "00b17556401eec3c1c842b7eb6ca77eb1537e3f99b8b7b82e5ecd36853da71ac"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "state": "auditoria",
+      "identical": false,
+      "differingPixels": 10,
+      "maxChannelDelta": 1,
+      "sha256": "98357468a4a217a2e0a5135c8e14a3158be4ba8788adadac388f4a5ba629eba5"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "state": "gps-negado",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "state": "gps-indisponivel",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "state": "gps-aproximado",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDelta": 0
+    }
+  ],
+  "visualToleranceUnchanged": {
+    "maxPixels": 20,
+    "maxChannelDelta": 1,
+    "masks": false
+  },
+  "rejectedVisualRounds": [
+    {
+      "browser": "156.0.8078.79",
+      "differingPixels": 44,
+      "maxChannelDelta": 1
+    },
+    {
+      "browser": "156.0.8078.79",
+      "differingPixels": 33,
+      "maxChannelDelta": 1
+    },
+    {
+      "browser": "141.0.7390.37",
+      "differingPixels": 33,
+      "maxChannelDelta": 1
+    }
+  ],
+  "sourceHashes": {
+    "src/platform/browser-session-lock.mjs": "937ee8bad04a857f2701fb625ff4e91d30d1bc9b7a280c69a565c6687215aff6",
+    "src/platform/legacy-integration.mjs": "0b4f5b87b3470424112181a541a73fbaf2762c15332b8656648006b6c8eff103",
+    "src/persistence/backup-service.mjs": "ce75fda7c6e0a909254e3c5fcf18b1cc46f12f23daee8e9383e9ebf7b2b27313",
+    "scripts/build-preserved.mjs": "8469aacbe1ce41ccb4d444c43a837f50aa3ae9cdbfd0b6db926c57ceacd7554d",
+    "audit/session-lock-browser.mjs": "af9aebbcf1b0846d4a950b1b0ee9e054c4e34dab053ebb67e033a73eacef1c32",
+    "audit/corrections.test.mjs": "87e92813df11848a0c2391d65b2f508cf2df96cad513c79db248ce542638ceae",
+    "audit/browser.mjs": "d4c1e63e15e5edeaf0b0457f9923f7fa3624bac008da296c2f86ff7a71f82f55",
+    "audit/corrections-browser.mjs": "aed48995dac2313092be4237aba6c67112841676e1165af6b0b838b25eab8fbd"
+  },
+  "limits": [
+    "Cooperative corrected clients only; old clients must close before future rollout.",
+    "Normal concurrent editing is still pending.",
+    "Without Web Locks, backup and restore fail closed.",
+    "No Android device, field GPS, merge, APK compilation or publication."
+  ],
+  "remoteCI": "pending for this change"
+}

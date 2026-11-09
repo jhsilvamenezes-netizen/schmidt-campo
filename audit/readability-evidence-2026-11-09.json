@@ -1,0 +1,91 @@
+{
+  "date": "2026-11-09",
+  "collectionStatus": "passed",
+  "kind": "sampled-computed-style-inventory-not-full-accessibility-certification",
+  "referenceLocalCommit": "5b58caa",
+  "browser": "141.0.7390.37",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "htmlSha256": "b03fa13b0799dba3309c33555f944850e0d2d6d328aee45177e4db0953391ce5",
+  "workerSha256": "3ffbd1db4efab9975022b0764fd00bf32f2821cf371dacda1a1af852400f684a",
+  "themes": [
+    {
+      "theme": "normal",
+      "observations": 63,
+      "evaluatedTextBackgroundPairs": 63,
+      "belowSampleThreshold": 0,
+      "lowestObservedContrast": 5.68,
+      "smallestObservedFontPx": 11,
+      "interactions": {
+        "invalidInputReported": true,
+        "decimalCommaAccepted": true,
+        "rapidEditsFinalValueRetained": true
+      },
+      "controlBoxes": {
+        "measured": 18,
+        "below44InEitherDimension": 2,
+        "smallBoxes": [
+          {
+            "id": "fx-fitteam",
+            "tag": "INPUT",
+            "type": "checkbox",
+            "width": 24,
+            "height": 24
+          },
+          {
+            "id": "alignToBoom",
+            "tag": "INPUT",
+            "type": "checkbox",
+            "width": 24,
+            "height": 24
+          }
+        ],
+        "note": "Caixas dos elementos renderizados; não mede a área associada de rótulos nem conclui falha de acessibilidade."
+      }
+    },
+    {
+      "theme": "sol",
+      "observations": 63,
+      "evaluatedTextBackgroundPairs": 63,
+      "belowSampleThreshold": 0,
+      "lowestObservedContrast": 11.58,
+      "smallestObservedFontPx": 11,
+      "interactions": {
+        "invalidInputReported": true,
+        "decimalCommaAccepted": true,
+        "rapidEditsFinalValueRetained": true
+      },
+      "controlBoxes": {
+        "measured": 18,
+        "below44InEitherDimension": 2,
+        "smallBoxes": [
+          {
+            "id": "fx-fitteam",
+            "tag": "INPUT",
+            "type": "checkbox",
+            "width": 24,
+            "height": 24
+          },
+          {
+            "id": "alignToBoom",
+            "tag": "INPUT",
+            "type": "checkbox",
+            "width": 24,
+            "height": 24
+          }
+        ],
+        "note": "Caixas dos elementos renderizados; não mede a área associada de rótulos nem conclui falha de acessibilidade."
+      }
+    }
+  ],
+  "pageErrors": 0,
+  "runtimeModified": false,
+  "physicalDeviceTested": false,
+  "realSunlightTested": false,
+  "participants": 0,
+  "remoteUploadAttempted": false,
+  "published": false,
+  "report": "docs/REFINAMENTO_INTEGRADO_SITE_APP.md"
+}

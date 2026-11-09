@@ -1,45 +1,94 @@
-# Compila o app Android (APK) do SCHMIDT a cada versão publicada e deixa o arquivo pronto para baixar em
-# https://github.com/jhsilvamenezes-netizen/schmidt-campo/releases/latest
-name: App Android (APK)
+name: Auditoria M0 M1 (sem publicação)
 
 on:
+  pull_request:
   push:
-    branches: [main]
-    paths: ['index.html', 'app/**', '.github/workflows/app-android.yml']
+    branches: [codex/auditoria-evolucao-segura]
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: auditoria-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  apk:
-    runs-on: ubuntu-latest
+  validacao:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - uses: actions/setup-java@v4
+          node-version: 22
+          cache: npm
+          cache-dependency-path: audit/package-lock.json
+      - uses: actions/setup-python@v5
         with:
-          distribution: temurin
-          java-version: 17
-      - name: Montar o projeto Android
-        run: bash app/preparar.sh "${{ github.run_number }}"
-      - name: Compilar o APK
-        working-directory: app/android
-        run: ./gradlew assembleDebug --no-daemon
-      - name: Publicar o APK (Releases)
-        env:
-          GH_TOKEN: ${{ github.token }}
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: audit/requirements-spatial.txt
+      - name: Instalação determinística das ferramentas de auditoria
+        working-directory: audit
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Contratos de preservação e segurança
+        working-directory: audit
+        run: npm test
+      - name: Validação isolada da proposta de parâmetros
+        working-directory: audit
+        run: npm run test:parameters
+      - name: Navegador de teste
+        working-directory: audit
+        run: npx playwright install --with-deps chromium
+      - name: Comparação visual local e ensaio de backup com dados sintéticos
+        working-directory: audit
+        run: npm run test:browser
+      - name: Aceite das correções de persistência e GPS
+        working-directory: audit
+        run: npm run test:corrections
+      - name: Organização aprovada do Plano e controles originais
+        working-directory: audit
+        run: npm run test:plan
+      - name: Plano com fonte de sistema alternativa
+        working-directory: audit
         run: |
-          VERSAO="$(grep -o 'versionName "[^"]*"' app/android/app/build.gradle | cut -d'"' -f2)"
-          cp app/android/app/build/outputs/apk/debug/app-debug.apk SCHMIDT-Campo.apk
-          TAG="app-v${VERSAO}-${{ github.run_number }}"
-          gh release create "$TAG" SCHMIDT-Campo.apk \
-            --title "SCHMIDT Campo ${VERSAO} (Android)" \
-            --notes "App Android do SCHMIDT ${VERSAO}. Baixe o SCHMIDT-Campo.apk no celular, toque nele e permita instalar. Na 1ª vez que usar o GPS, toque em Permitir. Tiros e pontos são planejados/simulados: confira em campo." \
-            --latest
-      - uses: actions/upload-artifact@v4
-        with:
-          name: SCHMIDT-Campo-apk
-          path: SCHMIDT-Campo.apk
+          python create-test-fontconfig.py
+          FONTCONFIG_FILE="$PWD/results/font-variant/fonts.conf" npm run test:plan
+      - name: Restauração e abertura simultânea de abas
+        working-directory: audit
+        run: npm run test:sessions
+      - name: Atualização PWA e preservação entre versões
+        working-directory: audit
+        run: npm run test:upgrade
+      - name: Preparação Android protegida e paridade de recursos (sem APK)
+        working-directory: audit
+        run: npm run test:android
+      - name: Auditoria das dependências de build Android
+        working-directory: app
+        run: npm audit --audit-level=moderate --package-lock-only
+      - name: Ferramentas independentes de conferência espacial
+        run: python -m pip install --disable-pip-version-check -r audit/requirements-spatial.txt
+      - name: Cenários e exports dos 51 lotes (dados intermediários locais)
+        working-directory: audit
+        run: npm run probe:spatial
+      - name: Conferência independente GEOS e PROJ
+        working-directory: audit
+        run: |
+          python -m unittest geometry_diagnostics_test.py
+          python spatial-check.py
+      - name: Estudos isolados de blocos e bordas
+        working-directory: audit
+        run: |
+          python -m unittest block_geometry_test.py block_constraints_test.py
+          python block-safety-study.py
+      - name: Sintaxe do empacotador existente
+        run: bash -n app/preparar.sh
+      - name: Medição comparativa de desempenho (sem limite absoluto de tempo)
+        working-directory: audit
+        run: npm run measure:performance
+      # Sem build Android, secrets, upload de dados, tag, Release ou deploy.
+      # Publicação futura exige workflow separado e aprovação do proprietário.

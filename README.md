@@ -4,6 +4,12 @@ Versão da ferramenta SCHMIDT publicada num link https, para a equipe usar o **G
 
 **Link:** https://jhsilvamenezes-netizen.github.io/schmidt-campo/
 
+**Entrega:** `1.31.0-r1` — revisão segura 1. Identificação em
+[VERSAO.json](VERSAO.json), histórico e arquivos em
+[versões e entregas](docs/VERSOES_E_ENTREGAS.md). O conteúdo servido pode ser
+conferido pelos hashes da identificação; estudos de bloco, bordas e parâmetros
+não estão integrados.
+
 - Abra o link no **Chrome**, uma vez, com sinal. Depois ele abre **sem internet** (fica guardado no aparelho).
 - No menu ⋮ do Chrome: **Adicionar à tela inicial** (abre como um app).
 - O GPS só funciona pelo link. O arquivo aberto direto do WhatsApp não recebe a localização: é uma regra do Chrome.
@@ -29,8 +35,8 @@ desenvolvedor paga (US$ 99/ano) e revisão da Apple.
 - Abra o link no celular, baixe e toque no arquivo. O Android pede para permitir instalar "de fonte desconhecida":
   permita para o Chrome (ou o app que baixou).
 - Na 1ª vez que usar o GPS no guia, toque em **Permitir** (localização precisa).
-- Versão nova: baixe de novo e instale por cima; os planos salvos continuam (a assinatura do app é sempre a mesma).
-- O APK é compilado aqui mesmo, pelo GitHub Actions, a cada versão publicada (`.github/workflows/app-android.yml`).
+- Antes de atualizar ou reinstalar, faça uma cópia de segurança em Plano › Arquivos e guarde fora do aparelho. Instalar por cima depende da compatibilidade de assinatura; uma troca de assinatura pode exigir reinstalação. Não desinstale antes de verificar a cópia e o procedimento de migração.
+- O APK distribuído permanece preservado. Nesta branch de auditoria, o GitHub Actions apenas valida; nova distribuição depende de assinatura privada estável, backup verificado e migração preparada.
 - No app, os arquivos (GPX, KML, cópia de segurança, trajeto caminhado) abrem o **Compartilhar** do Android:
   mande para o WhatsApp, Drive ou e-mail. "Imprimir fichas" gera um arquivo .html: abra no Chrome e use
   ⋮ › Compartilhar › Imprimir.
@@ -38,3 +44,29 @@ desenvolvedor paga (US$ 99/ano) e revisão da Apple.
 - A tela fica acesa enquanto o GPS do guia estiver ligado.
 
 Os arquivos são gerados a partir do projeto principal (`npm run build && npm run pacote-web`); não edite aqui.
+
+## Desenvolvimento da candidata
+
+O projeto-fonte gerador completo ainda não foi recuperado. As fontes novas de
+correção em `src/` são integradas à referência atual por
+`node scripts/build-preserved.mjs`; não editar o bundle minificado manualmente.
+Validação e limitações: [correções de dados/GPS](docs/CORRECOES_DADOS_GPS.md),
+[fontes de correção](src/README.md) e [testes](audit/README.md).
+
+O preparo Android usa lockfile, ferramentas de build corrigidas e staging,
+preservando Capacitor/plugins e recusando sobrescrita de `app/android`/`app/www`.
+Requer Linux/GNU e Node 22 ou 24. Validação independente de geometria/projeção,
+limites e pendências: [progresso M2/M3](docs/PROGRESSO_M2_M3.md).
+
+## Entrega web e migração Android
+
+A entrega r1 do Plano prioriza distâncias, quantidades e a referência de barra
+de 36,48 m, com ajustes secundários recolhidos. A atualização do PWA aguarda
+fechar as abas/janelas antigas do SCHMIDT: depois, abra o link com internet.
+Não apague os dados do site para atualizar.
+
+O download de APK acima permanece na versão publicada anterior enquanto a
+nova assinatura e a migração estão pendentes. O proprietário não possui a
+chave antiga; o build release novo foi preparado sem assinatura e não é uma
+atualização instalável. Não desinstale antes de conferir e guardar a cópia de
+segurança fora do aparelho. Detalhes: [entrega e migração](docs/ENTREGA_WEB_E_ANDROID_2026_11_09.md).

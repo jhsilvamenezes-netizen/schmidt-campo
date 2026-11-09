@@ -1,0 +1,166 @@
+{
+  "status": "researched-proposed-not-implemented",
+  "date": "2026-11-09",
+  "researchBaselineCommit": "319d951b4546dfe460da23472df8914819d2494d",
+  "primarySources": [
+    {
+      "title": "GOV.UK Details",
+      "url": "https://design-system.service.gov.uk/components/details/",
+      "consultedOn": "2026-11-09",
+      "use": "Critério de conteúdo secundário recolhível."
+    },
+    {
+      "title": "GOV.UK Accordion",
+      "url": "https://design-system.service.gov.uk/components/accordion/",
+      "consultedOn": "2026-11-09",
+      "use": "Uso baseado em evidência; conteúdo essencial e excesso de recolhimentos."
+    },
+    {
+      "title": "WAI Disclosure",
+      "url": "https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/",
+      "consultedOn": "2026-11-09",
+      "use": "Teclado e semântica de abrir/fechar."
+    },
+    {
+      "title": "WCAG 2.2 Target Size Minimum",
+      "url": "https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html",
+      "consultedOn": "2026-11-09",
+      "use": "24 CSS px e condições de exceção/espaçamento; não confundir com 44."
+    },
+    {
+      "title": "WCAG Contrast Minimum",
+      "url": "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html",
+      "consultedOn": "2026-11-09",
+      "use": "Contraste de texto e medição das cores aplicadas."
+    },
+    {
+      "title": "WCAG Focus Not Obscured",
+      "url": "https://www.w3.org/WAI/WCAG22/Understanding/focus-not-obscured-minimum",
+      "consultedOn": "2026-11-09",
+      "use": "Localização do foco diante de conteúdo fixo."
+    },
+    {
+      "title": "TypeScript JS Projects",
+      "url": "https://www.typescriptlang.org/docs/handbook/intro-to-js-ts.html",
+      "consultedOn": "2026-11-09",
+      "use": "Tipagem incremental com JSDoc/checagem de JavaScript."
+    },
+    {
+      "title": "Playwright ARIA snapshots",
+      "url": "https://playwright.dev/docs/aria-snapshots",
+      "consultedOn": "2026-11-09",
+      "use": "Captura/comparação da árvore acessível."
+    },
+    {
+      "title": "fast-check Introduction",
+      "url": "https://fast-check.dev/docs/introduction/",
+      "consultedOn": "2026-11-09",
+      "use": "Geração de casos e redução de entradas que reproduzem falhas."
+    },
+    {
+      "title": "MDN Using Web Workers",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers",
+      "consultedOn": "2026-11-09",
+      "use": "Execução em thread separada e mensagens."
+    },
+    {
+      "title": "web.dev Optimize INP",
+      "url": "https://web.dev/articles/optimize-inp",
+      "consultedOn": "2026-11-09",
+      "use": "Resposta a interações e contexto de percentil/medições."
+    },
+    {
+      "title": "GOV.UK Usability testing",
+      "url": "https://www.gov.uk/service-manual/user-research/using-moderated-usability-testing",
+      "consultedOn": "2026-11-09",
+      "use": "Tarefas reais, instruções neutras e observação de participantes."
+    }
+  ],
+  "projectApplicationsAreRecommendations": true,
+  "interactionStudy": {
+    "originalCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
+    "browser": "141.0.7390.37",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "renderedControlObservations": 59,
+    "boundingBoxesUnder24": 0,
+    "boundingBoxesUnder44": 4,
+    "scope": "Inventário geométrico, inclui controles fora da dobra. Não decide conformidade WCAG: espaçamento, exceções, alvos efetivos e uso real precisam de avaliação.",
+    "controlsUnder44": [
+      {
+        "id": "fx-fitteam",
+        "tag": "INPUT",
+        "type": "checkbox",
+        "width": 24,
+        "height": 24
+      },
+      {
+        "id": "alignToBoom",
+        "tag": "INPUT",
+        "type": "checkbox",
+        "width": 24,
+        "height": 24
+      },
+      {
+        "id": "basemap-opacity",
+        "tag": "INPUT",
+        "type": "range",
+        "width": 366,
+        "height": 36
+      },
+      {
+        "id": "fx-mon-ver",
+        "tag": "INPUT",
+        "type": "checkbox",
+        "width": 24,
+        "height": 24
+      }
+    ],
+    "wcagConformanceConclusion": false,
+    "contrastAuditPerformed": false,
+    "ariaSnapshots": 5,
+    "ariaSnapshotHashes": {
+      "ajuste-aria-private.yaml": "729bc9175c4b6f79d9a6f5167293d83a5cd517b7759a808672782fadeefbf170",
+      "arquivos-aria-private.yaml": "84f3e4198c741b340f81295e587881ec59d80cd9e60116431f7909f2d3bdeb49",
+      "conferencia-aria-private.yaml": "e92c034acbaa549c2fb173559d7d26c1c3b52ac098e9e1e4ab5a9daa8d83199d",
+      "diagnostico-aria-private.yaml": "a49f7c4cfdaef39842bb6996502dcfc0986e2c41536cd1a0f1829834fa50068a",
+      "plano-aria-private.yaml": "067e710d36045728c46dc5cc69e7b27d90ecc782040544885f43c8ab2f7cf6e4"
+    }
+  },
+  "runtimePreserved": {
+    "index.html": "ac30bdd90a0e98d01842a5d0f4f2b606cc7df9a4e39d4154377132497d4f6523",
+    "sw.js": "421df175bc2f4b4f92ad32e72766534e3c0a94e09a74e48fdef6019fd132f2fd"
+  },
+  "sourceHash": "de012f72257b81cb898b3a23a860e4086660be07a1a14daab12eed9b6f5dba7b",
+  "projections": {
+    "countThisStage": 1,
+    "newCase": {
+      "people": 1,
+      "tracks": 5,
+      "points": 24,
+      "pendingCalibrationVisible": true
+    },
+    "approved": false,
+    "implemented": false,
+    "filesAddedToRepository": false,
+    "georeferenced": false
+  },
+  "usabilityPilot": {
+    "protocolPrepared": true,
+    "participantsTested": 0,
+    "functionalPrototypeImplemented": false
+  },
+  "newDependenciesInstalled": [],
+  "appSourceChanged": false,
+  "publishedVersionChanged": false,
+  "newCoordinatesPublished": false,
+  "limits": [
+    "Inventário das cinco etapas, não auditoria completa de todos os controles/mapa/guia.",
+    "Caixas geométricas e snapshots ARIA não certificam acessibilidade.",
+    "Projeções não demonstram dimensões DOM, contraste ou funcionamento.",
+    "INP de campo e novos ganhos de usabilidade/desempenho não foram medidos.",
+    "Nenhuma tecnologia candidata foi introduzida no runtime ou no build nesta etapa."
+  ]
+}

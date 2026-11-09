@@ -1,0 +1,9 @@
+audit/node_modules/
+audit/.venv/
+audit/results/
+audit/reference/
+*.keystore
+*.jks
+*.apk
+*.aab
+__pycache__/

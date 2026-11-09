@@ -1,0 +1,105 @@
+{
+  "status": "study-and-projection-only",
+  "reference": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
+  "referenceHtmlSha256": "394a31b41382158384ec20d6cf7200974dd697e0eacf1ebaa770af799d9a3fbf",
+  "runtimePreserved": {
+    "index.html": "ac30bdd90a0e98d01842a5d0f4f2b606cc7df9a4e39d4154377132497d4f6523",
+    "sw.js": "421df175bc2f4b4f92ad32e72766534e3c0a94e09a74e48fdef6019fd132f2fd"
+  },
+  "browser": "141.0.7390.37",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "stages": [
+    "plano",
+    "diagnostico",
+    "ajuste",
+    "conferencia",
+    "arquivos"
+  ],
+  "essentialControlTops": [
+    {
+      "id": "haPerPoint",
+      "top": 1432.609375,
+      "bottom": 1476.609375
+    },
+    {
+      "id": "qMonitors",
+      "top": 1419.765625,
+      "bottom": 1463.765625
+    }
+  ],
+  "samplePlan": {
+    "officialAreaLabel": "área publicada; não certificada por este ensaio",
+    "publishedAreaHa": 469.9,
+    "geometryAreaHa": 466.82688642499994,
+    "minimum": 24,
+    "points": 24,
+    "transverseSpacingM": 437.76,
+    "passes": 12,
+    "minPointSpacingM": 438.19113654411854,
+    "maxPointSpacingM": 515.0638902424125,
+    "route": {
+      "insideM": 10824.209817405754,
+      "transitionsEstimatedM": 1850.238706983313,
+      "totalEstimatedM": 12674.448524389067
+    }
+  },
+  "densityWithTracksFixed": [
+    {
+      "haPerPoint": 10,
+      "minimum": 47,
+      "points": 47
+    },
+    {
+      "haPerPoint": 20,
+      "minimum": 24,
+      "points": 24
+    },
+    {
+      "haPerPoint": 40,
+      "minimum": 12,
+      "points": 12
+    }
+  ],
+  "onePersonUI": {
+    "people": "1",
+    "fitTeam": true,
+    "tracks": 5,
+    "points": 24
+  },
+  "axisAudit": {
+    "fields": 51,
+    "groups": 238,
+    "skippedGroups": 73,
+    "maxAxisErrorDeg": 5.684341886080802e-14,
+    "scope": "Eixo dos pontos projetados versus rumo + correção de grade; não valida bússola magnética ou direção física da lavoura."
+  },
+  "fieldsWithMeasuredAxes": 49,
+  "independentCorrection": {
+    "status": "measured-not-field-validation",
+    "htmlSha256": "ac30bdd90a0e98d01842a5d0f4f2b606cc7df9a4e39d4154377132497d4f6523",
+    "datasetSha256": "5f498a6d3b8df5c599024c9e3e4499c68c00740e09f99e318880b7f577aba572",
+    "versions": {
+      "pyproj": "3.7.2",
+      "proj": "9.5.1"
+    },
+    "crs": "EPSG:32723",
+    "fields": 51,
+    "maxResidualDeg": 7.651295461508223e-05,
+    "scope": "Correção de grade versus PROJ no centro informado. Não valida rumo da lavoura, datum de origem ou bússola magnética."
+  },
+  "projection": {
+    "generatedForReview": true,
+    "implemented": false,
+    "scope": "Painel Plano; mapa e navegação preservados na futura especificação. Imagem ilustrativa não é desenho georreferenciado.",
+    "imageFilesPublished": false
+  },
+  "sourceHashes": {
+    "audit/layout-inventory.mjs": "ec455286835d579e5eacc90a43df0e55025ff8454df8bd80a83e5b633632a0d7",
+    "audit/orientation-study.py": "956844743a36f032d1a3529a6f828d79d4f63286e84a8909c7af9999f0adc190"
+  },
+  "physicalAndAgronomicValidation": false,
+  "newPublicCoordinates": false
+}

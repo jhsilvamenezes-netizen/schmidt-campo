@@ -1,0 +1,39 @@
+{
+  "date": "2026-11-09",
+  "kind": "owner-directed-information-review",
+  "report": "docs/INFORMACAO_ESSENCIAL_PLANO.md",
+  "scope": "Revisão de conteúdo e projeção; sem alteração do app",
+  "projection": {
+    "localPath": "/workspace/generated_images/exec-f6ef9652-edea-4b15-8758-cccb82205e8f.png",
+    "sha256": "969a81bbc989bd1975fb1195d2ffe5496b056f6c580a74582b116b7af791f68d",
+    "previousProjection": "/workspace/generated_images/exec-29da0506-5df6-4a8a-8d45-d1619dc4458d.png"
+  },
+  "priorities": [
+    "distâncias entre tiros/pontos no bloco principal sem recolhimento",
+    "valores vigentes e decisão operacional",
+    "retirar histórico antigo/novo e observações repetidas",
+    "preservar erro, recuperação e condições relevantes"
+  ],
+  "identified": [
+    "nome e nota históricos da alternativa",
+    "aviso de mudança antes/depois ligado a Desfazer",
+    "metadados de valor alterado/padrão",
+    "frase redundante na comparação"
+  ],
+  "runtimeUnchanged": {
+    "htmlSha256": "b03fa13b0799dba3309c33555f944850e0d2d6d328aee45177e4db0953391ce5",
+    "workerSha256": "3ffbd1db4efab9975022b0764fd00bf32f2821cf371dacda1a1af852400f684a"
+  },
+  "preserveStableInternalIDs": true,
+  "preserveDefaultCalculationAndValidation": true,
+  "gallery": "audit/results/didactic-projections/comparacao-essencial.html",
+  "physicalViewportFitValidated": false,
+  "participants": 0,
+  "published": false,
+  "remoteUploadAttempted": false,
+  "galleryCheck": {
+    "imagesDecoded": 9,
+    "externalHTTPRequests": 0,
+    "horizontalOverflowAt390": false
+  }
+}
