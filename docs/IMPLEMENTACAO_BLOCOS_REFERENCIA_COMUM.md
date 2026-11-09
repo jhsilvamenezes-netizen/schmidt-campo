@@ -1,5 +1,8 @@
 # Implementação local: individual e bloco por referência comum
 
+Registro histórico da r2. A revisão r3, suas correções, integração preparada
+e testes estão em [Revisão e entrega r3](REVISAO_E_ENTREGA_BLOCOS_R3.md).
+
 Entrega `1.31.0-r2-blocos-candidata`, em 09/11/2026, na branch
 `codex/auditoria-evolucao-segura`. Implementação solicitada pelo proprietário
 após as projeções. Não é publicação no Pages nem APK de distribuição.

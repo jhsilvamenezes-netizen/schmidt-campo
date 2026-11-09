@@ -4,8 +4,9 @@ import { createServer } from 'node:http';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 const root=fileURLToPath(new URL('../',import.meta.url));
-const candidate=root+'../entregas-schmidt/1.31.0-r2-blocos-candidata/';
-const results=root+'audit/results/block-runtime/';await mkdir(results,{recursive:true});
+const release=JSON.parse(await readFile(root+'audit/block-candidate.json','utf8'));
+const candidate=root+'../entregas-schmidt/'+release.directory+'/';
+const results=root+'audit/results/'+release.resultsDirectory+'/';await mkdir(results,{recursive:true});
 const server=createServer(async(req,res)=>{
   const path=new URL(req.url,'http://localhost').pathname.slice(1)||'index.html';
   if(!['index.html','sw.js','manifest.webmanifest','icone.svg','icone-180.png','icone-192.png','icone-512.png'].includes(path)){res.writeHead(404).end();return;}
@@ -38,7 +39,7 @@ try{
           ms:Math.round(performance.now()-start)};
       }catch(e){return{id:group.id,error:e.stack};}
     },group);
-    console.log(JSON.stringify(result));report.groups.push(result);
+    report.groups.push(result);
     assert.ok(!result.error,result.error);assert.ok(Object.values(result.counts).every(c=>c.points>=c.minimum));
     assert.equal(result.coverageTradeoff,false,group.id);
   }

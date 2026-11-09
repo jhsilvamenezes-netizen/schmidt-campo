@@ -8,8 +8,9 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font, PatternFill
 
 root = Path(__file__).resolve().parent.parent
-out = root.parent / 'entregas-schmidt/1.31.0-r2-blocos-candidata'
-results = root / 'audit/results/block-runtime'
+release = json.loads((root / 'audit/block-candidate.json').read_text())
+out = root.parent / 'entregas-schmidt' / release['directory']
+results = root / 'audit/results' / release['resultsDirectory']
 spec = importlib.util.spec_from_file_location('delivery', root / 'scripts/package-delivery.py')
 delivery = importlib.util.module_from_spec(spec); spec.loader.exec_module(delivery)
 def git(*args): return subprocess.check_output(['git', *args], cwd=root)
@@ -22,7 +23,7 @@ ui = json.loads((results / 'ui-report.json').read_text())
 spatial = json.loads((results / 'independent-spatial-report.json').read_text())
 assert len(r['groups']) == 40 and not r['errors'] and not ui['errors']
 assert all(not g['coverageTradeoff'] for g in r['groups'])
-readme = f'''SCHMIDT Campo — 1.31.0-r2-blocos-candidata
+readme = f'''SCHMIDT Campo — {release['version']}
 Snapshot Git: {commit}
 
 Candidata local testada; não é a versão do link público nem APK assinado.
@@ -66,11 +67,12 @@ for sheet in w:
     for col in sheet.columns: sheet.column_dimensions[col[0].column_letter].width = 34 if col[0].column <= 2 else 24
 book = out / 'Blocos_Referencia_Comum_Validacao.xlsx'; w.save(book)
 assert load_workbook(book,read_only=True).worksheets[0].max_row == 41
-web = {name:(out / name).read_bytes() for name in ['index.html','sw.js','manifest.webmanifest','icone.svg','icone-180.png','icone-192.png','icone-512.png','CANDIDATA.json','LEIA-ME.txt']}
-(out / 'SCHMIDT-Campo-1.31.0-r2-blocos-Candidata-Web.zip').write_bytes(delivery.archive(web))
+web = {name:(out / name).read_bytes() for name in ['index.html','sw.js','manifest.webmanifest','icone.svg','icone-180.png','icone-192.png','icone-512.png','CANDIDATA.json','VERSAO.json','LEIA-ME.txt']}
+(out / ('SCHMIDT-Campo-'+release['version']+'-Web.zip')).write_bytes(delivery.archive(web))
 source = {name:git('show',f'HEAD:{name}') for name in git('ls-files').decode().splitlines()}
 source['LEIA-ME-CANDIDATA.txt'] = readme.encode()
-(out / 'SCHMIDT-Campo-1.31.0-r2-blocos-Fonte-e-Testes.zip').write_bytes(delivery.archive(source))
+modes = {line.split('\t',1)[1]:int(line.split(' ',1)[0],8) for line in git('ls-files','--stage').decode().splitlines()}
+(out / ('SCHMIDT-Campo-'+release['version']+'-Fonte-e-Testes.zip')).write_bytes(delivery.archive(source,modes))
 files = {p.name:{'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'bytes':p.stat().st_size}
          for p in sorted(out.iterdir()) if p.is_file() and p.name != 'MANIFESTO-ENTREGA.json'}
 (out / 'MANIFESTO-ENTREGA.json').write_text(json.dumps({'version':meta['version'],'commit':commit,'production':False,'files':files},ensure_ascii=False,indent=2)+'\n')

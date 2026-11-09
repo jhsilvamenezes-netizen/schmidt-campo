@@ -1,0 +1,60 @@
+name: Candidata de blocos (sem deploy)
+
+on:
+  push:
+    branches: [codex/auditoria-evolucao-segura]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: blocos-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  blocos:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: audit/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Ferramentas de auditoria
+        run: |
+          npm --prefix audit ci --ignore-scripts --no-audit --no-fund
+          python -m pip install --disable-pip-version-check -r audit/requirements-blocks.txt
+          cd audit
+          npx playwright install --with-deps chromium
+      - name: Testes e build isolado
+        run: |
+          node --test audit/block-planning.test.mjs
+          node scripts/build-preserved.mjs --check
+          node scripts/build-block-candidate.mjs
+      - name: Referência individual e 40 alternativas
+        working-directory: audit
+        run: |
+          node all-fields-block-reference.mjs
+          node blocks-runtime-browser.mjs
+          python validate-runtime-blocks.py
+          node blocks-ui-browser.mjs
+      - name: Pacote revisado sem anexos ou estados de teste
+        run: python scripts/package-block-candidate.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SCHMIDT-Campo-blocos-revisada
+          path: ../entregas-schmidt/*/SCHMIDT-Campo-*-Web.zip
+          if-no-files-found: error
+          retention-days: 14
+      # Não envia resultados privados, backups, GPX, screenshots ou fontes anexadas.
+      # Não dispõe de permissão para Pages, merge, Releases ou assinatura Android.

@@ -1,4 +1,4 @@
-import { schmidtReferenceBlocks, prepareSchmidtBlock, createSchmidtBlockController, schmidtCommonBlockFields } from '../application/block-planning.mjs';
+import { schmidtReferenceBlocks, prepareSchmidtBlock, createSchmidtBlockController, schmidtCommonBlockFields, schmidtBlockScenarios, schmidtBlockBorderDistance, selectSchmidtSavedBlock, schmidtBlockInputSignature } from '../application/block-planning.mjs';
 
 export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics, store, events }) {
   const stage = document.getElementById('param-stage-inicio');
@@ -46,7 +46,8 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
     #block-active{font-size:12px;background:var(--sx-brand);color:var(--sx-surface);border-radius:8px;margin:4px}
     #block-active[hidden],#block-planning [hidden]{display:none!important}
   `; document.head.append(style);
-  let draft = null, abort = null, busy = false;
+  let draft = null, draftInputSignature = null, abort = null, busy = false;
+  const inputSignature=members=>schmidtBlockInputSignature({fields:app.fields,members,parametersFor:schmidt.parametrosDo,editsFor:f=>app.saved.editsByField?.[`${f.farm}|${f.code}`]});
   const disabledBefore = new Map();
   const stopGPS = () => {
     const gps = document.getElementById('gps-toggle');
@@ -57,20 +58,26 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
     const f = app.fields[key];
     schmidt.navigateBlockField(f.farm, f.code);
   };
-  const controller = createSchmidtBlockController({ app, save: store.saveState, refresh, stopGPS });
+  let controller;
+  try{controller=createSchmidtBlockController({ app, save: store.saveState, refresh, stopGPS });}
+  catch(error){mode.disabled=true;groupSelect.disabled=true;prepare.disabled=true;status.textContent='Os blocos salvos precisam de conferência. O individual está disponível.';schmidt.aviso(error.message,true);return;}
   const lockControls = active => {
     for (const [node, disabled] of disabledBefore) if (node.isConnected) node.disabled = disabled;
     disabledBefore.clear();
-    if (!active) return;
+    if (!active && !busy) return;
     // O bloco conserva uma grade única. Parâmetros individuais ficam disponíveis ao sair.
-    for (const node of document.querySelectorAll('#param-stage-inicio input,#param-stage-inicio select,#param-stage-inicio button,#rec-card button,#plan-import,#plan-export,#reset-plan,#optimize')) {
+    for (const node of document.querySelectorAll('#panel-plano .param-stage:not(#param-stage-arquivos) input,#panel-plano .param-stage:not(#param-stage-arquivos) select,#panel-plano .param-stage:not(#param-stage-arquivos) button,#rec-card button,#plan-import,#plan-export,#reset-plan,#optimize')) {
       if (panel.contains(node)) continue;
       disabledBefore.set(node, node.disabled); node.disabled = true;
     }
     for (const id of ['farm', 'farm-mobile', 'theater-farm']) {
       const node = document.getElementById(id); if (node) { disabledBefore.set(node, node.disabled); node.disabled = true; }
     }
-    const members = controller.records[controller.active].members;
+    if(busy){
+      for(const id of ['field','field-mobile','theater-field']){const node=document.getElementById(id);if(node){disabledBefore.set(node,node.disabled);node.disabled=true;}}
+      return;
+    }
+    const members = controller.snapshot().members;
     for (const id of ['field', 'field-mobile', 'theater-field']) for (const o of document.getElementById(id)?.options || []) {
       disabledBefore.set(o, o.disabled); o.disabled = !members.includes(o.value);
     }
@@ -78,17 +85,16 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
   const draw = (record, live = false) => {
     details.replaceChildren();
     const summary = make('p'); summary.id = 'block-summary';
-    const displayFields = schmidtCommonBlockFields(app.fields, record.members, record.common);
-    const scenarios = record.members.map(key => engine.buildScenario(displayFields[key], record.state.paramsByField[key]));
+    const scenarios = schmidtBlockScenarios(app.fields,record,engine);
     const count = scenarios.reduce((n, sc) => n + sc.samples.length, 0);
     summary.textContent = `${count} pontos · entre tiros: ${record.common.spacingM.toLocaleString('pt-BR', { maximumFractionDigits:2 })} m · barra: 36,48 m`;
     const extra = Object.values(record.assessment.addedPointsByField || {}).reduce((n,x)=>n+x,0);
-    if (extra) summary.textContent += ` · ${extra} ponto(s) adicional(is) para preservar a cobertura amostrada`;
+    if (extra&&!record.members.some(k=>record.state.editsByField[k])) summary.textContent += ` · ${extra} ponto(s) adicional(is) para preservar a cobertura amostrada`;
     const gaps=[];
     for(const sc of scenarios)for(const u of sc.units){const ps=sc.samples.filter(p=>p.unitId===u.id).sort((a,b)=>a.s-b.s);for(let i=1;i<ps.length;i++)gaps.push(Math.hypot(ps[i].x-ps[i-1].x,ps[i].y-ps[i-1].y));}
     const distances=make('p');distances.id='block-distances';
     distances.textContent=gaps.length?`Entre pontos no mesmo trecho: ${Math.min(...gaps).toLocaleString('pt-BR',{maximumFractionDigits:1})} a ${Math.max(...gaps).toLocaleString('pt-BR',{maximumFractionDigits:1})} m`:'Um ponto por trecho; sem intervalo interno.';
-    const borders=Object.values(record.assessment.minimumBorderMByField||{}).filter(Number.isFinite);
+    const borders=scenarios.map((sc,i)=>schmidtBlockBorderDistance(app.fields[record.members[i]].geom,sc.samples)).filter(Number.isFinite);
     if(borders.length)distances.textContent+=` · menor distância de ponto à borda: ${Math.min(...borders).toLocaleString('pt-BR',{maximumFractionDigits:1})} m`;
     const members = make('div'); members.id = 'block-members';
     record.members.forEach((key, i) => {
@@ -117,12 +123,13 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
     choice.hidden = active || mode.value !== 'block';
     prepare.hidden = active || mode.value !== 'block';
     groupSelect.disabled = busy;
+    mode.disabled = busy;
     apply.hidden = active || !draft || mode.value !== 'block';
     apply.disabled = !!draft?.assessment.coverageTradeoff;
     badge.hidden = !active;
     exportGPX.hidden = !active;
     if (active) {
-      const record = controller.records[controller.active];
+      const record = controller.snapshot();
       mode.value = 'block'; badge.textContent = `Bloco · ${record.members.map(k=>app.fields[k].code).join(' + ')}`;
       status.textContent = 'Bloco em uso · selecione o lote para operar. Coletas separadas do individual.';
       draw(record, true);
@@ -139,23 +146,38 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
   };
   groupSelect.onchange = () => { draft = null; details.replaceChildren(); status.textContent = ''; setState(); };
   prepare.onclick = async () => {
+    schmidt.flushBlockParameters();
+    draft=null;draftInputSignature=null;
+    if(document.querySelector('#panel-plano [aria-invalid="true"]')){setState();fail(Error('Revise os parâmetros destacados antes de preparar o bloco.'));return;}
     busy = true; prepare.disabled = true; cancel.hidden = false; apply.hidden = true;
     abort = new AbortController();
+    draft=null;details.replaceChildren();setState();
     const group = groups.find(g => g.id === groupSelect.value);
     try {
-      const existing = controller.records[group.id];
+      const selection=selectSchmidtSavedBlock(controller.records,group,app.fields),existing=selection.record;
+      const signature=inputSignature(group.members);
       status.textContent = 'Conferindo a grade comum e o mínimo de cada lote…';
       const candidate = existing || await prepareSchmidtBlock({ group, fields: app.fields, parametersFor: schmidt.parametrosDo,
         editsFor:f=>app.saved.editsByField?.[`${f.farm}|${f.code}`], engine, metrics,
         signal: abort.signal, yieldTask: () => new Promise(resolve => setTimeout(resolve, 0)) });
       if (abort.signal.aborted) return;
-      draft = candidate;
+      if(!existing&&signature!==inputSignature(group.members))throw Error('Os parâmetros mudaram. Prepare o bloco novamente.');
+      draft = {...candidate,id:selection.id,catalogId:selection.catalogId};
+      draftInputSignature=existing?null:signature;
       draw(draft); status.textContent = existing ? 'Bloco salvo: retomar sem substituir coletas.' : 'Grade preparada. Usar bloco cria coletas próprias; os individuais ficam preservados.';
     } catch (e) { draft = null; fail(e); }
     finally { busy = false; prepare.disabled = false; cancel.hidden = true; setState(); }
   };
   cancel.onclick = () => { abort?.abort(); draft = null; status.textContent='Preparação cancelada'; };
-  apply.onclick = () => { try { controller.enter(draft); draft = null; setState(); } catch (e) { fail(e); } };
+  apply.onclick = () => {
+    try {
+      schmidt.flushBlockParameters();
+      if(draftInputSignature&&draftInputSignature!==inputSignature(draft.members)){
+        draft=null;setState();throw Error('Os parâmetros mudaram. Prepare o bloco novamente.');
+      }
+      controller.enter(draft);draft=null;draftInputSignature=null;setState();
+    }catch(e){fail(e);}
+  };
   badge.onclick = () => { document.querySelector('[data-v08-view="plano"]')?.click(); schmidt.fluxo.go('plano'); panel.scrollIntoView({ block: 'nearest' }); };
   exportGPX.onclick=()=>{
     try{
@@ -164,17 +186,23 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
       const esc=s=>String(s).replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c]));
       const project=schmidt.modulos.__m_engine_projection.localToLonLat;
       const points=[];
-      for(const key of record.members){
-        let sc=engine.buildScenario(fields[key],record.state.paramsByField[key]);
-        const edits=record.state.editsByField[key];
-        if(edits){const editing=schmidt.modulos.__m_engine_editing,restored=editing.restoreSamples(sc,edits.samples);if(!restored)throw Error('Ajustes do bloco inválidos; exportação cancelada');sc=editing.withSamples(fields[key],sc,restored);}
+      const scenarios=schmidtBlockScenarios(fields,record,engine);
+      for(const [i,key] of record.members.entries()){
+        const sc=scenarios[i];
         for(const p of sc.samples){const coord=project(p.x,p.y,fields[key].centroidUTM);points.push(`<wpt lat="${coord[1]}" lon="${coord[0]}"><name>${esc(fields[key].code+'-'+p.id)}</name><desc>${esc(key+' · ponto simulado de bloco')}</desc></wpt>`);}
       }
       const blob=new Blob([`<?xml version="1.0" encoding="UTF-8"?><gpx version="1.1" creator="SCHMIDT Campo" xmlns="http://www.topografix.com/GPX/1/1">${points.join('')}</gpx>`],{type:'application/gpx+xml'});
       const a=make('a');const url=URL.createObjectURL(blob);a.href=url;a.download='SCHMIDT_Bloco_'+record.members.map(k=>app.fields[k].code).join('_')+'_SIMULADO.gpx';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
     }catch(e){fail(e);}
   };
-  events.on('plano:mudou', () => { if (controller.active) document.defaultView.requestAnimationFrame(()=>lockControls(!!controller.active)); });
+  let renderPending=false;
+  const scheduleRender=() => {
+    if(!controller.active||renderPending)return;
+    renderPending=true;
+    document.defaultView.requestAnimationFrame(()=>{renderPending=false;try{setState();}catch(e){fail(e);}});
+  };
+  events.on('plano:mudou',scheduleRender);
+  events.on('bloco:pontos-mudaram',scheduleRender);
   setState();
   schmidt.blocks = { groups, controller, prepare: group => prepareSchmidtBlock({ group, fields:app.fields, parametersFor:schmidt.parametrosDo,
     editsFor:f=>app.saved.editsByField?.[`${f.farm}|${f.code}`], engine, metrics,

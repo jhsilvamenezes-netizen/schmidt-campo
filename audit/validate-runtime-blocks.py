@@ -8,7 +8,8 @@ from shapely.geometry import Polygon, Point, LineString
 from shapely.ops import unary_union
 
 root = Path(__file__).resolve().parent.parent
-results = root / 'audit/results/block-runtime'
+release = json.loads((root / 'audit/block-candidate.json').read_text())
+results = root / 'audit/results' / release['resultsDirectory']
 data = json.loads((results / 'spatial-private.json').read_text())
 prior = json.loads((root / 'audit/results/all-blocks/individuals-private.json').read_text())['fields']
 assert len(data) == 40

@@ -4,15 +4,18 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
 const root=fileURLToPath(new URL('../',import.meta.url));
-const out=root+'../entregas-schmidt/1.31.0-r2-blocos-candidata/';
-const results=root+'audit/results/block-runtime/';await mkdir(results,{recursive:true});
+const release=JSON.parse(await readFile(root+'audit/block-candidate.json','utf8'));
+const out=root+'../entregas-schmidt/'+release.directory+'/';
+const results=root+'audit/results/'+release.resultsDirectory+'/';await mkdir(results,{recursive:true});
+const publishedReference=execFileSync('git',['show','5e03a8b3a1400054627d825ed749ea45bbd04cf8:index.html'],{cwd:root,maxBuffer:4*1024*1024});
 const server=createServer(async(req,res)=>{
   const url=new URL(req.url,'http://localhost');const original=url.pathname.startsWith('/original/');
   const path=(original?url.pathname.slice(10):url.pathname.slice(1))||'index.html';
   if(!['index.html','sw.js','manifest.webmanifest','icone.svg','icone-180.png','icone-192.png','icone-512.png'].includes(path)){res.writeHead(404).end();return;}
   res.setHeader('Content-Type',path.endsWith('.html')?'text/html':path.endsWith('.js')?'text/javascript':path.endsWith('.webmanifest')?'application/manifest+json':path.endsWith('.svg')?'image/svg+xml':'image/png');
-  res.end(await readFile((original?root:out)+path));
+  res.end(original&&path==='index.html'?publishedReference:await readFile((original?root:out)+path));
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const browser=await chromium.launch({args:['--no-sandbox','--disable-gpu']});const errors=[],checks=[];
@@ -55,21 +58,55 @@ try{
  await original.locator('[data-v08-view="plano"]').click();await original.evaluate(()=>SCHMIDT.fluxo.go('plano'));
  await original.screenshot({path:out+'Individual-Versao-Atual.png',fullPage:true});await original.close();
  await page.selectOption('#block-mode','block');await page.selectOption('#block-group','Bananal|BB1-BC1');
- await page.locator('#block-prepare').click();await page.waitForFunction(()=>!document.getElementById('block-apply').hidden,{timeout:30000});
+ const cancelled=await page.evaluate(()=>{
+   document.getElementById('block-prepare').click();
+   const locked=document.getElementById('block-group').disabled&&document.getElementById('block-mode').disabled;
+   document.getElementById('block-cancel').click();return locked;
+ });
+ assert.equal(cancelled,true);await page.waitForFunction(()=>!document.getElementById('block-prepare').disabled);
+ assert.equal(await page.locator('#block-apply').isHidden(),true);
+ assert.equal(await page.evaluate(()=>Object.keys(SCHMIDT.app.saved.planningBlocks?.records||{}).length),0);
+ checks.push('preparation-locks-selection-and-cancel-saves-no-block');
+ // Dois eventos consecutivos, sem aguardar o debounce legado de 120 ms.
+ await page.evaluate(()=>{const input=document.getElementById('haPerPoint');input.value='19';input.dispatchEvent(new Event('input',{bubbles:true}));document.getElementById('block-prepare').click();});
+ assert.equal(await page.evaluate(()=>SCHMIDT.app.saved.paramsByField['Bananal|BB1'].haPerPoint),19);
+ checks.push('pending-individual-parameter-saved-before-preparation');
+ await page.waitForFunction(()=>!document.getElementById('block-apply').hidden);
  assert.equal(await page.locator('#block-apply').isEnabled(),true);
+ await page.evaluate(()=>{const input=document.getElementById('haPerPoint');input.value='18';input.dispatchEvent(new Event('input',{bubbles:true}));document.getElementById('block-apply').click();});
+ assert.equal(await page.evaluate(()=>SCHMIDT.blocks.controller.active),null);
+ assert.equal(await page.locator('#block-apply').isHidden(),true);
+ assert.match(await page.locator('#block-status').textContent(),/parâmetros mudaram/);
+ checks.push('changed-parameters-invalidate-prepared-block-without-activating-it');
+ await page.evaluate(()=>{const input=document.getElementById('haPerPoint');input.value='19';input.dispatchEvent(new Event('input',{bubbles:true}));document.getElementById('block-prepare').click();});
+ await page.waitForFunction(()=>!document.getElementById('block-apply').hidden);
  await page.locator('#block-apply').click();
  await page.waitForFunction(()=>SCHMIDT.blocks.controller.active==='Bananal|BB1-BC1');
  assert.equal(await page.locator('#plan-import').isDisabled(),true);
  assert.equal(await page.locator('#plan-export').isDisabled(),true);
  await page.locator('[data-block-member="Bananal|BC1"]').click();
  assert.equal(await page.evaluate(()=>SCHMIDT.app.field.code),'BC1');
+ assert.equal(await page.locator('#trackSpacingM').isDisabled(),true);
+ const shapeProtected=await page.evaluate(()=>{
+   const before=JSON.stringify(SCHMIDT.app.sc.params);SCHMIDT.aplicarForma({trackSpacingM:999},'Teste');
+   const restored=SCHMIDT.restaurarVersao('Bananal|BC1',{params:{trackSpacingM:999}});
+   return before===JSON.stringify(SCHMIDT.app.sc.params)&&restored===false;
+ });
+ assert.equal(shapeProtected,true);checks.push('common-grid-protected-from-other-stages-and-history');
+ const countBefore=await page.locator('#block-overview circle').count();
+ const extraId=await page.evaluate(()=>{
+   const u=SCHMIDT.app.sc.units[0],a=u.line[0],b=u.line.at(-1);
+   return SCHMIDT.adicionarPonto(a[0]+.03*(b[0]-a[0]),a[1]+.03*(b[1]-a[1]),'Ensaio de ajuste',u.id)?.id;
+ });
+ assert.ok(extraId);await page.waitForFunction(n=>document.querySelectorAll('#block-overview circle').length===n,countBefore+1);
+ checks.push('overview-restores-current-manual-points-and-distances');
  await page.locator('#block-active').click();
  await page.locator('#block-planning').scrollIntoViewIfNeeded();
  await page.waitForTimeout(5200);
  await page.screenshot({path:out+'Bloco-BB1-BC1-Candidata.png',fullPage:true});
  const gpxDownload=page.waitForEvent('download');await page.locator('#block-export-gpx').click();
  const gpx=await readFile(await(await gpxDownload).path(),'utf8');
- const expectedPoints=await page.evaluate(()=>Object.values(SCHMIDT.blocks.controller.records[SCHMIDT.blocks.controller.active].state.paramsByField).reduce((n,p)=>n+p.totalPoints,0));
+ const expectedPoints=await page.locator('#block-overview circle').count();
  assert.equal((gpx.match(/<wpt /g)||[]).length,expectedPoints);assert.ok(expectedPoints>=49);assert.ok(!/NaN|undefined/.test(gpx));
  await writeFile(results+'block-export-private.gpx',gpx);
  checks.push('ui-prepare-apply-member-selection-and-complete-gpx');
@@ -101,12 +138,35 @@ try{
  await restored.waitForFunction(()=>window.SCHMIDT?.blocks);
  assert.equal(await restored.evaluate(()=>Object.values(SCHMIDT.blocks.controller.records['Bananal|BB1-BC1'].state.monitor['Bananal|BC1'].collected).filter(Boolean).length),1);
  assert.equal(await restored.evaluate(()=>SCHMIDT.blocks.controller.active),null);
+ assert.equal(await restored.evaluate(()=>SCHMIDT.blocks.controller.records['Bananal|BB1-BC1'].state.editsByField['Bananal|BC1'].samples.some(p=>p.extra)),true);
  checks.push('backup-restores-block-collection-in-clean-profile');await restoredContext.close();
  await page.bringToFront();await page.locator('[data-v08-view="plano"]').click();
  await page.evaluate(()=>SCHMIDT.fluxo.go('plano'));
  await page.selectOption('#block-mode','individual');
  assert.equal(await page.locator('#plan-import').isEnabled(),true);
  assert.equal(await page.evaluate(()=>Object.values(SCHMIDT.app.saved.monitor?.['Bananal|BC1']?.collected||{}).filter(Boolean).length),0);
+ // Todas as opções ativas em largura móvel, com dados já calculados pelo ensaio do motor.
+ const prepared=JSON.parse(await readFile(results+'prepared-records-private.json','utf8'));
+ const layoutContext=await browser.newContext({viewport:{width:360,height:800},locale:'pt-BR',serviceWorkers:'block'});
+ await layoutContext.addInitScript(()=>sessionStorage.setItem('schmidt.backup.lembrado','1'));
+ const layoutPage=await layoutContext.newPage();layoutPage.on('pageerror',e=>errors.push(e.message));
+ await layoutPage.goto(address);await layoutPage.waitForFunction(()=>window.SCHMIDT?.blocks);
+ await layoutPage.locator('[data-v08-view="plano"]').click();
+ for(const record of Object.values(prepared)){
+   await layoutPage.evaluate(record=>SCHMIDT.blocks.controller.enter(record),record);
+   await layoutPage.waitForFunction(()=>!document.getElementById('block-active').hidden);
+   assert.equal(await layoutPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,record.id);
+   await layoutPage.selectOption('#block-mode','individual');
+ }
+ checks.push('all-40-active-options-fit-360px-and-return-to-individual');
+ await layoutPage.evaluate(record=>SCHMIDT.blocks.controller.enter(record),prepared['Bananal|BB1-BC1']);
+ await layoutPage.waitForFunction(()=>!document.getElementById('block-active').hidden);
+ await layoutPage.setViewportSize({width:390,height:844});await layoutPage.locator('#block-active').click();
+ await layoutPage.waitForTimeout(5200);
+ await layoutPage.screenshot({path:out+'Bloco-BB1-BC1-Revisada.png',fullPage:true});
+ await layoutPage.setViewportSize({width:1280,height:1024});await layoutPage.locator('#block-planning').scrollIntoViewIfNeeded();
+ await layoutPage.screenshot({path:out+'Bloco-BB1-BC1-Visao-Conjunta.png',fullPage:true});
+ await layoutContext.close();
  // Instalação e recarga offline em origem descartável separada.
  const offlineContext=await browser.newContext({serviceWorkers:'allow'});const offline=await offlineContext.newPage();offline.on('pageerror',e=>errors.push(e.message));
  await offline.goto(address);await offline.waitForFunction(()=>window.SCHMIDT?.blocks);

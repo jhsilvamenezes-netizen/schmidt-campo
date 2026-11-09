@@ -6,6 +6,12 @@ const blockCopy = value => JSON.parse(JSON.stringify(value));
 const blockKey = field => `${field.farm}|${field.code}`;
 const blockAxisDifference = (a, b) => Math.abs(((a - b + 270) % 180 + 180) % 180 - 90);
 const blockAbsoluteA = f => f.referenceA?.map((v, i) => v + f.centroidUTM[i]);
+const blockCanonical = value => Array.isArray(value)?value.map(blockCanonical):value&&typeof value==='object'
+  ?Object.fromEntries(Object.keys(value).sort().map(k=>[k,blockCanonical(value[k])])):value;
+
+export function schmidtBlockInputSignature({fields,members,parametersFor,editsFor=()=>null}) {
+  return JSON.stringify(blockCanonical(members.map(key=>[key,parametersFor(fields[key]),editsFor(fields[key])||null])));
+}
 
 export function schmidtBlockSourceSignature(fields, members) {
   return JSON.stringify(members.map(key => {
@@ -41,7 +47,9 @@ export function schmidtReferenceBlocks(fields) {
       const members=group.members.filter((_,i)=>mask&(1<<i));
       if (members.length<2) continue;
       const fullGroup=members.length===group.members.length;
-      subsets.push({ ...group, members, fullGroup, sourceGroup:group.id,
+      const first=fields[members[0]],a=blockAbsoluteA(first);
+      const compatible=members.every(key=>{const f=fields[key],b=blockAbsoluteA(f);return Math.hypot(a[0]-b[0],a[1]-b[1])<=.05&&Number.isFinite(f.bearing)&&blockAxisDifference(f.bearing,first.bearing)<=.05;});
+      subsets.push({ ...group, members, compatible, fullGroup, sourceGroup:group.id,
         id:fullGroup?group.id:group.id+'::'+members.map(k=>fields[k].code).join('+'),
         title:members.map(k=>fields[k].code).join(' + ') });
     }
@@ -68,6 +76,31 @@ export function schmidtCommonBlockFields(fields, members, common) {
   }));
 }
 
+export function schmidtBlockScenarios(fields, record, engine) {
+  const commonFields=schmidtCommonBlockFields(fields,record.members,record.common);
+  return record.members.map(key=>{
+    let sc=engine.buildScenario(commonFields[key],record.state.paramsByField[key]);
+    const edits=record.state.editsByField[key];
+    if(edits){
+      const restored=edits.signature===sc.signature&&engine.restoreSamples(sc,edits.samples);
+      if(!restored)throw Error('Ajustes do bloco inválidos; conferir os pontos antes de continuar');
+      sc=engine.withSamples(commonFields[key],sc,restored);
+    }
+    return sc;
+  });
+}
+
+export function selectSchmidtSavedBlock(records, group, fields) {
+  const signature=schmidtBlockSourceSignature(fields,group.members);
+  const members=JSON.stringify([...group.members].sort());
+  const reusable=Object.values(records).reverse().find(record=>(record.catalogId||record.id)===group.id
+    &&JSON.stringify([...record.members].sort())===members&&record.sourceSignature===signature&&!record.assessment.coverageTradeoff);
+  if(reusable)return {record:blockCopy(reusable),id:reusable.id,catalogId:group.id};
+  let id=group.id,revision=1;
+  while(Object.hasOwn(records,id))id=group.id+'::v'+(++revision);
+  return {record:null,id,catalogId:group.id};
+}
+
 export function validateSchmidtBlocks(state, sanitizeParams) {
   const store = state?.planningBlocks;
   if (store === undefined) return;
@@ -77,7 +110,9 @@ export function validateSchmidtBlocks(state, sanitizeParams) {
     if (!record || record.id !== id || !Array.isArray(record.members) || record.members.length < 2 || record.members.length > 10
         || record.members.some(k => typeof k !== 'string' || !/^[^|]{1,40}\|[^|]{1,40}$/.test(k))
         || new Set(record.members).size !== record.members.length || new Set(record.members.map(k => k.split('|')[0])).size !== 1
-        || typeof record.sourceSignature !== 'string' || !record.common || !Array.isArray(record.common.absoluteA)
+        || typeof record.sourceSignature !== 'string'
+        || (record.catalogId!==undefined&&(typeof record.catalogId!=='string'||!record.catalogId||record.catalogId.length>256))
+        || !record.common || !Array.isArray(record.common.absoluteA)
         || record.common.absoluteA.length !== 2 || !record.common.absoluteA.every(Number.isFinite)
         || ![record.common.gridCorrection, record.common.bearingDeg, record.common.spacingM, record.common.phaseM].every(Number.isFinite)
         || record.common.spacingM <= 0 || record.common.phaseM < 0 || record.common.phaseM >= record.common.spacingM
@@ -113,7 +148,7 @@ export async function prepareSchmidtBlock({ group, fields, parametersFor, editsF
   const commonFields = schmidtCommonBlockFields(fields, group.members, common);
   const originals = {}, cells = {}, baseline = {}, counts = {}, input = {};
   const distanceStats = (grid, samples) => {
-    const ds = grid.map(p => Math.min(...samples.map(s => Math.hypot(p[0] - s.x, p[1] - s.y)))).sort((a, b) => a - b);
+    const ds = Float64Array.from(metrics.nearestDistances(grid,samples)).sort();
     if (!ds.length) throw Error('Sem células para comparar cobertura');
     return { p95: ds[Math.min(ds.length - 1, Math.floor(.95 * ds.length))], max: ds.at(-1) };
   };
@@ -131,7 +166,7 @@ export async function prepareSchmidtBlock({ group, fields, parametersFor, editsF
     counts[key] = Math.max(sc.minPoints, sc.samples.length);
     const step = metrics.gridStep(fields[key].geom, { gridTargetCells: 1500, minStepM: 15, maxStepM: 150 });
     const grid = metrics.coverageGrid(fields[key].geom, step);
-    cells[key] = Array.from(grid.x, (x, i) => [x, grid.y[i]]);
+    cells[key] = grid;
     baseline[key] = distanceStats(cells[key], sc.samples);
   }
   let best, tested = 0, redistributionCandidates = 0;
@@ -228,13 +263,24 @@ export function serializeSchmidtBlockState(state) {
 export function createSchmidtBlockController({ app, save, refresh, stopGPS = () => {} }) {
   validateSchmidtBlocks(app.saved);
   let active = null, individual = null;
-  const originalFields = { ...app.fields };
+  let originalFields = null;
   const take = state => Object.fromEntries(SCHMIDT_BLOCK_MAPS.map(name => [name, blockCopy(state[name] || {})]));
   const records = () => app.saved.planningBlocks?.records || {};
   const controller = {
     get active() { return active; },
     get commonBearing() { return active ? records()[active].common.bearingDeg : null; },
     get records() { return blockCopy(records()); },
+    snapshot(id=active) {
+      const record=records()[id];
+      if(!record)return null;
+      return blockCopy({...record,...(id===active?{state:take(app.saved)}:{})});
+    },
+    parametersFor(field) {
+      if(!active)return null;
+      const params=records()[active].state.paramsByField[blockKey(field)];
+      if(!params)throw Error('Lote fora do bloco ativo');
+      return blockCopy(params);
+    },
     serialize(state) {
       if (!active || state !== app.saved) return state;
       const store = { schema: SCHMIDT_BLOCK_SCHEMA, records: { ...records(), [active]: { ...records()[active], state: take(state) } } };
@@ -246,19 +292,21 @@ export function createSchmidtBlockController({ app, save, refresh, stopGPS = () 
       if (!record?.assessment || record.assessment.coverageTradeoff) throw Error('Bloco precisa de revisão de cobertura; individual preservado');
       const store = { schema: SCHMIDT_BLOCK_SCHEMA, records: { ...records(), [record.id]: blockCopy(record) } };
       validateSchmidtBlocks({ planningBlocks: store });
-      if (record.sourceSignature !== schmidtBlockSourceSignature(originalFields, record.members)) throw Error('Os dados do lote mudaram; prepare o bloco novamente');
+      if (record.sourceSignature !== schmidtBlockSourceSignature(app.fields, record.members)) throw Error('Os dados do lote mudaram; prepare o bloco novamente');
+      stopGPS();
       const next = { ...app.saved, planningBlocks: store };
       if (!save(next)) throw Error('Não foi possível salvar o bloco; individual preservado');
-      stopGPS(); individual = take(app.saved); app.saved.planningBlocks = store;
+      originalFields=Object.fromEntries(record.members.map(k=>[k,app.fields[k]]));
+      individual = take(app.saved); app.saved.planningBlocks = store;
       for (const name of SCHMIDT_BLOCK_MAPS) app.saved[name] = blockCopy(record.state[name]);
       Object.assign(app.fields, schmidtCommonBlockFields(originalFields, record.members, record.common));
       active = record.id; refresh(record.members[0]);
     },
     leave() {
       if (!active) return;
+      stopGPS();
       const canonical = controller.serialize(app.saved);
       if (!save(canonical)) throw Error('Não foi possível salvar; o bloco continua aberto');
-      stopGPS();
       app.saved.planningBlocks = canonical.planningBlocks;
       for (const name of SCHMIDT_BLOCK_MAPS) app.saved[name] = individual[name];
       Object.assign(app.fields, originalFields);

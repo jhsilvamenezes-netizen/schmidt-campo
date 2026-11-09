@@ -5,19 +5,22 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { posix } from 'node:path';
+import { applySchmidtBlocks, blockSourceFiles } from './block-transform.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const baseline = JSON.parse(await readFile(root+'audit/baseline.json'));
-export const sourceFiles = ['src/persistence/backup-service.mjs','src/persistence/backup-format.mjs',
+const preservedSourceFiles = ['src/persistence/backup-service.mjs','src/persistence/backup-format.mjs',
   'src/gps/fix-policy.mjs','src/platform/browser-backup-adapters.mjs','src/platform/browser-session-lock.mjs','src/platform/browser-write-barrier.mjs','src/platform/legacy-integration.mjs',
   'src/application/operational-summary.mjs','src/ui/plan-presentation.mjs','src/ui/operational-plan.mjs'];
+export const sourceFiles=[...preservedSourceFiles,...blockSourceFiles];
 const sha = text => createHash('sha256').update(text).digest('hex');
-export async function buildCandidate() {
+export async function buildCandidate({includeBlocks}={}) {
+  if(includeBlocks===undefined)includeBlocks=!!JSON.parse(await readFile(root+'VERSAO.json','utf8')).runtimeBlocks;
   const original = execFileSync('git',['show',`${baseline.commit}:index.html`],{cwd:root,maxBuffer:4*1024*1024}).toString();
   if(sha(original)!==baseline.files['index.html'].sha256) throw new Error('Baseline HTML inesperado');
   const blocks=[];
   const available = new Set();
-  for(const file of sourceFiles) {
+  for(const file of preservedSourceFiles) {
     const source=await readFile(root+file,'utf8');
     for (const line of source.match(/^import[^\n]*(?:\n|$)/gm) || []) {
       const match = /^import \{[^}]+\} from ['"]([^'"]+)['"];?\s*$/.exec(line);
@@ -77,6 +80,7 @@ export async function buildCandidate() {
   replace('else{if(n?.schema!==t)throw Error(`formato de cópia desconhecido`);','else{delete n.legado;if(n?.schema!==t)throw Error(`formato de cópia desconhecido`);','legado-somente-pelo-decoder');
   replace('Array.isArray(n.imagens)||(n.imagens=[]);','if(!Array.isArray(n.imagens))throw Error(`imagem de fundo em formato inválido`);','importação-sem-normalizar-imagens-inválidas');
   replace('return n.itensReais={...u(r),imagens:n.imagens.length,','validateSchmidtRestore(n);return n.itensReais={...u(r),imagens:n.imagens.length,','validação-completa-antes-da-prévia');
+  if(includeBlocks){const blocks=await applySchmidtBlocks(candidate);candidate=blocks.html;changes.push(...blocks.changes);}
   // Recalcula só os hashes CSP dos scripts; nenhuma política é afrouxada.
   const scripts=[...candidate.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].filter(m=>!m[1].includes('application/json'));
   const hashes=scripts.map(m=>`'sha256-${createHash('sha256').update(m[2]).digest('base64')}'`).join(' ');
@@ -87,7 +91,7 @@ export async function buildCandidate() {
   const workerTemplate=await readFile(root+'src/platform/service-worker.js','utf8');
   for(const token of ['__SCHMIDT_CACHE__','__SCHMIDT_INDEX_SHA256__'])if(workerTemplate.split(token).length!==2)throw new Error('Token de worker não único: '+token);
   const worker=workerTemplate.replace('__SCHMIDT_CACHE__',`schmidt-1.31-${sha(candidate+workerTemplate).slice(0,10)}`).replace('__SCHMIDT_INDEX_SHA256__',sha(candidate));
-  return {html:candidate,worker,changes,staticPresentationPreserved:true,approvedVisualScope:'param-stage-inicio',approvedTextScope:'normal-plan-regeneration-notice',originalFailureHandlerReused:true,
+  return {html:candidate,worker,changes,staticPresentationPreserved:true,approvedVisualScope:includeBlocks?'param-stage-inicio-and-active-block-indicator':'param-stage-inicio',approvedTextScope:includeBlocks?'plan-and-owner-requested-P6-note-suspension':'normal-plan-regeneration-notice',originalFailureHandlerReused:true,
     sourceHashes:Object.fromEntries(await Promise.all(sourceFiles.map(async f=>[f,sha(await readFile(root+f))])))};
 }
 

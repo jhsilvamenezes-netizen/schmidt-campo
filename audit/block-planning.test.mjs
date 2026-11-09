@@ -2,7 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { schmidtReferenceBlocks, schmidtCommonBlockFields, schmidtBlockSourceSignature,
   createSchmidtBlockController, serializeSchmidtBlockState, validateSchmidtBlocks,
-  installSchmidtBlockHistoryIsolation, schmidtBlockBorderDistance, prepareSchmidtBlock, SCHMIDT_BLOCK_SCHEMA } from '../src/application/block-planning.mjs';
+  installSchmidtBlockHistoryIsolation, schmidtBlockBorderDistance, prepareSchmidtBlock, schmidtBlockScenarios,
+  selectSchmidtSavedBlock, schmidtBlockInputSignature, SCHMIDT_BLOCK_SCHEMA } from '../src/application/block-planning.mjs';
 const fields = {
   'F|A': { farm:'F',code:'A',ref:'AB',centroidUTM:[100,100],referenceA:[1,2],bearing:30,bearingGridCorrection:.2,geom:[],areaOfficialHa:20 },
   'F|B': { farm:'F',code:'B',ref:'AB',centroidUTM:[200,200],referenceA:[-99,-98],bearing:210,bearingGridCorrection:.3,geom:[],areaOfficialHa:20 },
@@ -79,4 +80,58 @@ test('histórico do bloco não se grava como histórico individual',async()=>{
   const {controller}=setup();installSchmidtBlockHistoryIsolation(history);await history.gravar();assert.equal(writes,1);
   controller.enter(record());assert.deepEqual(await history.listar(),[]);assert.equal(await history.gravar(),null);assert.equal(writes,1);
   controller.leave();assert.deepEqual(await history.listar(),['old']);
+});
+test('um terceiro incompatível não elimina o par que compartilha coordenada',()=>{
+  const f=structuredClone(fields);f['F|C']={...f['F|A'],code:'C',referenceA:[1000,1000]};
+  const groups=schmidtReferenceBlocks(f);assert.equal(groups.find(g=>g.members.join(',')==='F|A,F|B').compatible,true);
+  assert.equal(groups.find(g=>g.fullGroup).compatible,false);
+});
+test('snapshot do bloco ativo inclui marcações e ajustes atuais sem expor referências',()=>{
+  const {app,controller}=setup();controller.enter(record());app.saved.monitor['F|A']={collected:{P9:true}};
+  app.saved.editsByField['F|A']={samples:[{id:'P9',x:2,y:3}]};
+  const snapshot=controller.snapshot();assert.equal(snapshot.state.monitor['F|A'].collected.P9,true);
+  snapshot.state.editsByField['F|A'].samples[0].x=99;assert.equal(app.saved.editsByField['F|A'].samples[0].x,2);
+});
+test('parâmetros de desenho vêm do bloco e não de alterações de outra etapa',()=>{
+  const {app,controller}=setup();controller.enter(record());app.saved.paramsByField['F|A'].trackSpacingM=999;
+  const params=controller.parametersFor(fields['F|A']);assert.equal(params.trackSpacingM,364.800001);
+  params.trackSpacingM=7;assert.equal(controller.parametersFor(fields['F|A']).trackSpacingM,364.800001);
+});
+test('sair do bloco conserva atualização de outro lote ocorrida em memória',()=>{
+  const {app,controller}=setup();controller.enter(record());app.fields['G|C']={farm:'G',code:'C',updated:true};
+  controller.leave();assert.equal(app.fields['G|C'].updated,true);
+});
+test('mudança da fonte cria revisão separada e preserva as coletas anteriores',()=>{
+  const old=record();old.state.monitor['F|A']={collected:{P1:true}};
+  const f=structuredClone(fields);f['F|A'].areaOfficialHa=21;
+  const records={'F|AB':old};const selection=selectSchmidtSavedBlock(records,{id:'F|AB',members:old.members},f);
+  assert.equal(selection.record,null);assert.equal(selection.id,'F|AB::v2');assert.ok(records['F|AB'].state.monitor['F|A'].collected.P1);
+});
+test('retomada seleciona a revisão que coincide com a fonte sem apagar as demais',()=>{
+  const old=record(),updated=record();old.sourceSignature+='changed';updated.id='F|AB::v2';updated.catalogId='F|AB';
+  const selection=selectSchmidtSavedBlock({'F|AB':old,'F|AB::v2':updated},{id:'F|AB',members:old.members},fields);
+  assert.equal(selection.record.id,'F|AB::v2');
+});
+test('modelo conjunto e exportação restauram somente ajustes com assinatura válida',()=>{
+  const r=record(),engine={buildScenario:()=>({signature:'current',samples:[]}),restoreSamples:(_,points)=>points,withSamples:(_,sc,points)=>({...sc,samples:points})};
+  r.state.editsByField['F|A']={signature:'current',samples:[{id:'EX1',x:1,y:2}]};
+  assert.equal(schmidtBlockScenarios(fields,r,engine)[0].samples[0].id,'EX1');
+  r.state.editsByField['F|A'].signature='stale';assert.throws(()=>schmidtBlockScenarios(fields,r,engine),/Ajustes/);
+});
+test('encerramento do GPS integra o último estado antes de persistir a troca de escopo',()=>{
+  const app={fields:structuredClone(fields),saved:{paramsByField:{},editsByField:{},monitor:{'F|A':{}}}};
+  const writes=[];let phase='individual';
+  const save=s=>{writes.push(structuredClone(serializeSchmidtBlockState(s)));return true;};
+  const controller=createSchmidtBlockController({app,save,refresh:()=>{},stopGPS:()=>{app.saved.monitor['F|A']??={};app.saved.monitor['F|A'].gpsEnded=phase;save(app.saved);}});
+  controller.enter(record());assert.equal(writes.at(-1).monitor['F|A'].gpsEnded,'individual');
+  phase='block';controller.leave();
+  assert.equal(writes.at(-1).planningBlocks.records['F|AB'].state.monitor['F|A'].gpsEnded,'block');
+  assert.equal(app.saved.monitor['F|A'].gpsEnded,'individual');
+});
+test('mudança de parâmetro ou ajuste invalida o preparo; ordem das propriedades não',()=>{
+  let p={density:20,team:5},edits=null;
+  const signature=()=>schmidtBlockInputSignature({fields,members:['F|A','F|B'],parametersFor:()=>p,editsFor:()=>edits});
+  const initial=signature();p={team:5,density:20};assert.equal(signature(),initial);
+  p.density=19;assert.notEqual(signature(),initial);p.density=20;
+  edits={samples:[{id:'P1',x:1,y:2}]};assert.notEqual(signature(),initial);
 });

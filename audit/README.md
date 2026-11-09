@@ -3,6 +3,7 @@
 Ferramentas isoladas do PWA/APK. Não são o projeto-fonte gerador.
 
 Implementação posterior solicitada: [candidata de blocos por referência comum](../docs/IMPLEMENTACAO_BLOCOS_REFERENCIA_COMUM.md).
+Revisão atual e integração para PR: [r3](../docs/REVISAO_E_ENTREGA_BLOCOS_R3.md).
 Testes: `node --test block-planning.test.mjs`, `node blocks-runtime-browser.mjs`,
 `.venv/bin/python validate-runtime-blocks.py` e `node blocks-ui-browser.mjs`.
 

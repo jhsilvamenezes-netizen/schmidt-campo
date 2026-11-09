@@ -21,6 +21,16 @@
 6. **Marco visual futuro (bloqueado):** apenas conceito e imagens para validação, sem implementação até novo comando expresso.
 
 ## Escopo e fonte de verdade
+### Revisão e envio da entrega de blocos — 09/11/2026
+
+Após confirmar que o modo bloco estava na candidata, o proprietário pediu:
+“Certo vamos revisar melhorar e enviar e entregar”. Preparar a revisão r3,
+enviar a branch e o PR com o runtime integrado e entregar os pacotes testados.
+O PR torna concreta a ativação do modo bloco; main/Pages permanecem na r1
+até a aprovação do merge, conforme a instrução original do proprietário.
+Não ampliar o escopo visual além do modo solicitado nem distribuir APK sem
+assinatura privada e migração. Registro: `docs/REVISAO_E_ENTREGA_BLOCOS_R3.md`.
+
 ### Implementação local de blocos por referência comum — 09/11/2026
 
 O proprietário determinou: “Todos lotes que tem coordenas iguais e da pra fazer
