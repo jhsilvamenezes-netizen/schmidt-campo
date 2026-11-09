@@ -49,11 +49,12 @@ jobs:
           python validate-runtime-blocks.py
           node blocks-ui-browser.mjs
       - name: Pacote revisado sem anexos ou estados de teste
+        id: package
         run: python scripts/package-block-candidate.py
       - uses: actions/upload-artifact@v4
         with:
           name: SCHMIDT-Campo-blocos-revisada
-          path: ../entregas-schmidt/*/SCHMIDT-Campo-*-Web.zip
+          path: ${{ steps.package.outputs.web_zip }}
           if-no-files-found: error
           retention-days: 14
       # Não envia resultados privados, backups, GPX, screenshots ou fontes anexadas.

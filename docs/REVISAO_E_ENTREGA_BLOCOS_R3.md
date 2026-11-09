@@ -70,6 +70,9 @@ indisponível; não se promete atualização Android por cima.
   painel de Plano aprovado para mudança.
 - Plano em cinco larguras, regressões de dados/GPS, oito cenários de
   concorrência e nove testes de preparação/paridade Android passaram.
+- Os 13 testes do estudo isolado de parâmetros conferem o hash da referência
+  histórica e a igualdade do catálogo/defaults com a r3, separando a identidade
+  de versão. Não se libera a validação estrita proposta no runtime.
 - Atualização PWA da referência original e da r1 atualmente publicada passou:
   worker aguarda fechamento das abas, recarga offline mantém as três chaves,
   marcações, imagem e histórico. Execução local, sem alegar publicação remota.
@@ -96,7 +99,8 @@ Após commit limpo, executar `python scripts/package-block-candidate.py`.
 Pacotes, planilha e capturas:
 `/workspace/entregas-schmidt/1.31.0-r3-blocos-revisada/`.
 O workflow `Candidata de blocos (sem deploy)` repete os testes e disponibiliza
-o ZIP web como artefato de CI. Não publica backups, GPX, imagens de teste,
+o ZIP web por caminho absoluto identificado pelo empacotador como artefato de
+CI. Não publica backups, GPX, imagens de teste,
 coordenadas extraídas de anexos ou chaves.
 
 ## Revisão e recuperação

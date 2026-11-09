@@ -4,6 +4,7 @@ import hashlib
 import importlib.util
 import json
 import subprocess
+import os
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font, PatternFill
 
@@ -68,7 +69,8 @@ for sheet in w:
 book = out / 'Blocos_Referencia_Comum_Validacao.xlsx'; w.save(book)
 assert load_workbook(book,read_only=True).worksheets[0].max_row == 41
 web = {name:(out / name).read_bytes() for name in ['index.html','sw.js','manifest.webmanifest','icone.svg','icone-180.png','icone-192.png','icone-512.png','CANDIDATA.json','VERSAO.json','LEIA-ME.txt']}
-(out / ('SCHMIDT-Campo-'+release['version']+'-Web.zip')).write_bytes(delivery.archive(web))
+web_zip=out / ('SCHMIDT-Campo-'+release['version']+'-Web.zip')
+web_zip.write_bytes(delivery.archive(web))
 source = {name:git('show',f'HEAD:{name}') for name in git('ls-files').decode().splitlines()}
 source['LEIA-ME-CANDIDATA.txt'] = readme.encode()
 modes = {line.split('\t',1)[1]:int(line.split(' ',1)[0],8) for line in git('ls-files','--stage').decode().splitlines()}
@@ -76,4 +78,7 @@ modes = {line.split('\t',1)[1]:int(line.split(' ',1)[0],8) for line in git('ls-f
 files = {p.name:{'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'bytes':p.stat().st_size}
          for p in sorted(out.iterdir()) if p.is_file() and p.name != 'MANIFESTO-ENTREGA.json'}
 (out / 'MANIFESTO-ENTREGA.json').write_text(json.dumps({'version':meta['version'],'commit':commit,'production':False,'files':files},ensure_ascii=False,indent=2)+'\n')
+if os.environ.get('GITHUB_OUTPUT'):
+    with open(os.environ['GITHUB_OUTPUT'],'a') as output:
+        output.write('web_zip='+str(web_zip.resolve())+'\n')
 print(json.dumps({'commit':commit,'webFiles':len(web),'sourceFiles':len(source),'workbook':str(book)},ensure_ascii=False))

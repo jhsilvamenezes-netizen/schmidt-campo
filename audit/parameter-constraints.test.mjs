@@ -2,14 +2,26 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { reviewParameters } from './parameter-constraints.mjs';
 const schema = JSON.parse(readFileSync(new URL('./parameter-schema-reference.json', import.meta.url)));
 const review = (patch, context) => reviewParameters(patch, schema, context);
 const nestedPatch = (path, value) => path.includes('.') ? { [path.split('.')[0]]: { [path.split('.')[1]]: value } } : { [path]: value };
 const has = (result, field, code) => result.issues.some(i => i.field === field && (!code || i.code === code));
 
-test('catálogo de referência corresponde exatamente ao runtime estudado', () => {
-  assert.equal(createHash('sha256').update(readFileSync(new URL('../index.html', import.meta.url))).digest('hex'), schema.htmlSha256);
+test('catálogo e defaults preservam a referência estudada, com identidade da versão separada', () => {
+  const reference=execFileSync('git',['show','5e03a8b3a1400054627d825ed749ea45bbd04cf8:index.html'],{cwd:fileURLToPath(new URL('../',import.meta.url)),maxBuffer:4*1024*1024});
+  assert.equal(createHash('sha256').update(reference).digest('hex'),schema.htmlSha256);
+  const current=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  const extract=(html,start,end)=>{
+    const a=html.indexOf(start);assert.ok(a>=0&&a===html.lastIndexOf(start),'Início de módulo único');
+    const b=html.indexOf(end,a);assert.ok(b>a,'Fim de módulo encontrado');return html.slice(a,b);
+  };
+  const catalog=html=>extract(html,'g=(()=>{let{DomainError:e,ERR:t}=h','})(),_=(()=>{let');
+  const defaults=html=>extract(html,'l=(()=>{let e=Object.freeze({boomWidthM:','})(),u=(()=>{let e=new Map').replace(/APP_VERSION:`[^`]+`/,'APP_VERSION:IDENTITY');
+  assert.equal(catalog(current),catalog(reference.toString()));
+  assert.equal(defaults(current),defaults(reference.toString()));
 });
 test('defaults reais e opcionais explícitos permanecem válidos, sem reescrever entradas', () => {
   const patch = { boomWidthM: 36.48, bearingDeg: null, totalPoints: null, maxAcceptableGapM: null };
