@@ -39,8 +39,8 @@ const report = { status: 'failed', functionalOnly, browser: browser.version(), p
   locale: 'pt-BR', timezone: 'UTC', deviceScaleFactor: 1, fixedDate: '2026-11-08T12:00:00Z',
   visual: [], functional: [] };
 const errors = [];
-async function context(viewport = { width: 390, height: 844 }, serviceWorkers = 'block') {
-  const ctx = await browser.newContext({ viewport, deviceScaleFactor: 1, locale: 'pt-BR', timezoneId: 'UTC', serviceWorkers, reducedMotion: 'reduce', acceptDownloads: true });
+async function context(viewport = { width: 390, height: 844 }, serviceWorkers = 'block', deviceScaleFactor = 1) {
+  const ctx = await browser.newContext({ viewport, deviceScaleFactor, locale: 'pt-BR', timezoneId: 'UTC', serviceWorkers, reducedMotion: 'reduce', acceptDownloads: true });
   await ctx.addInitScript(() => {
     const NativeDate = Date;
     window.Date = class extends NativeDate {
@@ -79,41 +79,56 @@ async function backup(page) {
   return downloadJson(await pending);
 }
 const digest = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
-function comparePNG(a, b, label) {
+function comparePNG(a, b, label, approvedRegion = null) {
   const first = PNG.sync.read(a), second = PNG.sync.read(b);
   assert.equal(first.width, second.width);
   assert.equal(first.height, second.height);
-  let pixels = 0, maxChannelDelta = 0;
+  let pixels = 0, maxChannelDelta = 0, approvedPixels = 0;
   for (let i = 0; i < first.data.length; i += 4) {
     let different = false;
+    const x = (i / 4) % first.width, y = Math.floor(i / 4 / first.width);
+    const approved = approvedRegion && x >= approvedRegion.left && x < approvedRegion.right && y >= approvedRegion.top && y < approvedRegion.bottom;
     for (let c = 0; c < 4; c++) {
       const delta = Math.abs(first.data[i+c] - second.data[i+c]);
-      maxChannelDelta = Math.max(maxChannelDelta, delta);
+      if (!approved) maxChannelDelta = Math.max(maxChannelDelta, delta);
       different ||= delta > 0;
     }
-    if (different) pixels++;
+    if (different) { if (approved) approvedPixels++; else pixels++; }
   }
   // Apenas ruído mínimo: no máximo 20 pixels com delta de 1/255 por canal.
   // Diferenças maiores falham e exigem inspeção manual; nenhum elemento mascarado.
   assert.ok(pixels <= 20 && maxChannelDelta <= 1, `${label}: ${pixels} pixels, delta ${maxChannelDelta}`);
-  return { identical: pixels === 0, differingPixels: pixels, maxChannelDelta };
+  return { identical: pixels === 0 && approvedPixels === 0, differingPixelsOutsideApproval: pixels, differingPixels: pixels, maxChannelDelta, approvedPixels, approvedRegion };
 }
 try {
   const reference = await serve(true), candidate = await serve(false);
   for (const [width, height] of (functionalOnly ? [] : [[360,800],[390,844],[412,915],[768,1024]])) {
     for (const state of ['mapa','plano','tiros','monitoramento','auditoria']) {
-      const images = [];
+      const images = [], regions = [];
+      // 2x evita rasterização dependente da altura fracionária da camada de
+      // rolagem no Chromium 141. Referência e candidata usam a mesma escala;
+      // tolerância original permanece 20 pixels/delta 1, sem excluir navegação.
+      const scale = state === 'plano' ? 2 : 1;
       for (const [label, url] of [['original',reference],['candidata',candidate]]) {
-        const { ctx, page } = await context({ width, height });
+        const { ctx, page } = await context({ width, height }, 'block', scale);
         await ready(page, url);
         if (state !== 'mapa') await view(page, state);
         assert.equal(await page.evaluate(() => SCHMIDT.app.field.code), 'BD3');
+        if (state === 'plano') regions.push(await page.locator('#param-stage-inicio').evaluate(e => {
+          const r=e.getBoundingClientRect(),pane=e.closest('#panel-plano').getBoundingClientRect();return {left:Math.floor(pane.left),right:Math.ceil(pane.right),top:Math.floor(r.top),bottom:Math.ceil(r.bottom)};
+        }));
         images.push(await page.screenshot({ path: fileURLToPath(new URL(`${width}-${state}-${label}.png`, results)), animations: 'disabled' }));
         await ctx.close();
       }
-      const comparison = comparePNG(images[0], images[1], `${width}/${state}`);
-      report.visual.push({ width, height, state, ...comparison, sha256: createHash('sha256').update(images[0]).digest('hex') });
-      console.log(`Visual preservado: ${width}x${height} ${state} (${comparison.differingPixels} pixels)`);
+      let approvedRegion = null;
+      if (state === 'plano') {
+        assert.equal(regions[0].top, regions[1].top, 'Início da etapa preservado');
+        assert.equal(regions[0].left, regions[1].left); assert.equal(regions[0].right, regions[1].right);
+        approvedRegion=Object.fromEntries(Object.entries({...regions[0],bottom:Math.max(regions[0].bottom,regions[1].bottom)}).map(([key,value])=>[key,value*scale]));
+      }
+      const comparison = comparePNG(images[0], images[1], `${width}/${state}`, approvedRegion);
+      report.visual.push({ width, height, state, deviceScaleFactor:scale, ...comparison, sha256: createHash('sha256').update(images[0]).digest('hex') });
+      console.log(`Visual ${state === 'plano' ? 'fora do Plano aprovado' : 'preservado'}: ${width}x${height} ${state} (${comparison.differingPixels} pixels fora do escopo; ${comparison.approvedPixels} aprovados)`);
     }
   }
   for (const scenario of (functionalOnly ? [] : ['negado', 'indisponivel', 'aproximado'])) {

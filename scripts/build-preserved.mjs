@@ -9,7 +9,8 @@ import { posix } from 'node:path';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const baseline = JSON.parse(await readFile(root+'audit/baseline.json'));
 export const sourceFiles = ['src/persistence/backup-service.mjs','src/persistence/backup-format.mjs',
-  'src/gps/fix-policy.mjs','src/platform/browser-backup-adapters.mjs','src/platform/browser-session-lock.mjs','src/platform/browser-write-barrier.mjs','src/platform/legacy-integration.mjs'];
+  'src/gps/fix-policy.mjs','src/platform/browser-backup-adapters.mjs','src/platform/browser-session-lock.mjs','src/platform/browser-write-barrier.mjs','src/platform/legacy-integration.mjs',
+  'src/application/operational-summary.mjs','src/ui/plan-presentation.mjs','src/ui/operational-plan.mjs'];
 const sha = text => createHash('sha256').update(text).digest('hex');
 export async function buildCandidate() {
   const original = execFileSync('git',['show',`${baseline.commit}:index.html`],{cwd:root,maxBuffer:4*1024*1024}).toString();
@@ -45,7 +46,7 @@ export async function buildCandidate() {
   // async já é usado pelo baseline. Evita exigir suporte novo a top-level await
   // dos WebViews Android: o await de recuperação fica dentro desta função.
   replace('<script type="module" crossorigin>','<script type="module" crossorigin>\n(async()=>{\n'+blocks.join('\n')+'\n','fontes-legíveis');
-  replace('__m_ui_lotes:ne,__m_main:J};</script>', '__m_ui_lotes:ne,__m_main:J};\n})();</script>', 'escopo-assíncrono-compatível-com-o-baseline');
+  replace('__m_ui_lotes:ne,__m_main:J};</script>', '__m_ui_lotes:ne,__m_main:J};\ninstallSchmidtOperationalPlan({document,schmidt:SCHMIDT,events:A,measurements:N});\n})();</script>', 'escopo-assíncrono-e-plano-aprovado');
   replace('catch(e){'+originalFailureBody+'}}return{loadState:t,saveState:n}',
     'catch(e){return schmidtReportLegacyStoreFailure(e)}}return{loadState:t,saveState:n}', 'reutilização-exata-do-erro-existente');
   replace('J=(()=>{let{buildScenario:e,','J=(await initialiseSchmidtCorrections(q,z),(()=>{let{buildScenario:e,','recuperação-antes-da-inicialização');
@@ -56,6 +57,12 @@ export async function buildCandidate() {
   replace('b.watchId=navigator.geolocation.watchPosition(ae,oe,v)', 'b.watchId=startSchmidtGPSWatch(navigator.geolocation,b,ae,oe,v)', 'isolar-callbacks-de-cada-sessão-GPS');
   replace('b.watchId!==null&&navigator.geolocation.clearWatch(b.watchId)', 'b.watchId!==null&&stopSchmidtGPSWatch(navigator.geolocation,b,b.watchId)', 'invalidar-sessão-GPS-ao-desligar');
   replace('timestamp:e.timestamp??Date.now()','timestamp:e.timestamp','GPS-nativo-sem-horário-fabricado');
+  // Somente o retorno normal de regeneração: preserva avisos pendentes/erros
+  // e a mesma closure de Desfazer. IDs, parâmetros e motor ficam intactos.
+  replace('$(`${r}${t.join(` · `)}`,!1,e?{label:`Desfazer`,run:()=>Je(i,e)}:null);return',
+    'e&&$(``,!1,{label:`Desfazer`,run:()=>Je(i,e)});return', 'retorno-do-plano-sem-histórico-com-desfazer');
+  replace('$(`${r}${i.pontos} ponto${i.pontos===1?``:`s`} em ${i.tiros} tiro${i.tiros===1?``:`s`} · 95% do lote a menos de ${J(i.p95)} m`,!1,null,!r)',
+    '$(`${i.pontos} ponto${i.pontos===1?``:`s`} em ${i.tiros} tiro${i.tiros===1?``:`s`} · 95% do lote a menos de ${J(i.p95)} m`,!1,null,!0)', 'resumo-normal-sem-aviso-repetido');
   const exportStart=candidate.indexOf('async function f(){let e={};for(let t of n)e[t]=o(t);');
   const exportEnd=candidate.indexOf('function p(e,t){let n=URL.createObjectURL',exportStart);
   if(exportStart<0||exportEnd<0) throw new Error('Exportação original não encontrada');
@@ -77,16 +84,17 @@ export async function buildCandidate() {
   const presentation = value => value.replace(/<script type="module" crossorigin>[\s\S]*?<\/script>/,'<script type="module" crossorigin></script>').replace(/script-src [^;]+;/,'script-src HASHES;');
   if(presentation(candidate)!==presentation(original))throw new Error('Apresentação/dados fora do módulo foram alterados');
   if(!candidate.includes(`function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`))throw new Error('Tratamento visual original não preservado');
-  const originalWorker=execFileSync('git',['show',`${baseline.commit}:sw.js`],{cwd:root}).toString();
-  const worker=originalWorker.replace(/schmidt-1\.31-[a-f0-9]+/,`schmidt-1.31-${sha(candidate).slice(0,10)}`);
-  return {html:candidate,worker,changes,presentationPreserved:true,originalFailureHandlerReused:true,
+  const workerTemplate=await readFile(root+'src/platform/service-worker.js','utf8');
+  for(const token of ['__SCHMIDT_CACHE__','__SCHMIDT_INDEX_SHA256__'])if(workerTemplate.split(token).length!==2)throw new Error('Token de worker não único: '+token);
+  const worker=workerTemplate.replace('__SCHMIDT_CACHE__',`schmidt-1.31-${sha(candidate+workerTemplate).slice(0,10)}`).replace('__SCHMIDT_INDEX_SHA256__',sha(candidate));
+  return {html:candidate,worker,changes,staticPresentationPreserved:true,approvedVisualScope:'param-stage-inicio',approvedTextScope:'normal-plan-regeneration-notice',originalFailureHandlerReused:true,
     sourceHashes:Object.fromEntries(await Promise.all(sourceFiles.map(async f=>[f,sha(await readFile(root+f))])))};
 }
 
 if(process.argv[1]===fileURLToPath(import.meta.url)) {
   const result=await buildCandidate();
   if(process.argv.includes('--inspect')) {
-    console.log(JSON.stringify({htmlSha256:sha(result.html),changes:result.changes,presentationPreserved:result.presentationPreserved,originalFailureHandlerReused:result.originalFailureHandlerReused}));
+    console.log(JSON.stringify({htmlSha256:sha(result.html),changes:result.changes,staticPresentationPreserved:result.staticPresentationPreserved,approvedVisualScope:result.approvedVisualScope,approvedTextScope:result.approvedTextScope,originalFailureHandlerReused:result.originalFailureHandlerReused}));
   } else if(process.argv.includes('--check')) {
     if(await readFile(root+'index.html','utf8')!==result.html || await readFile(root+'sw.js','utf8')!==result.worker) throw new Error('Artefatos diferentes das fontes de correção');
     console.log('Build determinístico conferido.');

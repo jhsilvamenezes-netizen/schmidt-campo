@@ -1,0 +1,81 @@
+{
+  "date": "2026-11-09",
+  "status": "proposed-awaiting-specific-approval",
+  "scope": "Somente painel Plano; mapa e navegação fora do recorte",
+  "projection": {
+    "localPath": "/workspace/generated_images/exec-29da0506-5df6-4a8a-8d45-d1619dc4458d.png",
+    "sha256": "57ea590638ba80c0f6331bb1ce4137482514d9a1268a63d8e22e959ca71559be",
+    "kind": "generated-illustrative-panel-board",
+    "implemented": false
+  },
+  "references": {
+    "originalCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
+    "candidateBaseCommit": "3382230",
+    "originalHtmlSha256": "394a31b41382158384ec20d6cf7200974dd697e0eacf1ebaa770af799d9a3fbf",
+    "candidateHtmlSha256": "b03fa13b0799dba3309c33555f944850e0d2d6d328aee45177e4db0953391ce5",
+    "states": [
+      {
+        "state": "normal",
+        "people": "5",
+        "tracks": 5,
+        "points": 24,
+        "minimum": 24,
+        "activeDistanceText": [
+          "438 m",
+          "438 a 515 m"
+        ],
+        "recommendedText": "5 tiros · 24 pontos (mín. 24)"
+      },
+      {
+        "state": "equipe-reduzida",
+        "people": "1",
+        "tracks": 5,
+        "points": 24,
+        "minimum": 24,
+        "activeDistanceText": [
+          "438 m",
+          "438 a 515 m"
+        ],
+        "recommendedText": "5 tiros · 24 pontos (mín. 24)"
+      },
+      {
+        "state": "personalizado",
+        "people": "1",
+        "tracks": 9,
+        "points": 47,
+        "minimum": 47,
+        "activeDistanceText": [
+          "280 m",
+          "365 a 438 m"
+        ],
+        "recommendedText": "7 tiros · 47 pontos (mín. 47)"
+      }
+    ],
+    "profiles": 6,
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "browser": "141.0.7390.37",
+    "scenarioParametersCountsMeasuresEquivalent": true,
+    "unhandledPageErrors": 0
+  },
+  "gallery": {
+    "localPath": "audit/results/didactic-projections/comparacao.html",
+    "embeddedImages": 9,
+    "allDecoded": true,
+    "externalHTTPRequests": 0,
+    "horizontalOverflowAt390": false
+  },
+  "draftsSuperseded": [
+    "/workspace/generated_images/exec-40859f8f-7bbb-4949-89cd-ecfd5e8d3235.png",
+    "/workspace/generated_images/exec-2d9cbb05-8b5f-40fa-baa0-d429e9abac65.png",
+    "/workspace/generated_images/exec-df8f20ae-a00d-4700-8e11-74c26104998a.png"
+  ],
+  "runtimeModified": false,
+  "participants": 0,
+  "remoteUploadAttempted": false,
+  "merged": false,
+  "deployed": false,
+  "report": "docs/PROJECOES_DIDATICAS_PLANO_V2.md"
+}

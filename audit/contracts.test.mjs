@@ -41,13 +41,14 @@ test('HTML e worker correspondem ao build determinístico das correções', asyn
   assert.equal(read('index.html').toString(),built.html);
   assert.equal(read('sw.js').toString(),built.worker);
 });
-test('CSS, HTML das telas, dados e scripts auxiliares preservam a referência original', () => {
+test('CSS/HTML estáticos, dados e scripts auxiliares preservam a referência; Plano muda por adaptador aprovado', () => {
   const original = execFileSync('git',['show',`${baseline.commit}:index.html`],{cwd:root,maxBuffer:4*1024*1024}).toString();
   const presentation = text => text.replace(/<script type="module" crossorigin>[\s\S]*?<\/script>/,'MODULE').replace(/script-src [^;]+;/,'HASHES');
   assert.equal(presentation(read('index.html').toString()),presentation(original));
-  const originalWorker = execFileSync('git',['show',`${baseline.commit}:sw.js`],{cwd:root}).toString();
-  const policy = text => text.replace(/schmidt-1\.31-[a-f0-9]+/,'CACHE');
-  assert.equal(policy(read('sw.js').toString()),policy(originalWorker));
+  const worker=read('sw.js').toString();
+  assert.ok(worker.includes(createHash('sha256').update(read('index.html')).digest('hex')));
+  assert.doesNotMatch(worker,/self\.skipWaiting\s*\(/);
+  assert.match(worker,/cache:'reload'/);
 });
 test('CSP contém hashes corretos de todos os scripts executáveis, sem liberar inline', () => {
   const html=read('index.html').toString();

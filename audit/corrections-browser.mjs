@@ -323,13 +323,13 @@ try {
   report.corrections.push({id:'rollback-failure-blocks-writes-and-recovers-on-reopen',passed:true});
   console.log('Backup, rollback, imagens e GPS: regressões de aceite passaram.');
 
-  // Exercita o worker original em sandbox JS para observar a política de cache.
+  // Observa também a política do worker candidato; o upgrade real tem ensaio separado.
   const worker=await readFile(root+'sw.js','utf8');
   const handlers={}, deleted=[], network=[], flags={};
   const cacheName=worker.match(/const CACHE = '([^']+)'/)[1];
-  const scope={URL,location:{origin:'https://example.test'},
-    self:{addEventListener:(name,fn)=>handlers[name]=fn,skipWaiting:async()=>flags.skipWaiting=true,clients:{claim:async()=>flags.claim=true}},
-    caches:{open:async()=>({addAll:async()=>{}}),keys:async()=>['schmidt-previous',cacheName,'unrelated-app'],delete:async key=>{deleted.push(key);return true;},match:async()=>({fromCache:true})},
+  const scope={URL,Request,crypto:globalThis.crypto,location:{origin:'https://example.test'},
+    self:{registration:{scope:'https://example.test/'},addEventListener:(name,fn)=>handlers[name]=fn,skipWaiting:async()=>flags.skipWaiting=true,clients:{claim:async()=>flags.claim=true}},
+    caches:{open:async()=>({addAll:async requests=>{flags.reload=requests.every(r=>r.cache==='reload');},match:async()=>new Response(html)}),keys:async()=>['schmidt-previous',cacheName,'unrelated-app'],delete:async key=>{deleted.push(key);return true;},match:async()=>({fromCache:true})},
     fetch:async req=>{network.push(req);return {fromNetwork:true};},
   };
   runInNewContext(worker,scope);
@@ -339,10 +339,10 @@ try {
   handlers.fetch({request:{method:'GET',url:'https://example.test/index.html',mode:'navigate'},respondWith:p=>pending=p});
   const response=await pending;
   assert.deepEqual(deleted,['schmidt-previous']);
-  assert.equal(network.length,0); assert.equal(response.fromCache,true);
-  assert.equal(flags.skipWaiting,true); assert.equal(flags.claim,true);
-  report.checks.push({id:'worker-cache-policy',cacheFirst:true,skipWaiting:true,claim:true,
-    onlyPreviousSchmidtCacheRemoved:true,note:'Sandbox JS, não é atualização multiaba física do PWA.'});
+  assert.equal(network.length,0); assert.equal(await response.text(),html);
+  assert.equal(flags.skipWaiting,undefined); assert.equal(flags.claim,true);assert.equal(flags.reload,true);
+  report.checks.push({id:'worker-cache-policy',cacheFirst:true,skipWaiting:false,claim:true,forcedReload:true,
+    onlyPreviousSchmidtCacheRemoved:true,note:'Sandbox JS; upgrade entre versões é ensaiado separadamente no Chromium.'});
   assert.deepEqual(pageErrors,[]);
   assert.equal(hash(await readFile(root+'index.html')),report.htmlSha256,'Candidata mudou durante o teste');
   report.pageErrors=pageErrors;

@@ -21,6 +21,64 @@
 6. **Marco visual futuro (bloqueado):** apenas conceito e imagens para validação, sem implementação até novo comando expresso.
 
 ## Escopo e fonte de verdade
+### Confirmação de publicação do payload — 09/11/2026
+
+Em resposta direta à pergunta que identificou o HTML da entrega 1.31.0-r1,
+suas coordenadas/geometrias/dados agrícolas e os destinos públicos (este
+repositório e seu Pages), o proprietário respondeu: **“Pode fazer oque precisar”**.
+Prosseguir com envio, PR/CI e publicação web da candidata já aprovada, mantendo
+os mesmos dados públicos. O envio do blob foi aceito após essa confirmação.
+Não publicar anexos privados, chaves ou APK sem a migração preparada. Blocos,
+recuo obrigatório e a validação nova dos parâmetros continuam estudos isolados.
+
+### Entrega autorizada pelo proprietário — 09/11/2026
+
+O proprietário pediu continuar as correções necessárias, confirmou a barra de
+36,48 m e determinou: “apos isso imolemnye ao link e apk as mudanças necessárias”.
+Essa ordem posterior autoriza enviar a candidata ao mesmo repositório
+`jhsilvamenezes-netizen/schmidt-campo` e atualizar o Pages
+`https://jhsilvamenezes-netizen.github.io/schmidt-campo/` por PR/main após os
+gates de validação, com os mesmos dados já públicos. Não ampliar a exposição de
+anexos privados. As restrições anteriores de publicação são históricas para
+esta entrega expressamente autorizada; preservar revisão e recuperação dos dados.
+
+O proprietário informou não possuir a chave do APK instalado. Preparar build
+release isolado; não fingir atualização por cima, distribuir debug ou reutilizar
+a chave exposta. Distribuição Android depende de uma identidade privada estável
+e do procedimento de backup/migração; não desinstalar nem apagar dados.
+
+### Implementação posterior autorizada — Plano essencial (09/11/2026)
+
+Após as projeções comparadas e o pedido de manter distâncias em destaque e
+retirar textos históricos, o proprietário determinou: “Pronto vamos por em
+pratica”. Implementar na branch o painel Plano da prancha de informação
+essencial, junto da limpeza textual já discutida, preservando Desfazer e erros.
+Referência: `/workspace/generated_images/exec-f6ef9652-edea-4b15-8758-cccb82205e8f.png`
+e `docs/INFORMACAO_ESSENCIAL_PLANO.md`. A paleta e fonte atuais permanecem;
+outras telas, métodos, mapas, merge, Pages e APK não integram esse aceite.
+
+### Exceção posterior autorizada em 09/11/2026 — somente Plano
+
+Após as projeções comparativas apresentadas na conversa, o proprietário respondeu:
+“Oque for de fato melhorar pode fazer,desde que faça sentido e vale a pena e ou nao vai deixar nada confuso”.
+O escopo apresentado para esse aceite foi organizar a etapa inicial de **Plano**:
+hectares por ponto e pessoas primeiro; quantidades/distâncias do plano em uso
+juntas; desenho e ajustes secundários recolhidos; equipe e calibração perceptíveis.
+Implementar somente essa organização na branch de auditoria, com capturas e
+regressões. Não autoriza outras telas, cálculos, mapas, navegação, merge ou
+publicação. Registro: `audit/visual-approval-2026-11-09.json`.
+
+### Diretriz posterior — informação essencial (09/11/2026)
+
+O proprietário reforçou que as distâncias entre tiros e entre pontos devem
+permanecer bem visíveis e pediu retirar observações sobre padrões antigos/novos
+e mudanças do software que poluam a operação. Nos refinamentos do Plano,
+priorizar valores efetivos do cenário em uso e recolher conteúdo secundário.
+Preservar recuperação/Desfazer, validação e pendências que influenciem a tarefa.
+O registro da revisão e a prévia simplificada estão em
+`docs/INFORMACAO_ESSENCIAL_PLANO.md`. Isso não autoriza publicação ou mudanças
+de método, e não implica criar uma barra fixa global em outras telas.
+
 Você está trabalhando no projeto SCHMIDT Campo (PWA GitHub Pages e APK Android via Capacitor). Leia primeiro README.md, .github/workflows/app-android.yml, app/preparar.sh, app/package.json, manifest.webmanifest, sw.js e a Issue #1. Esta branch é somente de auditoria e evolução segura; não publique Releases, não modifique a branch main nem execute alteração irreversível sem critérios de aceite.
 
 O index.html versionado na raiz é um **artefato compilado**; o README menciona `npm run build && npm run pacote-web`, mas os scripts/fontes geradores não constam na raiz deste repositório. **Não refatore o bundle minificado como se fosse o código-fonte original.** Procure o projeto-fonte, identifique sua origem e documente a falta se não estiver disponível.

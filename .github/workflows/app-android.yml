@@ -38,6 +38,9 @@ jobs:
       - name: Contratos de preservação e segurança
         working-directory: audit
         run: npm test
+      - name: Validação isolada da proposta de parâmetros
+        working-directory: audit
+        run: npm run test:parameters
       - name: Navegador de teste
         working-directory: audit
         run: npx playwright install --with-deps chromium
@@ -47,9 +50,15 @@ jobs:
       - name: Aceite das correções de persistência e GPS
         working-directory: audit
         run: npm run test:corrections
+      - name: Organização aprovada do Plano e controles originais
+        working-directory: audit
+        run: npm run test:plan
       - name: Restauração e abertura simultânea de abas
         working-directory: audit
         run: npm run test:sessions
+      - name: Atualização PWA e preservação entre versões
+        working-directory: audit
+        run: npm run test:upgrade
       - name: Preparação Android protegida e paridade de recursos (sem APK)
         working-directory: audit
         run: npm run test:android
@@ -66,6 +75,11 @@ jobs:
         run: |
           python -m unittest geometry_diagnostics_test.py
           python spatial-check.py
+      - name: Estudos isolados de blocos e bordas
+        working-directory: audit
+        run: |
+          python -m unittest block_geometry_test.py block_constraints_test.py
+          python block-safety-study.py
       - name: Sintaxe do empacotador existente
         run: bash -n app/preparar.sh
       - name: Medição comparativa de desempenho (sem limite absoluto de tempo)

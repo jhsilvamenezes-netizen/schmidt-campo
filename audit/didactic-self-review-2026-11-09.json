@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-09",
+  "kind": "heuristic-review-not-participant-testing",
+  "referenceLocalCommit": "24d1a4e",
+  "runtimeUnchangedSha256": "b03fa13b0799dba3309c33555f944850e0d2d6d328aee45177e4db0953391ce5",
+  "reviewed": [
+    "actual candidate screenshots: initial, reduced crew, custom settings, desktop",
+    "original Diagnostico screenshot",
+    "operational-summary module",
+    "previous operational study and evaluation script"
+  ],
+  "observed": {
+    "390x844DistancesCssY": [
+      798.2,
+      892.5
+    ],
+    "360x800DistancesCssY": [
+      787.1,
+      897.3
+    ],
+    "customizationMarkerInsideDetails": true,
+    "newSummaryUsesActiveScenario": true
+  },
+  "priorities": [
+    "density and effect",
+    "lateral versus longitudinal distances",
+    "crew and execution responsibility",
+    "active plan versus comparison",
+    "specific actionable pending checks",
+    "purpose of existing stages"
+  ],
+  "participants": 0,
+  "newRuntimeChanges": false,
+  "newVisualProjections": false,
+  "publishedChanges": false,
+  "remoteUploadAttempted": false,
+  "report": "docs/AUTOANALISE_DIDATICA_PLANO.md"
+}

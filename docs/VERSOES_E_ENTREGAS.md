@@ -1,0 +1,74 @@
+# Versões e arquivos de entrega
+
+## Identificação
+
+**1.31.0-r1 — SCHMIDT Campo, revisão segura 1**, preparada em 09/11/2026.
+O sufixo r1 identifica esta entrega de arquivos; o número interno do aplicativo
+continua 1.31.0. Não renomear um APK antigo como se fosse uma versão nova.
+O identificador técnico fica em `VERSAO.json`, sem adicionar texto ao painel
+operacional. Toda publicação precisa ser conferida pelo hash do conteúdo servido.
+
+## Histórico preservado
+
+| Identificação | Conteúdo | Estado |
+| --- | --- | --- |
+| 1.31.0 original | Web no commit `a1ad502c`; APK código 11 | Referência imutável; APK publicado preservado |
+| 1.31.0-r1 | Correções de dados/GPS/concorrência, Plano aprovado e atualização PWA | Entrega autorizada; confirmação de CI e hash servido registrada na Issue #1 |
+| Estudo de blocos e bordas | Validador isolado, testes e imagens de projeção | Documentação/protótipo; não integrado ao aplicativo |
+| Estudo dos 37 parâmetros | Diagnóstico do motor e proposta de validação estrita | 13 testes aprovados; não integrado ao aplicativo |
+| Android 1.31.0 código 12 | Build release sem assinatura | Intermediário compilado, sem distribuição; não é instalável de entrega |
+
+O proprietário confirmou a publicação após a pergunta específica sobre o HTML,
+seus dados agrícolas e os destinos públicos. O envio foi aceito pelo conector,
+resolvendo o bloqueio anterior sem contorno por outro canal. Não interpretar
+essa autorização como aprovação de funções ainda em estudo.
+
+## Arquivos organizados
+
+Pacotes locais em `/workspace/entregas-schmidt/1.31.0-r1/`:
+
+- `SCHMIDT-Campo-Web-1.31.0-r1.zip`: arquivos executáveis da web, identificação
+  da entrega e notas. Não é APK. Abrir HTML local não substitui o link HTTPS
+  para uso do GPS.
+- `SCHMIDT-Campo-Fonte-e-Testes-1.31.0-r1.zip`: snapshot dos arquivos versionados,
+  com módulos recuperados/reconstruídos, testes e documentação. O projeto-fonte
+  gerador original completo continua ausente; não apresentar esse snapshot como
+  recuperação integral do projeto original.
+- `SCHMIDT-Campo-Web-1.31.0-original.zip`: sete arquivos web originais conferidos
+  com os hashes do baseline; referência para comparação, não instrução de
+  reverter caches ou dados.
+- `SHA256SUMS.txt`: integridade dos três arquivos, sem chaves ou senhas.
+
+Os pacotes excluem anexos privados, imagens de ensaio, backups de usuários,
+node_modules, SDK, caches, APK unsigned e todo arquivo de assinatura. As
+projeções ficam disponíveis na conversa/workspace e são referenciadas nos docs.
+Nenhum pacote inclui o keystore histórico; isso não apaga o histórico público.
+
+## O que está pronto e o que continua em estudo
+
+O runtime r1 mantém o mesmo conjunto de dados agrícolas já públicos. A barra
+de referência é 36,48 m; configurações personalizadas salvas são conservadas.
+Os testes da candidata e as limitações estão em
+`audit/publication-readiness-2026-11-09.json` e
+`docs/ENTREGA_WEB_E_ANDROID_2026_11_09.md`.
+
+O modo bloco, o recuo obrigatório e a validação estrita dos 37 parâmetros **não
+passaram a funcionar no aplicativo** por estarem documentados nos pacotes.
+Consulte `PROPOSTA_BLOCOS_BORDAS_COMPARATIVO.md` e
+`REVISAO_PARAMETROS_PLANO_BLOCOS.md`. Não há ganho de tempo homologado ou rota
+conjunta gerada.
+
+## Link e Android
+
+Web: https://jhsilvamenezes-netizen.github.io/schmidt-campo/.
+APK anterior: https://github.com/jhsilvamenezes-netizen/schmidt-campo/releases/download/app-v1.31.0-11/SCHMIDT-Campo.apk.
+
+A confirmação da web exige CI remota, merge autorizado e comparação do hash
+servido com `VERSAO.json`. Até isso acontecer, não chamar o link de atualizado.
+Para atualizar o PWA após a publicação, fechar abas/janelas antigas e abrir
+novamente com internet; não limpar os dados do site.
+
+O proprietário não possui a chave do APK instalado. O build novo permanece sem
+assinatura. Não desinstalar o atual nem publicar pacote com chave de debug para
+contornar a falta: antes, preparar chave privada estável, backup verificado e
+ensaio da migração. O APK código 11 continua com seu nome/download original.

@@ -1,0 +1,137 @@
+{
+  "date": "2026-11-09",
+  "branch": "codex/auditoria-evolucao-segura",
+  "previousHead": "e779f28fce8019319ca4e7268664738eb9ea19a3",
+  "htmlSha256": "b03fa13b0799dba3309c33555f944850e0d2d6d328aee45177e4db0953391ce5",
+  "approval": "audit/visual-approval-2026-11-09.json",
+  "scope": "Somente etapa inicial de Plano; dados e motor preservados",
+  "localStatus": "passed",
+  "browser": "141.0.7390.37",
+  "unit": {
+    "contracts": 15,
+    "corrections": 28,
+    "operationalSummary": 4
+  },
+  "visual": {
+    "comparisons": 23,
+    "approvedPlanStates": 4,
+    "fullyComparedStates": 19,
+    "tolerance": {
+      "pixels": 20,
+      "maxChannelDelta": 1
+    },
+    "scale": {
+      "plan": 2,
+      "otherStates": 1
+    },
+    "outsideApprovalDifferingPixels": 10,
+    "maxChannelDeltaOutsideApproval": 1,
+    "note": "Diferenças somente dentro da etapa inicial e suas margens são contadas como escopo aprovado; navegação e mapa continuam comparados. Referência original não substituída."
+  },
+  "plan": {
+    "viewports": [
+      360,
+      390,
+      412,
+      768,
+      1280
+    ],
+    "scenarioParityStates": 6,
+    "scenarioParitySha256": [
+      "34bf9064efd5d548194ea62ebf3d8e4990a7518600a2e9c845f04145656647b7",
+      "a2388cdc4a85be10ae7f196a802f03fbe02cafab709febd0377c543ea3523b46",
+      "9b99ee9c1f9077b69491ee25d8ecb156a57eb074907cbdfe35a0df55035c4aea",
+      "a024a6649fa049f7989f658cfc9bcc946279093dbdea4162d7f596c063569428",
+      "4ab48cbd89e9315b51162be330722c26c9a17a6e7dc5659be6a4ef6a23b79566",
+      "4ab48cbd89e9315b51162be330722c26c9a17a6e7dc5659be6a4ef6a23b79566"
+    ],
+    "cases": [
+      "estado inicial",
+      "pessoa única sem redução de pontos",
+      "steppers originais",
+      "detalhes por teclado",
+      "barra personalizada",
+      "densidade e mínimo",
+      "alternativa explícita",
+      "recarga e persistência",
+      "entrada inválida",
+      "ajuda original",
+      "avanço de etapa"
+    ],
+    "unhandledPageErrors": 0
+  },
+  "backupGPS": {
+    "status": "passed",
+    "groups": 9,
+    "unhandledPageErrors": 0,
+    "inventoryChecks": 3
+  },
+  "sessions": {
+    "scenarios": 8,
+    "status": "passed",
+    "unhandledPageErrors": 0
+  },
+  "androidPreparation": {
+    "tests": 9,
+    "nativeFilesPreserved": 63,
+    "apkBuilt": false,
+    "physicalDeviceTested": false
+  },
+  "spatial": {
+    "fields": 51,
+    "samples": 749,
+    "outsideSamples": 0,
+    "invalidGeometries": 0,
+    "exportsWellFormedFields": 51,
+    "pythonDiagnostics": 4,
+    "status": "passed"
+  },
+  "performance": {
+    "status": "passed",
+    "runs": 20,
+    "reference": "8232d79",
+    "cpuRates": [
+      1,
+      4
+    ],
+    "physicalDevice": false,
+    "note": "Medição local; sem alegação de ganho estatístico ou equivalência a aparelho."
+  },
+  "dependencyAudit": "0 vulnerabilities",
+  "published": {
+    "main": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
+    "htmlSha256": "394a31b41382158384ec20d6cf7200974dd697e0eacf1ebaa770af799d9a3fbf",
+    "apkTag": "app-v1.31.0-11",
+    "apkSha256": "957d74cdab178b6e1f8b79eb62a7b7f9016c2055d5dcdebe24e11e3dc8c2f57e",
+    "apkBytes": 4583637,
+    "merged": false,
+    "deployed": false
+  },
+  "pending": [
+    "operadores e acessibilidade completa",
+    "Android físico e campo",
+    "homologação da origem dos dados",
+    "fonte geradora completa",
+    "migração de assinatura",
+    "atualização/rollback do worker em produção"
+  ],
+  "delivery": {
+    "status": "local-only-upload-blocked",
+    "implementationLocalCommit": "b20c3dcdf5804ecad3abf5a01075e5eff07fd783",
+    "remoteHeadUnchanged": "e779f28fce8019319ca4e7268664738eb9ea19a3",
+    "remoteCIForThisChange": "not-run",
+    "reason": "Revisão automática recusou create_blob do HTML por exigir autorização explícita do payload com dados agrícolas/coordenadas para este repositório. Não foi usado meio alternativo de envio.",
+    "checksBeforeRetry": {
+      "sameDestination": "jhsilvamenezes-netizen/schmidt-campo, branch codex/auditoria-evolucao-segura",
+      "sameEmbeddedDataByteForByte": true,
+      "threeDataScriptHashes": [
+        "5f498a6d3b8df5c599024c9e3e4499c68c00740e09f99e318880b7f577aba572",
+        "ee7c9c17820d3c479bc0ef628078beaa7b8202f593677f725fc9d6e6abc2629b",
+        "c1c8bdd1a3b13b39cd07c4bbf14a498d64308eb34039118654fc44e25b5ca4a2"
+      ],
+      "htmlExactAfterRemovingNewPresentationModulesInstallerAndNormalizingCSP": true,
+      "privateAttachmentsAdded": false,
+      "screenshotsAdded": false
+    }
+  }
+}

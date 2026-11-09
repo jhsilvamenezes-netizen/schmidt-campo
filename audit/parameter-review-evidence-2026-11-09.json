@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-09",
+  "status": "local-review-only",
+  "htmlSha256": "18fa7da1171b4612e6b9fc6427fe950e1bc78bbacb1e74396f7305b26a0c7c68",
+  "catalogEntries": 35,
+  "distinctEngineParameters": 37,
+  "strictProposalTestsPassed": 13,
+  "realEngineCasesExecuted": 16,
+  "activeParamsUnchanged": true,
+  "localStorageUnchanged": true,
+  "pageErrors": [],
+  "runtimeIntegrated": false,
+  "published": false,
+  "report": "docs/REVISAO_PARAMETROS_PLANO_BLOCOS.md",
+  "reproducedIssues": [
+    "numeric-boolean-inconsistency",
+    "boolean-fields-accept-wrong-types",
+    "coverage-step-range-inversion",
+    "maximum-spacing-smaller-than-boom"
+  ],
+  "limitations": [
+    "Validador isolado, sem integração à UI/importação",
+    "Não valida existência de IDs no cenário ou cobertura espacial",
+    "Não gera rota, não homologa campo nem regras agronômicas"
+  ]
+}

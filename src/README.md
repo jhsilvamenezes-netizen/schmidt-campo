@@ -8,6 +8,12 @@ antigo não é usado como substituto do aplicativo recente.
   e recuperação da restauração, com dependências de armazenamento injetadas.
 - `persistence/backup-format.mjs`: formato v2 compatível e validação adicional.
 - `gps/fix-policy.mjs`: idade/ordem de aquisição e isolamento de sessões GPS.
+- `application/operational-summary.mjs`: modelo de leitura do cenário ativo,
+  usando as medidas do motor existente sem recalcular ou salvar parâmetros.
+- `ui/plan-presentation.mjs`: vocabulário de apresentação explícito, sem renomear
+  IDs, modificar parâmetros ou apagar mensagens não relacionadas.
+- `ui/operational-plan.mjs`: organização aprovada da etapa inicial de Plano;
+  move os controles originais, mantém ajuda/validação e recolhe detalhes.
 - `platform/browser-backup-adapters.mjs`: transações nas bases existentes e
   journal privado em IndexedDB, sem manipular interface.
 - `platform/legacy-integration.mjs`: conexão explícita com APIs do bundle atual.
@@ -37,4 +43,19 @@ top-level await dos WebViews. Os módulos legados restantes continuam no
 artefato de referência; não alegar que todo o build original foi recuperado.
 
 Testes em `audit/`. Interfaces e campos não devem ser alterados implicitamente
-ao corrigir regras. Nenhum novo diálogo, controle ou texto foi introduzido.
+ao corrigir regras. A exceção de Plano está registrada em
+`audit/visual-approval-2026-11-09.json`; o CSS está limitado a essa etapa e os
+resumos novos não são parâmetros nem mudam o schema de dados.
+
+A implementação de informação essencial, seus testes e limites de entrega
+estão em `docs/EXECUCAO_PLANO_ESSENCIAL.md`. O agrupamento de comparação
+preserva a raiz/eventos legados. O retorno normal de regeneração conserva
+Desfazer; avisos pendentes/erros e o tratamento de armazenamento continuam
+separados dessa simplificação.
+
+`platform/service-worker.js` é a fonte separada do worker de atualização web,
+fora da lista de módulos de página: espera clientes antigos fecharem, confere
+integridade do HTML precacheado e usa cache próprio. O builder substitui tokens
+únicos e deriva o nome do cache também dessa fonte. Não participa do APK.
+A referência operacional de barra (36,48 m) não sobrescreve parâmetros salvos;
+o resumo sinaliza divergência apenas quando influencia o alinhamento.
