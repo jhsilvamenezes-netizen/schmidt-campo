@@ -38,7 +38,7 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Testes e build isolado
         run: |
-          node --test audit/block-planning.test.mjs
+          npm --prefix audit run test:blocks
           node scripts/build-preserved.mjs --check
           node scripts/build-block-candidate.mjs
       - name: Referência individual e 40 alternativas

@@ -34,7 +34,7 @@ Abra http://127.0.0.1:8080/ no navegador. Use um perfil de teste separado.
 Não substitua o site publicado para experimentar esta entrega.
 
 Plano > depois do resumo do individual > Planejamento > Modo bloco.
-Escolha os lotes, Preparar bloco e Usar bloco. Botões de membros abrem
+Escolha os lotes, Montar bloco e Usar bloco. Botões de membros abrem
 o lote no mapa/monitoramento atuais. Escolha o tiro antes de marcar.
 O botão Bloco do cabeçalho volta à etapa Plano. Volte ao modo individual
 para recuperar seus planos e marcações individuais. Coletas não migram

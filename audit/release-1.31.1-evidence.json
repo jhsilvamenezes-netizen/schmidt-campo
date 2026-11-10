@@ -1,0 +1,40 @@
+{
+  "checks": [
+    "51-individual-snapshots-identical",
+    "p6-same-plan-without-specific-visible-note",
+    "preparation-locks-selection-and-cancel-saves-no-block",
+    "pending-individual-parameter-saved-before-preparation",
+    "preview-member-remains-read-only",
+    "changed-parameters-invalidate-prepared-block-without-activating-it",
+    "common-grid-protected-from-other-stages-and-history",
+    "overview-restores-current-manual-points-and-distances",
+    "ui-prepare-apply-member-selection-and-complete-gpx",
+    "real-monitor-ui-collects-in-block",
+    "backup-hash-covers-individual-and-block",
+    "backup-restores-block-collection-in-clean-profile",
+    "all-40-active-options-fit-360px-and-return-to-individual",
+    "all-40-maps-labels-border-detail-keyboard-member-focus",
+    "candidate-offline-reload-with-40-options"
+  ],
+  "errors": [],
+  "viewports": [
+    360,
+    390,
+    412,
+    768
+  ],
+  "version": "1.31.1",
+  "moduleTests": 84,
+  "androidPreparationTests": 9,
+  "spatial": {
+    "blocks": 40,
+    "fieldComparisons": 88,
+    "outsidePoints": 0,
+    "segmentsOutside": 0,
+    "duplicatePointsWithinLot": 0
+  },
+  "physicalDeviceTested": false,
+  "visualRegression": "passed, 23 comparisons, unchanged tolerance",
+  "workerUpgrade": "passed: records, collection, image and history preserved",
+  "visualFirstAttempt": "33 pixels with maximum channel delta 1 in 412px Tiros; isolated rerun passed without code or tolerance changes"
+}

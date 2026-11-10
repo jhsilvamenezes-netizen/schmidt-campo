@@ -1,0 +1,53 @@
+{
+  "blocks": 40,
+  "memberPairs": 88,
+  "exactParity": true,
+  "batches": [
+    {
+      "before": 33.60000000000582,
+      "after": 0.7999999999883585
+    },
+    {
+      "before": 33.19999999998254,
+      "after": 0.7000000000116415
+    },
+    {
+      "before": 33.89999999999418,
+      "after": 1
+    },
+    {
+      "before": 42.29999999998836,
+      "after": 0.8000000000174623
+    },
+    {
+      "before": 33.70000000001164,
+      "after": 0.8999999999941792
+    },
+    {
+      "before": 35.29999999998836,
+      "after": 0.7000000000116415
+    },
+    {
+      "before": 32.60000000000582,
+      "after": 0.8999999999941792
+    },
+    {
+      "before": 34,
+      "after": 0.7999999999883585
+    },
+    {
+      "before": 33.80000000001746,
+      "after": 0.8999999999941792
+    }
+  ],
+  "beforeMedianMs": 33.80000000001746,
+  "afterMedianMs": 0.8000000000174623,
+  "errors": [],
+  "staticPresentationIdentical": true,
+  "switchAndLeavePassed": true,
+  "exactParityExcludes": [
+    "generatedAt"
+  ],
+  "moduleAndContractTests": 84,
+  "status": "candidata local não publicada"
+}

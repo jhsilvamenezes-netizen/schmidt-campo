@@ -213,3 +213,41 @@ versionados, publicados ou incorporados ao runtime.
 mesmas células de cada lote, sem permitir que médias escondam perdas.
 `search-shared-phase.py` ensaia onze fases de BB1/BC1 sem mudar o P6 ou o app.
 Decisão do proprietário e resultados: `docs/CONTINUIDADE_P6_E_FASE_COMUM.md`.
+
+### Estudo local da escolha de bloco (r4; não implantado)
+
+Diagnóstico no Pages, projeção interativa e 48 verificações do estudo:
+[escopo, resultados e plano de implementação](../docs/ESTUDO_ESCOLHA_BLOCO_E_MAPA_R4.md).
+Scripts: `block-choice-review.mjs`, `block-choice-projection.mjs` e
+`block-choice-projection-browser.mjs`. Usam navegador real e registros locais
+preparados no estudo r3; não integram o runtime nem publicam mudanças.
+
+### Mapa detalhado de blocos — projeção r5 (não implantada)
+
+[Estudo, contratos, fontes consultadas e resultados](../docs/ESTUDO_MAPA_BLOCO_DETALHADO_R5.md).
+Cena de leitura em `block-map-scene.mjs`, com cinco testes de contrato em
+`block-map-scene.test.mjs`; projeção `block-map-quality.html` e
+`block-map-quality-client.js`. Exportar com `block-map-quality-export.mjs`,
+validar com `block-map-quality-browser.mjs` e `block-map-quality-spatial.py`.
+Os resultados ficam locais/ignorados. Nenhum desses módulos integra o app.
+
+### Gargalos e cancelamento — 10/11/2026
+
+[Pesquisa, correções e experimento rejeitado](../docs/GARGALOS_E_CORRECOES_2026_11_10.md).
+Regressões: `block-bottlenecks.test.mjs`; integração real:
+`block-cancellation-browser.mjs`. O benchmark `block-border-benchmark.mjs`
+mede uma alternativa rejeitada em `border-distance-experiment.mjs`, que não
+integra o app. Resultados locais em `results/bottlenecks/`.
+
+### Reutilização de cenários — 10/11/2026
+
+[Implementação, medição e limites](../docs/DESEMPENHO_CENARIOS_BLOCOS_2026_11_10.md).
+`block-scenario-cache.test.mjs` valida invalidações; `block-scenario-cache-browser.mjs`
+confere os 40 blocos com o motor real e mede leituras repetidas. Resultados em
+`results/scenario-cache/`. A melhoria está na candidata local, não publicada.
+
+### Conferência entre membros — 10/11/2026
+
+`audit/.venv/bin/python audit/block-operational-quality.py` verifica sobreposição,
+coincidências e separação dos membros dos blocos. Não infere passagem física.
+[Resultados e contrato visual/espacial](../docs/QUALIDADE_VISUAL_E_ESPACIAL_2026_11_10.md).

@@ -1,4 +1,5 @@
 """Conferência independente dos blocos reais; usa só resultados locais."""
+import os
 import json
 import math
 from pathlib import Path
@@ -9,7 +10,7 @@ from shapely.ops import unary_union
 
 root = Path(__file__).resolve().parent.parent
 release = json.loads((root / 'audit/block-candidate.json').read_text())
-results = root / 'audit/results' / release['resultsDirectory']
+results = Path(os.environ['SCHMIDT_RESULTS_DIR']) if os.environ.get('SCHMIDT_RESULTS_DIR') else root / 'audit/results' / release['resultsDirectory']
 data = json.loads((results / 'spatial-private.json').read_text())
 prior = json.loads((root / 'audit/results/all-blocks/individuals-private.json').read_text())['fields']
 assert len(data) == 40

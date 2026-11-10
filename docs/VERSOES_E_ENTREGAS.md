@@ -80,3 +80,12 @@ O proprietário não possui a chave do APK instalado. O build novo permanece sem
 assinatura. Não desinstalar o atual nem publicar pacote com chave de debug para
 contornar a falta: antes, preparar chave privada estável, backup verificado e
 ensaio da migração. O APK código 11 continua com seu nome/download original.
+
+
+## 1.31.1 — mapa de blocos e nomes simples
+
+Mapa conjunto integrado, abertura de cada lote no mapa operacional, consulta
+de distância à borda e termos simplificados. Cancelamento e leitura das cenas
+revistos. [Relatório](ENTREGA_1_31_1.md). A identificação em `VERSAO.json` acompanha
+o artefato; a publicação exige CI aprovada e conferência do Pages. APK código 13
+compilado sem assinatura, com HTML idêntico; não distribuído.

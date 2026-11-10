@@ -5,8 +5,8 @@ import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const release=JSON.parse(await readFile(root+'audit/block-candidate.json','utf8'));
-const candidate=root+'../entregas-schmidt/'+release.directory+'/';
-const results=root+'audit/results/'+release.resultsDirectory+'/';await mkdir(results,{recursive:true});
+const candidate=process.env.SCHMIDT_CANDIDATE_DIR?process.env.SCHMIDT_CANDIDATE_DIR.replace(/\/$/,'')+'/':root+'../entregas-schmidt/'+release.directory+'/';
+const results=process.env.SCHMIDT_RESULTS_DIR?process.env.SCHMIDT_RESULTS_DIR.replace(/\/$/,'')+'/':root+'audit/results/'+release.resultsDirectory+'/';await mkdir(results,{recursive:true});
 const server=createServer(async(req,res)=>{
   const path=new URL(req.url,'http://localhost').pathname.slice(1)||'index.html';
   if(!['index.html','sw.js','manifest.webmanifest','icone.svg','icone-180.png','icone-192.png','icone-512.png'].includes(path)){res.writeHead(404).end();return;}
