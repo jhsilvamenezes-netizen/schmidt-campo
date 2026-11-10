@@ -1,72 +1,66 @@
-# SCHMIDT · Planejamento de amostragem (link de campo)
+# SCHMIDT Campo
 
-Versão da ferramenta SCHMIDT publicada num link https, para a equipe usar o **GPS** no guia de campo.
+Planeje os tiros e pontos de amostragem, acompanhe as coletas e consulte o mapa
+no celular. Você pode trabalhar em um lote ou em um bloco de lotes compatíveis.
 
-**Link:** https://jhsilvamenezes-netizen.github.io/schmidt-campo/
+**[Abrir o site](https://jhsilvamenezes-netizen.github.io/schmidt-campo/)**
 
-**Entrega:** `1.31.0-r1` — revisão segura 1. Identificação em
-[VERSAO.json](VERSAO.json), histórico e arquivos em
-[versões e entregas](docs/VERSOES_E_ENTREGAS.md). O conteúdo servido pode ser
-conferido pelos hashes da identificação; estudos de bloco, bordas e parâmetros
-não estão integrados.
+## Começar
 
-- Abra o link no **Chrome**, uma vez, com sinal. Depois ele abre **sem internet** (fica guardado no aparelho).
-- No menu ⋮ do Chrome: **Adicionar à tela inicial** (abre como um app).
-- O GPS só funciona pelo link. O arquivo aberto direto do WhatsApp não recebe a localização: é uma regra do Chrome.
-- Tiros e pontos são **planejados/simulados**: confira em campo. "Ponto coletado" marca só o progresso no celular;
-  o registro oficial continua no Cropwise.
+1. Abra o site com internet uma vez para carregar o aplicativo.
+2. Escolha a fazenda e o lote.
+3. Em **Planejar**, confira a quantidade de pontos e as distâncias.
+4. Para trabalhar em bloco, escolha os lotes, monte o bloco e confira o resultado.
+5. Use o mapa e a tela **Tiros** para acompanhar a atividade.
 
-## iPhone
+Os pontos são planejados. Confira as condições no campo. A marcação de coleta
+registra o progresso neste aparelho; o registro oficial continua no Cropwise.
 
-Use o **link acima no Safari** (no iPhone, o GPS e o "sem internet" funcionam pelo Safari):
+## Usar sem internet
 
-1. Abra o link no Safari, com sinal.
-2. Toque em **Compartilhar** (quadrado com seta) › **Adicionar à Tela de Início**. Fica um ícone SCHMIDT que abre em tela cheia.
-3. No guia, toque em **Onde estou?** e **Permitir** a localização. Para a seta girar com o celular, toque em
-   "Girar mapa com a bússola" e permita o acesso ao movimento.
+Depois de carregar o site, ele pode abrir offline. Para instalar como aplicativo:
 
-Não há app de loja para iPhone: a Apple só permite instalar app pela App Store/TestFlight, o que exige conta de
-desenvolvedor paga (US$ 99/ano) e revisão da Apple.
+- **Android/Chrome:** menu do navegador → Adicionar à tela inicial ou Instalar.
+- **iPhone/Safari:** Compartilhar → Adicionar à Tela de Início.
 
-## App Android (APK)
+Abra pelo endereço do site e permita a localização para usar o GPS.
+Para receber uma atualização, feche as janelas antigas e reabra com internet.
+Não limpe os dados do site para atualizar.
 
-**Baixar:** https://github.com/jhsilvamenezes-netizen/schmidt-campo/releases/latest/download/SCHMIDT-Campo.apk
+## Guardar os dados
 
-- Abra o link no celular, baixe e toque no arquivo. O Android pede para permitir instalar "de fonte desconhecida":
-  permita para o Chrome (ou o app que baixou).
-- Na 1ª vez que usar o GPS no guia, toque em **Permitir** (localização precisa).
-- Antes de atualizar ou reinstalar, faça uma cópia de segurança em Plano › Arquivos e guarde fora do aparelho. Instalar por cima depende da compatibilidade de assinatura; uma troca de assinatura pode exigir reinstalação. Não desinstale antes de verificar a cópia e o procedimento de migração.
-- O APK distribuído permanece preservado. Nesta branch de auditoria, o GitHub Actions apenas valida; nova distribuição depende de assinatura privada estável, backup verificado e migração preparada.
-- No app, os arquivos (GPX, KML, cópia de segurança, trajeto caminhado) abrem o **Compartilhar** do Android:
-  mande para o WhatsApp, Drive ou e-mail. "Imprimir fichas" gera um arquivo .html: abra no Chrome e use
-  ⋮ › Compartilhar › Imprimir.
-- Botão **Voltar** do Android fecha o que estiver aberto; na tela inicial, toque duas vezes para sair.
-- A tela fica acesa enquanto o GPS do guia estiver ligado.
+Em **Plano → Arquivos**, faça uma cópia de segurança e guarde fora do aparelho.
+Faça isso antes de trocar de celular ou reinstalar. Os dados do site e do APK
+não são compartilhados automaticamente.
 
-Os arquivos são gerados a partir do projeto principal (`npm run build && npm run pacote-web`); não edite aqui.
+## APK Android
 
-## Desenvolvimento da candidata
+[Baixar o APK disponível](https://github.com/jhsilvamenezes-netizen/schmidt-campo/releases/latest/download/SCHMIDT-Campo.apk).
+Esse arquivo é a versão Android anterior. As melhorias desta branch ainda não
+foram distribuídas em um novo APK.
 
-O projeto-fonte gerador completo ainda não foi recuperado. As fontes novas de
-correção em `src/` são integradas à referência atual por
-`node scripts/build-preserved.mjs`; não editar o bundle minificado manualmente.
-Validação e limitações: [correções de dados/GPS](docs/CORRECOES_DADOS_GPS.md),
-[fontes de correção](src/README.md) e [testes](audit/README.md).
+A chave de assinatura antiga não está disponível. Um novo APK precisa de
+assinatura própria e de migração com backup testado. Não desinstale o aplicativo
+atual antes de guardar e conferir seus dados.
 
-O preparo Android usa lockfile, ferramentas de build corrigidas e staging,
-preservando Capacitor/plugins e recusando sobrescrita de `app/android`/`app/www`.
-Requer Linux/GNU e Node 22 ou 24. Validação independente de geometria/projeção,
-limites e pendências: [progresso M2/M3](docs/PROGRESSO_M2_M3.md).
+## Para quem desenvolve
 
-## Entrega web e migração Android
+- [Versão e identificação dos arquivos](VERSAO.json)
+- [Código e funcionamento do build](src/README.md)
+- [Testes](audit/README.md)
+- [Histórico de entregas](docs/VERSOES_E_ENTREGAS.md)
+- [Tarefas do projeto](https://github.com/jhsilvamenezes-netizen/schmidt-campo/issues/1)
+- [Regras do projeto](AGENTS.md)
 
-A entrega r1 do Plano prioriza distâncias, quantidades e a referência de barra
-de 36,48 m, com ajustes secundários recolhidos. A atualização do PWA aguarda
-fechar as abas/janelas antigas do SCHMIDT: depois, abra o link com internet.
-Não apague os dados do site para atualizar.
+`index.html` é gerado: altere as fontes legíveis, não o código compilado.
+O projeto-fonte original completo ainda não foi recuperado.
 
-O download de APK acima permanece na versão publicada anterior enquanto a
-nova assinatura e a migração estão pendentes. O proprietário não possui a
-chave antiga; o build release novo foi preparado sem assinatura e não é uma
-atualização instalável. Não desinstale antes de conferir e guardar a cópia de
-segurança fora do aparelho. Detalhes: [entrega e migração](docs/ENTREGA_WEB_E_ANDROID_2026_11_09.md).
+```sh
+node scripts/build-preserved.mjs
+npm --prefix audit test
+npm --prefix audit run test:blocks
+```
+
+A identificação em VERSAO.json informa se os arquivos desta branch são uma
+versão publicada ou uma versão em preparação. Estudos e imagens de proposta
+não significam que a mudança já está no site ou no APK.

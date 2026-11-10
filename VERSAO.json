@@ -1,18 +1,20 @@
 {
-  "entrega": "1.31.0-r3-blocos-revisada",
-  "nome": "SCHMIDT Campo — individual e blocos por referência comum",
-  "data": "2026-11-09",
-  "versaoDoApp": "1.31.0-r3-blocos-revisada",
+  "entrega": "1.31.1",
+  "nome": "SCHMIDT Campo",
+  "data": "2026-11-10",
+  "versaoDoApp": "1.31.1",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "83f8d0c3023ea1f76decf06e486d9147ea8298a0dfa98730d8ec87d5bf28b18c",
-  "workerSha256": "099f803a6f8a1611e986116ad222f8bd724aeb4d4d0ed20fa19ca15f91de0262",
+  "htmlSha256": "af05c66ef087f1dba3839d845fbd58aa44db44782e3bf5f2d1c4f626f0a36824",
+  "workerSha256": "f86f49f646d9aa4c3020d1bae6b4bce986964dfdf10d4e5afbcdeff5165883ef",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
     "organização aprovada do Plano com distâncias em destaque",
     "referência de barra de 36,48 m",
     "atualização PWA com verificação de integridade e espera das abas antigas",
-    "modo bloco por referência comum, mantendo planos e coletas individuais separados"
+    "modo bloco por referência comum, mantendo planos e coletas individuais separados",
+    "mapa conjunto com tiros, pontos, distâncias e abertura do mapa operacional de cada lote",
+    "nomes mais simples e cancelamento seguro da preparação"
   ],
   "somenteEstudoSemIntegracao": [
     "recuo mínimo obrigatório por divisa",
@@ -20,10 +22,11 @@
   ],
   "android": {
     "publicado": "1.31.0-11",
-    "buildPreparado": null,
+    "buildPreparado": "1.31.1-13-unsigned (sem distribuição)",
     "distribuicaoNova": "pendente de chave privada estável, backup verificado e migração",
     "buildAnterior": "1.31.0-12-unsigned (HTML r1, não distribuído)"
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
-  "runtimeBlocks": true
+  "runtimeBlocks": true,
+  "statusEntrega": "versão web 1.31.1; APK sem distribuição"
 }

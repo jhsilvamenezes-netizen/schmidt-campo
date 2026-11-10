@@ -2,7 +2,7 @@
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 const root=fileURLToPath(new URL('../',import.meta.url));
-export const blockSourceFiles=['src/application/block-planning.mjs','src/ui/block-planning.mjs'];
+export const blockSourceFiles=['src/application/block-planning.mjs','src/ui/block-map.mjs','src/ui/block-planning.mjs'];
 export async function applySchmidtBlocks(input) {
 const release=JSON.parse(await readFile(root+'audit/block-candidate.json','utf8'));
 let html = input;

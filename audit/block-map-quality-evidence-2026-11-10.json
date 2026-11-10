@@ -1,0 +1,36 @@
+{
+  "status": "estudo-local-nao-publicado",
+  "date": "2026-11-10",
+  "baseVersion": "1.31.0-r3-blocos-revisada",
+  "browser": {
+    "scenes": 91,
+    "views": 197,
+    "checks": 1929,
+    "errors": 0
+  },
+  "unitTests": 5,
+  "geometry": {
+    "status": "passed",
+    "scenes": 91,
+    "members": 139,
+    "points": 2284,
+    "segments": 623,
+    "pointIntervals": 1661,
+    "boundaryMeasurements": 2284,
+    "acrossMeasurements": 138,
+    "holes": 0,
+    "oracle": "Shapely/GEOS",
+    "coordinatesAndGeometryPreserved": true,
+    "fieldScopedPointIntervals": true,
+    "absoluteMetresTolerance": 1e-06,
+    "newFieldDataPublished": false,
+    "physicalFieldCertification": false
+  },
+  "runtimeHashes": {
+    "index.html": "83f8d0c3023ea1f76decf06e486d9147ea8298a0dfa98730d8ec87d5bf28b18c",
+    "sw.js": "099f803a6f8a1611e986116ad222f8bd724aeb4d4d0ed20fa19ca15f91de0262",
+    "VERSAO.json": "81f8faa8814fbb713c698e98853e42d09e8ba6de9b55e9e6e6046539da68e97b"
+  },
+  "publishedChanges": false,
+  "newAPK": false
+}

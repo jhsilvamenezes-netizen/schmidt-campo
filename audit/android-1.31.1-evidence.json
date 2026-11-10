@@ -1,0 +1,11 @@
+{
+  "version": "1.31.1",
+  "versionCode": 13,
+  "build": "assembleRelease --offline --no-daemon",
+  "unsigned": true,
+  "distributed": false,
+  "htmlParity": true,
+  "htmlSha256": "af05c66ef087f1dba3839d845fbd58aa44db44782e3bf5f2d1c4f626f0a36824",
+  "apkSha256": "2f1e17927e9a6d814f2edf2eedf76e51100334ae1a4c3116940143ad79748f8c",
+  "physicalDeviceTested": false
+}

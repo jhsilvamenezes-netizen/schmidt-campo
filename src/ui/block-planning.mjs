@@ -1,4 +1,5 @@
-import { schmidtReferenceBlocks, prepareSchmidtBlock, createSchmidtBlockController, schmidtCommonBlockFields, schmidtBlockScenarios, schmidtBlockBorderDistance, selectSchmidtSavedBlock, schmidtBlockInputSignature } from '../application/block-planning.mjs';
+import { createSchmidtBlockMap } from './block-map.mjs';
+import { schmidtReferenceBlocks, prepareSchmidtBlock, createSchmidtBlockController, schmidtCommonBlockFields, schmidtBlockScenarios, schmidtBlockBorderDistance, selectSchmidtSavedBlock, schmidtBlockInputSignature, createSchmidtBlockScenarioReader } from '../application/block-planning.mjs';
 
 export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics, store, events }) {
   const stage = document.getElementById('param-stage-inicio');
@@ -15,14 +16,14 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
   const panel = make('section'); panel.id = 'block-planning'; panel.className = 'fx-params';
   const heading = make('strong', 'Planejamento');
   const modeLabel = make('label', 'Modo'); const mode = make('select'); mode.id = 'block-mode';
-  for (const [value, text] of [['individual', 'Lote individual'], ['block', 'Bloco por referência comum']]) {
+  for (const [value, text] of [['individual', 'Lote individual'], ['block', 'Bloco de lotes']]) {
     const o = make('option', text); o.value = value; mode.append(o);
   }
   modeLabel.append(mode);
-  const choice = make('label', 'Lotes com a mesma referência'); const groupSelect = make('select'); groupSelect.id = 'block-group'; choice.append(groupSelect);
+  const choice = make('label', 'Lotes do bloco'); const groupSelect = make('select'); groupSelect.id = 'block-group'; choice.append(groupSelect);
   const groups = schmidtReferenceBlocks(app.fields).filter(g => g.compatible);
   for (const g of groups) { const o = make('option', `${g.farm} · ${g.title}`); o.value = g.id; groupSelect.append(o); }
-  const prepare = make('button', 'Preparar bloco'); prepare.id = 'block-prepare'; prepare.type = 'button';
+  const prepare = make('button', 'Montar bloco'); prepare.id = 'block-prepare'; prepare.type = 'button';
   const apply = make('button', 'Usar bloco'); apply.id = 'block-apply'; apply.type = 'button'; apply.hidden = true;
   const cancel = make('button', 'Cancelar'); cancel.id = 'block-cancel'; cancel.type = 'button'; cancel.hidden = true;
   const exportGPX = make('button', 'Exportar pontos do bloco (GPX)'); exportGPX.id='block-export-gpx'; exportGPX.type='button'; exportGPX.hidden=true;
@@ -32,7 +33,7 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
   panel.append(heading, modeLabel, choice, controls, status, details, exportGPX);
   stage.querySelector('.op-current').after(panel);
   const badge = make('button'); badge.id = 'block-active'; badge.type = 'button'; badge.hidden = true;
-  badge.title = 'Voltar ao planejamento do bloco';
+  badge.title = 'Ver planejamento do bloco';
   document.querySelector('.top').append(badge);
   const style = make('style'); style.textContent = `
     #block-planning{display:grid;gap:8px;margin-bottom:10px;padding:10px 12px}
@@ -60,7 +61,7 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
   };
   let controller;
   try{controller=createSchmidtBlockController({ app, save: store.saveState, refresh, stopGPS });}
-  catch(error){mode.disabled=true;groupSelect.disabled=true;prepare.disabled=true;status.textContent='Os blocos salvos precisam de conferência. O individual está disponível.';schmidt.aviso(error.message,true);return;}
+  catch(error){mode.disabled=true;groupSelect.disabled=true;prepare.disabled=true;status.textContent='Não foi possível abrir os blocos salvos. Você pode usar um lote individual.';schmidt.aviso(error.message,true);return;}
   const lockControls = active => {
     for (const [node, disabled] of disabledBefore) if (node.isConnected) node.disabled = disabled;
     disabledBefore.clear();
@@ -82,41 +83,31 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
       disabledBefore.set(o, o.disabled); o.disabled = !members.includes(o.value);
     }
   };
+  const blockMap = createSchmidtBlockMap({document,selectMember:refresh});
+  const readScenarios = createSchmidtBlockScenarioReader(engine);
   const draw = (record, live = false) => {
     details.replaceChildren();
     const summary = make('p'); summary.id = 'block-summary';
-    const scenarios = schmidtBlockScenarios(app.fields,record,engine);
+    const scenarios = readScenarios(app.fields,record);
     const count = scenarios.reduce((n, sc) => n + sc.samples.length, 0);
     summary.textContent = `${count} pontos · entre tiros: ${record.common.spacingM.toLocaleString('pt-BR', { maximumFractionDigits:2 })} m · barra: 36,48 m`;
     const extra = Object.values(record.assessment.addedPointsByField || {}).reduce((n,x)=>n+x,0);
-    if (extra&&!record.members.some(k=>record.state.editsByField[k])) summary.textContent += ` · ${extra} ponto(s) adicional(is) para preservar a cobertura amostrada`;
+    if (extra&&!record.members.some(k=>record.state.editsByField[k])) summary.textContent += ` · ${extra} ${extra===1?'ponto a mais':'pontos a mais'} para manter a cobertura dos lotes`;
     const gaps=[];
     for(const sc of scenarios)for(const u of sc.units){const ps=sc.samples.filter(p=>p.unitId===u.id).sort((a,b)=>a.s-b.s);for(let i=1;i<ps.length;i++)gaps.push(Math.hypot(ps[i].x-ps[i-1].x,ps[i].y-ps[i-1].y));}
     const distances=make('p');distances.id='block-distances';
-    distances.textContent=gaps.length?`Entre pontos no mesmo trecho: ${Math.min(...gaps).toLocaleString('pt-BR',{maximumFractionDigits:1})} a ${Math.max(...gaps).toLocaleString('pt-BR',{maximumFractionDigits:1})} m`:'Um ponto por trecho; sem intervalo interno.';
+    distances.textContent=gaps.length?`Entre pontos no mesmo trecho: ${Math.min(...gaps).toLocaleString('pt-BR',{maximumFractionDigits:1})} a ${Math.max(...gaps).toLocaleString('pt-BR',{maximumFractionDigits:1})} m`:'Um ponto em cada trecho.';
     const borders=scenarios.map((sc,i)=>schmidtBlockBorderDistance(app.fields[record.members[i]].geom,sc.samples)).filter(Number.isFinite);
     if(borders.length)distances.textContent+=` · menor distância de ponto à borda: ${Math.min(...borders).toLocaleString('pt-BR',{maximumFractionDigits:1})} m`;
     const members = make('div'); members.id = 'block-members';
     record.members.forEach((key, i) => {
       const button = make('button', `${app.fields[key].code} · ${scenarios[i].samples.length} pontos`); button.type = 'button'; button.dataset.blockMember = key;
-      button.disabled = !live; button.onclick = () => refresh(key); members.append(button);
+      button.disabled = !live; button.onclick = () => blockMap.focus(key); members.append(button);
     });
-    const note = make('p', 'Cada lote mantém seu mínimo. As passagens entre lotes precisam ser conferidas pela equipe.');
+    const note = make('p', 'Cada lote mantém a quantidade mínima de pontos. Confira as passagens entre os lotes.');
     details.append(summary, distances, members, note);
     if (record.assessment.coverageTradeoff) details.append(make('p', `Esta grade altera a cobertura: pior relação amostrada ${(record.assessment.worstRatio * 100 - 100).toFixed(1)}% acima do individual. Confira antes de usar.`));
-    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg'); svg.id = 'block-overview'; svg.setAttribute('viewBox','0 0 1000 1000'); svg.setAttribute('role','img'); svg.setAttribute('aria-label','Visão conjunta de lotes, tiros e pontos');
-    const vertices = record.members.flatMap(key => app.fields[key].geom.flatMap(poly => poly[0].map(p => p.map((v,i) => v + app.fields[key].centroidUTM[i]))));
-    const xs=vertices.map(p=>p[0]), ys=vertices.map(p=>p[1]), x0=Math.min(...xs), x1=Math.max(...xs), y0=Math.min(...ys), y1=Math.max(...ys), scale=900/Math.max(x1-x0,y1-y0);
-    const xy=(p,field)=>[500+(p[0]+field.centroidUTM[0]-(x0+x1)/2)*scale,500-(p[1]+field.centroidUTM[1]-(y0+y1)/2)*scale];
-    const sv=(tag, attrs)=>{const n=document.createElementNS(svg.namespaceURI,tag);for(const[k,v]of Object.entries(attrs))n.setAttribute(k,v);svg.append(n);return n;};
-    record.members.forEach((key,index)=>{
-      const field=app.fields[key],sc=scenarios[index];
-      const d=field.geom.map(poly=>poly.map(ring=>'M'+ring.map(p=>xy(p,field).join(',')).join('L')+'Z').join('')).join('');
-      sv('path',{d,fill:'var(--sx-brand-soft)',stroke:'var(--sx-map-field-line)','stroke-width':2,'fill-rule':'evenodd'});
-      for(const u of sc.units)sv('polyline',{points:u.line.map(p=>xy(p,field).join(',')).join(' '),stroke:'var(--sx-map-track)','stroke-width':2,fill:'none'});
-      for(const p of sc.samples){const[x,y]=xy([p.x,p.y],field);sv('circle',{cx:x,cy:y,r:4,fill:'var(--sx-map-point)'});}
-    });
-    details.append(svg);
+    blockMap.update(record,app.fields,scenarios,live,app.field?`${app.field.farm}|${app.field.code}`:null);
   };
   const setState = () => {
     const active = !!controller.active;
@@ -131,32 +122,32 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
     if (active) {
       const record = controller.snapshot();
       mode.value = 'block'; badge.textContent = `Bloco · ${record.members.map(k=>app.fields[k].code).join(' + ')}`;
-      status.textContent = 'Bloco em uso · selecione o lote para operar. Coletas separadas do individual.';
+      status.textContent = 'Bloco em uso. Escolha o lote. As coletas deste bloco ficam salvas separadamente.';
       draw(record, true);
-    } else if (mode.value === 'individual') { details.replaceChildren(); status.textContent = ''; }
+    } else if (mode.value === 'individual') { readScenarios.clear(); blockMap.clear(); details.replaceChildren(); status.textContent = ''; }
     lockControls(active);
   };
   const fail = error => { status.textContent = error.message; schmidt.aviso(error.message, true); };
   mode.onchange = () => {
-    abort?.abort(); draft = null;
+    abort?.abort(); draft = null; blockMap.clear();
     if (controller.active && mode.value === 'individual') {
       try { controller.leave(); } catch (e) { mode.value='block'; fail(e); return; }
     }
     setState();
   };
-  groupSelect.onchange = () => { draft = null; details.replaceChildren(); status.textContent = ''; setState(); };
+  groupSelect.onchange = () => { blockMap.clear(); draft = null; details.replaceChildren(); status.textContent = ''; setState(); };
   prepare.onclick = async () => {
     schmidt.flushBlockParameters();
     draft=null;draftInputSignature=null;
     if(document.querySelector('#panel-plano [aria-invalid="true"]')){setState();fail(Error('Revise os parâmetros destacados antes de preparar o bloco.'));return;}
     busy = true; prepare.disabled = true; cancel.hidden = false; apply.hidden = true;
     abort = new AbortController();
-    draft=null;details.replaceChildren();setState();
+    draft=null;blockMap.clear();details.replaceChildren();setState();
     const group = groups.find(g => g.id === groupSelect.value);
     try {
       const selection=selectSchmidtSavedBlock(controller.records,group,app.fields),existing=selection.record;
       const signature=inputSignature(group.members);
-      status.textContent = 'Conferindo a grade comum e o mínimo de cada lote…';
+      status.textContent = 'Calculando os tiros e pontos de cada lote…';
       const candidate = existing || await prepareSchmidtBlock({ group, fields: app.fields, parametersFor: schmidt.parametrosDo,
         editsFor:f=>app.saved.editsByField?.[`${f.farm}|${f.code}`], engine, metrics,
         signal: abort.signal, yieldTask: () => new Promise(resolve => setTimeout(resolve, 0)) });
@@ -164,16 +155,16 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
       if(!existing&&signature!==inputSignature(group.members))throw Error('Os parâmetros mudaram. Prepare o bloco novamente.');
       draft = {...candidate,id:selection.id,catalogId:selection.catalogId};
       draftInputSignature=existing?null:signature;
-      draw(draft); status.textContent = existing ? 'Bloco salvo: retomar sem substituir coletas.' : 'Grade preparada. Usar bloco cria coletas próprias; os individuais ficam preservados.';
+      draw(draft); status.textContent = existing ? 'Bloco salvo. Continue de onde parou.' : 'Bloco pronto. Toque em Usar bloco para começar. As coletas individuais ficam guardadas.';
     } catch (e) { draft = null; fail(e); }
     finally { busy = false; prepare.disabled = false; cancel.hidden = true; setState(); }
   };
-  cancel.onclick = () => { abort?.abort(); draft = null; status.textContent='Preparação cancelada'; };
+  cancel.onclick = () => { abort?.abort(); draft = null; blockMap.clear(); status.textContent='Preparação cancelada'; };
   apply.onclick = () => {
     try {
       schmidt.flushBlockParameters();
       if(draftInputSignature&&draftInputSignature!==inputSignature(draft.members)){
-        draft=null;setState();throw Error('Os parâmetros mudaram. Prepare o bloco novamente.');
+        draft=null;blockMap.clear();details.replaceChildren();setState();throw Error('Os parâmetros mudaram. Prepare o bloco novamente.');
       }
       controller.enter(draft);draft=null;draftInputSignature=null;setState();
     }catch(e){fail(e);}

@@ -90,6 +90,21 @@ export function schmidtBlockScenarios(fields, record, engine) {
   });
 }
 
+// Cache de leitura limitado ao último bloco; coletas não alteram a geometria.
+export function createSchmidtBlockScenarioReader(engine) {
+  let previousKey=null, previousScenarios=null;
+  const read=(fields,record)=>{
+    const key=JSON.stringify([record.members.map(key=>[key,fields[key]]),record.common,
+      record.state.paramsByField,record.state.editsByField]);
+    if(key===previousKey)return previousScenarios;
+    const scenarios=schmidtBlockScenarios(fields,record,engine);
+    previousKey=key;previousScenarios=scenarios;
+    return scenarios;
+  };
+  read.clear=()=>{previousKey=null;previousScenarios=null;};
+  return read;
+}
+
 export function selectSchmidtSavedBlock(records, group, fields) {
   const signature=schmidtBlockSourceSignature(fields,group.members);
   const members=JSON.stringify([...group.members].sort());
@@ -141,6 +156,7 @@ export function validateSchmidtBlocks(state, sanitizeParams) {
 // Busca limitada e cancelável; mede cobertura nas mesmas células por lote.
 export async function prepareSchmidtBlock({ group, fields, parametersFor, editsFor = () => null, engine, metrics, signal, yieldTask = () => Promise.resolve() }) {
   if (signal?.aborted) throw Error('Preparação cancelada');
+  const pause = async () => { await yieldTask(); if (signal?.aborted) throw Error('Preparação cancelada'); };
   if (!group.compatible) throw Error('Referências diferentes: usar os lotes individualmente');
   const anchor = fields[group.members[0]];
   const common = { absoluteA: blockAbsoluteA(anchor), gridCorrection: anchor.bearingGridCorrection || 0,
@@ -203,7 +219,7 @@ export async function prepareSchmidtBlock({ group, fields, parametersFor, editsF
       shortlist.sort((a,b)=>a.worstRatio-b.worstRatio||a.meanRatio-b.meanRatio);
       shortlist.splice(6);
     }
-    if (tested % 2 === 0) await yieldTask();
+    if (tested % 2 === 0) await pause();
   }
   if (!shortlist.length) throw Error('Não foi encontrada grade comum com o mínimo de cada lote; individual preservado');
   for (const candidate of bestPerSpacing.values()) if (!shortlist.includes(candidate)) shortlist.push(candidate);
@@ -220,7 +236,7 @@ export async function prepareSchmidtBlock({ group, fields, parametersFor, editsF
       const p = { ...candidate.params[key], totalPoints: n };
       const sc = engine.buildScenario(commonFields[key], p);
       redistributionCandidates++;
-      if (sc.samples.length !== n) continue;
+      if (sc.samples.length !== n) { await pause(); continue; }
       const stats = distanceStats(cells[key], sc.samples);
       const ratio = Math.max(stats.p95 / baseline[key].p95, stats.max / baseline[key].max);
       // Não troca por uma alternativa que piora a comparação anterior.
@@ -228,7 +244,7 @@ export async function prepareSchmidtBlock({ group, fields, parametersFor, editsF
         candidate.params[key] = p; candidate.scenarios[key] = sc;
         candidate.coverage[key] = { before: baseline[key], after: stats, ratio };
       }
-      await yieldTask();
+      await pause();
     }
     addedPointsByField[key] = candidate.scenarios[key].samples.length - originalCount;
    }

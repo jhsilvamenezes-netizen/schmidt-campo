@@ -1,0 +1,49 @@
+{
+  "status": "validada localmente; não publicada",
+  "blocks": 40,
+  "grids": 5957,
+  "spatial": {
+    "blocks": 40,
+    "fieldComparisons": 88,
+    "outsidePoints": 0,
+    "segmentsOutside": 0,
+    "duplicatePointsWithinLot": 0,
+    "commonAxesAndPhaseVerified": true,
+    "coverageNotWorseAtCellCentres": true,
+    "clearanceIndependentlyVerified": true,
+    "relativeNumericalTolerance": 1e-06,
+    "datumOrFieldCertification": false
+  },
+  "runtimeChecks": [
+    "individual-maps-identical-after-block",
+    "collections-and-names-isolated",
+    "reload-opens-individual",
+    "saved-block-resumes-own-collections"
+  ],
+  "ui": {
+    "checks": [
+      "51-individual-snapshots-identical",
+      "p6-same-plan-without-specific-visible-note",
+      "preparation-locks-selection-and-cancel-saves-no-block",
+      "pending-individual-parameter-saved-before-preparation",
+      "changed-parameters-invalidate-prepared-block-without-activating-it",
+      "common-grid-protected-from-other-stages-and-history",
+      "overview-restores-current-manual-points-and-distances",
+      "ui-prepare-apply-member-selection-and-complete-gpx",
+      "real-monitor-ui-collects-in-block",
+      "backup-hash-covers-individual-and-block",
+      "backup-restores-block-collection-in-clean-profile",
+      "all-40-active-options-fit-360px-and-return-to-individual",
+      "candidate-offline-reload-with-40-options"
+    ],
+    "errors": [],
+    "viewports": [
+      360,
+      390,
+      412,
+      768
+    ]
+  },
+  "moduleTests": 32,
+  "previousGeneralTestsSameRuntime": 52
+}
