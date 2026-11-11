@@ -45,6 +45,7 @@ atual antes de guardar e conferir seus dados.
 
 ## Para quem desenvolve
 
+- [Estado do projeto e continuidade](docs/CONTINUIDADE.md)
 - [Versão e identificação dos arquivos](VERSAO.json)
 - [Código e funcionamento do build](src/README.md)
 - [Testes](audit/README.md)

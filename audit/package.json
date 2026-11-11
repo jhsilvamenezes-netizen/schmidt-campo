@@ -5,7 +5,7 @@
     "test": "node contracts.test.mjs && node corrections.test.mjs && node operational-summary.test.mjs && node plan-presentation.test.mjs",
     "test:browser": "node browser.mjs",
     "test:corrections": "node corrections-browser.mjs",
-    "test:sessions": "node session-lock-browser.mjs",
+    "test:sessions": "node session-lock-browser.mjs && node mobile-session.test.mjs && node mobile-session-browser.mjs",
     "test:plan": "node operational-plan-browser.mjs",
     "measure:performance": "node performance-browser.mjs",
     "study:layout": "node layout-inventory.mjs",

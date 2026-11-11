@@ -1,0 +1,16 @@
+{
+  "checks": [
+    "single-page-1.31.2-lifecycle-reproduces-block-save-failure",
+    "restored-session-reloads-preserves-data-and-activates-three-lots-on-mobile",
+    "second-window-previews-three-lots-without-overwriting-owner",
+    "real-storage-failure-still-refuses-activation-preserves-data-and-allows-preview"
+  ],
+  "errors": [],
+  "viewport": [
+    393,
+    851
+  ],
+  "mobile": true,
+  "touch": true,
+  "lifecycle": "PageTransitionEvent simulation; physical Android not tested"
+}

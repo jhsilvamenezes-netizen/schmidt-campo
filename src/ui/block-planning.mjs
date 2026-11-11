@@ -25,11 +25,12 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
   for (const g of groups) { const o = make('option', `${g.farm} · ${g.title}`); o.value = g.id; groupSelect.append(o); }
   const prepare = make('button', 'Montar bloco'); prepare.id = 'block-prepare'; prepare.type = 'button';
   const apply = make('button', 'Usar bloco'); apply.id = 'block-apply'; apply.type = 'button'; apply.hidden = true;
+  const viewGroup=make('button','Ver mapa do grupo');viewGroup.id='block-view-map';viewGroup.type='button';
   const cancel = make('button', 'Cancelar'); cancel.id = 'block-cancel'; cancel.type = 'button'; cancel.hidden = true;
   const exportGPX = make('button', 'Exportar pontos do bloco (GPX)'); exportGPX.id='block-export-gpx'; exportGPX.type='button'; exportGPX.hidden=true;
   const status = make('p'); status.id = 'block-status'; status.setAttribute('role', 'status');
   const details = make('div'); details.id = 'block-details';
-  const controls = make('div'); controls.className = 'block-actions'; controls.append(prepare, apply, cancel);
+  const controls = make('div'); controls.className = 'block-actions'; controls.append(prepare, apply, viewGroup, cancel);
   panel.append(heading, modeLabel, choice, controls, status, details, exportGPX);
   stage.querySelector('.op-current').after(panel);
   const badge = make('button'); badge.id = 'block-active'; badge.type = 'button'; badge.hidden = true;
@@ -112,6 +113,7 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
   };
   const setState = () => {
     const active = !!controller.active;
+    viewGroup.hidden=mode.value!=='block';viewGroup.disabled=busy;
     choice.hidden = active || mode.value !== 'block';
     prepare.hidden = active || mode.value !== 'block';
     groupSelect.disabled = busy;
@@ -137,6 +139,7 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
     setState();
     if(mode.value==='block'&&!controller.active)previewGroup();
   };
+  viewGroup.onclick=()=>{if(!controller.active&&!draft)previewGroup();blockMap.showAll();};
   groupSelect.onchange = () => { blockMap.clear(); draft = null; details.replaceChildren(); status.textContent = ''; setState(); previewGroup(); };
   prepare.onclick = async () => {
     schmidt.flushBlockParameters();
@@ -168,6 +171,7 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
       if(draftInputSignature&&draftInputSignature!==inputSignature(draft.members)){
         draft=null;blockMap.clear();details.replaceChildren();setState();throw Error('Os parâmetros mudaram. Prepare o bloco novamente.');
       }
+      if(schmidt.storageAccess&&!schmidt.storageAccess.canWrite()){blockMap.showAll();throw Error(schmidt.storageAccess.message());}
       controller.enter(draft);draft=null;draftInputSignature=null;setState();blockMap.showAll();
     }catch(e){fail(e);}
   };

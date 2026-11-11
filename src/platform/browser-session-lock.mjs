@@ -6,7 +6,13 @@ export function createSchmidtSessionLock(locks) {
   const writer = 'schmidt.storage.writer.v1';
   let writerChecked = false, writeOwner = false, releaseWriter, invalidated = false;
   let releasePresence, presenceDone, busy = false;
-  const invalid = () => new Error('IndexedDB bloqueado');
+  const invalid = () => {
+    const error=new Error('IndexedDB bloqueado');
+    error.name='SchmidtWriteBlockedError';error.code='SCHMIDT_WRITE_BLOCKED';
+    error.reason=invalidated?'stale':busy?'busy':!writeOwner?'other-window':'operation';
+    error.userMessage=invalidated?'Esta página foi retomada sem permissão para salvar. Reabra o SCHMIDT para carregar os dados atuais. Não limpe os dados.':busy?'Aguarde a operação de dados terminar antes de salvar.':'Outra janela do SCHMIDT está aberta. Use a janela original ou feche as outras e reabra esta página. Não limpe os dados.';
+    return error;
+  };
 
   async function enter() {
     if (invalidated || !locks?.request || releasePresence) return;
@@ -58,5 +64,17 @@ export function createSchmidtSessionLock(locks) {
   }
   // Sem Web Locks, conserva gravações comuns legadas; não promete exclusividade.
   // Snapshot/restauração continuam recusados por exclusive().
-  return { enter, exclusive, invalidate, isBusy: () => busy, canWrite: () => !invalidated && (!locks?.request || writeOwner) };
+  return { enter, exclusive, invalidate, writeError:invalid, isBusy: () => busy, canWrite: () => !invalidated && (!locks?.request || writeOwner) };
+}
+
+// A volta pelo histórico pode restaurar o mesmo documento, já invalidado.
+// Recarregar recupera a permissão antes de ler os dados atuais; nunca promove
+// uma cópia antiga da memória a escritora sobre dados de outra sessão.
+export function installSchmidtSessionLifecycle(target,session) {
+ let reloading=false;
+ target.addEventListener('pagehide',()=>session.invalidate(),{once:true});
+ target.addEventListener('pageshow',event=>{
+  if(!event.persisted||reloading)return;
+  reloading=true;session.invalidate();target.location.reload();
+ });
 }

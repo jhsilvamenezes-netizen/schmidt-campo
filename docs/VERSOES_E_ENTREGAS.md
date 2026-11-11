@@ -96,3 +96,11 @@ compilado sem assinatura, com HTML idêntico; não distribuído.
 Limites visíveis ao selecionar o grupo; Usar bloco abre o mapa completo.
 Botão Enquadrar explícito e medidas da borda e do próximo ponto sob consulta.
 Sem mudança do método ou dos registros. [Relatório](REVISAO_ENQUADRAMENTO_1_31_2.md).
+
+
+## 1.31.3 — gravação e mapa no celular
+
+Retomada pelo histórico recarrega dados atuais e recupera a gravação. Prévia
+do grupo acessível sem depender da ativação; erros de sessão distinguíveis
+de falta real de espaço. [Relatório](CORRECAO_CELULAR_1_31_3.md) e
+[continuidade](CONTINUIDADE.md). Android código 15 sem distribuição.

@@ -1,0 +1,10 @@
+{
+  "version": "1.31.3",
+  "versionCode": 15,
+  "unsigned": true,
+  "distributed": false,
+  "htmlParity": true,
+  "htmlSha256": "0f406e1c4900f87ae84eaa5243b1b0acc68234ddbe6746837b0932238e8ac8cd",
+  "apkSha256": "6f2585fee3d3693af15c0c24f03b9d3a3ae77f092a66aa7dfad1a8f19338b247",
+  "physicalDeviceTested": false
+}
