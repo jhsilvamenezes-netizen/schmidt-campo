@@ -87,6 +87,9 @@ try{
  await page.waitForFunction(()=>!document.getElementById('block-apply').hidden);
  await page.locator('#block-apply').click();
  await page.waitForFunction(()=>SCHMIDT.blocks.controller.active==='Bananal|BB1-BC1');
+ assert.equal(await page.locator('[data-v08-view="mapa"]').getAttribute('aria-pressed'),'true');
+ checks.push('apply-opens-complete-map');
+ await page.locator('[data-v08-view="plano"]').click();
  assert.equal(await page.locator('#plan-import').isDisabled(),true);
  assert.equal(await page.locator('#plan-export').isDisabled(),true);
  await page.locator('[data-block-member="Bananal|BC1"]').click();

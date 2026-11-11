@@ -89,3 +89,10 @@ de distância à borda e termos simplificados. Cancelamento e leitura das cenas
 revistos. [Relatório](ENTREGA_1_31_1.md). A identificação em `VERSAO.json` acompanha
 o artefato; a publicação exige CI aprovada e conferência do Pages. APK código 13
 compilado sem assinatura, com HTML idêntico; não distribuído.
+
+
+## 1.31.2 — enquadramento do grupo
+
+Limites visíveis ao selecionar o grupo; Usar bloco abre o mapa completo.
+Botão Enquadrar explícito e medidas da borda e do próximo ponto sob consulta.
+Sem mudança do método ou dos registros. [Relatório](REVISAO_ENQUADRAMENTO_1_31_2.md).

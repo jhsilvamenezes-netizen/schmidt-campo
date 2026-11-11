@@ -1,0 +1,31 @@
+{
+  "checks": [
+    "40-groups-preview-correct-boundaries-no-invented-points-fit-four-widths",
+    "apply-opens-map-with-all-members",
+    "selected-point-measures-border-and-next-in-same-segment",
+    "fit-restores-all-boundaries-after-zoom"
+  ],
+  "errors": [],
+  "groups": 40,
+  "widths": [
+    360,
+    390,
+    768,
+    1280
+  ],
+  "version": "1.31.2",
+  "published": false,
+  "moduleTests": 87,
+  "fullUiChecks": 16,
+  "individualLotsPreserved": 51,
+  "spatial": {
+    "blocks": 40,
+    "fieldComparisons": 88,
+    "outsidePoints": 0,
+    "segmentsOutside": 0,
+    "duplicatePointsWithinLot": 0,
+    "commonAxesAndPhaseVerified": true
+  },
+  "testedOn": "2026-11-11",
+  "androidBuild": "1.31.2-14 unsigned; not distributed"
+}

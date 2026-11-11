@@ -1,11 +1,11 @@
 {
-  "entrega": "1.31.1",
+  "entrega": "1.31.2",
   "nome": "SCHMIDT Campo",
-  "data": "2026-11-10",
-  "versaoDoApp": "1.31.1",
+  "data": "2026-11-11",
+  "versaoDoApp": "1.31.2",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "af05c66ef087f1dba3839d845fbd58aa44db44782e3bf5f2d1c4f626f0a36824",
-  "workerSha256": "f86f49f646d9aa4c3020d1bae6b4bce986964dfdf10d4e5afbcdeff5165883ef",
+  "htmlSha256": "954061845d2d20f7c36e935a796613b51bd8826d028a96dcb73e3057fb575f66",
+  "workerSha256": "aeb860982af3bb78045e3dd7d7c5f05b5c58f0fd4b8e19805149ef8a4e6fbb68",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -14,7 +14,8 @@
     "atualização PWA com verificação de integridade e espera das abas antigas",
     "modo bloco por referência comum, mantendo planos e coletas individuais separados",
     "mapa conjunto com tiros, pontos, distâncias e abertura do mapa operacional de cada lote",
-    "nomes mais simples e cancelamento seguro da preparação"
+    "nomes mais simples e cancelamento seguro da preparação",
+    "limites do grupo ao selecionar; mapa completo ao usar bloco; medidas do ponto desenhadas sob consulta"
   ],
   "somenteEstudoSemIntegracao": [
     "recuo mínimo obrigatório por divisa",
@@ -22,11 +23,11 @@
   ],
   "android": {
     "publicado": "1.31.0-11",
-    "buildPreparado": "1.31.1-13-unsigned (sem distribuição)",
+    "buildPreparado": "1.31.2-14-unsigned (sem distribuição)",
     "distribuicaoNova": "pendente de chave privada estável, backup verificado e migração",
     "buildAnterior": "1.31.0-12-unsigned (HTML r1, não distribuído)"
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
   "runtimeBlocks": true,
-  "statusEntrega": "versão web 1.31.1; APK sem distribuição"
+  "statusEntrega": "versão web 1.31.2; APK sem distribuição"
 }
