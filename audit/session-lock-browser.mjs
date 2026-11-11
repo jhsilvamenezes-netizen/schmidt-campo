@@ -161,7 +161,10 @@ try {
     await old.evaluate(()=>dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true})));
     const next=await open(editing);
     assert.equal(await next.evaluate(()=>SCHMIDT.modulos.__m_ui_store.saveState({...SCHMIDT.app.saved,auditWriter:'novo-documento'})),true);
+    const resumed=old.waitForEvent('load');
     await old.evaluate(()=>dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true})));
+    await resumed;await old.waitForFunction(()=>SCHMIDT.app?.sc);
+    assert.equal(await old.evaluate(()=>SCHMIDT.app.saved.auditWriter),'novo-documento');
     assert.equal(await old.evaluate(()=>SCHMIDT.modulos.__m_ui_store.saveState({...SCHMIDT.app.saved,auditWriter:'histórico-obsoleto'})),false);
     assert.equal(await old.evaluate(()=>JSON.parse(localStorage.getItem('monitoramento.v03')).auditWriter),'novo-documento');
     report.checks.push({id:'pagehide-invalidates-owner-before-simulated-history-resume',passed:true});

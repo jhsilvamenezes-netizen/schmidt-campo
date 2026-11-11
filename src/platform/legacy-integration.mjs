@@ -1,12 +1,13 @@
 import { createSchmidtBackupService } from '../persistence/backup-service.mjs';
-import { createSchmidtSessionLock } from './browser-session-lock.mjs';
+import { createSchmidtSessionLock, installSchmidtSessionLifecycle } from './browser-session-lock.mjs';
 import { createSchmidtWriteBarrier } from './browser-write-barrier.mjs';
 import { schmidtIDBTransaction, createSchmidtImageRepository, createSchmidtJournal } from './browser-backup-adapters.mjs';
 // Integrador explícito com APIs do artefato congelado; não altera DOM/CSS/rotas.
 let schmidtBackupService;
 export async function initialiseSchmidtCorrections(historyDB, basemap) {
   const session = createSchmidtSessionLock(navigator.locks);
-  window.addEventListener('pagehide', () => session.invalidate(), { once: true });
+  installSchmidtSessionLifecycle(window,session);
+  SCHMIDT.storageAccess=Object.freeze({canWrite:session.canWrite,message:()=>session.writeError().userMessage});
   const barrier = createSchmidtWriteBarrier(session, localStorage, historyDB, basemap);
   schmidtBackupService = createSchmidtBackupService({
     storage: barrier.storage,

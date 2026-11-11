@@ -6,7 +6,7 @@ export function createSchmidtWriteBarrier(session, storage, historyDB, basemap) 
   const originals = { setItem: Storage.prototype.setItem, removeItem: Storage.prototype.removeItem, clear: Storage.prototype.clear };
   let internal = false;
   const blocked = () => (!session.canWrite() || session.isBusy()) && !internal;
-  const invalid = () => new Error('IndexedDB bloqueado');
+  const invalid = () => session.writeError?.() || new Error('IndexedDB bloqueado');
   for (const method of ['setItem', 'removeItem', 'clear']) {
     Storage.prototype[method] = function(key, ...args) {
       if (this === storage && blocked() && (method === 'clear' || SCHMIDT_BACKUP_KEYS.includes(String(key)))) throw invalid();

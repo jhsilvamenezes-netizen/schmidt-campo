@@ -41,7 +41,8 @@ export async function buildCandidate({includeBlocks}={}) {
   if(storeStart<0||catchStart<0||catchEnd<0)throw new Error('Tratamento original de erro não encontrado');
   const originalFailureBody=original.slice(catchStart+'catch(e){'.length,catchEnd);
   if(!originalFailureBody.endsWith('!1'))throw new Error('Corpo inesperado de tratamento de erro');
-  blocks.push(`function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
+  blocks.push(`function schmidtReportStoreFailure(e){if(e?.code==='SCHMIDT_WRITE_BLOCKED'){SCHMIDT.falhaArmazenamento=e.name;queueMicrotask(()=>{let node=document.getElementById('schmidt-storage-warning');if(!node){node=document.createElement('div');node.id='schmidt-storage-warning';node.setAttribute('role','alert');document.body.append(node);}node.hidden=false;node.textContent=e.userMessage;});return false;}return schmidtReportLegacyStoreFailure(e);}
+function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
   function replace(before,after,label) {
     if(candidate.split(before).length!==2) throw new Error(`Integração não única: ${label}`);
     candidate=candidate.replace(before,()=>after); changes.push(label);
@@ -51,7 +52,7 @@ export async function buildCandidate({includeBlocks}={}) {
   replace('<script type="module" crossorigin>','<script type="module" crossorigin>\n(async()=>{\n'+blocks.join('\n')+'\n','fontes-legíveis');
   replace('__m_ui_lotes:ne,__m_main:J};</script>', '__m_ui_lotes:ne,__m_main:J};\ninstallSchmidtOperationalPlan({document,schmidt:SCHMIDT,events:A,measurements:N});\n})();</script>', 'escopo-assíncrono-e-plano-aprovado');
   replace('catch(e){'+originalFailureBody+'}}return{loadState:t,saveState:n}',
-    'catch(e){return schmidtReportLegacyStoreFailure(e)}}return{loadState:t,saveState:n}', 'reutilização-exata-do-erro-existente');
+    'catch(e){return schmidtReportStoreFailure(e)}}return{loadState:t,saveState:n}', 'reutilização-exata-do-erro-existente');
   replace('J=(()=>{let{buildScenario:e,','J=(await initialiseSchmidtCorrections(q,z),(()=>{let{buildScenario:e,','recuperação-antes-da-inicialização');
   replace('return Tt(),{}})();(()=>','return Tt(),{}})());(()=>','fechamento-inicialização');
   replace('saved:U(),ui:','saved:schmidtBackupService.loadAppState(),ui:','leitura-sem-destruir-JSON-corrompido');
