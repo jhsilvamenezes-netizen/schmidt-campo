@@ -11,8 +11,21 @@ export async function initialiseSchmidtCorrections(historyDB, basemap) {
   // o temporizador agendado por último roda depois dela (inclusive nos retornos
   // de erro). Antes, a página perdia a permissão antes de gravar o pendente.
   const armSessionEnd = installSchmidtSessionLifecycle(window,session,{deferEnd:true});
+  const reveal = holdSchmidtFirstPaint(document);
   try { await initialiseSchmidtStores(session,historyDB,basemap); }
-  finally { setTimeout(armSessionEnd,0); }
+  finally { setTimeout(() => { armSessionEnd(); reveal(); },0); }
+}
+// 1.32: a recuperação acima é assíncrona; sem isto o navegador pintava a página
+// ainda vazia e o conteúdo, ao chegar, empurrava o mapa (salto de 0,167 no
+// notebook). O miolo fica invisível (ocupando o mesmo espaço) até a tela estar
+// montada. Trava de segurança: aparece em 2,5 s mesmo se algo não responder.
+function holdSchmidtFirstPaint(document) {
+  const style = document.createElement('style');
+  style.textContent = '.layout{visibility:hidden}';
+  document.head.append(style);
+  const reveal = () => style.remove();
+  setTimeout(reveal, 2500);
+  return reveal;
 }
 async function initialiseSchmidtStores(session,historyDB,basemap) {
   SCHMIDT.storageAccess=Object.freeze({canWrite:session.canWrite,message:()=>session.writeError().userMessage});

@@ -1,11 +1,11 @@
 {
-  "entrega": "1.31.4",
+  "entrega": "1.32.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-11",
-  "versaoDoApp": "1.31.4",
+  "versaoDoApp": "1.32.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "449be8c56d0ecc088404056ea1892845235b1fe628c824be5a0b249ac1cf499f",
-  "workerSha256": "28d9c47a88e649e61d74c06b622d28a30def8fafcb7a060905cc820257d724c5",
+  "htmlSha256": "f79fbdecd340b871812fdec154021babc1b05195667ff24efa746dbe163a5ca8",
+  "workerSha256": "9a7cdfa4dadca11fe2e3b332bb49adab1ff469e7dad23c6cab167bb1ef34a1f0",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -17,7 +17,8 @@
     "nomes mais simples e cancelamento seguro da preparação",
     "limites do grupo ao selecionar; mapa completo ao usar bloco; medidas do ponto desenhadas sob consulta",
     "retorno pelo histórico recarrega dados atuais e recupera a gravação; prévia do grupo acessível no celular",
-    "alteração feita logo antes de fechar, recarregar ou trocar de página volta a ficar gravada (a sessão só perde a permissão depois de o aplicativo gravar o pendente)"
+    "alteração feita logo antes de fechar, recarregar ou trocar de página volta a ficar gravada (a sessão só perde a permissão depois de o aplicativo gravar o pendente)",
+    "mapa do bloco revisado: cores do tema (Sol incluído), número dentro do ponto quando cabe, letras de 12 px ou mais, botões de 44 px e do padrão; tela não salta ao abrir"
   ],
   "somenteEstudoSemIntegracao": [
     "recuo mínimo obrigatório por divisa",
@@ -31,5 +32,5 @@
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
   "runtimeBlocks": true,
-  "statusEntrega": "versão web 1.31.4; APK sem distribuição"
+  "statusEntrega": "candidata web 1.32.0 em branch (aguarda aprovação visual do proprietário); APK sem distribuição"
 }

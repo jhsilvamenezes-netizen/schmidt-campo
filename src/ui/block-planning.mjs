@@ -36,16 +36,19 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
   const badge = make('button'); badge.id = 'block-active'; badge.type = 'button'; badge.hidden = true;
   badge.title = 'Ver planejamento do bloco';
   document.querySelector('.top').append(badge);
+  // 1.32: mesmos botões do resto do aplicativo (secundário com contorno; "Usar bloco" é a ação principal),
+  // tokens de espaço/letra e selo do bloco em uma linha só no topo do celular.
   const style = make('style'); style.textContent = `
-    #block-planning{display:grid;gap:8px;margin-bottom:10px;padding:10px 12px}
-    #block-planning label{display:grid;gap:4px;font-size:14px}
-    #block-planning select{width:100%;min-width:0;min-height:44px}
-    #block-planning p{font-size:13px;line-height:1.4;margin:2px 0}
-    #block-planning button,#block-active{min-height:44px;white-space:normal}
-    #block-planning button{font:inherit;color:var(--sx-brand);background:var(--sx-soft);border:1px solid var(--sx-line-strong);border-radius:8px;padding:8px 12px}
-    #block-planning .block-actions,#block-members{display:flex;flex-wrap:wrap;gap:6px}
+    #block-planning{display:grid;gap:var(--sx-sp-2);margin-bottom:10px;padding:10px 12px}
+    #block-planning label{display:grid;gap:4px;font-size:var(--sx-fs-14)}
+    #block-planning select{width:100%;min-width:0;min-height:var(--sx-touch)}
+    #block-planning p{font-size:var(--sx-fs-13);line-height:1.4;margin:2px 0}
+    #block-planning button{min-height:var(--sx-touch);white-space:normal;font:inherit;font-size:var(--sx-fs-14);font-weight:800;color:var(--sx-brand);background:var(--sx-surface);border:1px solid var(--sx-brand);border-radius:var(--sx-r);padding:8px 14px}
+    #block-planning #block-apply{background:var(--sx-brand);color:#fff}
+    #block-planning button:disabled{opacity:.45;cursor:not-allowed}
+    #block-planning .block-actions,#block-members{display:flex;flex-wrap:wrap;gap:var(--sx-sp-2)}
     #block-details svg{display:block;width:100%;height:320px;background:var(--sx-surface)}
-    #block-active{font-size:12px;background:var(--sx-brand);color:var(--sx-surface);border-radius:8px;margin:4px}
+    #block-active{min-height:var(--sx-touch);margin:4px;padding:2px 8px;font:inherit;font-size:var(--sx-fs-12);font-weight:700;line-height:1.2;white-space:normal;background:var(--sx-brand);color:#fff;border:1px solid var(--sx-brand);border-radius:var(--sx-r)}
     #block-active[hidden],#block-planning [hidden]{display:none!important}
   `; document.head.append(style);
   let draft = null, draftInputSignature = null, abort = null, busy = false;
