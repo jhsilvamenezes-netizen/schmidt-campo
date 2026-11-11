@@ -6,7 +6,15 @@ import { schmidtIDBTransaction, createSchmidtImageRepository, createSchmidtJourn
 let schmidtBackupService;
 export async function initialiseSchmidtCorrections(historyDB, basemap) {
   const session = createSchmidtSessionLock(navigator.locks);
-  installSchmidtSessionLifecycle(window,session);
+  // Arma o fim da sessão só depois de o aplicativo registrar seus gravadores de
+  // saída: a continuação deste await inicializa o bundle de forma síncrona, e
+  // o temporizador agendado por último roda depois dela (inclusive nos retornos
+  // de erro). Antes, a página perdia a permissão antes de gravar o pendente.
+  const armSessionEnd = installSchmidtSessionLifecycle(window,session,{deferEnd:true});
+  try { await initialiseSchmidtStores(session,historyDB,basemap); }
+  finally { setTimeout(armSessionEnd,0); }
+}
+async function initialiseSchmidtStores(session,historyDB,basemap) {
   SCHMIDT.storageAccess=Object.freeze({canWrite:session.canWrite,message:()=>session.writeError().userMessage});
   const barrier = createSchmidtWriteBarrier(session, localStorage, historyDB, basemap);
   schmidtBackupService = createSchmidtBackupService({

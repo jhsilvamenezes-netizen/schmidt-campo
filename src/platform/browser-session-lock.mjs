@@ -70,11 +70,17 @@ export function createSchmidtSessionLock(locks) {
 // A volta pelo histórico pode restaurar o mesmo documento, já invalidado.
 // Recarregar recupera a permissão antes de ler os dados atuais; nunca promove
 // uma cópia antiga da memória a escritora sobre dados de outra sessão.
-export function installSchmidtSessionLifecycle(target,session) {
- let reloading=false;
- target.addEventListener('pagehide',()=>session.invalidate(),{once:true});
+// 1.31.4: a invalidação no pagehide precisa rodar DEPOIS dos gravadores do
+// aplicativo ("gravar ao sair"). Ouvintes do mesmo alvo rodam na ordem de
+// registro; com deferEnd o chamador arma o encerramento quando o aplicativo
+// já registrou os seus. Sem deferEnd o comportamento é o anterior.
+export function installSchmidtSessionLifecycle(target,session,{deferEnd=false}={}) {
+ let reloading=false,armed=false;
+ const armEnd=()=>{if(armed)return;armed=true;target.addEventListener('pagehide',()=>session.invalidate(),{once:true});};
+ if(!deferEnd)armEnd();
  target.addEventListener('pageshow',event=>{
   if(!event.persisted||reloading)return;
   reloading=true;session.invalidate();target.location.reload();
  });
+ return armEnd;
 }
