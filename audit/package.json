@@ -15,7 +15,7 @@
     "test:upgrade": "node worker-upgrade-browser.mjs",
     "test:parameters": "node parameter-constraints.test.mjs",
     "test:planning-contract": "node planning-scope-contract.test.mjs",
-    "test:blocks": "node block-planning.test.mjs && node block-bottlenecks.test.mjs && node block-scenario-cache.test.mjs"
+    "test:blocks": "node block-planning.test.mjs && node block-bottlenecks.test.mjs && node block-scenario-cache.test.mjs && node block-map-framing.test.mjs"
   },
   "devDependencies": {
     "playwright": "1.56.1",

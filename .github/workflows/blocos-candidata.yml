@@ -48,6 +48,7 @@ jobs:
           node blocks-runtime-browser.mjs
           python validate-runtime-blocks.py
           node blocks-ui-browser.mjs
+          node block-map-framing-browser.mjs
       - name: Pacote revisado sem anexos ou estados de teste
         id: package
         run: python scripts/package-block-candidate.py

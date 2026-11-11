@@ -84,6 +84,7 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
     }
   };
   const blockMap = createSchmidtBlockMap({document,selectMember:refresh});
+  const previewGroup=()=>{const group=groups.find(g=>g.id===groupSelect.value);if(group)blockMap.preview(group,app.fields);};
   const readScenarios = createSchmidtBlockScenarioReader(engine);
   const draw = (record, live = false) => {
     details.replaceChildren();
@@ -134,8 +135,9 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
       try { controller.leave(); } catch (e) { mode.value='block'; fail(e); return; }
     }
     setState();
+    if(mode.value==='block'&&!controller.active)previewGroup();
   };
-  groupSelect.onchange = () => { blockMap.clear(); draft = null; details.replaceChildren(); status.textContent = ''; setState(); };
+  groupSelect.onchange = () => { blockMap.clear(); draft = null; details.replaceChildren(); status.textContent = ''; setState(); previewGroup(); };
   prepare.onclick = async () => {
     schmidt.flushBlockParameters();
     draft=null;draftInputSignature=null;
@@ -166,7 +168,7 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
       if(draftInputSignature&&draftInputSignature!==inputSignature(draft.members)){
         draft=null;blockMap.clear();details.replaceChildren();setState();throw Error('Os parâmetros mudaram. Prepare o bloco novamente.');
       }
-      controller.enter(draft);draft=null;draftInputSignature=null;setState();
+      controller.enter(draft);draft=null;draftInputSignature=null;setState();blockMap.showAll();
     }catch(e){fail(e);}
   };
   badge.onclick = () => { document.querySelector('[data-v08-view="plano"]')?.click(); schmidt.fluxo.go('plano'); panel.scrollIntoView({ block: 'nearest' }); };
