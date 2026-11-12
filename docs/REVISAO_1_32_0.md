@@ -31,6 +31,9 @@ e depois. Inclui a correção 1.31.4 (gravar ao sair).
 | 7 | Botões do planejamento em bloco | Fundo cinza, letra fina | Padrão do aplicativo; **"Usar bloco" é o botão principal** |
 | 8 | Abertura | Tela saltava | Miolo invisível até estar montado (trava de 2,5 s); salto 0 |
 | 9 | Código do mapa | Linhas de até 1.900 caracteres | Reescrito legível, mesma interface pública, mesmos identificadores e atributos de teste |
+| 10 | Resultado do bloco no painel | Parágrafo corrido ("58 pontos · entre tiros: 364,8 m · barra: 36,48 m · …") | Mesmo desenho do "Plano em uso": **"3 lotes · 58 pontos"** em destaque e dois cartões (Entre tiros com "10 passadas da barra de 36,48 m"; Entre pontos). Mesmos números |
+| 11 | Estilos do Plano | 14 tamanhos de letra em px | Tokens do aplicativo (mesmos valores) |
+| 12 | Etapas 2 a 5 no celular de 360 px | 36 px de largura | 44 px, sem rolagem lateral |
 
 Sem mudança de método, de dados, de registros, de textos de outras telas nem
 do mapa de cada lote.
@@ -48,10 +51,12 @@ do mapa de cada lote.
 | `block-map-framing-browser` (40 grupos × 360, 390, 768 e 1280 px) | passa |
 | `blocks-runtime-browser`, `all-fields-block-reference` (51 lotes, 749 pontos) | passam |
 | `npm test`, `test:blocks`, sessões, `save-on-exit-browser` | passam |
+| `operational-plan-browser` (Plano em 5 larguras, teclado, barra personalizada) | passa |
 | Build determinístico e `VERSAO.json` | conferidos |
 
-Não rodados aqui: validadores em Python (`validate-runtime-blocks.py`) e o
-build Android; a esteira do GitHub roda os primeiros no PR.
+Não rodados aqui: validadores em Python (`validate-runtime-blocks.py`), o
+build Android e `block-scenario-cache-browser` (depende de um arquivo da etapa
+r3 que a esteira atual não gera). A esteira do GitHub roda os validadores no PR.
 
 ## Pendências que dependem do proprietário
 
@@ -59,6 +64,6 @@ build Android; a esteira do GitHub roda os primeiros no PR.
 2. Fonte única: o gerador ainda aplica módulos sobre o HTML compilado da 1.31;
    o projeto-fonte completo está no repositório `central-precos`
    (`ferramentas/schmidt`). Unificar acaba com os pontos de integração frágeis.
-3. Fora do modo bloco continuam alvos pequenos antigos (etapas 2 a 5 com 36 px
-   no celular de 360 px, caixas de seleção de 24 px, "?" de 36 px no notebook)
-   e o subtítulo da marca com 9 px: dependem da fonte única ou de nova exceção.
+3. Fora do modo bloco continuam: caixas de seleção de 24 px (o rótulo inteiro
+   é tocável), "?" de 36 px no notebook e o subtítulo da marca com 9 px.
+   Dependem da fonte única ou de nova exceção.

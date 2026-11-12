@@ -1,11 +1,11 @@
 {
   "entrega": "1.32.0",
   "nome": "SCHMIDT Campo",
-  "data": "2026-11-11",
+  "data": "2026-11-12",
   "versaoDoApp": "1.32.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "f79fbdecd340b871812fdec154021babc1b05195667ff24efa746dbe163a5ca8",
-  "workerSha256": "9a7cdfa4dadca11fe2e3b332bb49adab1ff469e7dad23c6cab167bb1ef34a1f0",
+  "htmlSha256": "75eb99a2304e73bdf5d929d76ac1ca87d60fb43341f8ca1e55788252b0ae2423",
+  "workerSha256": "dae9766dd431c1224edd8569d78231d97098d52d480bd3a2137ad328194ebfde",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
