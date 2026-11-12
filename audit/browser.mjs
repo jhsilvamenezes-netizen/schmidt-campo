@@ -115,7 +115,9 @@ try {
         if (state !== 'mapa') await view(page, state);
         assert.equal(await page.evaluate(() => SCHMIDT.app.field.code), 'BD3');
         if (state === 'plano') regions.push(await page.locator('#param-stage-inicio').evaluate(e => {
-          const r=e.getBoundingClientRect(),pane=e.closest('#panel-plano').getBoundingClientRect();return {left:Math.floor(pane.left),right:Math.ceil(pane.right),top:Math.floor(r.top),bottom:Math.ceil(r.bottom)};
+          // 12/11/2026: o proprietário liberou os alvos de 44 px das etapas 2 a 5 (celular estreito);
+          // a barra das etapas, logo acima da etapa, entra na região aprovada do Plano.
+          const r=e.getBoundingClientRect(),pane=e.closest('#panel-plano').getBoundingClientRect(),bar=e.closest('#panel-plano').querySelector('.param-sections')?.getBoundingClientRect();return {left:Math.floor(pane.left),right:Math.ceil(pane.right),top:Math.floor(Math.min(r.top,bar?.top??r.top)),bottom:Math.ceil(r.bottom)};
         }));
         images.push(await page.screenshot({ path: fileURLToPath(new URL(`${width}-${state}-${label}.png`, results)), animations: 'disabled' }));
         await ctx.close();

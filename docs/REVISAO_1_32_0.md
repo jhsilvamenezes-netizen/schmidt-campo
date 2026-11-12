@@ -1,9 +1,8 @@
 # 1.32.0 — revisão do modo bloco: visual, legibilidade e código (candidata em branch)
 
 Pedido do proprietário em 11/11/2026: "melhorar código, visual-design, estrutura,
-formatação [...] análise mais profunda e criteriosa". Esta candidata fica em
-branch; **não altera a `main` nem o link** até a aprovação das imagens de antes
-e depois. Inclui a correção 1.31.4 (gravar ao sair).
+formatação [...] análise mais profunda e criteriosa". Em 12/11/2026 o proprietário liberou o refino visual e a entrega (registro
+em `AGENTS.md`); a publicação segue por PR com a esteira aprovada. Inclui a correção 1.31.4 (gravar ao sair).
 
 ## Medido antes (1.31.3, no link)
 
@@ -34,6 +33,8 @@ e depois. Inclui a correção 1.31.4 (gravar ao sair).
 | 10 | Resultado do bloco no painel | Parágrafo corrido ("58 pontos · entre tiros: 364,8 m · barra: 36,48 m · …") | Mesmo desenho do "Plano em uso": **"3 lotes · 58 pontos"** em destaque e dois cartões (Entre tiros com "10 passadas da barra de 36,48 m"; Entre pontos). Mesmos números |
 | 11 | Estilos do Plano | 14 tamanhos de letra em px | Tokens do aplicativo (mesmos valores) |
 | 12 | Etapas 2 a 5 no celular de 360 px | 36 px de largura | 44 px, sem rolagem lateral |
+| 13 | Controles deslizantes (rumo, opacidade do fundo) e "Voltar ao rumo da planilha" | 36 e 40 px de altura | 44 px |
+| 14 | Módulo `src/ui/refinements.mjs` | — | Lugar único para acabamento geral de estilo, chamado no fim da inicialização |
 
 Sem mudança de método, de dados, de registros, de textos de outras telas nem
 do mapa de cada lote.
@@ -64,6 +65,10 @@ r3 que a esteira atual não gera). A esteira do GitHub roda os validadores no PR
 2. Fonte única: o gerador ainda aplica módulos sobre o HTML compilado da 1.31;
    o projeto-fonte completo está no repositório `central-precos`
    (`ferramentas/schmidt`). Unificar acaba com os pontos de integração frágeis.
-3. Fora do modo bloco continuam: caixas de seleção de 24 px (o rótulo inteiro
-   é tocável), "?" de 36 px no notebook e o subtítulo da marca com 9 px.
-   Dependem da fonte única ou de nova exceção.
+3. Fora do modo bloco continuam: "?" de 36 px no notebook e o subtítulo da
+   marca com 9 px no celular (10 px no notebook): a faixa do topo não comporta
+   letra maior sem redesenho. No guia, com as ferramentas do mapa abertas, o
+   selo "Norte para cima" fica parcialmente sob a coluna de botões.
+4. `audit/browser.mjs` (preservação pixel a pixel) acusa ruído de 1/255 em
+   44 pixels neste ambiente também na versão publicada; vale o resultado da
+   esteira do GitHub (Chromium fixado).

@@ -11,7 +11,7 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const baseline = JSON.parse(await readFile(root+'audit/baseline.json'));
 const preservedSourceFiles = ['src/persistence/backup-service.mjs','src/persistence/backup-format.mjs',
   'src/gps/fix-policy.mjs','src/platform/browser-backup-adapters.mjs','src/platform/browser-session-lock.mjs','src/platform/browser-write-barrier.mjs','src/platform/legacy-integration.mjs',
-  'src/application/operational-summary.mjs','src/ui/plan-presentation.mjs','src/ui/operational-plan.mjs'];
+  'src/application/operational-summary.mjs','src/ui/plan-presentation.mjs','src/ui/operational-plan.mjs','src/ui/refinements.mjs'];
 export const sourceFiles=[...preservedSourceFiles,...blockSourceFiles];
 const sha = text => createHash('sha256').update(text).digest('hex');
 export async function buildCandidate({includeBlocks}={}) {
@@ -50,7 +50,7 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
   // async já é usado pelo baseline. Evita exigir suporte novo a top-level await
   // dos WebViews Android: o await de recuperação fica dentro desta função.
   replace('<script type="module" crossorigin>','<script type="module" crossorigin>\n(async()=>{\n'+blocks.join('\n')+'\n','fontes-legíveis');
-  replace('__m_ui_lotes:ne,__m_main:J};</script>', '__m_ui_lotes:ne,__m_main:J};\ninstallSchmidtOperationalPlan({document,schmidt:SCHMIDT,events:A,measurements:N});\n})();</script>', 'escopo-assíncrono-e-plano-aprovado');
+  replace('__m_ui_lotes:ne,__m_main:J};</script>', '__m_ui_lotes:ne,__m_main:J};\ninstallSchmidtRefinements(document);\ninstallSchmidtOperationalPlan({document,schmidt:SCHMIDT,events:A,measurements:N});\n})();</script>', 'escopo-assíncrono-e-plano-aprovado');
   replace('catch(e){'+originalFailureBody+'}}return{loadState:t,saveState:n}',
     'catch(e){return schmidtReportStoreFailure(e)}}return{loadState:t,saveState:n}', 'reutilização-exata-do-erro-existente');
   replace('J=(()=>{let{buildScenario:e,','J=(await initialiseSchmidtCorrections(q,z),(()=>{let{buildScenario:e,','recuperação-antes-da-inicialização');

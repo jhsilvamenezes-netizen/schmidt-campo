@@ -21,6 +21,22 @@
 6. **Marco visual futuro (bloqueado):** apenas conceito e imagens para validação, sem implementação até novo comando expresso.
 
 ## Escopo e fonte de verdade
+### Liberação do proprietário para refino visual e entrega — 12/11/2026
+
+Depois de receber as imagens de antes e depois da candidata 1.32.0, o
+proprietário determinou: “melhore visual, design, usabilidade, o que já tem
+vamos refinar ao ponto de deixar pronto para uso [...] pode abrir e corrigir
+tudo, está liberado acesso total para melhorias definitivas em todos os
+quesitos da ferramenta, faça e me entregue a versão definitiva”.
+
+Vale para o SCHMIDT Campo (este repositório). Autoriza refino visual e de
+usabilidade com evidência (medição antes/depois e capturas), PR com a esteira
+aprovada e publicação web. Continuam valendo: preservar dados, coletas e
+métodos; não distribuir APK sem chave privada e migração; não ampliar a
+exposição de dados. Escopo executado e medições: `docs/REVISAO_1_32_0.md`.
+O teste de preservação (`audit/browser.mjs`) passou a aceitar, além da etapa
+Plano, a barra das etapas logo acima dela (alvos de 44 px no celular estreito).
+
 ### Revisão e envio da entrega de blocos — 09/11/2026
 
 Após confirmar que o modo bloco estava na candidata, o proprietário pediu:
