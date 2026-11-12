@@ -104,3 +104,19 @@ Retomada pelo histórico recarrega dados atuais e recupera a gravação. Prévia
 do grupo acessível sem depender da ativação; erros de sessão distinguíveis
 de falta real de espaço. [Relatório](CORRECAO_CELULAR_1_31_3.md) e
 [continuidade](CONTINUIDADE.md). Android código 15 sem distribuição.
+
+
+## 1.31.4 — gravar ao sair
+
+Alteração feita logo antes de recarregar, fechar ou trocar de página volta a
+ficar gravada: a sessão só perde a permissão depois de o aplicativo gravar o
+pendente. Sem mudança de tela, método ou registros.
+[Relatório](CORRECAO_GRAVAR_AO_SAIR_1_31_4.md).
+
+
+## 1.32.0 — revisão do modo bloco (candidata em branch)
+
+Mapa do bloco com cores do tema (Sol incluído), número dentro do ponto quando
+cabe, letras de 12 px ou mais, botões de 44 px e do padrão, tela sem salto ao
+abrir e código do mapa reescrito legível. Aguarda aprovação visual do
+proprietário; não está no link. [Relatório](REVISAO_1_32_0.md).

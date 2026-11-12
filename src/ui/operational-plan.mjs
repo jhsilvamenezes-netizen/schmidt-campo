@@ -17,38 +17,41 @@ export function installSchmidtOperationalPlan({ document, schmidt, events, measu
     #param-stage-inicio>.stage-intro {padding:5px 0 0}
     #param-stage-inicio>.stage-intro>p {display:none}
     #param-stage-inicio>.fx-guide {display:none!important}
-    #param-stage-inicio .op-context {font-size:13px;line-height:1.4;margin:2px 0 7px;color:var(--sx-muted)}
+    #param-stage-inicio .op-context {font-size:var(--sx-fs-13);line-height:1.4;margin:2px 0 7px;color:var(--sx-muted)}
     #param-stage-inicio .fx-params>legend {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
     #param-stage-inicio .fx-params {padding:8px 12px;margin:0 0 8px}
     #param-stage-inicio .fx-params>.fx-row {grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:10px}
     #param-stage-inicio .fx-row>label {display:grid;grid-template-rows:44px 44px auto;gap:3px;align-content:start}
-    #param-stage-inicio .fx-row>label>.sx-lbl,#param-stage-inicio .op-people-label {min-height:44px;display:flex;align-items:center;font-size:14px;line-height:18px}
+    #param-stage-inicio .fx-row>label>.sx-lbl,#param-stage-inicio .op-people-label {min-height:var(--sx-touch);display:flex;align-items:center;font-size:var(--sx-fs-14);line-height:18px}
     #param-stage-inicio .fx-row .fx-stepper {margin:0}
     #param-stage-inicio .fx-row #meta-haPerPoint {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
     #param-stage-inicio .fx-row #real-haPerPoint {display:none}
-    #param-stage-inicio .op-density-help {font-size:12px;line-height:16px;font-weight:400;color:var(--sx-muted);margin:0}
+    #param-stage-inicio .op-density-help {font-size:var(--sx-fs-12);line-height:16px;font-weight:400;color:var(--sx-muted);margin:0}
     #param-stage-inicio .op-current {margin-top:3px;padding-top:2px;border-top:1px solid var(--sx-line)}
     #param-stage-inicio .op-plan-head {display:flex;flex-wrap:wrap;align-items:center;gap:5px 8px}
-    #param-stage-inicio .op-active-tag {font-size:12px;font-weight:700;color:var(--sx-brand)}
-    #param-stage-inicio .op-counts {font-size:20px;font-weight:750;margin:0;line-height:1.25;color:var(--sx-brand)}
-    #param-stage-inicio .op-caption {font-size:13px;line-height:18px;margin:2px 0 4px;color:var(--sx-muted)}
+    #param-stage-inicio .op-active-tag {font-size:var(--sx-fs-12);font-weight:700;color:var(--sx-brand)}
+    #param-stage-inicio .op-counts {font-size:var(--sx-fs-20);font-weight:750;margin:0;line-height:1.25;color:var(--sx-brand)}
+    #param-stage-inicio .op-caption {font-size:var(--sx-fs-13);line-height:18px;margin:2px 0 4px;color:var(--sx-muted)}
     #param-stage-inicio .op-distances {display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:5px 0}
-    #param-stage-inicio .op-distance {border:1px solid var(--sx-line);border-radius:10px;padding:8px;min-width:0}
-    #param-stage-inicio .op-distance span {display:block;font-size:13px;line-height:17px}
-    #param-stage-inicio .op-distance strong {display:block;font-size:20px;line-height:25px;color:var(--sx-brand);margin:3px 0}
-    #param-stage-inicio .op-distance small {font-size:13px;line-height:17px;display:block;color:var(--sx-muted)}
-    #param-stage-inicio .op-crew {padding:7px;border-radius:8px;background:var(--sx-warn-soft);color:var(--sx-warn);font-size:13px;line-height:18px;margin:7px 0}
-    #param-stage-inicio .op-schematic {margin:10px 0;padding:8px;border:1px solid var(--sx-line);border-radius:10px}
-    #param-stage-inicio .op-schematic figcaption {font-size:13px;font-weight:650;margin:0 0 4px}
+    #param-stage-inicio .op-distance {border:1px solid var(--sx-line);border-radius:var(--sx-r);padding:8px;min-width:0}
+    #param-stage-inicio .op-distance span {display:block;font-size:var(--sx-fs-13);line-height:17px}
+    #param-stage-inicio .op-distance strong {display:block;font-size:var(--sx-fs-20);line-height:25px;color:var(--sx-brand);margin:3px 0}
+    #param-stage-inicio .op-distance small {font-size:var(--sx-fs-13);line-height:17px;display:block;color:var(--sx-muted)}
+    #param-stage-inicio .op-crew {padding:7px;border-radius:8px;background:var(--sx-warn-soft);color:var(--sx-warn);font-size:var(--sx-fs-13);line-height:18px;margin:7px 0}
+    #param-stage-inicio .op-schematic {margin:10px 0;padding:8px;border:1px solid var(--sx-line);border-radius:var(--sx-r)}
+    #param-stage-inicio .op-schematic figcaption {font-size:var(--sx-fs-13);font-weight:650;margin:0 0 4px}
     #param-stage-inicio .op-schematic svg {display:block;width:100%;height:auto;max-height:88px;color:var(--sx-brand)}
     #param-stage-inicio .op-settings,#param-stage-inicio .op-origin {margin-top:9px;border-top:1px solid var(--sx-line);padding-top:4px}
     #param-stage-inicio .op-settings>summary,#param-stage-inicio .op-origin>summary,#param-stage-inicio .op-recommendation>summary {cursor:pointer;font-weight:650;padding:8px 0;display:flex;align-items:center;gap:8px;white-space:normal;overflow-wrap:anywhere}
-    #param-stage-inicio .op-settings summary small {display:block;font-size:13px;line-height:18px;font-weight:400;margin-top:3px;color:var(--sx-warn)}
-    #param-stage-inicio .op-support {font-size:13px;line-height:1.4;margin:8px 0;color:var(--sx-muted)}
-    #param-stage-inicio .op-recommendation-status {font-size:14px;font-weight:700;color:var(--sx-brand);margin:0 0 10px}
+    #param-stage-inicio .op-settings summary small {display:block;font-size:var(--sx-fs-13);line-height:18px;font-weight:400;margin-top:3px;color:var(--sx-warn)}
+    #param-stage-inicio .op-support {font-size:var(--sx-fs-13);line-height:1.4;margin:8px 0;color:var(--sx-muted)}
+    #param-stage-inicio .op-recommendation-status {font-size:var(--sx-fs-14);font-weight:700;color:var(--sx-brand);margin:0 0 10px}
     #param-stage-inicio .is-changed>.param-meta:before {content:none}
     #param-stage-inicio .is-changed input:not([aria-invalid=true]) {box-shadow:none;border-color:var(--sx-line-strong)!important}
     @media(max-width:999px){#param-stage-inicio>.param-lot-source{display:none}}
+      /* Etapas 2 a 5 no celular estreito: 44 px (eram 36). A regra antiga é !important dentro da camada
+       "legado"; entre regras !important vence a camada declarada ANTES, por isso esta vai na camada "tokens". */
+    @layer tokens{@media(max-width:379px){#panel-plano .param-sections .param-stage-tab:not([aria-current=step]){min-width:44px!important}}}
   `;
   document.head.append(style);
   const context=make('p','op-context');stage.querySelector('.stage-intro').after(context);

@@ -36,16 +36,23 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
   const badge = make('button'); badge.id = 'block-active'; badge.type = 'button'; badge.hidden = true;
   badge.title = 'Ver planejamento do bloco';
   document.querySelector('.top').append(badge);
+  // 1.32: mesmos botões do resto do aplicativo (secundário com contorno; "Usar bloco" é a ação principal),
+  // tokens de espaço/letra e selo do bloco em uma linha só no topo do celular.
   const style = make('style'); style.textContent = `
-    #block-planning{display:grid;gap:8px;margin-bottom:10px;padding:10px 12px}
-    #block-planning label{display:grid;gap:4px;font-size:14px}
-    #block-planning select{width:100%;min-width:0;min-height:44px}
-    #block-planning p{font-size:13px;line-height:1.4;margin:2px 0}
-    #block-planning button,#block-active{min-height:44px;white-space:normal}
-    #block-planning button{font:inherit;color:var(--sx-brand);background:var(--sx-soft);border:1px solid var(--sx-line-strong);border-radius:8px;padding:8px 12px}
-    #block-planning .block-actions,#block-members{display:flex;flex-wrap:wrap;gap:6px}
+    #block-planning{display:grid;gap:var(--sx-sp-2);margin-bottom:10px;padding:10px 12px}
+    #block-planning label{display:grid;gap:4px;font-size:var(--sx-fs-14)}
+    #block-planning select{width:100%;min-width:0;min-height:var(--sx-touch)}
+    #block-planning p{font-size:var(--sx-fs-13);line-height:1.4;margin:2px 0}
+    #block-planning button{min-height:var(--sx-touch);white-space:normal;font:inherit;font-size:var(--sx-fs-14);font-weight:800;color:var(--sx-brand);background:var(--sx-surface);border:1px solid var(--sx-brand);border-radius:var(--sx-r);padding:8px 14px}
+    #block-planning #block-apply{background:var(--sx-brand);color:#fff}
+    #block-planning button:disabled{opacity:.45;cursor:not-allowed}
+    #block-planning .block-actions,#block-members{display:flex;flex-wrap:wrap;gap:var(--sx-sp-2)}
     #block-details svg{display:block;width:100%;height:320px;background:var(--sx-surface)}
-    #block-active{font-size:12px;background:var(--sx-brand);color:var(--sx-surface);border-radius:8px;margin:4px}
+    #block-summary p{margin:0;font-size:var(--sx-fs-20);font-weight:750;line-height:1.25;color:var(--sx-brand)}
+    #block-summary small{display:block;font-size:var(--sx-fs-13);line-height:1.4;color:var(--sx-muted)}
+    #block-details{display:grid;gap:var(--sx-sp-2)}
+    #block-details .op-distances{margin:0}
+    #block-active{min-height:var(--sx-touch);margin:4px;padding:2px 8px;font:inherit;font-size:var(--sx-fs-12);font-weight:700;line-height:1.2;white-space:normal;background:var(--sx-brand);color:#fff;border:1px solid var(--sx-brand);border-radius:var(--sx-r)}
     #block-active[hidden],#block-planning [hidden]{display:none!important}
   `; document.head.append(style);
   let draft = null, draftInputSignature = null, abort = null, busy = false;
@@ -89,25 +96,32 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
   const readScenarios = createSchmidtBlockScenarioReader(engine);
   const draw = (record, live = false) => {
     details.replaceChildren();
-    const summary = make('p'); summary.id = 'block-summary';
+    // 1.32: mesmo desenho do "Plano em uso" (total em destaque e os dois cartões de distância), no lugar de
+    // um parágrafo corrido. Os números são os mesmos de antes.
+    const num = (value, digits) => value.toLocaleString('pt-BR', { maximumFractionDigits: digits });
     const scenarios = readScenarios(app.fields,record);
     const count = scenarios.reduce((n, sc) => n + sc.samples.length, 0);
-    summary.textContent = `${count} pontos · entre tiros: ${record.common.spacingM.toLocaleString('pt-BR', { maximumFractionDigits:2 })} m · barra: 36,48 m`;
+    const summary = make('div'); summary.id = 'block-summary';
+    summary.append(make('p', `${record.members.length} lotes · ${count} pontos`));
     const extra = Object.values(record.assessment.addedPointsByField || {}).reduce((n,x)=>n+x,0);
-    if (extra&&!record.members.some(k=>record.state.editsByField[k])) summary.textContent += ` · ${extra} ${extra===1?'ponto a mais':'pontos a mais'} para manter a cobertura dos lotes`;
+    if (extra&&!record.members.some(k=>record.state.editsByField[k])) summary.append(make('small', `${extra} ${extra===1?'ponto a mais':'pontos a mais'} para manter a cobertura dos lotes`));
     const gaps=[];
     for(const sc of scenarios)for(const u of sc.units){const ps=sc.samples.filter(p=>p.unitId===u.id).sort((a,b)=>a.s-b.s);for(let i=1;i<ps.length;i++)gaps.push(Math.hypot(ps[i].x-ps[i-1].x,ps[i].y-ps[i-1].y));}
-    const distances=make('p');distances.id='block-distances';
-    distances.textContent=gaps.length?`Entre pontos no mesmo trecho: ${Math.min(...gaps).toLocaleString('pt-BR',{maximumFractionDigits:1})} a ${Math.max(...gaps).toLocaleString('pt-BR',{maximumFractionDigits:1})} m`:'Um ponto em cada trecho.';
+    const card = (label, value, caption) => { const c = make('div'); c.className = 'op-distance'; c.append(make('span', label), make('strong', value), make('small', caption)); return c; };
+    const passes = record.common.spacingM / 36.48;
+    const distances=make('div');distances.id='block-distances';distances.className='op-distances';
+    distances.append(
+      card('Entre tiros', `${num(record.common.spacingM, 2)} m`, Math.abs(passes - Math.round(passes)) < .01 ? `${Math.round(passes)} passadas da barra de 36,48 m` : 'De um tiro ao vizinho, de lado · barra: 36,48 m'),
+      card('Entre pontos', gaps.length ? `${num(Math.min(...gaps), 0)}–${num(Math.max(...gaps), 0)} m` : '—', gaps.length ? 'Ao longo do mesmo trecho' : 'Um ponto em cada trecho'));
     const borders=scenarios.map((sc,i)=>schmidtBlockBorderDistance(app.fields[record.members[i]].geom,sc.samples)).filter(Number.isFinite);
-    if(borders.length)distances.textContent+=` · menor distância de ponto à borda: ${Math.min(...borders).toLocaleString('pt-BR',{maximumFractionDigits:1})} m`;
+    const border = borders.length ? make('p', `Ponto mais perto da borda: ${num(Math.min(...borders), 1)} m`) : '';
     const members = make('div'); members.id = 'block-members';
     record.members.forEach((key, i) => {
       const button = make('button', `${app.fields[key].code} · ${scenarios[i].samples.length} pontos`); button.type = 'button'; button.dataset.blockMember = key;
       button.disabled = !live; button.onclick = () => blockMap.focus(key); members.append(button);
     });
     const note = make('p', 'Cada lote mantém a quantidade mínima de pontos. Confira as passagens entre os lotes.');
-    details.append(summary, distances, members, note);
+    details.append(summary, distances, border, members, note);
     if (record.assessment.coverageTradeoff) details.append(make('p', `Esta grade altera a cobertura: pior relação amostrada ${(record.assessment.worstRatio * 100 - 100).toFixed(1)}% acima do individual. Confira antes de usar.`));
     blockMap.update(record,app.fields,scenarios,live,app.field?`${app.field.farm}|${app.field.code}`:null);
   };

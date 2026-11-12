@@ -1,11 +1,11 @@
 {
-  "entrega": "1.31.3",
+  "entrega": "1.32.0",
   "nome": "SCHMIDT Campo",
-  "data": "2026-11-11",
-  "versaoDoApp": "1.31.3",
+  "data": "2026-11-12",
+  "versaoDoApp": "1.32.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "0f406e1c4900f87ae84eaa5243b1b0acc68234ddbe6746837b0932238e8ac8cd",
-  "workerSha256": "1cb62ca2987fba3a8c6f2f6a9b818299db6f1a8428c5b16aefcb82c4623be466",
+  "htmlSha256": "b66758a7ac21f8878c81cd1723e15bcb1eaa7f4008c990266ce8f70ae80da3f5",
+  "workerSha256": "c37a28d15201e7d58dd10c8b73b3c84c007c4722295661bf3047b6306dee56c6",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -16,7 +16,9 @@
     "mapa conjunto com tiros, pontos, distâncias e abertura do mapa operacional de cada lote",
     "nomes mais simples e cancelamento seguro da preparação",
     "limites do grupo ao selecionar; mapa completo ao usar bloco; medidas do ponto desenhadas sob consulta",
-    "retorno pelo histórico recarrega dados atuais e recupera a gravação; prévia do grupo acessível no celular"
+    "retorno pelo histórico recarrega dados atuais e recupera a gravação; prévia do grupo acessível no celular",
+    "alteração feita logo antes de fechar, recarregar ou trocar de página volta a ficar gravada (a sessão só perde a permissão depois de o aplicativo gravar o pendente)",
+    "mapa do bloco revisado: cores do tema (Sol incluído), número dentro do ponto quando cabe, letras de 12 px ou mais, botões de 44 px e do padrão; tela não salta ao abrir"
   ],
   "somenteEstudoSemIntegracao": [
     "recuo mínimo obrigatório por divisa",
@@ -30,5 +32,5 @@
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
   "runtimeBlocks": true,
-  "statusEntrega": "versão web 1.31.3; APK sem distribuição"
+  "statusEntrega": "versão web 1.32.0; APK sem distribuição"
 }
