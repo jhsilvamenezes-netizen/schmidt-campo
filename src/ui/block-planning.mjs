@@ -53,6 +53,10 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
     #block-details{display:grid;gap:var(--sx-sp-2)}
     #block-details .op-distances{margin:0}
     #block-active{min-height:var(--sx-touch);margin:4px;padding:2px 8px;font:inherit;font-size:var(--sx-fs-12);font-weight:700;line-height:1.2;white-space:normal;background:var(--sx-brand);color:#fff;border:1px solid var(--sx-brand);border-radius:var(--sx-r)}
+    /* Celular: o topo não comporta o nome de todos os lotes. O texto completo continua no botão (leitor de
+       tela e testes); na tela aparece a forma curta de data-short ("Bloco · 3 lotes"), em uma linha. */
+    @media(max-width:599px){#block-active{font-size:0;white-space:nowrap}#block-active::after{content:attr(data-short);font-size:var(--sx-fs-12)}}
+    @media(max-width:599px){body.mode-monitor #block-active{display:none}} /* no guia, as abas já mostram o bloco */
     #block-active[hidden],#block-planning [hidden]{display:none!important}
   `; document.head.append(style);
   let draft = null, draftInputSignature = null, abort = null, busy = false;
@@ -138,7 +142,7 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
     exportGPX.hidden = !active;
     if (active) {
       const record = controller.snapshot();
-      mode.value = 'block'; badge.textContent = `Bloco · ${record.members.map(k=>app.fields[k].code).join(' + ')}`;
+      mode.value = 'block'; badge.textContent = `Bloco · ${record.members.map(k=>app.fields[k].code).join(' + ')}`; badge.dataset.short = `Bloco · ${record.members.length} lotes`;
       status.textContent = 'Bloco em uso. Escolha o lote. As coletas deste bloco ficam salvas separadamente.';
       draw(record, true);
     } else if (mode.value === 'individual') { readScenarios.clear(); blockMap.clear(); details.replaceChildren(); status.textContent = ''; }

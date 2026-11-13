@@ -114,9 +114,16 @@ pendente. Sem mudança de tela, método ou registros.
 [Relatório](CORRECAO_GRAVAR_AO_SAIR_1_31_4.md).
 
 
-## 1.32.0 — revisão do modo bloco (candidata em branch)
+## 1.32.0 — revisão do modo bloco
 
 Mapa do bloco com cores do tema (Sol incluído), número dentro do ponto quando
 cabe, letras de 12 px ou mais, botões de 44 px e do padrão, tela sem salto ao
-abrir e código do mapa reescrito legível. Aguarda aprovação visual do
-proprietário; não está no link. [Relatório](REVISAO_1_32_0.md).
+abrir e código do mapa reescrito legível. Publicada em 12/11/2026 (PR #7). [Relatório](REVISAO_1_32_0.md).
+
+
+## 1.33.0 — modo bloco em tablet, notebook e topo do celular
+
+Mapa do bloco ocupa a área disponível no tablet e no notebook (número em
+todos os pontos), selo do bloco em uma linha no celular e topo do guia sem
+quebra. [Relatório](REVISAO_1_33_0.md).
+
