@@ -5,6 +5,13 @@ e o commit atual de main. O site é https://jhsilvamenezes-netizen.github.io/sch
 Este documento permite continuar a revisão com outro desenvolvedor ou assistente,
 inclusive Claude. Não existe integração automática entre sessões.
 
+## Alternar entre Codex e Claude
+
+Leia [COORDENACAO.md](COORDENACAO.md): fila imediata, protocolo de revisão e
+modelo de passagem. A Issue #1 continua sendo o backlog principal. Cada PR
+atualiza estes registros junto com a mudança. Não existe execução automática
+de uma sessão pela outra.
+
 ## Evolução recente
 
 | Etapa | Entregue |
@@ -15,8 +22,13 @@ inclusive Claude. Não existe integração automática entre sessões.
 | 1.31.1 | Mapa conjunto, abertura de cada lote, consulta das distâncias e nomes simples. |
 | 1.31.2 | Limites na seleção do grupo, abertura automática do mapa completo e Enquadrar explícito. |
 | 1.31.3 | Retomada pelo histórico recupera a gravação via recarga segura; prévia móvel independente de ativação e erros de sessão mais claros. |
+| 1.31.4 / 1.32.0 | Gravação pendente antes de encerrar a sessão; mapa com cores do tema, rótulos e controles revisados, resultado do bloco em cartões. PR #7. |
+| 1.33.0 | Mais área para o mapa em tablet/notebook e identificação compacta no celular. PR #8. |
+| 1.34.0 | Reposicionamento de Entrada no guia individual e tratamento de distância sobre ponto. PR #9. |
 
-O código gerador original completo ainda não foi recuperado. index.html é um
+A documentação da 1.32 cita uma fonte em `central-precos/ferramentas/schmidt`,
+mas seu acesso e sua equivalência ainda precisam ser verificados; uma consulta
+posterior retornou 404. Não presumir recuperação ou migração concluída. index.html é um
 artefato gerado por integração das fontes legíveis com o build preservado.
 Não editar diretamente o bundle minificado.
 
@@ -75,7 +87,8 @@ Não versionar resultados privados, GPX, backups ou novos anexos de campo.
 
 Metodologia linear existente; sem anéis. Barra 36,48 m. P6 sem alteração do
 rumo/configuração e sem sua observação específica na interface. Preservar planos,
-coletas, backup e offline. Novas mudanças visuais precisam de comparação e aceite.
+coletas, backup e offline. Consultar o escopo visual autorizado em AGENTS.md e na sessão atual; conservar
+comparações e evidências para cada mudança, sem ampliar o escopo por hipótese.
 Não substituir limites ou dados por hipótese; testes não homologam dados de campo.
 
 ## Trabalho entre frentes
