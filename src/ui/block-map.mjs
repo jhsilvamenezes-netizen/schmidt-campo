@@ -61,7 +61,9 @@ const SCHMIDT_BLOCK_MAP_CSS = `
 .map-area.schmidt-joint-map{height:auto!important;max-height:none!important;overflow:visible!important}
 .map-area.schmidt-joint-map #goals,.map-area.schmidt-joint-map #field-readout,.map-area.schmidt-joint-map>.legend{display:none}
 @media(max-width:999px){.layout .map-area.schmidt-joint-map{height:calc(100dvh - var(--top-h,52px) - var(--block-sheet-height,64px))!important;padding-bottom:8px!important;overflow-y:auto!important;min-height:0}}
-@media(max-width:379px){#block-overview{height:350px}}`;
+@media(max-width:379px){#block-overview{height:350px}}
+@media(min-width:600px) and (max-width:999px){#block-overview{height:min(56vh,560px)}}
+@media(min-width:1000px){#block-overview{height:min(66vh,680px)}}`;
 
 // Ponto com número dentro: raio 10 e letra de 12 px. Só quando os pontos vizinhos ficam a esta distância
 // na tela; abaixo disso todos viram ponto simples (nunca "uns com número, outros sem").
