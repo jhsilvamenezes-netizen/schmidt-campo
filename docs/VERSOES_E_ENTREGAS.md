@@ -127,3 +127,8 @@ Mapa do bloco ocupa a área disponível no tablet e no notebook (número em
 todos os pontos), selo do bloco em uma linha no celular e topo do guia sem
 quebra. [Relatório](REVISAO_1_33_0.md).
 
+
+## 1.34.0 — mapa do guia sem rótulo coberto
+
+"Entrada" nunca coberta por ponto (eram 56 de 208 tiros) e distância sobre
+ponto oculta. [Relatório](REVISAO_1_34_0.md).
