@@ -1,11 +1,11 @@
 {
-  "entrega": "1.33.0",
+  "entrega": "1.34.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-13",
-  "versaoDoApp": "1.33.0",
+  "versaoDoApp": "1.34.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "45a19f01d199c128404e6e6634791e8e9da4a5ef9005decce45477d7567e5d73",
-  "workerSha256": "c7143435b0ebe89a7f0c0445fe8c84893c85799bec52fe3e6041323c16ee46dc",
+  "htmlSha256": "e22bf92bdb4aa71575cddfefc929297fa11bb7693da037c2580a45b6ac9fa0db",
+  "workerSha256": "4c4046fb2532a5b668580182ce2141e2123bdb536b118e331b1a1492354a556c",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -19,7 +19,8 @@
     "retorno pelo histórico recarrega dados atuais e recupera a gravação; prévia do grupo acessível no celular",
     "alteração feita logo antes de fechar, recarregar ou trocar de página volta a ficar gravada (a sessão só perde a permissão depois de o aplicativo gravar o pendente)",
     "mapa do bloco revisado: cores do tema (Sol incluído), número dentro do ponto quando cabe, letras de 12 px ou mais, botões de 44 px e do padrão; tela não salta ao abrir",
-    "mapa do bloco ocupa a área disponível no tablet e no notebook (número em todos os pontos); topo do celular em uma linha no modo bloco e no guia"
+    "mapa do bloco ocupa a área disponível no tablet e no notebook (número em todos os pontos); topo do celular em uma linha no modo bloco e no guia",
+    "mapa do guia: rótulo \"Entrada\" nunca coberto por ponto e distância sobre ponto oculta (208 tiros medidos)"
   ],
   "somenteEstudoSemIntegracao": [
     "recuo mínimo obrigatório por divisa",
@@ -33,5 +34,5 @@
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
   "runtimeBlocks": true,
-  "statusEntrega": "versão web 1.33.0; APK sem distribuição"
+  "statusEntrega": "versão web 1.34.0; APK sem distribuição"
 }
