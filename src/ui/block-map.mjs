@@ -90,7 +90,7 @@ export function createSchmidtBlockMap({ document, selectMember }) {
   const style = make('style'); style.textContent = SCHMIDT_BLOCK_MAP_CSS; document.head.append(style);
 
   let record = null, fields = null, scenarios = null, live = false, focus = null, lastField = null;
-  let zoom = 1, pan = [0, 0], pointer = null, dragged = false, selected = null, frame = 0;
+  let zoom = 1, pan = [0, 0], dragged = false, selected = null, frame = 0;
   const fmt = (n, d = 0) => n.toLocaleString('pt-BR', { maximumFractionDigits: d });
   const sv = (tag, attrs, text) => {
     const e = document.createElementNS(svg.namespaceURI, tag);
@@ -100,7 +100,7 @@ export function createSchmidtBlockMap({ document, selectMember }) {
   };
   const schedule = () => { if (!frame) frame = win.requestAnimationFrame(() => { frame = 0; paint(); }); };
   const view = key => {
-    focus = key; zoom = 1; pan = [0, 0]; selected = null; info.hidden = true;
+    resetGestures(); focus = key; zoom = 1; pan = [0, 0]; selected = null; info.hidden = true;
     if (key && live) selectMember(key);
     render();
   };
@@ -197,6 +197,8 @@ export function createSchmidtBlockMap({ document, selectMember }) {
         });
         const choose = () => { if (dragged) return; selected = { key, p }; schedule(); describePoint(key, f, p, unitPoints); };
         point.onclick = choose;
+        // Toque concluído consulta o ponto mesmo se o navegador não sintetizar click.
+        point.onpointerup = e => { if (e.pointerType === 'touch') choose(); };
         point.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); } };
         occupied.push({ x: pos[0] - radius - 1, y: pos[1] - radius - 1, w: 2 * radius + 2, h: 2 * radius + 2 });
         pointNodes.push([point, numbered ? sv('text', { x: pos[0], y: pos[1] + 4.2, class: 'bm-num' }, String(p.number ?? p.id)) : null]);
@@ -265,29 +267,93 @@ export function createSchmidtBlockMap({ document, selectMember }) {
     if (focusedPoint) [...svg.querySelectorAll('[data-block-point]')].find(n => n.dataset.blockPoint === focusedPoint)?.focus({ preventScroll: true });
   }
 
+  // Gestos alteram somente a câmera; coordenadas, tiros e registros não mudam.
+  const pointers = new Map();
+  let gesture = null;
+  function resetGestures() {
+    for (const id of pointers.keys()) if (svg.hasPointerCapture(id)) svg.releasePointerCapture(id);
+    pointers.clear(); gesture = null;
+  }
+  const local = e => {
+    const rect = svg.getBoundingClientRect();
+    return [e.clientX - rect.left, e.clientY - rect.top];
+  };
+  const midpoint = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  const distance = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  const rebase = () => {
+    const points = [...pointers.values()];
+    gesture = points.length ? { points: points.map(p => [...p]), pan: [...pan], zoom } : null;
+  };
+  // Conservar a posição do terreno sob os dedos/cursor durante a aproximação.
+  const scaleAt = (next, from, to = from, baseZoom = zoom, basePan = pan) => {
+    const value = Math.max(.6, Math.min(8, next)), ratio = value / baseZoom;
+    const origin = [svg.clientWidth / 2 - 8, svg.clientHeight / 2 + 10];
+    pan = origin.map((o, i) => to[i] - o - (from[i] - o - basePan[i]) * ratio);
+    zoom = value;
+  };
+  const center = () => [svg.clientWidth / 2, svg.clientHeight / 2];
   for (const [label, name, action] of [
-    ['+', 'Aproximar', () => { zoom = Math.min(8, zoom * 1.3); }],
-    ['−', 'Afastar', () => { zoom = Math.max(.6, zoom / 1.3); }],
+    ['+', 'Aproximar', () => scaleAt(zoom * 1.3, center())],
+    ['−', 'Afastar', () => scaleAt(zoom / 1.3, center())],
     ['Enquadrar', 'Enquadrar todos os lotes', () => { zoom = 1; pan = [0, 0]; }],
   ]) {
-    const b = make('button', label); b.type = 'button'; b.setAttribute('aria-label', name);
-    b.onclick = () => {
-      action();
-      if (label === 'Enquadrar') { view(null); document.querySelector('[data-v08-view="mapa"]')?.click(); area.scrollTop = 0; }
+    const button = make('button', label);
+    button.type = 'button'; button.setAttribute('aria-label', name);
+    button.onclick = () => {
+      resetGestures(); action();
+      if (label === 'Enquadrar') {
+        view(null); document.querySelector('[data-v08-view="mapa"]')?.click(); area.scrollTop = 0;
+      }
       schedule();
     };
-    tools.append(b);
+    tools.append(button);
   }
-  svg.addEventListener('pointerdown', e => { if (e.button !== 0) return; pointer = { id: e.pointerId, x: e.clientX, y: e.clientY, pan: [...pan] }; dragged = false; });
-  svg.addEventListener('pointermove', e => {
-    if (!pointer || pointer.id !== e.pointerId) return;
-    const dx = e.clientX - pointer.x, dy = e.clientY - pointer.y;
-    if (Math.hypot(dx, dy) > 6) { dragged = true; svg.setPointerCapture(e.pointerId); pan = [pointer.pan[0] + dx, pointer.pan[1] + dy]; schedule(); }
+  svg.addEventListener('pointerdown', e => {
+    if (e.button !== 0 || pointers.size >= 2) return;
+    if (!pointers.size) dragged = false;
+    pointers.set(e.pointerId, local(e)); rebase();
+    // Capturar no SVG estável: os pontos são recriados durante a pintura.
+    if (pointers.size === 2) {
+      dragged = true;
+      for (const id of pointers.keys()) svg.setPointerCapture(id);
+    }
   });
-  const end = () => { pointer = null; };
-  svg.addEventListener('pointercancel', end); svg.addEventListener('lostpointercapture', end);
-  win.addEventListener('pointerup', () => { end(); setTimeout(() => { dragged = false; }, 0); });
-  new win.ResizeObserver(schedule).observe(svg);
+  svg.addEventListener('pointermove', e => {
+    if (!pointers.has(e.pointerId) || !gesture) return;
+    pointers.set(e.pointerId, local(e));
+    const points = [...pointers.values()];
+    if (points.length === 2) {
+      const initial = distance(...gesture.points);
+      if (initial < 1) { rebase(); return; }
+      scaleAt(gesture.zoom * distance(...points) / initial,
+        midpoint(...gesture.points), midpoint(...points), gesture.zoom, gesture.pan);
+    } else {
+      const dx = points[0][0] - gesture.points[0][0], dy = points[0][1] - gesture.points[0][1];
+      if (!dragged && Math.hypot(dx, dy) <= 6) return;
+      pan = [gesture.pan[0] + dx, gesture.pan[1] + dy];
+    }
+    dragged = true; svg.setPointerCapture(e.pointerId); schedule();
+  });
+  const end = e => {
+    if (!pointers.delete(e.pointerId)) return;
+    // O dedo restante continua a partir da câmera atual, sem salto.
+    rebase();
+    if (!pointers.size) setTimeout(() => { if (!pointers.size) dragged = false; }, 0);
+  };
+  svg.addEventListener('pointercancel', end);
+  svg.addEventListener('lostpointercapture', e => {
+    if (e.target === svg && !svg.hasPointerCapture(e.pointerId)) end(e);
+  });
+  win.addEventListener('pointerup', end);
+  win.addEventListener('blur', () => { resetGestures(); dragged = false; });
+  svg.addEventListener('wheel', e => {
+    e.preventDefault();
+    if (pointers.size) return;
+    const delta = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? svg.clientHeight : 1);
+    scaleAt(zoom * Math.exp(-Math.max(-200, Math.min(200, delta)) * .002), local(e));
+    schedule();
+  }, { passive: false });
+  new win.ResizeObserver(() => { resetGestures(); schedule(); }).observe(svg);
   const sheet = document.getElementById('sheet');
   const sizeSheet = () => area.style.setProperty('--block-sheet-height', Math.ceil(sheet.getBoundingClientRect().height) + 'px');
   new win.ResizeObserver(sizeSheet).observe(sheet); sizeSheet();
@@ -297,13 +363,13 @@ export function createSchmidtBlockMap({ document, selectMember }) {
     showAll() { view(null); document.querySelector('[data-v08-view="mapa"]')?.click(); area.scrollTop = 0; },
     update(next, allFields, plans, isLive, currentField) {
       if (record?.id !== next.id || live !== isLive || !!record?.geometryOnly !== !!next.geometryOnly) {
-        focus = null; zoom = 1; pan = [0, 0]; selected = null; info.hidden = true;
+        resetGestures(); focus = null; zoom = 1; pan = [0, 0]; selected = null; info.hidden = true;
       } else if (isLive && lastField && currentField !== lastField) focus = currentField;
       record = next; fields = allFields; scenarios = plans; live = isLive; lastField = currentField; render();
     },
     focus: key => view(key),
     clear() {
-      record = null; root.hidden = true; legacy.hidden = false; legacy.style.display = '';
+      resetGestures(); record = null; root.hidden = true; legacy.hidden = false; legacy.style.display = '';
       area.classList.remove('schmidt-joint-map'); info.hidden = true; focus = null;
     },
   };

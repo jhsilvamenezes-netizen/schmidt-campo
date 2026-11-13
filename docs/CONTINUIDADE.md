@@ -86,3 +86,11 @@ arquivos e teste esperado. Uma frente implementa; outra pode revisar reproduçã
 segurança de dados e casos extremos. Evitar edição simultânea da mesma branch.
 Repassar commit, diff, testes executados e pendências. Integrar por PR após CI;
 não declarar publicação ou teste físico sem evidência do resultado.
+
+## Revisão em andamento — gestos 1.34.1
+
+Sobre a base 1.34.0, foi preparada a correção de pinça, arraste e zoom ancorado
+no mapa conjunto. Ver [relatório e passagem](CORRECAO_GESTOS_1_34_1.md).
+Candidata em branch, sem nova publicação ou APK nesta revisão. Consultar o PR
+para o commit, os resultados finais e a próxima revisão do Claude. O protocolo
+compartilhado está proposto no PR #10; não presumir que já foi integrado.
