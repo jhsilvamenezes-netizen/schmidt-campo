@@ -94,3 +94,12 @@ no mapa conjunto. Ver [relatório e passagem](CORRECAO_GESTOS_1_34_1.md).
 Candidata em branch, sem nova publicação ou APK nesta revisão. Consultar o PR
 para o commit, os resultados finais e a próxima revisão do Claude. O protocolo
 compartilhado está proposto no PR #10; não presumir que já foi integrado.
+
+## Candidata 1.35.0 — Satélite como última opção
+
+Plano permanece padrão; Satélite foi integrado como opção secundária em
+individuais e blocos, sem consulta externa até a seleção. Ver
+[SATELITE_OPCIONAL_1_35_0.md](SATELITE_OPCIONAL_1_35_0.md) e
+[prioridades de revisão móvel](REVISAO_PRIORIDADES_MOBILE.md).
+Esta candidata depende da revisão de gestos do PR #11; não representa nova
+publicação, APK ou validação em telefone físico.

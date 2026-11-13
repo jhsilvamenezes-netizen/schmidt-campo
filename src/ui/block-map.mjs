@@ -1,3 +1,4 @@
+import { publishSchmidtSatelliteFrame } from './satellite-map.mjs';
 import { schmidtBlockBorderDistance } from '../application/block-planning.mjs';
 
 // Menor segmento geométrico até uma borda, incluindo furos do polígono.
@@ -262,6 +263,8 @@ export function createSchmidtBlockMap({ document, selectMember }) {
         const cell = make('div', name); cell.append(make('strong', value)); metrics.append(cell);
       }
     }
+    publishSchmidtSatelliteFrame({svg, layer:svg, scope:'block:'+record.id, width:w, height:h, scale, angle:0,
+      origin:[w/2-8-(x0+x1)/2*scale+pan[0],h/2+10+(y0+y1)/2*scale+pan[1]]});
     svg.dataset.total = String(total);
     svg.dataset.numbered = String(numbered);
     if (focusedPoint) [...svg.querySelectorAll('[data-block-point]')].find(n => n.dataset.blockPoint === focusedPoint)?.focus({ preventScroll: true });

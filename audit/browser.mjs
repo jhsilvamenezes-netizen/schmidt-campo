@@ -106,9 +106,10 @@ try {
     for (const state of ['mapa','plano','tiros','monitoramento','auditoria']) {
       const images = [], regions = [];
       // 2x evita rasterização dependente da altura fracionária da camada de
-      // rolagem no Chromium 141. Referência e candidata usam a mesma escala;
+      // rolagem e das bordas arredondadas em tablet no Chromium 141.
+      // Referência e candidata usam a mesma escala;
       // tolerância original permanece 20 pixels/delta 1, sem excluir navegação.
-      const scale = state === 'plano' ? 2 : 1;
+      const scale = state === 'plano' || width === 768 ? 2 : 1;
       for (const [label, url] of [['original',reference],['candidata',candidate]]) {
         const { ctx, page } = await context({ width, height }, 'block', scale);
         await ready(page, url);
