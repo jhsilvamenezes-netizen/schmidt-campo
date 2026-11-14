@@ -6,16 +6,17 @@ Gerado por scripts/checkpoint.mjs; registro não executa nem certifica testes.
 - Responsável: Claude
 - Estado: em_andamento
 - Branch: claude/e2-medidas
-- Commit de código observado: 5608293836d9b6588f403323aa78f08b3d447969
-- Registro UTC: 2026-11-14T14:15:25.575Z
+- Commit de código observado: 76bbdbb1ace9ba2eb3aef95e10126275346d48b9
+- Registro UTC: 2026-11-14T14:21:09.556Z
 
 ## Próxima ação
 
-Reproduzir build 1.35.1; extrair do runtime as medidas exibidas (entre tiros, entre pontos, borda) dos 51 lotes e 40 grupos e comparar com Shapely/pyproj em audit/
+Conferir rumo/norte de grade (09) e distância à borda por ponto no mapa do bloco; depois GPS sintético (24–27) e exportação após edição (23)
 
 ## Testes declarados pela sessão
 
-- nao_executado: node scripts/build-preserved.mjs --check
+- passou: node scripts/build-preserved.mjs --check
+- passou: cd audit && node direction-measures-probe.mjs && python -I direction-measures.py
 
 ## Recuperação
 

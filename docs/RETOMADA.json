@@ -3,7 +3,7 @@
   "task": "E1/E2 — referência e medidas de direcionamento",
   "owner": "Claude",
   "status": "em_andamento",
-  "nextAction": "Reproduzir build 1.35.1; extrair do runtime as medidas exibidas (entre tiros, entre pontos, borda) dos 51 lotes e 40 grupos e comparar com Shapely/pyproj em audit/",
+  "nextAction": "Conferir rumo/norte de grade (09) e distância à borda por ponto no mapa do bloco; depois GPS sintético (24–27) e exportação após edição (23)",
   "baseMain": "2e4e2be9a44310b847155bdef9d7b78b9865ccd0",
   "publishedVersion": "1.35.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -12,8 +12,13 @@
   "tests": [
     {
       "command": "node scripts/build-preserved.mjs --check",
-      "result": "nao_executado",
-      "evidence": "Sessão Claude iniciando E1/E2 em claude/e2-medidas."
+      "result": "passou",
+      "evidence": "1.35.1 reproduzida (HTML cea2c21f…)."
+    },
+    {
+      "command": "cd audit && node direction-measures-probe.mjs && python -I direction-measures.py",
+      "result": "passou",
+      "evidence": "17 verificações, 51 lotes e 40 grupos, erro 0 m; mutações plantadas detectadas. docs/E2_MEDIDAS_DIRECIONAMENTO.md"
     }
   ],
   "blockers": [
@@ -28,13 +33,19 @@
     "Mockup não é oráculo de geometria; gerar projeção determinística com dados reais e conferir escopo visual antes de implementar.",
     "Último checkpoint enviado é recuperável; uma sessão nova não recebe automaticamente arquivos não publicados nem a conversa da outra IA.",
     "Matriz de parâmetros é critério de validação/execução, não nova recomendação de valores nem funcionalidade implementada.",
-    "Claude 14/11: E1 reproduz build e mede medidas; E2 confronta entre tiros, entre pontos e borda com GEOS/PROJ nos 51 lotes e 40 grupos (audit/direction-measures)."
+    "Claude 14/11: E1 reproduz build e mede medidas; E2 confronta entre tiros, entre pontos e borda com GEOS/PROJ nos 51 lotes e 40 grupos (audit/direction-measures).",
+    "E2 itens 10–14/20: sem erro reproduzido; distâncias são de grade UTM (−0,02–0,03% no terreno), documentado."
   ],
   "snapshot": {
-    "at": "2026-11-14T14:15:25.575Z",
+    "at": "2026-11-14T14:21:09.556Z",
     "branch": "claude/e2-medidas",
-    "codeCommit": "5608293836d9b6588f403323aa78f08b3d447969",
-    "changedTrackedFiles": [],
+    "codeCommit": "76bbdbb1ace9ba2eb3aef95e10126275346d48b9",
+    "changedTrackedFiles": [
+      "audit/direction-measures-evidence.json",
+      "audit/direction-measures-probe.mjs",
+      "audit/direction-measures.py",
+      "docs/E2_MEDIDAS_DIRECIONAMENTO.md"
+    ],
     "untrackedCount": 0
   }
 }
