@@ -1,34 +1,29 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "2.0.0 web — unificação e publicação",
-  "owner": "Claude",
+  "task": "Correções 2.0.1: validação e entrega web autorizada",
+  "owner": "Codex",
   "status": "em_andamento",
-  "nextAction": "Concluir bateria completa, abrir PR da 2.0.0, CI verde, merge e conferir deploy",
-  "baseMain": "2e4e2be9a44310b847155bdef9d7b78b9865ccd0",
-  "publishedVersion": "1.35.1",
+  "nextAction": "Conferir CI da revisão adicional (retorno ao próprio ponto com GPS menos preciso), depois integrar PR #19 autorizado, verificar Pages e registrar entrega. Primeira rodada de CI aprovada em 00329c4.",
+  "baseMain": "2455c19d4a3cc3d5d65f028a7e6b708902290de3",
+  "publishedVersion": "2.0.0",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
-  "latestDeliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/14",
+  "latestDeliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/17",
   "scope": "Direcionamento exclusivo no link móvel, sem coleta/marcação pela equipe. APK adiado.",
   "tests": [
     {
-      "command": "node audit/gps-guidance-browser.mjs",
+      "command": "node audit/gps-stability-browser.mjs",
       "result": "passou",
-      "evidence": "2.0.0: 51 lotes; monitor mapa 348 px e GPS em destaque"
+      "evidence": "20 estados, alvo estável, alerta único, expiração por timer, recuperação e histórico preservado."
     },
     {
-      "command": "UPGRADE_REF=0966b08 node audit/worker-upgrade-browser.mjs",
+      "command": "UPGRADE_REF=2455c19d4a3cc3d5d65f028a7e6b708902290de3 node audit/worker-upgrade-browser.mjs",
       "result": "passou",
-      "evidence": "1.37.0 → 2.0.0 sem perda; offline"
+      "evidence": "2.0.0 → candidata 2.0.1; offline, dados/imagens/histórico preservados."
     },
     {
-      "command": "axe WCAG 2.1 AA em todas as telas 360/1440",
+      "command": "Contratos/blocos, GPS 51 lotes, runtime/enquadramento 40 grupos, GEOS/PROJ",
       "result": "passou",
-      "evidence": "0 violações, sem rolagem lateral"
-    },
-    {
-      "command": "bateria completa 2.0.0",
-      "result": "nao_executado",
-      "evidence": "em execução"
+      "evidence": "Rodada local final aprovada; 62 execuções de módulos/blocos; 51 lotes; GEOS/PROJ; CI da revisão adicional pendente."
     }
   ],
   "blockers": [
@@ -36,37 +31,29 @@
     "Fonte geradora original completa ainda não recuperada; preservar integração e extrair por trecho com paridade."
   ],
   "decisions": [
-    "1.35.1 já entregue; não refazer correção #14.",
-    "Método linear sem anéis, barra 36,48 m, P6 atual, 51 lotes/40 grupos.",
-    "Plano padrão e Satélite opcional; não derivar divisa da fotografia nem impor recuo obrigatório.",
-    "PR #13 é planejamento/protocolo; 2.0 e projeção visual ainda não implementadas.",
-    "Mockup não é oráculo de geometria; gerar projeção determinística com dados reais e conferir escopo visual antes de implementar.",
-    "Último checkpoint enviado é recuperável; uma sessão nova não recebe automaticamente arquivos não publicados nem a conversa da outra IA.",
-    "Matriz de parâmetros é critério de validação/execução, não nova recomendação de valores nem funcionalidade implementada.",
-    "Claude 14/11: E1 reproduz build e mede medidas; E2 confronta entre tiros, entre pontos e borda com GEOS/PROJ nos 51 lotes e 40 grupos (audit/direction-measures).",
-    "E2 itens 10–14/20: sem erro reproduzido; distâncias são de grade UTM (−0,02–0,03% no terreno), documentado.",
-    "E2 item 09: rumo da planilha = norte verdadeiro; tiros retos na grade; variação da convergência no lote ≤0,006° (≤0,48 m); norte magnético não usado.",
-    "E2 concluída sem defeito reproduzido em 09–14, 20, 23; nenhuma mudança no app foi necessária.",
-    "1.36.0: aviso de mudança continua sem lista (decisão aprovada); comparação fica em quadro recolhido na etapa Tiros; Usar passa pelo campo existente.",
-    "1.37.0: sem marcação, o guia orienta pelo ponto à frente (projeção); com marcação, legado. Texto 'toque em Ponto coletado' mantido (fluxo legado preservado).",
-    "2.0.0: monitor recalcula o mapa ao trocar de modo; 'Ligar GPS' destacado; publicação autorizada em 14/11/2026."
+    "Direcionamento pelo link móvel, sem coleta pela equipe; APK adiado.",
+    "Método linear sem anéis, barra 36,48 m, P6 atual, 51 lotes e 40 grupos.",
+    "2.0.0 publicada no PR #17. #18 é revisão, sem correções de runtime.",
+    "2.0.1 autorizada pelo proprietário após revisão; branch codex/correcao-2-0-1.",
+    "F1/F2 corrigidos na candidata; F3 texto de chegada corrigido, separação do legado pendente; F4 pendente.",
+    "E1/E2 e parte de E3/E4 entregues; E5/E6 gerais e piloto físico não concluídos.",
+    "Conferir GitHub e diff; uma sessão não recebe automaticamente o chat da outra."
   ],
   "snapshot": {
-    "at": "2026-11-14T15:35:54.777Z",
-    "branch": "claude/versao-2-0",
-    "codeCommit": "0966b080da26c64990ac7dee80ef2f166d3970b8",
+    "at": "2026-11-14T20:22:45.659Z",
+    "branch": "codex/correcao-2-0-1",
+    "codeCommit": "fad4f40eabf2287928b7ca05e66b6c31a40cdf33",
     "changedTrackedFiles": [
-      "AGENTS.md",
       "VERSAO.json",
-      "audit/block-candidate.json",
-      "audit/gps-guidance-browser.mjs",
-      "audit/worker-upgrade-browser.mjs",
-      "docs/VERSOES_E_ENTREGAS.md",
+      "audit/direction-measures-evidence.json",
+      "audit/fix-2-0-1-evidence.json",
+      "audit/guide-next.test.mjs",
+      "docs/CORRECOES_2_0_1.md",
       "index.html",
-      "scripts/build-preserved.mjs",
-      "src/ui/lot-map.mjs",
+      "src/gps/guide-next.mjs",
       "sw.js"
     ],
-    "untrackedCount": 2
-  }
+    "untrackedCount": 1
+  },
+  "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19"
 }

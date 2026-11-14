@@ -1,0 +1,210 @@
+{
+  "version": "2.0.1",
+  "baseMain": "2455c19d4a3cc3d5d65f028a7e6b708902290de3",
+  "htmlSha256": "e81dc12929510186b39089efc3bda7493d7d98d237cd1d488985439e6b907848",
+  "workerSha256": "2d559c4db68b92123f1645df482a916220d8f4632a466d47a3395bf2965438b7",
+  "physicalDevice": false,
+  "contracts": {
+    "passed": 55
+  },
+  "blocksUnitExecutions": 62,
+  "gps": {
+    "lots": 51,
+    "steps": 182,
+    "arrivals": 182,
+    "invalidIgnored": 204,
+    "inaccurate": 51,
+    "offLine": 51,
+    "failures": [],
+    "monitorLayout": {
+      "mapH": 348,
+      "wrapH": 348,
+      "viewBoxH": 348,
+      "gpsFirst": true,
+      "gpsPrimary": true,
+      "collectPrimary": false
+    },
+    "noMarks": true,
+    "errors": []
+  },
+  "stability": {
+    "errors": [],
+    "views": [
+      {
+        "width": 360,
+        "view": "mapa",
+        "overflow": false
+      },
+      {
+        "width": 360,
+        "view": "plano",
+        "overflow": false
+      },
+      {
+        "width": 360,
+        "view": "tiros",
+        "overflow": false
+      },
+      {
+        "width": 360,
+        "view": "dados",
+        "overflow": false
+      },
+      {
+        "width": 360,
+        "view": "auditoria",
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "view": "mapa",
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "view": "plano",
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "view": "tiros",
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "view": "dados",
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "view": "auditoria",
+        "overflow": false
+      },
+      {
+        "width": 412,
+        "view": "mapa",
+        "overflow": false
+      },
+      {
+        "width": 412,
+        "view": "plano",
+        "overflow": false
+      },
+      {
+        "width": 412,
+        "view": "tiros",
+        "overflow": false
+      },
+      {
+        "width": 412,
+        "view": "dados",
+        "overflow": false
+      },
+      {
+        "width": 412,
+        "view": "auditoria",
+        "overflow": false
+      },
+      {
+        "width": 768,
+        "view": "mapa",
+        "overflow": false
+      },
+      {
+        "width": 768,
+        "view": "plano",
+        "overflow": false
+      },
+      {
+        "width": 768,
+        "view": "tiros",
+        "overflow": false
+      },
+      {
+        "width": 768,
+        "view": "dados",
+        "overflow": false
+      },
+      {
+        "width": 768,
+        "view": "auditoria",
+        "overflow": false
+      }
+    ],
+    "targets": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "checks": [
+      "six jitter fixes: target unchanged and arrival alarm not repeated",
+      "real forward and backward motion still selects points",
+      "accepted fix expires via timer; no live arrow, distance, position or arrival",
+      "fresh GPS recovers guidance",
+      "entry reversal and GPS restart reset session memory",
+      "historical collection maps preserved in memory and storage"
+    ],
+    "physicalDevice": false
+  },
+  "upgrade": {
+    "status": "passed",
+    "reference": "2455c19d4a3cc3d5d65f028a7e6b708902290de3",
+    "fromVersion": "2.0.0",
+    "toVersion": "2.0.1",
+    "htmlSha256": "e81dc12929510186b39089efc3bda7493d7d98d237cd1d488985439e6b907848",
+    "workerSha256": "2d559c4db68b92123f1645df482a916220d8f4632a466d47a3395bf2965438b7",
+    "browser": "141.0.7390.37",
+    "checks": [
+      "HTML antigo sob worker novo é recusado; cache e cliente anteriores permanecem",
+      "worker novo espera; aba antiga continua na versão antiga",
+      "ativação após fechar cliente antigo; somente o cache SCHMIDT anterior é removido",
+      "versão nova abre offline e conserva três chaves, coleta, imagem e histórico"
+    ],
+    "pageErrors": [],
+    "defaultBoomWidth": {
+      "fields": 51,
+      "metres": 36.48
+    }
+  },
+  "blockRuntime": {
+    "groups": 40,
+    "checks": [
+      "individual-maps-identical-after-block",
+      "collections-and-names-isolated",
+      "reload-opens-individual",
+      "saved-block-resumes-own-collections"
+    ],
+    "errors": []
+  },
+  "blockFraming": {
+    "checks": [
+      "40-groups-preview-correct-boundaries-no-invented-points-fit-four-widths",
+      "apply-opens-map-with-all-members",
+      "selected-point-measures-border-and-next-in-same-segment",
+      "fit-restores-all-boundaries-after-zoom"
+    ],
+    "errors": []
+  },
+  "spatialEvidence": "audit/direction-measures-evidence.json",
+  "publication": "pending CI and public verification",
+  "remaining": [
+    "F3: separate legacy controls/data from direction mode",
+    "F4: comparison and application of block adjustments",
+    "physical field validation and E5/E6 overall"
+  ],
+  "blockGestures": {
+    "groups": 40,
+    "errors": []
+  },
+  "previousRevisionCI": {
+    "commit": "00329c4b00145d407c5c3c96e01d8c6c9765db8a",
+    "passed": [
+      43636092939,
+      43636092991
+    ]
+  },
+  "additionalCheck": "Retorno ao próprio ponto com precisão de 25 m e raios 5/10/20 m; histerese limitada à metade do raio."
+}

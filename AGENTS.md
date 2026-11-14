@@ -172,3 +172,15 @@ entregar o link da 2.0"**. Escopo: publicar a 1.37.0 (PR #16) e, com CI verde, a
 
 ## Entrega
 Para cada PR: resumo, evidências, testes executados/resultados, riscos de regressão, procedimento de rollback e mudanças para web/APK. A Issue #1 é o backlog principal; atualizar seu checklist e referenciá-la nos PRs.
+
+
+### Correção e publicação web 2.0.1 — 14/11/2026
+
+Após a revisão independente da 2.0.0, o proprietário determinou: **“Se conseguir
+vc mesmo corrigir,faca e entregue o link da versao corrigida e melhorada”**.
+Autoriza corrigir os achados confirmados, testar, integrar por PR/CI verde e
+publicar a 2.0.1 no mesmo Pages. Inclui os estados funcionais de GPS vencido,
+estabilidade do alvo e texto de chegada focado no direcionamento. Não inclui
+APK, novos dados privados, mudança do método ou reformulação geral de telas.
+A comparação de ajustes para blocos e a separação completa do legado permanecem
+pendentes, conforme `docs/CORRECOES_2_0_1.md`.

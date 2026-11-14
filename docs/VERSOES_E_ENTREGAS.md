@@ -171,3 +171,11 @@ Unifica E1–E4 e E7: medidas conferidas com GEOS/PROJ, comparar antes de aplica
 guia por GPS sem marcação, esquema fiel, monitor com mapa correto no celular e
 "Ligar GPS" em destaque, atualização segura da 1.37.0. Relatório:
 [ENTREGA_2_0.md](ENTREGA_2_0.md).
+
+
+## 2.0.1 — correções do direcionamento GPS
+
+Candidata autorizada após a revisão #18. Expira a orientação dinâmica de posições
+antigas, estabiliza a troca de alvo e evita repetir o alerta de chegada por ruído.
+Chegada com texto voltado às distâncias; nenhum registro histórico é apagado.
+Testes de regressão e limites: [CORRECOES_2_0_1.md](CORRECOES_2_0_1.md).
