@@ -103,3 +103,9 @@ individuais e blocos, sem consulta externa até a seleção. Ver
 [prioridades de revisão móvel](REVISAO_PRIORIDADES_MOBILE.md).
 Esta candidata depende da revisão de gestos do PR #11; não representa nova
 publicação, APK ou validação em telefone físico.
+
+### Revisão r2 da candidata 1.35.0
+
+Leitura incremental limitada, validação PNG/JPEG, pausa de consultas em segundo
+plano e liberação de recursos. Ver [REVISAO_MEMORIA_REDE_R2.md](REVISAO_MEMORIA_REDE_R2.md).
+Mesmo visual e dados; entrega r2 separada da r1, ainda sem publicação.

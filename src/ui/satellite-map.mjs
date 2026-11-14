@@ -1,3 +1,4 @@
+import { readSchmidtBoundedResponse, schmidtRasterDimensions } from '../platform/bounded-response.mjs';
 // Fundo opcional. O plano e seus cálculos não dependem da rede ou da imagem.
 export const SCHMIDT_IMAGERY_SERVICE = 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer';
 const satelliteFrames = new Map();
@@ -50,18 +51,19 @@ export function installSchmidtSatelliteMap({document}) {
   `; document.head.append(style);
   let mode = 'plan', current = null, timer = null, pending = null, serial = 0;
   const cache = [];
+  const releaseCache = () => { for(const entry of cache)win.URL.revokeObjectURL(entry.url);cache.length=0; };
   const visible = frame => frame.svg.isConnected && frame.svg.getBoundingClientRect().width > 0 && frame.svg.getBoundingClientRect().height > 0;
   const removeImages = () => { for (const frame of satelliteFrames.values()) { frame.svg.classList.remove('satellite-on'); frame.svg.querySelectorAll('.schmidt-satellite-image').forEach(n => n.remove()); } };
   const cancel = () => { ++serial; win.clearTimeout(timer); timer = null; pending?.controller.abort(); pending = null; };
   const draw = (frame, entry) => {
-    frame.svg.querySelectorAll('.schmidt-satellite-image').forEach(n => n.remove());
+    const existing = frame.svg.querySelector('.schmidt-satellite-image');
     frame.svg.classList.toggle('satellite-on', !!entry);
-    if (!entry) return;
-    const image = document.createElementNS(ns, 'image'), b = entry.bbox;
+    if (!entry) { existing?.remove(); return; }
+    const image = existing || document.createElementNS(ns, 'image'), b = entry.bbox;
     const values = {href:entry.url, x:frame.origin[0]+b[0]*frame.scale, y:frame.origin[1]-b[3]*frame.scale,
       width:(b[2]-b[0])*frame.scale, height:(b[3]-b[1])*frame.scale, preserveAspectRatio:'none', opacity:'.88', class:'schmidt-satellite-image', 'data-satellite-scope':entry.scope};
-    for (const [k,v] of Object.entries(values)) image.setAttribute(k, v);
-    frame.layer.prepend(image);
+    for (const [k,v] of Object.entries(values)) if(image.getAttribute(k)!==String(v))image.setAttribute(k, v);
+    if(image.parentNode!==frame.layer)frame.layer.prepend(image);
   };
   async function request(frame) {
     const id = ++serial, controller = new AbortController(), bbox = schmidtSatelliteExtent(frame, 1.35);
@@ -74,16 +76,21 @@ export function installSchmidtSatelliteMap({document}) {
       const options = {signal:controller.signal,credentials:'omit',cache:'no-store',redirect:'error'};
       const response = await win.fetch(SCHMIDT_IMAGERY_SERVICE+'/export?'+query, options);
       if (!response.ok) throw Error('Imagem indisponível');
-      const meta = await response.json(), extent = meta.extent;
+      const metadata = await readSchmidtBoundedResponse(response, {limit:64*1024, signal:controller.signal});
+      const meta = JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(metadata)), extent = meta.extent;
       const href = new URL(meta.href);
       if (href.origin !== new URL(SCHMIDT_IMAGERY_SERVICE).origin || !extent || (extent.spatialReference?.latestWkid || extent.spatialReference?.wkid) !== 32723) throw Error('Referência inválida');
       const actual = [extent.xmin,extent.ymin,extent.xmax,extent.ymax];
       const tolerance = Math.max(bbox[2]-bbox[0],bbox[3]-bbox[1])*.02;
       if (!actual.every((n,i)=>Number.isFinite(n)&&Math.abs(n-bbox[i])<=tolerance) || !(meta.width>0&&meta.width<=2048&&meta.height>0&&meta.height<=2048)) throw Error('Extensão inválida');
       const imageResponse = await win.fetch(href.href, options);
-      if (!imageResponse.ok || !/^image\/(?:jpeg|png)(?:;|$)/.test(imageResponse.headers.get('content-type')||'') || Number(imageResponse.headers.get('content-length'))>4*1024*1024) throw Error('Imagem inválida');
-      const blob = await imageResponse.blob();
-      if (blob.size>4*1024*1024) throw Error('Imagem grande demais');
+      if (!imageResponse.ok || !/^image\/(?:jpeg|png)(?:;|$)/.test(imageResponse.headers.get('content-type')||'')) throw Error('Imagem inválida');
+      const bytes = await readSchmidtBoundedResponse(imageResponse, {limit:4*1024*1024, signal:controller.signal});
+      const mime = imageResponse.headers.get('content-type'), dimensions = schmidtRasterDimensions(bytes, mime);
+      if(dimensions.width!==meta.width || dimensions.height!==meta.height)throw Error('Dimensões divergentes');
+      const blob = new Blob([bytes],{type:mime});
+      const bitmap = await win.createImageBitmap(blob);
+      try { if(bitmap.width!==meta.width||bitmap.height!==meta.height)throw Error('Imagem inválida'); } finally { bitmap.close(); }
       if (id!==serial || mode!=='satellite') return;
       const entry = {scope:frame.scope,bbox:actual,width:meta.width,scale:frame.scale,url:win.URL.createObjectURL(blob)};
       cache.push(entry); while (cache.length>2) win.URL.revokeObjectURL(cache.shift().url);
@@ -93,15 +100,15 @@ export function installSchmidtSatelliteMap({document}) {
     } catch {
       if (id===serial && mode==='satellite') {
         mode='plan'; select.value='plan'; summary.textContent='Fundo do mapa · Plano';
-        removeImages(); credit.hidden=true; status.textContent='Sem imagem disponível. Plano mantido.';
+        removeImages(); releaseCache(); credit.hidden=true; status.textContent='Sem imagem disponível. Plano mantido.';
       }
     } finally {
-      win.clearTimeout(timeout);
+      win.clearTimeout(timeout); controller.abort();
       if (id===serial) { pending=null; if(mode==='satellite'&&current)update(current); }
     }
   }
   function update(frame) {
-    if (!visible(frame)) return;
+    if (!visible(frame) || document.hidden) return;
     current=frame;
     const block = frame.svg.closest('#block-map-panel');
     if (block) { if(details.parentElement!==block)block.append(details); }
@@ -114,16 +121,17 @@ export function installSchmidtSatelliteMap({document}) {
     credit.hidden=true; status.textContent='Carregando satélite…';
     if (pending && schmidtSatelliteCovers(pending,frame)) return;
     cancel();
-    timer=win.setTimeout(()=>{if(mode==='satellite'&&current&&visible(current))request(current);},400);
+    timer=win.setTimeout(()=>{if(mode==='satellite'&&current&&visible(current)&&!document.hidden)request(current);},400);
   }
   select.onchange=()=>{
     cancel(); mode=select.value; summary.textContent='Fundo do mapa · '+(mode==='satellite'?'Satélite':'Plano');
     removeImages(); status.textContent='';credit.hidden=true;
-    if(mode==='plan'){for(const e of cache)win.URL.revokeObjectURL(e.url);cache.length=0;}
+    if(mode==='plan')releaseCache();
     if(current)update(current);
   };
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)cancel();else if(current)update(current);});
   win.addEventListener('offline',()=>{if(mode==='satellite'){select.value='plan';select.onchange();status.textContent='Sem internet. Plano mantido.';}});
-  win.addEventListener('pagehide',()=>{cancel();for(const e of cache)win.URL.revokeObjectURL(e.url);cache.length=0;});
+  win.addEventListener('pagehide',()=>{cancel();releaseCache();});
   satelliteView={update};
   for(const frame of satelliteFrames.values())update(frame);
   return satelliteView;

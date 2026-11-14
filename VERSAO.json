@@ -4,8 +4,8 @@
   "data": "2026-11-13",
   "versaoDoApp": "1.35.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "0ee8b365a22c234a697ca8651ce39766f520fbff567e6da4699655b873867f85",
-  "workerSha256": "9b4a1bcab1c681471a148915fb96070a31f5fbba3f576e771bfeb86762f3a523",
+  "htmlSha256": "642d281a7535df24b3f7599a44b1c4ccdb44caa3d93c39e49b2b83f48825dd8e",
+  "workerSha256": "6b66525d8edcb0c14f3da0499c66918b3fd44cbe73a821ceb8d5b0dea34e321d",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -36,5 +36,5 @@
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
   "runtimeBlocks": true,
-  "statusEntrega": "candidata web 1.35.0; satélite opcional, Plano padrão; sem publicação"
+  "statusEntrega": "candidata web 1.35.0 r2; memória e rede revisadas; sem publicação"
 }

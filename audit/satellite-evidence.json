@@ -19,5 +19,18 @@
   "backupRestorePassed": true,
   "saveOnExitScenarios": 3,
   "physicalPhoneTested": false,
-  "published": false
+  "published": false,
+  "revision": "r2",
+  "boundedResponseChecks": 10,
+  "invalidImageChecks": true,
+  "backgroundPauseAndResume": true,
+  "imageURLsReleasedOnPlan": true,
+  "previousImplementationCommit": "ccfe7dcf80114e2258e2baaeeb18ef4f590577d8",
+  "inheritedFromR1": [
+    "visualWidths",
+    "tabletScreenshotScale",
+    "visualToleranceUnchanged",
+    "backupRestorePassed",
+    "saveOnExitScenarios"
+  ]
 }

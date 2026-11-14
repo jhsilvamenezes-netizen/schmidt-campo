@@ -47,3 +47,10 @@ de distribuição ampla; não prometer download offline da fotografia.
 Revisão do Claude: conferir geometria da câmera girada, concorrência de imagens,
 consulta somente por opção e retorno ao Plano. Próximas melhorias de toda a
 ferramenta: `REVISAO_PRIORIDADES_MOBILE.md`.
+
+## Revisão r2
+
+O limite de bytes agora é aplicado durante o download, antes da decodificação.
+Imagens inválidas são recusadas; consultas param em segundo plano e recursos
+são liberados ao voltar a Plano. Detalhes e reprodução:
+[REVISAO_MEMORIA_REDE_R2.md](REVISAO_MEMORIA_REDE_R2.md).
