@@ -45,3 +45,10 @@ test('um ponto em cada tiro: "Entre pontos" diz isso em vez de ficar vazio (RA9/
   const noRange=readOperationalSummary(scenario('espacamento',2,2),'2',{malhaDoPlano:()=>({entreTiros:null,entrePontos:null}),faixa:measures.faixa});
   assert.equal(noRange.across,'—');
 });
+test('esquema acompanha o plano: linhas e pontos por linha', () => {
+  assert.deepEqual(readOperationalSummary(scenario('espacamento',5,24),'5',measures).schematic, { lines: 2, perLine: 3 });
+  const single={malhaDoPlano:()=>({entreTiros:'transversal',entrePontos:null}),faixa:measures.faixa};
+  assert.deepEqual(readOperationalSummary(scenario('espacamento',2,2),'2',single).schematic, { lines: 2, perLine: 1 });
+  assert.deepEqual(readOperationalSummary(scenario('espacamento',1,4),'1',measures).schematic, { lines: 1, perLine: 3 });
+  assert.equal(readOperationalSummary(scenario('espacamento',0,0),'1',measures).schematic, null);
+});

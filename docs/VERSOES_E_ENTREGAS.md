@@ -157,3 +157,10 @@ borda, cobertura e caminhada, sem mudar o plano. "Usar" aplica pelo mesmo campo,
 com Desfazer. Corrige o cartão "Entre pontos" vazio quando cada tiro tem um
 ponto (RA9/RB9). Sem publicação e sem APK. Relatório:
 [E3_COMPARAR_ANTES_DE_APLICAR.md](E3_COMPARAR_ANTES_DE_APLICAR.md).
+
+## 1.37.0 — direcionamento sem marcação (2.0 web, E4)
+
+Guia por GPS orienta ao próximo ponto à frente e anuncia a chegada em cada ponto
+sem marcar coleta (antes ficava preso no ponto 1). Esquema das distâncias fiel ao
+plano. Prova em 51 lotes com GPS simulado. Relatório:
+[E4_DIRECIONAMENTO_GPS.md](E4_DIRECIONAMENTO_GPS.md).

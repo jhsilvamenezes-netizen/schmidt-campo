@@ -1,11 +1,11 @@
 {
-  "entrega": "1.36.0",
+  "entrega": "1.37.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-14",
-  "versaoDoApp": "1.36.0",
+  "versaoDoApp": "1.37.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "3282a8d009c69d0d17d2db149d36432c8a6cb180aa8dafe7a74b4c17a79e80b5",
-  "workerSha256": "fa930a461948a2f899d3568ee16be39407b417a6939e7c4d9c9fef076089c039",
+  "htmlSha256": "26799bab400ebc1c9802b46a1d9167544af610200858bf7e2c981f92c18bbb64",
+  "workerSha256": "73a73a67b7d4d4f3013a8d1ebd7428ef24315038b756b8dab32398f315160f63",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -25,7 +25,9 @@
     "satélite opcional em lotes e blocos; Plano padrão, sem consulta externa até escolha explícita",
     "consulta do ponto atualiza distâncias após edição do plano e fecha se o ponto for removido",
     "Ajuste fino › Tiros: \"Comparar antes de aplicar\" mostra distâncias e quantidades vizinhas (tiros, pontos, entre tiros, entre pontos, borda, cobertura e caminhada) sem mudar o plano; \"Usar\" aplica pelo mesmo campo, com Desfazer",
-    "cartão \"Entre pontos\" diz \"Um em cada tiro\" quando cada tiro tem um só ponto (antes ficava vazio)"
+    "cartão \"Entre pontos\" diz \"Um em cada tiro\" quando cada tiro tem um só ponto (antes ficava vazio)",
+    "\"Esquema das distâncias\" desenha 1 ou 2 linhas e 1 ou 3 pontos conforme o plano; sem seta para medida que não existe",
+    "guia por GPS sem marcação de coleta: orienta ao próximo ponto à frente e anuncia a chegada em cada ponto (antes ficava preso no ponto 1); com marcações, ordem marcada como antes"
   ],
   "somenteEstudoSemIntegracao": [
     "recuo mínimo obrigatório por divisa",
@@ -39,5 +41,5 @@
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
   "runtimeBlocks": true,
-  "statusEntrega": "web 1.36.0; publicação autorizada pelo proprietário em 14/11/2026"
+  "statusEntrega": "candidata 1.37.0; direcionamento sem marcação e esquema fiel; sem publicação"
 }

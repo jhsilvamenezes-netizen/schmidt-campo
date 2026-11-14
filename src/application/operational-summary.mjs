@@ -18,6 +18,8 @@ export function readOperationalSummary(sc, peopleValue, measurements) {
     across: tracks === 0 ? '—' : tracks > 1 ? (mesh.entreTiros ? measurements.faixa(mesh.entreTiros) : '—') : `${unit === 'anel' ? 'Anel' : unit === 'trajeto' ? 'Trajeto' : 'Tiro'} único`,
     // Sem intervalo ao longo de nenhum tiro (um ponto em cada): o cartão diz isso em vez de ficar vazio.
     along: points === 0 ? '—' : points > 1 ? (mesh.entrePontos ? measurements.faixa(mesh.entrePontos) : `Um em cada ${unit}`) : 'Ponto único',
+    // Esquema das distâncias fiel ao plano: 1 ou 2 linhas; 3 pontos por linha só quando há intervalo ao longo.
+    schematic: tracks === 0 ? null : { lines: tracks > 1 ? 2 : 1, perLine: points > 1 && mesh.entrePontos ? 3 : 1 },
     crew: people > 0 && people <= 20 && people !== tracks
       ? `Equipe: ${people} ${people === 1 ? 'pessoa' : 'pessoas'} para ${tracks} ${tracks === 1 ? unit : units}. Planeje o percurso em Tiros.` : '',
   };

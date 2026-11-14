@@ -2,16 +2,16 @@
 
 Gerado por scripts/checkpoint.mjs; registro não executa nem certifica testes.
 
-- Tarefa: E3 — comparar antes de aplicar (1.36.0)
+- Tarefa: 1.37.0 pronta (PR #16); 1.36.0 publicada
 - Responsável: Claude
 - Estado: pronto_para_revisao
-- Branch: claude/e2-medidas
-- Commit de código observado: 129f8ff2cf9c0e7e1b43580db997038a567baec1
-- Registro UTC: 2026-11-14T15:00:22.134Z
+- Branch: claude/2-0-esquema
+- Commit de código observado: 79ace178e6cf26ee9d81ec31285f6182fe36e125
+- Registro UTC: 2026-11-14T15:23:02.546Z
 
 ## Próxima ação
 
-Revisar PR #15 e autorizar integração/publicação da 1.36.0; depois: esquema das distâncias com a quantidade real de pontos; E4 GPS sintético (24–27)
+Aguardar autorização do dono para publicar a 1.37.0 (PR #16). Depois: E5/E6 visual (lote × bloco, tiros, direção e distâncias no mapa), E7 robustez do link (offline/atualização), E8 piloto
 
 ## Testes declarados pela sessão
 
@@ -22,6 +22,8 @@ Revisar PR #15 e autorizar integração/publicação da 1.36.0; depois: esquema 
 - passou: node audit/adjust-alternatives.test.mjs && node audit/operational-summary.test.mjs && node audit/adjust-compare-browser.mjs
 - passou: sequência do CI blocos-candidata.yml (test:blocks, checkpoint, build --check, 40 grupos, mapas, adjust-compare, satélite, validate-runtime-blocks) + operational-plan-browser
 - falhou: node audit/browser.mjs (congelamento visual, fora do CI)
+- passou: node audit/guide-next.test.mjs && node audit/gps-guidance-browser.mjs
+- passou: bateria completa 1.37.0 (CI blocos-candidata + sessões + correções + gravar ao sair)
 
 ## Recuperação
 

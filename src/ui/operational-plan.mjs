@@ -1,5 +1,5 @@
 import { readOperationalSummary } from '../application/operational-summary.mjs';
-import { operationalAlternativeLabel, operationalComparisonNote, operationalParameterHint } from './plan-presentation.mjs';
+import { operationalAlternativeLabel, operationalComparisonNote, operationalParameterHint, operationalSchematicMarkup } from './plan-presentation.mjs';
 
 // Projeção do Plano aprovada pelo proprietário: implementação local em 09/11/2026.
 // Mantém os nós e eventos originais; nenhuma fórmula ou gravação é adicionada.
@@ -77,7 +77,7 @@ export function installSchmidtOperationalPlan({ document, schmidt, events, measu
   along.append(make('span','','Entre pontos'),alongValue,alongHint);distances.append(across,along);
   const schema=make('figure','op-schematic');schema.append(make('figcaption','','Esquema das distâncias'));
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 -6 300 90');svg.setAttribute('aria-hidden','true');
-  svg.innerHTML='<path d="M20 24H280M20 68H280" stroke="currentColor" stroke-width="2"/><g fill="var(--sx-map-point)"><circle cx="20" cy="24" r="5"/><circle cx="150" cy="24" r="5"/><circle cx="280" cy="24" r="5"/><circle cx="20" cy="68" r="5"/><circle cx="150" cy="68" r="5"/><circle cx="280" cy="68" r="5"/></g><path d="M37 32V60M33 36L37 32L41 36M33 56L37 60L41 56M165 12H265M169 8L165 12L169 16M261 8L265 12L261 16" fill="none" stroke="currentColor" stroke-width="1.5"/><g fill="currentColor" font-size="13" font-family="system-ui,sans-serif"><text x="46" y="49">De lado</text><text x="186" y="9">Ao longo</text></g>';
+  svg.innerHTML=operationalSchematicMarkup();
   schema.append(svg);current.append(head,caption,distances,crew,schema);
   params.append(current,settings,origin);stage.insertBefore(params,card);
   let drawingOpen=false;
@@ -99,7 +99,7 @@ export function installSchmidtOperationalPlan({ document, schmidt, events, measu
     const field=schmidt.app.field;const area=field?.areaOfficialHa;
     context.textContent=typeof area==='number'&&Number.isFinite(area)&&area>0?`${field.code} · área da regra: ${area.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})} ha`:String(field?.code||'Plano do lote');
     const model=readOperationalSummary(schmidt.app.sc,people.value,measurements);current.hidden=!model;
-    if(model){counts.textContent=model.counts;caption.textContent=`Mínimo pela área: ${model.minimum} pontos`;acrossLabel.textContent=model.acrossLabel;acrossValue.textContent=model.across;alongValue.textContent=model.along;alongHint.textContent=model.alongHint;crew.textContent=model.crew;crew.hidden=!model.crew;}
+    if(model){counts.textContent=model.counts;caption.textContent=`Mínimo pela área: ${model.minimum} pontos`;acrossLabel.textContent=model.acrossLabel;acrossValue.textContent=model.across;alongValue.textContent=model.along;alongHint.textContent=model.alongHint;crew.textContent=model.crew;crew.hidden=!model.crew;const drawing=operationalSchematicMarkup(model.schematic||undefined);if(svg.innerHTML!==drawing)svg.innerHTML=drawing;schema.hidden=!model.schematic;}
     settingsText.textContent='Ajustes';
     calibration.textContent=model?.boomNeedsReview?'Conferir barra':'';calibration.hidden=!model?.boomNeedsReview;
     for(const marker of params.querySelectorAll('.param-uncal')){marker.textContent='Alinhamento estimado';marker.title='Referência de alinhamento; conferir direção e limites em campo.';}
