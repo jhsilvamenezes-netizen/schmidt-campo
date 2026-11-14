@@ -1,34 +1,24 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "2.0.0 web — unificação e publicação",
-  "owner": "Claude",
-  "status": "em_andamento",
-  "nextAction": "Concluir bateria completa, abrir PR da 2.0.0, CI verde, merge e conferir deploy",
-  "baseMain": "2e4e2be9a44310b847155bdef9d7b78b9865ccd0",
-  "publishedVersion": "1.35.1",
+  "task": "Revisão independente 2.0.0 concluída; correções pendentes",
+  "owner": "Codex — revisão entregue",
+  "status": "pronto_para_revisao",
+  "nextAction": "Ler REVISAO_INDEPENDENTE_2_0.md e reproduzir F1 (posição antiga com aparência de orientação atual), depois F2 (jitter). Corrigir em PR pequeno sem mudar método ou registrar execução. Atualizar fila/checkpoint e conferir compatibilidade de legado. Revisão não corrigiu os achados nem alterou o site.",
+  "baseMain": "2455c19d4a3cc3d5d65f028a7e6b708902290de3",
+  "publishedVersion": "2.0.0",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
-  "latestDeliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/14",
+  "latestDeliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/17",
   "scope": "Direcionamento exclusivo no link móvel, sem coleta/marcação pela equipe. APK adiado.",
   "tests": [
     {
-      "command": "node audit/gps-guidance-browser.mjs",
+      "command": "Build, contratos/blocos, comparação 51 lotes, GPS 51 lotes, upgrade 1.35.1 → 2.0 e smoke no site",
       "result": "passou",
-      "evidence": "2.0.0: 51 lotes; monitor mapa 348 px e GPS em destaque"
+      "evidence": "audit/review-2-0-evidence.json; relatório de revisão com limites."
     },
     {
-      "command": "UPGRADE_REF=0966b08 node audit/worker-upgrade-browser.mjs",
+      "command": "node audit/review-2-0-browser.mjs",
       "result": "passou",
-      "evidence": "1.37.0 → 2.0.0 sem perda; offline"
-    },
-    {
-      "command": "axe WCAG 2.1 AA em todas as telas 360/1440",
-      "result": "passou",
-      "evidence": "0 violações, sem rolagem lateral"
-    },
-    {
-      "command": "bateria completa 2.0.0",
-      "result": "nao_executado",
-      "evidence": "em execução"
+      "evidence": "Probe executou e encontrou F1/F2/F3; execução bem-sucedida NÃO significa achados corrigidos."
     }
   ],
   "blockers": [
@@ -36,37 +26,17 @@
     "Fonte geradora original completa ainda não recuperada; preservar integração e extrair por trecho com paridade."
   ],
   "decisions": [
-    "1.35.1 já entregue; não refazer correção #14.",
+    "Direcionamento exclusivo pelo link; APK adiado; preservar dados/legado.",
     "Método linear sem anéis, barra 36,48 m, P6 atual, 51 lotes/40 grupos.",
-    "Plano padrão e Satélite opcional; não derivar divisa da fotografia nem impor recuo obrigatório.",
-    "PR #13 é planejamento/protocolo; 2.0 e projeção visual ainda não implementadas.",
-    "Mockup não é oráculo de geometria; gerar projeção determinística com dados reais e conferir escopo visual antes de implementar.",
-    "Último checkpoint enviado é recuperável; uma sessão nova não recebe automaticamente arquivos não publicados nem a conversa da outra IA.",
-    "Matriz de parâmetros é critério de validação/execução, não nova recomendação de valores nem funcionalidade implementada.",
-    "Claude 14/11: E1 reproduz build e mede medidas; E2 confronta entre tiros, entre pontos e borda com GEOS/PROJ nos 51 lotes e 40 grupos (audit/direction-measures).",
-    "E2 itens 10–14/20: sem erro reproduzido; distâncias são de grade UTM (−0,02–0,03% no terreno), documentado.",
-    "E2 item 09: rumo da planilha = norte verdadeiro; tiros retos na grade; variação da convergência no lote ≤0,006° (≤0,48 m); norte magnético não usado.",
-    "E2 concluída sem defeito reproduzido em 09–14, 20, 23; nenhuma mudança no app foi necessária.",
-    "1.36.0: aviso de mudança continua sem lista (decisão aprovada); comparação fica em quadro recolhido na etapa Tiros; Usar passa pelo campo existente.",
-    "1.37.0: sem marcação, o guia orienta pelo ponto à frente (projeção); com marcação, legado. Texto 'toque em Ponto coletado' mantido (fluxo legado preservado).",
-    "2.0.0: monitor recalcula o mapa ao trocar de modo; 'Ligar GPS' destacado; publicação autorizada em 14/11/2026."
+    "2.0.0 publicada; revisão não alterou runtime ou implantação.",
+    "F1 preexistente permanece; F2 expõe instabilidade do novo avanço; F3/F4 são limitações conhecidas de produto.",
+    "E5/E6 completos e piloto físico continuam pendentes; atualizar metadados de execução divergentes."
   ],
   "snapshot": {
-    "at": "2026-11-14T15:35:54.777Z",
-    "branch": "claude/versao-2-0",
-    "codeCommit": "0966b080da26c64990ac7dee80ef2f166d3970b8",
-    "changedTrackedFiles": [
-      "AGENTS.md",
-      "VERSAO.json",
-      "audit/block-candidate.json",
-      "audit/gps-guidance-browser.mjs",
-      "audit/worker-upgrade-browser.mjs",
-      "docs/VERSOES_E_ENTREGAS.md",
-      "index.html",
-      "scripts/build-preserved.mjs",
-      "src/ui/lot-map.mjs",
-      "sw.js"
-    ],
-    "untrackedCount": 2
+    "at": "2026-11-14T16:07:30.632Z",
+    "branch": "codex/revisao-2-0",
+    "codeCommit": "2455c19d4a3cc3d5d65f028a7e6b708902290de3",
+    "changedTrackedFiles": [],
+    "untrackedCount": 4
   }
 }

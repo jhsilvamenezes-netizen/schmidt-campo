@@ -1,0 +1,233 @@
+{
+  "reviewedCommit": "2455c19d4a3cc3d5d65f028a7e6b708902290de3",
+  "htmlSha256": "51596f46b1cc2c1126f7b1255d9e4086e2713ddfca3fe428a0c66e2c2dd88bfe",
+  "physicalPhoneTested": false,
+  "runtimeChanged": false,
+  "viewportStates": 20,
+  "widths": [
+    360,
+    390,
+    412,
+    768
+  ],
+  "horizontalOverflows": 0,
+  "pageErrors": [],
+  "adversarialFindings": {
+    "jitterTransitions": 5,
+    "staleDirectionStillVisible": true,
+    "legacyCollectionPrompt": true
+  },
+  "adjustment": {
+    "lots": 51,
+    "applied": 51,
+    "undone": 50,
+    "restoredByInput": 1,
+    "rows": 255,
+    "maxRenderMs": 105,
+    "quantity": {
+      "options": 5,
+      "picked": "3",
+      "applied": "3",
+      "tracks": 3,
+      "ok": true
+    },
+    "failures": [],
+    "errors": []
+  },
+  "gps": {
+    "lots": 51,
+    "steps": 182,
+    "arrivals": 182,
+    "invalidIgnored": 204,
+    "inaccurate": 51,
+    "offLine": 51,
+    "failures": [],
+    "monitorLayout": {
+      "mapH": 348,
+      "wrapH": 348,
+      "viewBoxH": 348,
+      "gpsFirst": true,
+      "gpsPrimary": true,
+      "collectPrimary": false
+    },
+    "noMarks": true,
+    "errors": []
+  },
+  "upgrade": {
+    "status": "passed",
+    "reference": "2e4e2be9a44310b847155bdef9d7b78b9865ccd0",
+    "fromVersion": "1.35.1",
+    "toVersion": "2.0.0",
+    "htmlSha256": "51596f46b1cc2c1126f7b1255d9e4086e2713ddfca3fe428a0c66e2c2dd88bfe",
+    "workerSha256": "5a54e78f49310055db8a05160ec817f962565549996fbe38495795ec7bc8faa5",
+    "browser": "141.0.7390.37",
+    "checks": [
+      "HTML antigo sob worker novo é recusado; cache e cliente anteriores permanecem",
+      "worker novo espera; aba antiga continua na versão antiga",
+      "ativação após fechar cliente antigo; somente o cache SCHMIDT anterior é removido",
+      "versão nova abre offline e conserva três chaves, coleta, imagem e histórico"
+    ],
+    "pageErrors": [],
+    "defaultBoomWidth": {
+      "fields": 51,
+      "metres": 36.48
+    }
+  },
+  "performance": {
+    "status": "passed",
+    "browser": "141.0.7390.37",
+    "cpuRates": [
+      1,
+      4
+    ],
+    "runs": 20,
+    "physicalDevice": false,
+    "summary": [
+      {
+        "variant": "before",
+        "cpuRate": 1,
+        "readyMs": {
+          "median": 162.89999999850988,
+          "p95": 224.40000000223517
+        },
+        "drawMedianMs": {
+          "median": 33,
+          "p95": 33.30000000074506
+        },
+        "drawMaxMs": {
+          "median": 36.79999999701977,
+          "p95": 48.5
+        },
+        "totalMs": {
+          "median": 121.40000000223517,
+          "p95": 127.29999999701977
+        },
+        "maxFieldMs": {
+          "median": 10.399999998509884,
+          "p95": 11.199999999254942
+        },
+        "longTaskMs": {
+          "median": 84,
+          "p95": 90
+        },
+        "heapAtReadyBytes": {
+          "median": 2661424,
+          "p95": 2682456
+        },
+        "heapAfterScenariosBytes": {
+          "median": 3544528,
+          "p95": 3547824
+        }
+      },
+      {
+        "variant": "after",
+        "cpuRate": 1,
+        "readyMs": {
+          "median": 159.69999999925494,
+          "p95": 170.70000000298023
+        },
+        "drawMedianMs": {
+          "median": 33.30000000074506,
+          "p95": 34.600000001490116
+        },
+        "drawMaxMs": {
+          "median": 37.69999999925494,
+          "p95": 44.19999999925494
+        },
+        "totalMs": {
+          "median": 109.70000000298023,
+          "p95": 140.30000000074506
+        },
+        "maxFieldMs": {
+          "median": 10.200000002980232,
+          "p95": 26
+        },
+        "longTaskMs": {
+          "median": 79,
+          "p95": 85
+        },
+        "heapAtReadyBytes": {
+          "median": 2683552,
+          "p95": 2684696
+        },
+        "heapAfterScenariosBytes": {
+          "median": 3574936,
+          "p95": 3576676
+        }
+      },
+      {
+        "variant": "before",
+        "cpuRate": 4,
+        "readyMs": {
+          "median": 784.8000000007451,
+          "p95": 849
+        },
+        "drawMedianMs": {
+          "median": 132.19999999925494,
+          "p95": 154
+        },
+        "drawMaxMs": {
+          "median": 147.10000000149012,
+          "p95": 223.29999999701977
+        },
+        "totalMs": {
+          "median": 433.6000000014901,
+          "p95": 448.19999999925494
+        },
+        "maxFieldMs": {
+          "median": 48.69999999925494,
+          "p95": 51.399999998509884
+        },
+        "longTaskMs": {
+          "median": 431,
+          "p95": 444
+        },
+        "heapAtReadyBytes": {
+          "median": 2666236,
+          "p95": 2748432
+        },
+        "heapAfterScenariosBytes": {
+          "median": 3547028,
+          "p95": 3548196
+        }
+      },
+      {
+        "variant": "after",
+        "cpuRate": 4,
+        "readyMs": {
+          "median": 745,
+          "p95": 808.1000000014901
+        },
+        "drawMedianMs": {
+          "median": 118.39999999850988,
+          "p95": 120.5
+        },
+        "drawMaxMs": {
+          "median": 131.80000000074506,
+          "p95": 148.70000000298023
+        },
+        "totalMs": {
+          "median": 416.80000000074506,
+          "p95": 424
+        },
+        "maxFieldMs": {
+          "median": 42.099999997764826,
+          "p95": 49.100000001490116
+        },
+        "longTaskMs": {
+          "median": 389,
+          "p95": 434
+        },
+        "heapAtReadyBytes": {
+          "median": 2686296,
+          "p95": 2877608
+        },
+        "heapAfterScenariosBytes": {
+          "median": 3574564,
+          "p95": 3579520
+        }
+      }
+    ]
+  },
+  "liveSiteSmokePassed": true
+}
