@@ -1,11 +1,11 @@
 {
-  "entrega": "1.36.0",
+  "entrega": "1.36.1",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-14",
-  "versaoDoApp": "1.36.0",
+  "versaoDoApp": "1.36.1",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "3282a8d009c69d0d17d2db149d36432c8a6cb180aa8dafe7a74b4c17a79e80b5",
-  "workerSha256": "fa930a461948a2f899d3568ee16be39407b417a6939e7c4d9c9fef076089c039",
+  "htmlSha256": "d16f58e64ff5ab354d37a754dd67cee3f8c5f8e59fd6103da1a52e455b4115b0",
+  "workerSha256": "627138468564c9883ca5f1a93e1678b77c86d387f0627c276e22b17cd31d12a2",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -25,7 +25,8 @@
     "satélite opcional em lotes e blocos; Plano padrão, sem consulta externa até escolha explícita",
     "consulta do ponto atualiza distâncias após edição do plano e fecha se o ponto for removido",
     "Ajuste fino › Tiros: \"Comparar antes de aplicar\" mostra distâncias e quantidades vizinhas (tiros, pontos, entre tiros, entre pontos, borda, cobertura e caminhada) sem mudar o plano; \"Usar\" aplica pelo mesmo campo, com Desfazer",
-    "cartão \"Entre pontos\" diz \"Um em cada tiro\" quando cada tiro tem um só ponto (antes ficava vazio)"
+    "cartão \"Entre pontos\" diz \"Um em cada tiro\" quando cada tiro tem um só ponto (antes ficava vazio)",
+    "\"Esquema das distâncias\" desenha 1 ou 2 linhas e 1 ou 3 pontos conforme o plano; sem seta para medida que não existe"
   ],
   "somenteEstudoSemIntegracao": [
     "recuo mínimo obrigatório por divisa",
@@ -39,5 +40,5 @@
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
   "runtimeBlocks": true,
-  "statusEntrega": "web 1.36.0; publicação autorizada pelo proprietário em 14/11/2026"
+  "statusEntrega": "candidata 1.36.1; esquema fiel ao plano; sem publicação"
 }
