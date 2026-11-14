@@ -1,11 +1,11 @@
 {
-  "entrega": "2.0.0",
+  "entrega": "2.0.1",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-14",
-  "versaoDoApp": "2.0.0",
+  "versaoDoApp": "2.0.1",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "51596f46b1cc2c1126f7b1255d9e4086e2713ddfca3fe428a0c66e2c2dd88bfe",
-  "workerSha256": "5a54e78f49310055db8a05160ec817f962565549996fbe38495795ec7bc8faa5",
+  "htmlSha256": "b7719f9dd324f40a4014d57f771e47d2c7f8f1895146557446d46bd8d65eee67",
+  "workerSha256": "831de44051f3c53aa52b802ebc6704f72b7d82a2cbe2b9994e874d641c7fb8f4",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -29,7 +29,10 @@
     "\"Esquema das distâncias\" desenha 1 ou 2 linhas e 1 ou 3 pontos conforme o plano; sem seta para medida que não existe",
     "guia por GPS sem marcação de coleta: orienta ao próximo ponto à frente e anuncia a chegada em cada ponto (antes ficava preso no ponto 1); com marcações, ordem marcada como antes",
     "2.0: monitor com o mapa na altura certa ao voltar das abas do plano (antes ficava cortado no celular)",
-    "2.0: no monitor, \"Ligar GPS\" é a ação principal; \"Ponto coletado\" continua disponível sem destaque"
+    "2.0: no monitor, \"Ligar GPS\" é a ação principal; \"Ponto coletado\" continua disponível sem destaque",
+    "2.0.1: posição GPS vencida não exibe seta, distância dinâmica nem posição atual no mapa; retoma ao receber posição válida",
+    "2.0.1: histerese temporária estabiliza o alvo sem marcar pontos; avanço e retorno permanecem possíveis",
+    "2.0.1: chegada prioriza distância até próximo ponto ou borda; funções e registros legados preservados"
   ],
   "somenteEstudoSemIntegracao": [
     "recuo mínimo obrigatório por divisa",
@@ -43,5 +46,5 @@
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
   "runtimeBlocks": true,
-  "statusEntrega": "web 2.0.0; publicação autorizada pelo proprietário em 14/11/2026"
+  "statusEntrega": "2.0.1 candidata; correções e publicação web autorizadas pelo proprietário; aguardando validação"
 }

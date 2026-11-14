@@ -1,21 +1,22 @@
 # Fila de execução — direcionamento 2.0 web
 
-Base de passagem: **1.35.1 publicada**, main
-`2e4e2be9a44310b847155bdef9d7b78b9865ccd0`, PR #14. Conferir novamente.
-Estado desta fila: pronta para começar; os itens abaixo não foram implementados.
+Base de passagem: **2.0.0 publicada**, main
+`2455c19d4a3cc3d5d65f028a7e6b708902290de3`, PR #17. Correção 2.0.1 em validação.
+Conferir RETOMADA.json e o GitHub antes de trabalhar. Esta fila distingue o que
+foi entregue das partes ainda abertas; o número 2.0 não encerra todos os itens.
 Plano e caderno: [01–45](PLANO_VERSAO_2_0.md), [métodos/design](APROFUNDAMENTO_2_0_WEB.md).
 
 ## Primeiras entregas, na ordem
 
 | Entrega | Itens do plano | Resultado concreto e teste | Estado |
 |---|---|---|---|
-| E1 — referência reproduzível | 01–03 | Inventário fonte/legado, versão/cenários fixos, tempos mediano/p95 de abertura e desenho contra versão anterior; scripts reproduzíveis e relatório sem dados privados | A iniciar |
-| E2 — medidas de direcionamento | 05–14,20,23 | Tabela por caso com motor vs GEOS/PROJ, unidade/tolerância e erro; testar 51 lotes/40 grupos e consulta após editar plano; corrigir primeiro erro reproduzido | A iniciar após referência E1 |
-| E3 — cobertura e ajustes | 15–19,22 | Estabilidade da avaliação e alternativas de fase/espaçamento/quantidade; todos os parâmetros preservados e sem impor regra agronômica | A iniciar após E2 |
-| E4 — GPS e consulta | 24–27 | Fix inválido não orienta; distinguir rumo/curso e desvio lateral/avanço; seleção manual estável, sem marcar execução | A iniciar; casos sintéticos podem avançar após E1 |
-| E5 — desenho com dados reais | 28–35 | Projeção determinística sobre mesmo cenário antes/depois: lote, bloco, medidas, ajustes de tiros/pontos, temas, rótulos e larguras móveis; conferir escopo aprovado | A iniciar; depende de medidas E2 |
-| E6 — implementação móvel | 28–35,40,42 | Entregar cada refino aprovado por PR pequeno; comparação visual, gestos/teclado e mesma geometria de cálculo/exportação | A iniciar após E5 |
-| E7 — robustez do link | 36–44 | Offline real, importação limitada, cache invalidado, retomada/rollback e recursos limitados; corrigir gargalo medido com paridade | A iniciar; falhas confirmadas podem ser corrigidas antes |
+| E1 — referência reproduzível | 01–03 | Inventário fonte/legado, versão/cenários fixos, tempos mediano/p95 de abertura e desenho contra versão anterior; scripts reproduzíveis e relatório sem dados privados | Base/inventário entregues em #15; medição repetida na revisão #18 |
+| E2 — medidas de direcionamento | 05–14,20,23 | Tabela por caso com motor vs GEOS/PROJ, unidade/tolerância e erro; testar 51 lotes/40 grupos e consulta após editar plano; corrigir primeiro erro reproduzido | Conferência inicial entregue em #15; gate independente incluído na 2.0.1; campo pendente |
+| E3 — cobertura e ajustes | 15–19,22 | Estabilidade da avaliação e alternativas de fase/espaçamento/quantidade; todos os parâmetros preservados e sem impor regra agronômica | Comparação individual entregue; comparação em blocos e alternativas de fase pendentes |
+| E4 — GPS e consulta | 24–27 | Fix inválido não orienta; distinguir rumo/curso e desvio lateral/avanço; seleção manual estável, sem marcar execução | Guia entregue em #16/#17; expiração e histerese corrigidas na candidata 2.0.1; campo pendente |
+| E5 — desenho com dados reais | 28–35 | Projeção determinística sobre mesmo cenário antes/depois: lote, bloco, medidas, ajustes de tiros/pontos, temas, rótulos e larguras móveis; conferir escopo aprovado | Projeção geral ainda pendente; não confundir melhorias pontuais com E5 concluída |
+| E6 — implementação móvel | 28–35,40,42 | Entregar cada refino aprovado por PR pequeno; comparação visual, gestos/teclado e mesma geometria de cálculo/exportação | Altura do monitor corrigida em #17; implementação geral depende de E5 |
+| E7 — robustez do link | 36–44 | Offline real, importação limitada, cache invalidado, retomada/rollback e recursos limitados; corrigir gargalo medido com paridade | Cache/upgrade já entregues e testados; restrições em aparelho físico pendentes |
 | E8 — piloto e liberação | 04,45 | Roteiro de direcionamento em dois celulares, erros/tempo/legibilidade registrados; CI e URL real conferidos | Roteiro pode ser preparado já; aparelho depende da equipe |
 
 Não tentar executar tudo em uma alteração. E1 termina com uma próxima ação de

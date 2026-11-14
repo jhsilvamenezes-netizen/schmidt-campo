@@ -1,0 +1,198 @@
+{
+  "version": "2.0.1",
+  "baseMain": "2455c19d4a3cc3d5d65f028a7e6b708902290de3",
+  "htmlSha256": "b7719f9dd324f40a4014d57f771e47d2c7f8f1895146557446d46bd8d65eee67",
+  "workerSha256": "831de44051f3c53aa52b802ebc6704f72b7d82a2cbe2b9994e874d641c7fb8f4",
+  "physicalDevice": false,
+  "contracts": {
+    "passed": 55
+  },
+  "blocksUnitExecutions": 61,
+  "gps": {
+    "lots": 51,
+    "steps": 182,
+    "arrivals": 182,
+    "invalidIgnored": 204,
+    "inaccurate": 51,
+    "offLine": 51,
+    "failures": [],
+    "monitorLayout": {
+      "mapH": 348,
+      "wrapH": 348,
+      "viewBoxH": 348,
+      "gpsFirst": true,
+      "gpsPrimary": true,
+      "collectPrimary": false
+    },
+    "noMarks": true,
+    "errors": []
+  },
+  "stability": {
+    "errors": [],
+    "views": [
+      {
+        "width": 360,
+        "view": "mapa",
+        "overflow": false
+      },
+      {
+        "width": 360,
+        "view": "plano",
+        "overflow": false
+      },
+      {
+        "width": 360,
+        "view": "tiros",
+        "overflow": false
+      },
+      {
+        "width": 360,
+        "view": "dados",
+        "overflow": false
+      },
+      {
+        "width": 360,
+        "view": "auditoria",
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "view": "mapa",
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "view": "plano",
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "view": "tiros",
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "view": "dados",
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "view": "auditoria",
+        "overflow": false
+      },
+      {
+        "width": 412,
+        "view": "mapa",
+        "overflow": false
+      },
+      {
+        "width": 412,
+        "view": "plano",
+        "overflow": false
+      },
+      {
+        "width": 412,
+        "view": "tiros",
+        "overflow": false
+      },
+      {
+        "width": 412,
+        "view": "dados",
+        "overflow": false
+      },
+      {
+        "width": 412,
+        "view": "auditoria",
+        "overflow": false
+      },
+      {
+        "width": 768,
+        "view": "mapa",
+        "overflow": false
+      },
+      {
+        "width": 768,
+        "view": "plano",
+        "overflow": false
+      },
+      {
+        "width": 768,
+        "view": "tiros",
+        "overflow": false
+      },
+      {
+        "width": 768,
+        "view": "dados",
+        "overflow": false
+      },
+      {
+        "width": 768,
+        "view": "auditoria",
+        "overflow": false
+      }
+    ],
+    "targets": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "checks": [
+      "six jitter fixes: target unchanged and arrival alarm not repeated",
+      "real forward and backward motion still selects points",
+      "accepted fix expires via timer; no live arrow, distance, position or arrival",
+      "fresh GPS recovers guidance",
+      "entry reversal and GPS restart reset session memory",
+      "historical collection maps preserved in memory and storage"
+    ],
+    "physicalDevice": false
+  },
+  "upgrade": {
+    "status": "passed",
+    "reference": "2455c19d4a3cc3d5d65f028a7e6b708902290de3",
+    "fromVersion": "2.0.0",
+    "toVersion": "2.0.1",
+    "htmlSha256": "b7719f9dd324f40a4014d57f771e47d2c7f8f1895146557446d46bd8d65eee67",
+    "workerSha256": "831de44051f3c53aa52b802ebc6704f72b7d82a2cbe2b9994e874d641c7fb8f4",
+    "browser": "141.0.7390.37",
+    "checks": [
+      "HTML antigo sob worker novo é recusado; cache e cliente anteriores permanecem",
+      "worker novo espera; aba antiga continua na versão antiga",
+      "ativação após fechar cliente antigo; somente o cache SCHMIDT anterior é removido",
+      "versão nova abre offline e conserva três chaves, coleta, imagem e histórico"
+    ],
+    "pageErrors": [],
+    "defaultBoomWidth": {
+      "fields": 51,
+      "metres": 36.48
+    }
+  },
+  "blockRuntime": {
+    "groups": 40,
+    "checks": [
+      "individual-maps-identical-after-block",
+      "collections-and-names-isolated",
+      "reload-opens-individual",
+      "saved-block-resumes-own-collections"
+    ],
+    "errors": []
+  },
+  "blockFraming": {
+    "checks": [
+      "40-groups-preview-correct-boundaries-no-invented-points-fit-four-widths",
+      "apply-opens-map-with-all-members",
+      "selected-point-measures-border-and-next-in-same-segment",
+      "fit-restores-all-boundaries-after-zoom"
+    ],
+    "errors": []
+  },
+  "spatialEvidence": "audit/direction-measures-evidence.json",
+  "publication": "pending CI and public verification",
+  "remaining": [
+    "F3: separate legacy controls/data from direction mode",
+    "F4: comparison and application of block adjustments",
+    "physical field validation and E5/E6 overall"
+  ]
+}

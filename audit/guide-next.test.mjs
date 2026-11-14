@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { schmidtGuideNextPoint, schmidtProjectOnLine } from '../src/gps/guide-next.mjs';
+import { schmidtGuideNextPoint, schmidtProjectOnLine, schmidtGuideSession } from '../src/gps/guide-next.mjs';
 
 // Tiro reto de oeste para leste (entrada em x=0), pontos a 258, 773, 1288 e 1803 m da entrada.
 const route = {
@@ -42,4 +42,40 @@ test('vários trechos: ordem de caminhada respeitada entre partes', () => {
     points: [{ id: 'A', partIndex: 0, fromEntryM: 250 }, { id: 'B', partIndex: 1, fromEntryM: 100 }, { id: 'C', partIndex: 1, fromEntryM: 400 }] };
   const at = x => schmidtGuideNextPoint(two, { x, y: 0 }, new Set(), params).id;
   assert.equal(at(100), 'A'); assert.equal(at(400), 'B'); assert.equal(at(950), 'C'); assert.equal(at(890), 'B');
+});
+
+
+test('histerese: ruído de 1 m não troca alvo, avanço e retorno reais continuam possíveis', () => {
+  const state = {}, at = (x, opts = {}) => schmidtGuideNextPoint(route,
+    {x, y: 0, accuracyM: 4, ageMs: 0, ...opts}, new Set(), params, state).id;
+  assert.equal(at(258), 'P1');
+  for (const x of [267.5,268.5,267.5,268.5,271.9]) assert.equal(at(x), 'P1');
+  assert.equal(at(273), 'P2');
+  for (const x of [268.5,267.5,268.5,264.1]) assert.equal(at(x), 'P2');
+  assert.equal(at(263), 'P1');
+  assert.equal(at(773), 'P2');
+  assert.equal(at(1288, {accuracyM: 100}), 'P2');
+  assert.equal(at(1288, {ageMs: 60000}), 'P2');
+  assert.equal(at(1288), 'P3');
+});
+
+test('sessão: reinicia ao trocar lote/plano/tiro/entrada/GPS e não persiste dados', () => {
+  const monitor = {}, first = schmidtGuideSession(monitor, 'lote/rota/entrada/sessao');
+  first.targetId = 'P3';
+  assert.equal(schmidtGuideSession(monitor, 'lote/rota/entrada/sessao'), first);
+  assert.equal(schmidtGuideSession(monitor, 'outro/rota/entrada/sessao').targetId, undefined);
+  assert.deepEqual(Object.keys(monitor), ['guideSelection','arrivedId']);
+});
+
+test('histerese com geometria curva, sentido invertido e partes separadas', () => {
+  for (const sign of [1,-1]) {
+    const curved = {parts:[{line:[[0,0],[100*sign,0],[100*sign,200]]}],
+      points:[{id:'A',partIndex:0,fromEntryM:150,x:100*sign,y:50},{id:'B',partIndex:0,fromEntryM:250,x:100*sign,y:150}]};
+    const state = {}, at = y => schmidtGuideNextPoint(curved,{x:100*sign,y,accuracyM:4},new Set(),params,state).id;
+    assert.equal(at(50),'A');assert.equal(at(60.5),'A');assert.equal(at(65),'B');assert.equal(at(60.5),'B');assert.equal(at(55),'A');
+  }
+  const split = {parts:[{line:[[0,0],[100,0]]},{line:[[200,0],[300,0]]}],
+    points:[{id:'A',partIndex:0,fromEntryM:90},{id:'B',partIndex:1,fromEntryM:50}]};
+  const state = {}, at = x => schmidtGuideNextPoint(split,{x,y:0,accuracyM:4},new Set(),params,state).id;
+  assert.equal(at(90),'A');assert.equal(at(151),'A');assert.equal(at(160),'B');assert.equal(at(250),'B');
 });

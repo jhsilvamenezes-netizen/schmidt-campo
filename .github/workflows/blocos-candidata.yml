@@ -54,6 +54,9 @@ jobs:
           node block-map-selection-browser.mjs
           node adjust-compare-browser.mjs
           node gps-guidance-browser.mjs
+          node gps-stability-browser.mjs
+          node direction-measures-probe.mjs
+          python direction-measures.py
           node bounded-response.test.mjs
           node satellite-map.test.mjs
           node satellite-browser.mjs

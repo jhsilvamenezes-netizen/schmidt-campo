@@ -36,7 +36,13 @@ try {
   });
   await page.goto(`http://127.0.0.1:${server.address().port}`);
   await page.waitForFunction(() => window.SCHMIDT?.app?.sc && document.documentElement.dataset.ready === '1');
-  const marksBefore = await page.evaluate(() => JSON.stringify(Object.entries(localStorage).filter(([k]) => /monitor/i.test(k)).sort()));
+  // Compare only collection maps: selecting a track legitimately changes UI preferences.
+  const readMarks = () => page.evaluate(() => {
+    const state = JSON.parse(localStorage.getItem('monitoramento.v03') || '{}');
+    return Object.fromEntries(Object.entries(state.monitor || {}).flatMap(([key, value]) =>
+      Object.keys(value.collected || {}).length ? [[key, value.collected]] : []));
+  });
+  const marksBefore = await readMarks();
   const guide = () => page.evaluate(() => {
     const g = document.querySelector('.mon-guide');
     return { label: g.querySelector('.mg-label')?.textContent.replace(/\s+/g, ' ').trim() ?? '', big: g.querySelector('.mg-big')?.textContent.replace(/\s+/g, ' ').trim() ?? '', text: g.innerText.replace(/\s+/g, ' ') };
@@ -115,8 +121,9 @@ try {
     const t = (await guide()).text, m = /Você está ([\d.]+) m à (esquerda|direita) da linha/.exec(t);
     if (!m || m[2] !== 'esquerda' || Math.abs(Number(m[1].replace('.', '')) - off) > 1) fail(key, `fora da linha: "${t.slice(0, 160)}"`); else report.offLine++;
   }
-  report.marksAfter = await page.evaluate(() => JSON.stringify(Object.entries(localStorage).filter(([k]) => /monitor/i.test(k)).sort()));
-  report.noMarks = report.marksAfter === marksBefore || !/"collected"|coletad/.test(report.marksAfter);
+  report.marksAfter = await readMarks();
+  assert.deepEqual(report.marksAfter, marksBefore, 'GPS não pode criar ou alterar marcações');
+  report.noMarks = true;
   assert.deepEqual(errors, [], 'erros na página');
   assert.equal(report.lots, 51);
 } finally {

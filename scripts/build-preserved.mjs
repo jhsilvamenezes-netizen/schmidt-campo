@@ -53,8 +53,20 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
   replace('<script type="module" crossorigin>','<script type="module" crossorigin>\n(async()=>{\n'+blocks.join('\n')+'\n','fontes-legíveis');
   replace('__m_ui_lotes:ne,__m_main:J};</script>', '__m_ui_lotes:ne,__m_main:J};\ninstallSchmidtRefinements(document);\ninstallSchmidtLotMap({document,events:A});\ninstallSchmidtSatelliteMap({document});\ninstallSchmidtOperationalPlan({document,schmidt:SCHMIDT,events:A,measurements:N});\ninstallSchmidtAdjustCompare({document,schmidt:SCHMIDT,events:A,measurements:N});\ninstallSchmidtMonitorDirection({document});\n})();</script>', 'escopo-assíncrono-e-plano-aprovado');
   // 2.0 (E4): sem marcação de coleta, o guia orienta ao próximo ponto à frente (src/gps/guide-next.mjs).
-  replace('l=e.points.find(e=>!n.has(e.id)),u=Number.isFinite(t.accuracyM)','l=schmidtGuideNextPoint(e,t,n,a),u=Number.isFinite(t.accuracyM)','guia-sem-marcacao-orienta-ao-ponto-a-frente');
+  replace('l=e.points.find(e=>!n.has(e.id)),u=Number.isFinite(t.accuracyM)','l=schmidtGuideNextPoint(e,t,n,a,t.guideState),u=Number.isFinite(t.accuracyM)','guia-sem-marcacao-orienta-ao-ponto-a-frente');
   replace('let l=s.points.find(e=>!o.has(e.id)),u=s.points.length,','let l=c&&!c.done?c.next:s.points.find(e=>!o.has(e.id)),u=s.points.length,','monitor-mostra-o-ponto-que-o-guia-escolheu');
+  // 2.0.1: seleção temporária por sessão/rota; nunca escreve coleta ou progresso.
+  replace('c=i(s,{...b.pos,ageMs:Date.now()-b.posAt},o,a)',
+    'c=i(s,{...b.pos,ageMs:Date.now()-b.posAt,guideState:schmidtGuideSession(b,r.farm+`|`+r.code+`|`+e.signature+`|`+b.trackId+`|`+s.parts.map(part=>part.entry.join(`,`)).join(`;`)+`|`+b.schmidtGPSGeneration)},o,a)', 'guia-com-histerese-por-sessao');
+  replace('else if(c&&c.arrived)f.classList.add(`is-arrived`)',
+    'else if(c&&c.stale)p=`<p class="mg-label">Ponto ${l.seq} de ${s.nPoints}</p><p class="mg-big">Aguardando posição atual</p><p class="mg-warn">GPS sem atualização há ${h((Date.now()-b.posAt)/1e3)} s. Aguarde o sinal para seguir a orientação.</p>`+W(s,l);else if(c&&c.arrived)f.classList.add(`is-arrived`)', 'guia-antigo-sem-seta-ou-distancia-atual');
+  replace(':b.pos?`GPS ${b.pos.accuracyM', ':b.pos&&Date.now()-b.posAt>15e3?`GPS sem atualização`:b.pos?`GPS ${b.pos.accuracyM', 'qualidade-GPS-distingue-idade');
+  replace('nextId:l?.id??null,pos:b.pos,heading:b.compass?b.heading:null,alvo:c&&!c.arrived?c.alvo:null',
+    'nextId:l?.id??null,pos:c?.stale?null:b.pos,heading:c?.stale?null:b.compass?b.heading:null,alvo:c&&!c.stale&&!c.arrived?c.alvo:null', 'mapa-nao-orienta-com-posicao-antiga');
+  replace('function z(e){if(!b.pos)return null;', 'function z(e){if(!b.pos||Date.now()-b.posAt>15e3)return null;', 'tiro-proximo-exige-posicao-atual');
+  replace('<p>Faça a avaliação e toque em <b>Ponto coletado</b>.</p>', '<p>Confira abaixo a distância até o próximo ponto ou a borda.</p>', 'chegada-com-foco-no-direcionamento');
+  replace('c&&!c.arrived&&(b.arrivedId=null)', 'c&&b.arrivedId!==c.next?.id&&(b.arrivedId=null)', 'chegada-sem-repetir-alerta-no-mesmo-alvo');
+  replace('b.mapUi={trackId:null,pos:b.pos}', 'b.mapUi={trackId:null,pos:Date.now()-b.posAt>15e3?null:b.pos}', 'selecao-de-tiro-sem-marcador-antigo');
   replace("connect-src 'self' blob: data:;", "connect-src 'self' blob: data: https://services.arcgisonline.com;", 'satellite-single-origin-opt-in');
   replace('t.innerHTML=L.join(``),A.emit(`mapa:desenhado`,{monitor:!!H})',
     't.innerHTML=L.join(``),publishSchmidtSatelliteFrame({svg:t,layer:t.querySelector(`.m-rot`),scope:e.key||e.farm+`|`+e.code,width:d.W,height:d.H,scale:d.s,angle:d.rot,origin:[d.W/2-(d.cx+e.centroidUTM[0])*d.s,d.H/2+(d.cy+e.centroidUTM[1])*d.s]}),A.emit(`mapa:desenhado`,{monitor:!!H})', 'individual-map-georeferenced-frame');
