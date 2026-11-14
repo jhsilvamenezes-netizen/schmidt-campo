@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "E3 — comparar antes de aplicar (1.36.0)",
+  "task": "E4 — direcionamento por GPS sem marcação (1.37.0)",
   "owner": "Claude",
-  "status": "pronto_para_revisao",
-  "nextAction": "Revisar PR #15 e autorizar integração/publicação da 1.36.0; depois: esquema das distâncias com a quantidade real de pontos; E4 GPS sintético (24–27)",
+  "status": "em_andamento",
+  "nextAction": "Rodar bateria completa (CI + sessões/correções), abrir PR da 1.37.0; conferir deploy do Pages da 1.36.0",
   "baseMain": "2e4e2be9a44310b847155bdef9d7b78b9865ccd0",
   "publishedVersion": "1.35.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -44,6 +44,11 @@
       "command": "node audit/browser.mjs (congelamento visual, fora do CI)",
       "result": "falhou",
       "evidence": "ruído de 1/255 em 34–44 px que muda de tela entre execuções; a 1.35.1 falha igual (390/auditoria 44 px). Preexistente, não causado pela 1.36.0"
+    },
+    {
+      "command": "node audit/guide-next.test.mjs && node audit/gps-guidance-browser.mjs",
+      "result": "passou",
+      "evidence": "1.37.0: 51 lotes, 182 trechos/182 chegadas, 204 fixes inválidos ignorados; na 1.36.0 o mesmo teste falha. docs/E4_DIRECIONAMENTO_GPS.md"
     }
   ],
   "blockers": [
@@ -62,15 +67,23 @@
     "E2 itens 10–14/20: sem erro reproduzido; distâncias são de grade UTM (−0,02–0,03% no terreno), documentado.",
     "E2 item 09: rumo da planilha = norte verdadeiro; tiros retos na grade; variação da convergência no lote ≤0,006° (≤0,48 m); norte magnético não usado.",
     "E2 concluída sem defeito reproduzido em 09–14, 20, 23; nenhuma mudança no app foi necessária.",
-    "1.36.0: aviso de mudança continua sem lista (decisão aprovada); comparação fica em quadro recolhido na etapa Tiros; Usar passa pelo campo existente."
+    "1.36.0: aviso de mudança continua sem lista (decisão aprovada); comparação fica em quadro recolhido na etapa Tiros; Usar passa pelo campo existente.",
+    "1.37.0: sem marcação, o guia orienta pelo ponto à frente (projeção); com marcação, legado. Texto 'toque em Ponto coletado' mantido (fluxo legado preservado)."
   ],
   "snapshot": {
-    "at": "2026-11-14T15:00:22.134Z",
-    "branch": "claude/e2-medidas",
-    "codeCommit": "129f8ff2cf9c0e7e1b43580db997038a567baec1",
+    "at": "2026-11-14T15:12:44.412Z",
+    "branch": "claude/2-0-esquema",
+    "codeCommit": "f2c1008cebb7175d661051ee8e036d71d61fa072",
     "changedTrackedFiles": [
-      "docs/E3_COMPARAR_ANTES_DE_APLICAR.md"
+      ".github/workflows/blocos-candidata.yml",
+      "VERSAO.json",
+      "audit/block-candidate.json",
+      "audit/package.json",
+      "docs/VERSOES_E_ENTREGAS.md",
+      "index.html",
+      "scripts/build-preserved.mjs",
+      "sw.js"
     ],
-    "untrackedCount": 0
+    "untrackedCount": 4
   }
 }
