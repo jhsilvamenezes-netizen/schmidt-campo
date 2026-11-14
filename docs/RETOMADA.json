@@ -2,8 +2,8 @@
   "schema": "schmidt.handoff.v1",
   "task": "E3 — comparar antes de aplicar (1.36.0)",
   "owner": "Claude",
-  "status": "em_andamento",
-  "nextAction": "Concluir bateria do CI local; publicar PR; depois esquema das distâncias com a quantidade real de pontos e E4 (GPS sintético)",
+  "status": "pronto_para_revisao",
+  "nextAction": "Revisar PR #15 e autorizar integração/publicação da 1.36.0; depois: esquema das distâncias com a quantidade real de pontos; E4 GPS sintético (24–27)",
   "baseMain": "2e4e2be9a44310b847155bdef9d7b78b9865ccd0",
   "publishedVersion": "1.35.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -36,9 +36,14 @@
       "evidence": "1.36.0: Usar = prévia em 51/51 lotes; abrir não grava; RA9/RB9 corrigido; axe 0 violações. docs/E3_COMPARAR_ANTES_DE_APLICAR.md"
     },
     {
-      "command": "bateria do CI local (blocos-candidata.yml + browser.mjs + operational-plan-browser.mjs)",
-      "result": "nao_executado",
-      "evidence": "bateria em execução no checkpoint f39e4c2"
+      "command": "sequência do CI blocos-candidata.yml (test:blocks, checkpoint, build --check, 40 grupos, mapas, adjust-compare, satélite, validate-runtime-blocks) + operational-plan-browser",
+      "result": "passou",
+      "evidence": "todas OK na 1.36.0"
+    },
+    {
+      "command": "node audit/browser.mjs (congelamento visual, fora do CI)",
+      "result": "falhou",
+      "evidence": "ruído de 1/255 em 34–44 px que muda de tela entre execuções; a 1.35.1 falha igual (390/auditoria 44 px). Preexistente, não causado pela 1.36.0"
     }
   ],
   "blockers": [
@@ -60,10 +65,12 @@
     "1.36.0: aviso de mudança continua sem lista (decisão aprovada); comparação fica em quadro recolhido na etapa Tiros; Usar passa pelo campo existente."
   ],
   "snapshot": {
-    "at": "2026-11-14T14:51:59.551Z",
+    "at": "2026-11-14T15:00:22.134Z",
     "branch": "claude/e2-medidas",
-    "codeCommit": "f39e4c264c84329c2581dbef9e9f456ac36c19ee",
-    "changedTrackedFiles": [],
-    "untrackedCount": 6
+    "codeCommit": "129f8ff2cf9c0e7e1b43580db997038a567baec1",
+    "changedTrackedFiles": [
+      "docs/E3_COMPARAR_ANTES_DE_APLICAR.md"
+    ],
+    "untrackedCount": 0
   }
 }

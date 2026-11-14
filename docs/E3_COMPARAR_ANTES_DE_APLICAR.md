@@ -39,6 +39,9 @@ dados. Nenhum valor é trocado sem a pessoa tocar em "Usar".
 | axe-core (WCAG 2.1 AA + boas práticas) no quadro aberto, temas padrão e Sol | 0 violações |
 | Visual: 390 px, 1440 px, Sol | sem corte nem rolagem lateral; botões de 44 px |
 
+| Bateria do CI (`blocos-candidata.yml`) + `operational-plan-browser` | todas passaram |
+| `browser.mjs` (congelamento visual, fora do CI) | ruído de 1/255 em 34–44 px, variando de tela entre execuções; **a 1.35.1 falha igual**. Preexistente |
+
 O app não tem modo escuro do sistema: o tema alternativo é o "Sol", conferido acima.
 
 ## Próximo
