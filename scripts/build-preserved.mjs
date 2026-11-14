@@ -12,7 +12,7 @@ const baseline = JSON.parse(await readFile(root+'audit/baseline.json'));
 const preservedSourceFiles = ['src/persistence/backup-service.mjs','src/persistence/backup-format.mjs',
   'src/gps/fix-policy.mjs','src/platform/browser-backup-adapters.mjs','src/platform/browser-session-lock.mjs','src/platform/browser-write-barrier.mjs','src/platform/legacy-integration.mjs',
   'src/application/operational-summary.mjs','src/ui/plan-presentation.mjs','src/ui/operational-plan.mjs','src/ui/refinements.mjs','src/ui/lot-map.mjs','src/platform/bounded-response.mjs','src/ui/satellite-map.mjs',
-  'src/application/adjust-alternatives.mjs','src/ui/adjust-compare.mjs'];
+  'src/application/adjust-alternatives.mjs','src/ui/adjust-compare.mjs','src/gps/guide-next.mjs'];
 export const sourceFiles=[...preservedSourceFiles,...blockSourceFiles];
 const sha = text => createHash('sha256').update(text).digest('hex');
 export async function buildCandidate({includeBlocks}={}) {
@@ -52,6 +52,9 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
   // dos WebViews Android: o await de recuperação fica dentro desta função.
   replace('<script type="module" crossorigin>','<script type="module" crossorigin>\n(async()=>{\n'+blocks.join('\n')+'\n','fontes-legíveis');
   replace('__m_ui_lotes:ne,__m_main:J};</script>', '__m_ui_lotes:ne,__m_main:J};\ninstallSchmidtRefinements(document);\ninstallSchmidtLotMap({document,events:A});\ninstallSchmidtSatelliteMap({document});\ninstallSchmidtOperationalPlan({document,schmidt:SCHMIDT,events:A,measurements:N});\ninstallSchmidtAdjustCompare({document,schmidt:SCHMIDT,events:A,measurements:N});\n})();</script>', 'escopo-assíncrono-e-plano-aprovado');
+  // 2.0 (E4): sem marcação de coleta, o guia orienta ao próximo ponto à frente (src/gps/guide-next.mjs).
+  replace('l=e.points.find(e=>!n.has(e.id)),u=Number.isFinite(t.accuracyM)','l=schmidtGuideNextPoint(e,t,n,a),u=Number.isFinite(t.accuracyM)','guia-sem-marcacao-orienta-ao-ponto-a-frente');
+  replace('let l=s.points.find(e=>!o.has(e.id)),u=s.points.length,','let l=c&&!c.done?c.next:s.points.find(e=>!o.has(e.id)),u=s.points.length,','monitor-mostra-o-ponto-que-o-guia-escolheu');
   replace("connect-src 'self' blob: data:;", "connect-src 'self' blob: data: https://services.arcgisonline.com;", 'satellite-single-origin-opt-in');
   replace('t.innerHTML=L.join(``),A.emit(`mapa:desenhado`,{monitor:!!H})',
     't.innerHTML=L.join(``),publishSchmidtSatelliteFrame({svg:t,layer:t.querySelector(`.m-rot`),scope:e.key||e.farm+`|`+e.code,width:d.W,height:d.H,scale:d.s,angle:d.rot,origin:[d.W/2-(d.cx+e.centroidUTM[0])*d.s,d.H/2+(d.cy+e.centroidUTM[1])*d.s]}),A.emit(`mapa:desenhado`,{monitor:!!H})', 'individual-map-georeferenced-frame');
