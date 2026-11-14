@@ -39,13 +39,13 @@ Não ampliar uma alteração de câmera para cálculo de pontos ou redesenho ger
 
 Referência 1.35.0 r3, main `a3c0a60ac34d1b01e31d0491fdb2f6626146f31b`.
 Gestos (#11), satélite opcional (#12) e protocolo (#10) já integrados.
-O [plano 2.0](PLANO_VERSAO_2_0.md) passa a ordenar as próximas tarefas.
-Foco definido pelo proprietário: link e navegador móvel; APK adiado.
-Atualização PWA, offline, compatibilidade e recuperação web compõem a etapa final.
-O [aprofundamento](APROFUNDAMENTO_2_0_WEB.md) acrescenta 34–45 e critérios para
-plano/coleta, prontidão offline e recuperação; investigar 34–38 junto do diagnóstico inicial.
-Começar por 01–03 e preparar o ensaio físico 04. A fila abaixo é histórica;
-revisar os itens de medidas/rótulos pelos critérios atuais, sem repetir correções entregues.
+O [plano 2.0 revisto](PLANO_VERSAO_2_0.md) ordena as próximas tarefas:
+direcionamento exclusivo pelo link móvel, sem coleta ou marcação pela equipe.
+O [caderno espacial/visual](APROFUNDAMENTO_2_0_WEB.md) detalha ferramentas GIS,
+medidas, validação e 12 frentes de design. APK adiado. Preservar legado sem apagá-lo.
+IDs 01–45 foram redistribuídos; não executar a fila anterior centrada em coleta.
+Começar por 01–03 e roteiro 04; validar medidas 05–14/20/23 antes das projeções
+28–35. A fila abaixo é histórica e não deve reabrir recursos já entregues.
 
 ## Fila histórica, a partir da revisão de 13/11/2026
 

@@ -1,233 +1,136 @@
-# SCHMIDT Campo — plano de evolução para 2.0
+# SCHMIDT Campo 2.0 web — planejamento e direcionamento
 
-Revisado em 14/11/2026. Base conferida: **1.35.0 r3**, main
-`a3c0a60ac34d1b01e31d0491fdb2f6626146f31b`. Este é um plano para implementação,
-não uma declaração de funcionalidades entregues. Revalidar main ao começar.
+Revisão de escopo em 14/11/2026. Base publicada conferida anteriormente:
+1.35.0 r3, main `a3c0a60ac34d1b01e31d0491fdb2f6626146f31b`.
+Conferir main novamente antes de implementar.
+
+## Premissa corrigida pelo proprietário
+
+**Uso exclusivamente para direcionamento. A equipe não vai coletar ou marcar
+dados.** Fluxo-alvo: escolher lote/bloco → entender tiros, pontos e distâncias
+→ orientar-se no campo → consultar o plano.
+
+Coleta, concluídos, produtividade registrada e sincronização de marcações deixam
+de ser objetivos. Preservar dados e funcionalidades legados por compatibilidade,
+sem apagá-los. Retirar controles existentes exige análise e projeção próprias.
+
+Foco no link e navegador móvel; PWA opcional, APK adiado. Esta revisão substitui
+a premissa de coleta e redistribui os 45 itens. **IDs anteriores não identificam
+necessariamente as mesmas tarefas.** Mais itens não são uma meta de produto.
 
 ## O resultado esperado
 
-Uma ferramenta confiável no celular para escolher lote ou bloco, entender o
-plano, seguir tiros e pontos, coletar e retomar o trabalho, inclusive sem rede.
-A **2.0 web** estará pronta quando isso for comprovado pelo link no navegador
-dos celulares da equipe. Prioridade definida pelo proprietário em 14/11/2026:
-melhorar o site e sua experiência móvel. Instalar como PWA é opcional; o fluxo
-principal deve funcionar ao abrir o endereço. APK fica fora do caminho crítico
-e não é requisito de entrega. O número da versão não substitui os critérios.
+O operador entende conjunto e lote, identifica o tiro/ponto consultado, vê as
+distâncias relevantes e recebe orientação coerente com a precisão dos dados e
+GPS. Mapa legível, gestos estáveis, plano disponível após preparação offline e
+consulta sem obrigação de registrar execução.
 
-## Onde estamos
+Método linear sem anéis; barra 36,48 m; P6 com rumo/configuração preservados.
+Plano padrão; Satélite opcional. Fotografia não redefine divisa. Recuo obrigatório
+exige definição aprovada. Referência comum não comprova passagem entre lotes.
 
-| Já entregue | O que ainda falta comprovar ou resolver |
-|---|---|
-| 51 lotes individuais e 40 opções de bloco; contornos, tiros, pontos e medidas | Operação real em telefone, ao sol e com rede/GPS instáveis |
-| Pinça, arraste e enquadramento do mapa conjunto | Cobertura de gestos e leitura no conjunto de aparelhos utilizados |
-| Plano padrão e Satélite opcional, com limites de rede e memória | Desempenho, bateria e disponibilidade da imagem em campo; satélite não é garantido offline |
-| Backup com integridade, restauração, proteção de gravação e atualização offline testados | Recuperação no navegador com dados representativos e troca de telefone via backup |
-| Fontes legíveis de correções e build determinístico sobre artefato preservado | Fonte original completa ou substituição gradual dos trechos legados, com paridade comprovada |
-| CI aprovada e site publicado conferido | Compatibilidade nos navegadores utilizados e atualização pelo mesmo endereço |
+## Roteiro com critérios de conclusão
 
-Evidências: [Issue #1](https://github.com/jhsilvamenezes-netizen/schmidt-campo/issues/1),
-[PR #12](https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/12),
-[auditoria](https://github.com/jhsilvamenezes-netizen/schmidt-campo/actions/runs/43581333770),
-[blocos](https://github.com/jhsilvamenezes-netizen/schmidt-campo/actions/runs/43581333643).
+Cada item é proposta/verificação, não defeito confirmado. P0 corresponde a erro
+reproduzido de medida/orientação; P1 ao núcleo da evolução; P2 a extensão dependente
+de benefício. Implementar em PRs pequenos, preservando parâmetros/dados.
 
-## Regras que acompanham toda a evolução
+### 1 — referência de trabalho
 
-- Preservar método linear, barra de 36,48 m, planos, coletas e separação entre individual e bloco. Sem método de anéis.
-- P6 mantém rumo/configuração; a revisão da divergência continua adiada. Não escolher rumo novo nem reinserir observação operacional sem nova orientação.
-- Distância à borda é medida; não estabelece recuo obrigatório. Fotografia não redefine divisas. Referência comum não comprova passagem física entre lotes.
-- Plano inicia como padrão. Satélite segue opcional e secundário; não enviar coordenadas automaticamente ao provedor.
-- Novas propostas de organização visual recebem projeções comparativas, com avaliação do escopo já aprovado antes da implementação. Este plano não aprova um redesenho específico.
-- Não publicar anexos privados ou backups. Não distribuir APK com chave histórica pública ou recomendar desinstalar o app atual para testar.
-- Melhorias internas têm reprodução, teste e resultado mensurável. Tecnologias novas entram quando resolvem um problema demonstrado.
-
-## Ordem de execução
-
-Prioridade P0 bloqueia a entrega correspondente por risco a dados/uso. P1 integra
-o núcleo da 2.0. P2 depende de benefício demonstrado. Cada linha vira uma tarefa
-pequena ou um PR; registrar estado na Issue #1, sem marcar proposta como feita.
-
-### Etapa 1 — consolidar a base e medir (P0)
-
-| ID | Fazer | Considerar concluído quando |
+| ID | Fazer | Concluído quando |
 |---|---|---|
-| 01 | Reconciliar versão, documentação, PRs e artefatos | main, VERSAO.json, pacote e site apontam para arquivos verificáveis; registros antigos identificados como históricos |
-| 02 | Mapear a fonte que existe e os trechos legados | Há inventário de cálculo, persistência, GPS, câmera e UI; cada parte tem origem, teste e fronteira de substituição. Não chamar bundle de fonte recuperada |
-| 03 | Medir abertura, cálculo, toque, desenho e memória | Comparação repetida da 1.35.0 com versão imediatamente anterior, mesmo aparelho/dados; tempos mediano/p95, tarefas longas e recursos registrados |
-| 04 | Reproduzir a tarefa completa no navegador de dois celulares representativos | Individual e bloco: abrir → planejar → coletar → sair/voltar → backup → offline. Registrar modelo, RAM, sistema/navegador, tamanho, falhas e passos |
+| 01 | Fixar escopo e baseline | Registrar commit, datasets, versão e cenários de direcionamento sem coleta |
+| 02 | Mapear fonte e custo | Identificar motor/câmera/GPS/UI/legado e medir abertura/desenho contra versão anterior; não editar bundle como fonte |
+| 03 | Reconciliar parâmetros | Unidade, origem, efeito e dependências conferidos; catálogo histórico não vira restrição nova automaticamente |
+| 04 | Observar uso em dois celulares | Operador escolhe bloco, consulta medidas, encontra orientação e retoma sem sinal; registrar dúvidas, erros, toques e legibilidade |
 
-Gargalo já observado: na CI sintética, CPU limitada a 4×, mediana de abertura
-532,6 → 636,9 ms contra a referência histórica `8232d79`; cálculo dos cenários
-336,6 → 327,3 ms. Isso orienta a investigação da inicialização, mas não identifica
-a causa nem mede telefone físico. Não remover recuperação de dados para abrir mais rápido.
+### 2 — coordenadas, rumo e topologia (P0/P1)
 
-### Etapa 2 — dados e recuperação (P0)
-
-| ID | Fazer | Considerar concluído quando |
+| ID | Fazer | Concluído quando |
 |---|---|---|
-| 05 | Rever cada caminho de gravação | Nenhuma confirmação de sucesso antes de persistir; erro/quota/bloqueio deixam o estado recuperável; coletar e fechar imediatamente conserva a alteração |
-| 06 | Versionar contratos de plano, coleta, geometria e backup | IDs estáveis; versão de schema e migrações explícitas; falhas não substituem dados válidos por vazios; reexecutar migração não duplica registros |
-| 07 | Exercitar interrupções e concorrência | Fechamento durante salvar/restaurar, aba antiga, processo encerrado e arquivo incompleto não sobrescrevem estado atual; recuperação testada |
-| 08 | Simplificar a recuperação para a equipe | Backup completo restaurado em perfil limpo e aparelho de teste, incluindo imagens/histórico e individual/bloco; instrução curta verificada por um operador |
+| 05 | Conferir CRS/datum | Zona, hemisfério, eixos, unidades e origem por dataset; transformação comparada ao PROJ |
+| 06 | Diagnosticar geometria | Anéis, buracos, autointerseção, duplicações e multipartes verificados; nenhum reparo silencioso de limite |
+| 07 | Separar áreas e perímetro | Área geométrica, oficial e usada no plano identificadas; não misturar referências nos totais |
+| 08 | Comparar medidas projetadas/geodésicas | Erro de projeção quantificado em área/distância e método consistente para uso operacional |
+| 09 | Especificar rumo | Norte verdadeiro, norte de grade e orientação da tela distintos; convergência conferida; não inferir norte magnético |
+| 10 | Validar referência de bloco | A/B, eixo e tolerâncias coerentes; rumo invertido não confunde sentido de entrada; P6 preservado |
 
-Avaliar IndexedDB como repositório principal apenas se a medição demonstrar que
-serialização/gravação síncrona é gargalo. Hoje já há IndexedDB e proteção de
-gravação: migrar tudo sem necessidade criaria risco novo. Desenhar migração com
-leitura compatível, cópia de segurança e retorno seguro antes de trocar armazenamento.
+### 3 — tiros, pontos, bordas e distribuição (P0/P1)
 
-### Etapa 3 — método, parâmetros e geometrias (P1)
-
-| ID | Fazer | Considerar concluído quando |
+| ID | Fazer | Concluído quando |
 |---|---|---|
-| 09 | Criar contrato único dos parâmetros realmente usados | UI, cálculo, importação e backup usam o mesmo significado, unidade e validação; atualizar o inventário histórico antes de ativar validação estrita |
-| 10 | Conferir tiros e orientação | Rumo, referência A/B, fase e alinhamento da barra reproduzem o cenário preservado; clipping conserva trechos válidos em geometrias côncavas/multipartes |
-| 11 | Conferir pontos e medidas | Pontos dentro do lote; sem duplicações indevidas; distância ao próximo ponto do mesmo trecho e menor distância à divisa verificadas independentemente; não medir através de lacuna como se fosse tiro contínuo |
-| 12 | Tornar a regra de bloco explícita | Compatibilidade usa referências e parâmetros pertinentes; ordem da seleção não altera resultado; cada membro mantém identidade, registros e acesso individual; impedir mistura/duplicação acidental de alternativas sobrepostas |
-| 13 | Conferir qualidade da distribuição | Comparar quantidade, maior lacuna, variação de espaçamento e distância de cobertura antes/depois; documentar quando são necessários pontos extras; rejeitar melhora em uma métrica que degrade cobertura sem critério aprovado |
-| 14 | Rastrear dados e importações | CRS/datum, origem/safra e tipo de área identificados; KML/XLSX/JSON com unidades e IDs conferidos; arquivos inválidos/grandes/interrompidos não apagam o plano; geometria histórica não substitui atual silenciosamente |
+| 11 | Conferir recorte dos tiros | Preservar componentes e buracos; não ligar segmentos através de área externa |
+| 12 | Medir espaçamentos efetivos | Distância perpendicular entre eixos e intervalo entre pontos no mesmo trecho conferidos; solicitado, alinhado e real distintos |
+| 13 | Conferir distância à borda | Menor distância à divisa, margem de ponta e distância na direção do tiro têm definições próprias; sem impor recuo |
+| 14 | Validar pontos | Dentro do lote, sem duplicações indevidas; identidade/trecho corretos na seleção e exportação |
+| 15 | Validar avaliação da cobertura | Refinar/deslocar grade e testar extremos; quantificar sensibilidade da estimativa |
+| 16 | Comparar cobertura por membro | Lote mal atendido não escondido por média de bloco; amostragem não equivale a aplicação integral |
+| 17 | Rever otimizador | Restrições e prioridades explícitas; comparar lacuna, variação, distância de cobertura e quantidade, com resultado reproduzível |
+| 18 | Conferir fase/alinhamento | Grade comum respeita referência de barra 36,48 m e valores salvos; efeito na cobertura demonstrado |
+| 19 | Analisar sensibilidade | Perturbações coerentes com precisão conhecida identificam instabilidade; não fabricar incerteza estatística sem modelo |
+| 20 | Validar 51 lotes e 40 grupos | Contornos, membros, medidas e exports preservados; câmera não altera cálculo |
+| 21 | Distinguir orientação de acesso | Trecho separado/divisa não vira rota; entrada só com referência confiável; nenhum atalho inventado |
+| 22 | Planejar divisão por pessoas | Quantidade/extensão estimadas sem registrar execução, produtividade ou concluídos; não prometer tempo exato |
+| 23 | Unificar revisão/desenho/exportação | Mesmo cenário vigente nos três; resultado obsoleto descartado; round-trip preserva geometria e IDs |
 
-Usar GEOS/PROJ ou equivalente independente nas verificações, com tolerâncias
-documentadas na unidade correta. Testes gerados de invariantes podem ampliar
-cobertura: mudar ordem dos membros, repetir cálculo, variar zoom e importar/exportar.
-Isso não homologa limites legais, recomendação agronômica ou passagem entre lotes.
+### 4 — GPS para orientação (P1)
 
-### Etapa 4 — uso móvel, mapa e didática (P1)
-
-| ID | Fazer | Considerar concluído quando |
+| ID | Fazer | Concluído quando |
 |---|---|---|
-| 15 | Mostrar o necessário para iniciar | Operador encontra lote/bloco, área por ponto, equipe, quantidade e distâncias sem abrir ajustes avançados; comparar tempo/toques em tarefa observada |
-| 16 | Garantir mapa completo e consulta de membros | Todos os membros cabem ao escolher/enquadrar bloco; cada lote abre com a mesma qualidade do individual; voltar ao conjunto preserva contexto |
-| 17 | Refinar cotas e rótulos | Distâncias essenciais sempre legíveis no resumo; no desenho, prioridades por zoom evitam sobreposição. Número do ponto não encobre nome, rumo ou medida; revisar BD3/T5 e os 208 tiros do guia |
-| 18 | Validar interação com uma mão | Alvos de pelo menos 44 px, teclado sem cobrir ação, foco visível, pinça/arraste sem coleta acidental, rotação sem perder estado; larguras 360/390/412/768 e altura reduzida |
-| 19 | Padronizar texto, formato e acessibilidade | Vocabulário curto e consistente; vírgula decimal, m/ha/° e precisão adequados; contraste WCAG AA onde aplicável, leitura ampliada e leitor de tela; estados não dependem apenas de cor |
-| 20 | Consolidar Plano/Satélite | Mesma câmera e coordenadas, atribuição visível, imagem não confundida com limite; falha/ausência de rede mantém planejamento; troca de lote e retomada não exibem imagem de outro escopo |
+| 24 | Validar posição | Fix antigo/impreciso/fora de ordem não tratado como atual; plano consultável com GPS negado |
+| 25 | Estabilizar rumo | Curso do deslocamento distinto da orientação do telefone; parado não gera direção confiável fictícia |
+| 26 | Consultar destino | Selecionar tiro/ponto para orientação sem marcar realização; evitar oscilação entre alvos e manter controle manual |
+| 27 | Validar desvio lateral/avanço | Projeção no segmento e esquerda/direita conferidos; distância ao alvo não substitui desvio lateral; precisão compatível com fix |
 
-Propostas visuais: produzir antes/depois do MESMO lote, zoom, tema e largura;
-explicar em uma frase o benefício. Evitar textos de histórico, comparação de
-versão ou termos técnicos na tela de operação. Cotas adicionais só quando a
-geometria e o espaço permitirem; resumo não deve esconder distâncias essenciais.
+### 5 — mapa, design e didática (P1)
 
-### Etapa 5 — GPS e orientação de campo (P1)
-
-| ID | Fazer | Considerar concluído quando |
+| ID | Fazer | Concluído quando |
 |---|---|---|
-| 21 | Rever aquisição e qualidade de posição | Timestamp, ordem, idade, precisão e sessão verificados; permissão negada, retorno e baixa precisão não tornam posição antiga atual |
-| 22 | Revisar chegada, desvio e rumo | Limiares compatíveis com precisão e velocidade observadas; GPS parado não cria rumo confiável; nenhum salto provoca coleta ou troca de tiro indevida |
-| 23 | Testar energia e ciclo do navegador | Suspender/retomar, bloquear tela, modo economia e navegador encerrado conservam dados; observadores GPS e recursos de tela acordada encerrados quando deixam de ser necessários; APIs indisponíveis têm alternativa segura |
+| 28 | Conjunto e membro | Enquadrar todos, focar lote e retornar com contexto; qualidade equivalente ao individual |
+| 29 | Hierarquia essencial | Lote/bloco, tiro/ponto consultado, entre tiros/entre pontos e orientação reconhecidos ao olhar; secundários recolhidos |
+| 30 | Cotas e símbolos | Tipos de medida têm linguagem coerente, unidade e diferenciação além da cor; não cobrem ponto/divisa |
+| 31 | Rótulos e escala | Prioridade estável por zoom/espaço; revisar BD3/T5 e 208 tiros; escala coerente com câmera/projeção |
+| 32 | Gestos e seleção | Pinça/arraste sem seleção acidental; alvos ≥44 px quando aplicável; pontos próximos selecionáveis sem ambiguidade |
+| 33 | Paleta e tipografia | Contraste Sol/satélite, texto ampliado, números legíveis, símbolos e acessibilidade conferidos |
+| 34 | Projeções comparativas | Mesmo lote/bloco/estado em 360/390/412/768 px; comparar antes/depois e conferir aprovação antes da implementação |
+| 35 | Prancha de orientação | Propor saída compartilhável/imprimível com identificação, rumo, escala e medidas; sem publicar coordenadas privadas |
 
-Não prometer precisão centimétrica com GPS comum. Filtragem/histerese são opções
-depois de comparar trilhas simuladas e ensaio físico; conservar fix bruto e
-incerteza, evitar filtro que produza aparência de precisão falsa. Navegação entre
-lotes não implica rota segura de acesso. Sem rastreamento em segundo plano por padrão.
+### 6 — link, desempenho e entrega (P1/P2)
 
-### Etapa 6 — arquitetura e desempenho avançado (P1/P2)
-
-| ID | Fazer | Considerar concluído quando |
+| ID | Fazer | Concluído quando |
 |---|---|---|
-| 24 | Extrair progressivamente o legado para módulos legíveis | Motor espacial sem DOM, casos de uso, repositórios e apresentação com contratos claros; substituição por trecho, preservando resultados e build reproduzível |
-| 25 | Unificar estado e câmera quando houver equivalência comprovada | Uma fonte de parâmetros/resumo e transformações de câmera verificadas; zoom/pan não recalculam plano nem gravam coleta |
-| 26 | Reduzir trabalho repetido e custo de desenho | Invalidar cache por dados/versão/parâmetros/edições relevantes; cancelar trabalho obsoleto; agrupar desenho por frame; comparar tarefas longas, memória e resposta antes/depois |
-| 27 | Adotar ferramentas adicionais só conforme medição | Tipagem gradual nas fronteiras, Web Worker para cálculo longo, índice espacial para consultas caras ou renderizador diferente somente com ganho e paridade demonstrados |
-| 28 | Diagnosticar falhas sem expor dados | Relatório local/exportável com versão, etapa, duração e código de erro; sem coordenadas, coletas ou arquivos privados por padrão; nenhum envio remoto automático |
+| 36 | Prontidão offline | Plano/recursos realmente abrem sem rede após preparo; satélite e instalação PWA não obrigatórios |
+| 37 | Estado de cálculo/consulta | A → B → A, resize e retomada não exibem resultado antigo como vigente; câmera não grava plano |
+| 38 | Importação/exportação resistente | Limites, CRS, unidades, IDs e texto validados antes de aplicar; entrada inválida não destrói cenário nem executa conteúdo |
+| 39 | Preservação do existente | Falha/quota/upgrade não apaga plano ou dados legados; coleta histórica não vira requisito do fluxo novo |
+| 40 | Compatibilidade web | APIs detectadas, permissões/retomada/baixo consumo testados; fluxo principal pelo link |
+| 41 | Cálculo otimizado | Funções puras/cache corretos; índice/Worker só com ganho medido, cancelamento e revisão de entrada |
+| 42 | Desenho otimizado | Geometria visual separada da analítica; menos trabalho por frame sem alterar medida, seleção ou exportação |
+| 43 | Diagnóstico/testes de propriedade | Versão/erro/duração exportáveis sem dados privados; invariantes cobrem casos extremos |
+| 44 | Entrega e recuperação | Build/HTML/worker/versão coerentes; rollback compatível com schema; não limpar armazenamento |
+| 45 | Piloto e liberação | Operadores entendem direção, medidas e limites; erro/tempo comparados; CI/site real conferidos; APK não bloqueia |
 
-Direção arquitetural proposta: dados de origem → domínio (geometria/parâmetros)
-→ casos de uso (planejar/coletar/restaurar) → adaptadores (armazenamento/GPS/rede)
-→ apresentação. Validar IDs e schemas nas fronteiras. Não adotar framework,
-microserviços, IA ou WebGL apenas para chamar a versão de avançada. Worker exige
-tratamento de cancelamento, serialização e retorno; índice exige invalidação correta.
+## Métodos e visual para estudar
 
-### Etapa 7 — link, PWA e entrega web (P1)
+O [caderno espacial e visual](APROFUNDAMENTO_2_0_WEB.md) detalha definições,
+ferramentas independentes, algoritmos, testes e 12 frentes de design.
+Mais casas decimais não aumentam a exatidão da origem/GPS. Medida de terreno
+não pode ser inferida do relevo desenhado ou de imagem sem modelo adequado.
 
-| ID | Fazer | Considerar concluído quando |
-|---|---|---|
-| 29 | Garantir acesso direto e permissões claras | HTTPS e mesmo endereço/origem preservados; GPS negado/retomado funciona sem bloquear planejamento; uso não exige instalar PWA; mudança futura de domínio tem plano para os dados locais |
-| 30 | Consolidar atualização e offline da PWA | Primeiro acesso online e reabertura offline testados; worker novo espera clientes antigos e valida integridade; backup e registros sobrevivem à atualização; falta de espaço tem tratamento e recuperação |
-| 31 | Rever navegadores e dependências web | Chrome Android como alvo inicial e demais navegadores conforme uso real; detectar suporte a armazenamento, GPS e outras APIs, oferecer fallback; lockfiles e dependências auditados sem troca ampla de plataforma |
-| 32 | Consolidar CI e identificação de entrega | Gates proporcionais, testes separados de publicação, artefatos/hash verificáveis, versão coerente em título/manifesto/metadados; evitar rótulo 1.31.0 remanescente em versão mais nova |
-| 33 | Liberar candidata web e piloto antes da 2.0 | Critérios abaixo atendidos no link real, problemas restantes classificados, rollback web e recuperação de dados ensaiados; instrução de atualização sem limpar dados |
+## Primeira entrega do Claude
 
-**APK adiado:** preservar documentação de assinatura e migração, mas não investir
-em build, Capacitor, SDK ou distribuição nesta fase. Retomar somente se surgir
-necessidade concreta e nova priorização. A ausência da chave privada não bloqueia
-a evolução ou a publicação do site.
+Executar 01–03 e preparar 04. Auditar 05–14 e 20/23 com ferramentas independentes;
+corrigir primeiro erro reproduzido que afete medida/orientação. Em seguida,
+produzir projeções dos itens 28–35 com números verificados. Implementar em PRs
+pequenos e validar os 51 lotes/40 grupos antes do piloto.
 
-Sincronização entre aparelhos, contas, edição colaborativa e mapas offline de
-satélite ficam em avaliação posterior (P2). Exigem necessidade real, política de
-conflitos/privacidade e condições/licenças do provedor; não fazem parte obrigatória
-da 2.0. Offline atual não significa licença para baixar imagem em massa.
+Critérios: medida/desenho/exportação coerentes, nenhum rumo baseado em fix
+inválido, consulta offline após preparo e tarefa entendida sem depender de cor ou
+registro de execução. Fixar tolerâncias e metas de desempenho após medir no
+aparelho-alvo. Testes matemáticos não homologam limites ou acesso físico.
 
-## Parâmetros: o que revisar sem confundir quem usa
-
-| Grupo | O operador precisa entender | Regra de revisão |
-|---|---|---|
-| Identificação | Fazenda, lote(s), safra, plano ativo | IDs e origem claros; grupo não se confunde com lote |
-| Equipe | Pessoas e divisão do trabalho | Inteiro positivo; preservar cadastro; distribuição justa não significa rota ótima |
-| Intensidade | ha por ponto e total de pontos | Distinguir mínimo calculado, quantidade escolhida e quantidade efetiva; não arredondar para reduzir cobertura |
-| Tiros | Rumo, espaçamento/quantidade, seleção e fase | Metros e graus explícitos; distância entre eixos, não entre pontas; referências conferidas |
-| Barra | Largura e alinhamento | Referência 36,48 m; não sobrescrever valor salvo silenciosamente; explicar efeito só quando necessário |
-| Pontos | Quantidade por tiro, intervalo desejado e intervalo real | Medida no trecho correto; lacunas e ajustes manuais entram na validação |
-| Bordas | Distância geométrica e política de margem | Não impor recuo operacional sem definição aprovada |
-| GPS | Idade, precisão, chegada e desvio | Regra coerente com a qualidade do fix; distinguir indisponível de zero |
-| Cobertura/otimização | Qualidade da distribuição e custo de cálculo | Avançados recolhidos; comparar métricas e tempo, preservar limites e método |
-| Imagens | Origem, disponibilidade e câmera | Imagem de referência; dados externos só após escolha |
-| Arquivos | Tipo, versão, CRS, integridade e tamanho | Preview/validação antes de aplicar; preservar estado anterior quando falhar |
-
-O inventário técnico histórico está em `audit/parameter-schema-reference.json`.
-Contém 35 entradas no catálogo, além de campos estruturais e parâmetros de
-contexto; documentos antigos citam 37 parâmetros de interface. Reconciliar a
-contagem e a versão antes de usá-lo como contrato atual. Não transformar os
-valores mínimos/máximos da proposta isolada em regra operacional homologada.
-`audit/parameter-constraints.mjs` ainda é estudo, não validação ativa de runtime.
-Revisar conversão de frações internas para porcentagem e pontos percentuais,
-metros/ha/graus, ângulo normalizado e diferença entre rumo dirigido e eixo de tiro.
-Preservar valor bruto e precisão interna; arredondar apenas para apresentação.
-
-## Matriz de verificação e critérios para chamar de 2.0
-
-| Verificação | Cobertura mínima proposta |
-|---|---|
-| Dados/método | 51 individuais e 40 grupos; geometria independente, IDs estáveis, cálculos determinísticos, edições manuais, exports GPX/KML e restauração |
-| Mobile | 360/390/412/768 px, retrato/paisagem e teclado; dois telefones representativos, Sol/contraste/texto ampliado; tarefa completa observada |
-| Resistência | Sem rede, provedor falhando/lento, quota, arquivo inválido, fechamento durante gravação/restauração, retomada e atualização com aba antiga |
-| GPS | Negado, atrasado, fora de ordem, impreciso, parado, retomado e perda de sinal; simulação mais teste físico |
-| Desempenho | Baseline atual e versão anterior; p50/p95, tarefas longas, resposta durante gesto, heap/recursos, requisições e consumo em sessão representativa |
-| Link/PWA | Acesso direto por HTTPS, navegadores-alvo, permissões, instalação opcional, atualização com aba antiga, offline e recuperação por backup |
-
-Critérios de liberação: nenhum defeito conhecido que provoque perda/duplicação
-de coleta ou orientação incorreta; gates automatizados aprovados; piloto no link com
-operadores concluído; limitações e recuperação documentadas. Metas iniciais para
-avaliar, não promessas: controles ≥44 px, tarefa sem ajuda e sem erro crítico,
-sem crescimento contínuo de recursos após ciclos repetidos. Definir orçamento
-de tempo/FPS/bateria apenas após medição no aparelho-alvo e registrar os valores.
-Uma falha de integridade bloqueia a entrega afetada; uma hipótese de melhoria
-não justifica reescrever tudo ou bloquear correções independentes.
-
-## Primeira tarefa para o Claude
-
-Começar pelos itens **01–03**, em branch própria, e preparar o roteiro do item
-04 para o telefone da equipe. Reproduzir a 1.35.0, comparar a abertura com a
-versão anterior, instrumentar etapas e só então corrigir o maior custo comprovado.
-Se a fonte original não aparecer, continuar pela extração incremental com testes,
-sem substituir o app por um piloto antigo. Não tentar executar todos os itens em um PR.
-
-Cada entrega registra: problema, reprodução, alternativa escolhida, arquivos,
-teste, resultado antes/depois, riscos, recuperação e próxima tarefa. Usar
-[CONTINUIDADE.md](CONTINUIDADE.md), [COORDENACAO.md](COORDENACAO.md) e Issue #1.
-Texto pronto de início: [INICIO_CLAUDE_2_0.md](INICIO_CLAUDE_2_0.md).
-
-## Complemento da revisão aprofundada
-
-O [aprofundamento web](APROFUNDAMENTO_2_0_WEB.md) acrescenta os itens **34–45**:
-saúde do armazenamento, prontidão offline, vínculo da coleta à revisão do plano,
-estados de aplicação, ações repetidas, precisão geométrica, estabilidade da
-avaliação de cobertura, desenho/seleção, equipe, importação, compatibilidade de
-recuperação e ensaio de tarefa. São **45 itens de trabalho** no total, com
-sobreposição intencional de critérios e execução em PRs pequenos.
-
-Ler esse complemento antes de editar o domínio de plano/coleta. Não presumir
-falha de mecanismos já existentes: ele identifica recursos encontrados no código
-e distingue a proposta da reprodução. A primeira frente continua sendo 01–03,
-com reprodução dirigida de 34–38 e preparação do ensaio físico 04.
-
+[Texto para Claude](INICIO_CLAUDE_2_0.md) · [Continuidade](CONTINUIDADE.md) ·
+[Coordenação](COORDENACAO.md) · [Issue #1](https://github.com/jhsilvamenezes-netizen/schmidt-campo/issues/1).
 ## Anexo — campos técnicos a reconciliar
 
 Catálogo histórico de 35 entradas; nomes para localizar código e testes, não para expor todos na tela. Confirmar presença e significado na versão atual.

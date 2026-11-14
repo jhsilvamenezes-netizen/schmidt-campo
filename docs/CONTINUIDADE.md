@@ -19,11 +19,16 @@ A 1.35.0 r3 foi publicada após CI; merge
 conferência do endereço real, coleta sintética, backup e offline. Os trechos
 anteriores que falam em candidata são históricos.
 
-Próximo trabalho: [plano 2.0](PLANO_VERSAO_2_0.md), com 45 itens de trabalho, critérios,
-parâmetros e sequência, incluindo [revisão aprofundada](APROFUNDAMENTO_2_0_WEB.md). [Texto de início para Claude](INICIO_CLAUDE_2_0.md).
-Prioridade atual: link/site no navegador móvel; APK adiado e fora dos critérios
-da 2.0 web. Começar por inventário e medição (01–03), preparar ensaio físico (04).
-É planejamento: não houve nova alteração do app ou liberação Android.
+Próximo trabalho: [plano 2.0 revisto](PLANO_VERSAO_2_0.md) e
+[caderno espacial e visual](APROFUNDAMENTO_2_0_WEB.md).
+**Premissa atual do proprietário: exclusivamente direcionamento; a equipe não
+coleta nem marca dados.** Não desenvolver concluídos/produtividade/sincronização
+de coletas. Preservar dados legados por compatibilidade, sem apagá-los.
+Foco no link móvel; APK adiado. A numeração 01–45 foi redistribuída e substitui
+as tarefas anteriores centradas em coleta. Começar por 01–03, preparar roteiro
+04 e auditar 05–14 e 20/23; depois produzir projeções visuais de 28–35.
+[Texto atualizado para Claude](INICIO_CLAUDE_2_0.md).
+É planejamento, sem nova alteração do motor, interface ou site publicado.
 
 ## Evolução recente
 
