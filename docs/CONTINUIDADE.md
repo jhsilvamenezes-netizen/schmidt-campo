@@ -12,6 +12,15 @@ modelo de passagem. A Issue #1 continua sendo o backlog principal. Cada PR
 atualiza estes registros junto com a mudança. Não existe execução automática
 de uma sessão pela outra.
 
+## Correção candidata 1.35.1 — consulta do plano
+
+Consulta de ponto passa a acompanhar edição/reordenação/borda do cenário atual;
+ponto removido fecha a consulta. Ver [relatório](CORRECAO_CONSULTA_MEDIDAS_1_35_1.md).
+Uso atual definido pelo proprietário: direcionamento sem coleta/marcação pela
+equipe. Preservar legado. PR #13 contém plano espacial/visual; esta candidata
+não implementa a projeção visual nem altera o motor de distribuição.
+Conferir PR e Issue #1 antes de afirmar publicação.
+
 ## Evolução recente
 
 | Etapa | Entregue |
