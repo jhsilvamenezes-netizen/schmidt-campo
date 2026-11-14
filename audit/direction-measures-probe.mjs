@@ -41,7 +41,8 @@ try {
         tracks: sc.selected.map(t => ({ id: t.id, offsetM: t.offsetM, line: t.line })),
         allTracks: sc.allTracks.map(t => ({ id: t.id, offsetM: t.offsetM, line: t.line })),
         units: sc.units.map(u => ({ id: u.id, trackId: u.trackId, line: u.line, len: u.len })),
-        samples: sc.samples.map(p => ({ id: p.id, unitId: p.unitId, trackId: p.trackId, s: p.s, x: p.x, y: p.y, offTrack: !!p.offTrack })),
+        samples: sc.samples.map(p => ({ id: p.id, unitId: p.unitId, trackId: p.trackId, s: p.s, x: p.x, y: p.y, offTrack: !!p.offTrack,
+          lonLat: SCHMIDT.modulos.__m_engine_projection.localToLonLat(p.x, p.y, field.centroidUTM) })),
         rows: sc.trackRows.map(r => ({ trackId: r.trackId, gaps: r.gaps || [] })),
         card,
       };
@@ -59,7 +60,8 @@ try {
         const sc = engine.buildScenario(common, record.state.paramsByField[key]);
         return { key, centroidUTM: f.centroidUTM, bearing: sc.bearing,
           tracks: sc.selected.map(t => ({ id: t.id, offsetM: t.offsetM, line: t.line })),
-          samples: sc.samples.map(p => ({ id: p.id, unitId: p.unitId, s: p.s, x: p.x, y: p.y })),
+          samples: sc.samples.map(p => ({ id: p.id, unitId: p.unitId, s: p.s, x: p.x, y: p.y,
+            lonLat: SCHMIDT.modulos.__m_engine_projection.localToLonLat(p.x, p.y, f.centroidUTM) })), // GPX do bloco
           units: sc.units.map(u => ({ id: u.id, trackId: u.trackId, line: u.line })) };
       });
       out.push({ id: group.id, members, common: record.common });

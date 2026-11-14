@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "E1/E2 — referência e medidas de direcionamento",
+  "task": "E2 concluída; E4 — GPS e consulta",
   "owner": "Claude",
-  "status": "em_andamento",
-  "nextAction": "E2 item 23: medidas e exportação após editar o plano (IDs ida e volta); depois E4 GPS sintético (24–27)",
+  "status": "pronto_para_iniciar",
+  "nextAction": "E4 (24–27): casos sintéticos de GPS — fix inválido/velho não orienta; separar rumo do aparelho, curso e desvio lateral/avanço; seleção manual estável, sem marcar execução",
   "baseMain": "2e4e2be9a44310b847155bdef9d7b78b9865ccd0",
   "publishedVersion": "1.35.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -18,12 +18,17 @@
     {
       "command": "cd audit && node direction-measures-probe.mjs && python -I direction-measures.py",
       "result": "passou",
-      "evidence": "22 verificações (rumo 09, borda do bloco 13), 51 lotes e 40 grupos, erro 0 m; mutações detectadas. docs/E2_MEDIDAS_DIRECIONAMENTO.md"
+      "evidence": "24 verificações (rumo 09, borda 13, GPX ida e volta 23), 51 lotes e 40 grupos, erro ≤ 2e-9 m; mutações detectadas. docs/E2_MEDIDAS_DIRECIONAMENTO.md"
     },
     {
       "command": "PERF_REF=026d687 node audit/performance-browser.mjs",
       "result": "passou",
       "evidence": "1.35.1 × 1.34.1: abrir 185/210 ms × 191/231 (CPU×1), desenho 33 ms; sem regressão. docs/E1_REFERENCIA.md"
+    },
+    {
+      "command": "node audit/block-map-selection-browser.mjs",
+      "result": "passou",
+      "evidence": "Revisão da entrega anterior (PR #14): 5/5 verificações da consulta após editar o plano."
     }
   ],
   "blockers": [
@@ -40,15 +45,19 @@
     "Matriz de parâmetros é critério de validação/execução, não nova recomendação de valores nem funcionalidade implementada.",
     "Claude 14/11: E1 reproduz build e mede medidas; E2 confronta entre tiros, entre pontos e borda com GEOS/PROJ nos 51 lotes e 40 grupos (audit/direction-measures).",
     "E2 itens 10–14/20: sem erro reproduzido; distâncias são de grade UTM (−0,02–0,03% no terreno), documentado.",
-    "E2 item 09: rumo da planilha = norte verdadeiro; tiros retos na grade; variação da convergência no lote ≤0,006° (≤0,48 m); norte magnético não usado."
+    "E2 item 09: rumo da planilha = norte verdadeiro; tiros retos na grade; variação da convergência no lote ≤0,006° (≤0,48 m); norte magnético não usado.",
+    "E2 concluída sem defeito reproduzido em 09–14, 20, 23; nenhuma mudança no app foi necessária."
   ],
   "snapshot": {
-    "at": "2026-11-14T14:29:09.986Z",
+    "at": "2026-11-14T14:31:36.722Z",
     "branch": "claude/e2-medidas",
-    "codeCommit": "7da35d3e1833993cbc57cdb81824cf867b8cc39a",
+    "codeCommit": "8feb86929601b1729c46a10d4c3303afb21d7e73",
     "changedTrackedFiles": [
-      "audit/performance-browser.mjs"
+      "audit/direction-measures-evidence.json",
+      "audit/direction-measures-probe.mjs",
+      "audit/direction-measures.py",
+      "docs/E2_MEDIDAS_DIRECIONAMENTO.md"
     ],
-    "untrackedCount": 2
+    "untrackedCount": 0
   }
 }

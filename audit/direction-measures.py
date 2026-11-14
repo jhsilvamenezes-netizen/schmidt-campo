@@ -10,6 +10,7 @@ da projeção, medido em "projecao" com pyproj.
 Tolerâncias e origem:
 - GEOM_TOL = 1e-6 m: erro numérico de ponto flutuante em coordenadas locais (dezenas de km no máximo).
   Qualquer diferença acima disso é diferença de método, não de arredondamento.
+- GPX_TOL = 1 mm: ida e volta lon/lat do app → UTM pelo PROJ.
 - Texto da tela: o cartão mostra metros inteiros; a conferência compara com o valor arredondado.
 Nada aqui homologa limite legal, área oficial ou acesso físico entre lotes.
 """
@@ -26,6 +27,8 @@ from shapely.geometry import LineString, MultiPolygon, Point, Polygon
 
 ROOT = Path(__file__).resolve().parent.parent
 GEOM_TOL = 1e-6
+# GPX: 1 mm. Fórmulas de projeção diferentes (app × PROJ) concordam bem abaixo disso; acima é erro de método.
+GPX_TOL = 1e-3
 data = json.loads((ROOT / 'audit/results/direction-measures-private.json').read_text())
 
 
@@ -86,6 +89,7 @@ def check(name, error, where, tol=GEOM_TOL):
 
 utm = pyproj.CRS.from_epsg(32723)
 to_ll = pyproj.Transformer.from_crs(utm, 4326, always_xy=True)
+to_utm = pyproj.Transformer.from_crs(4326, utm, always_xy=True)
 proj = pyproj.Proj(utm)
 scale_factors = []
 
@@ -160,6 +164,9 @@ for key, f in data['fields'].items():
         xy = (round(p['x'], 6), round(p['y'], 6))
         check('pontos.semDuplicacao', 1.0 if xy in seen else 0.0, f'{code} {p["id"]}', tol=0.5)
         seen.add(xy)
+        if p.get('lonLat'):  # GPX: lon/lat do app (localToLonLat) devolvido à grade pelo PROJ
+            ex, ey = to_utm.transform(*p['lonLat'])
+            check('exportacao.gpxIdaEVolta', math.hypot(ex - f['centroidUTM'][0] - p['x'], ey - f['centroidUTM'][1] - p['y']), f'{code} {p["id"]}', tol=GPX_TOL)
         if p['offTrack'] or p['unitId'] not in units:
             continue
         line = LineString(units[p['unitId']]['line'])
@@ -212,6 +219,10 @@ for blk in data['blocks']:
         for p in m['samples']:
             pt = Point(p['x'], p['y'])
             check('bloco.pontosDentroDoLote', 0.0 if poly.covers(pt) else poly.distance(pt), f'{blk["id"]} {p["id"]}')
+            if p.get('lonLat'):
+                ex, ey = to_utm.transform(*p['lonLat'])
+                cx, cy = m['centroidUTM']
+                check('bloco.gpxIdaEVolta', math.hypot(ex - cx - p['x'], ey - cy - p['y']), f'{blk["id"]} {p["id"]}', tol=GPX_TOL)
             if 'appBorderM' in p:  # "Até a borda mais próxima" do ponto escolhido no mapa do bloco
                 check('bloco.bordaDoPonto', abs(poly.boundary.distance(pt) - p['appBorderM']), f'{blk["id"]} {p["id"]}')
     if all('appBorderM' in m for m in blk['members']):  # "Ponto mais perto da borda" do painel do bloco

@@ -21,6 +21,7 @@ código 1 se qualquer verificação passar da tolerância.
 | CRS | EPSG:32723 (WGS 84 / UTM 23S). Coordenadas do app = UTM − centroide do lote, em metros |
 | Distâncias | De **grade** UTM. No terreno: fator de escala 0,999726–0,999778 nos 51 lotes, ou seja 0,10–0,12 m a menos em 438 m (0,02–0,03%). Irrelevante para direcionamento a pé; registrado para não ser confundido com erro |
 | Tolerância geométrica | 1e-6 m: ruído de ponto flutuante em coordenadas locais. Acima disso é diferença de método |
+| Tolerância de exportação | 1 mm: o app e o PROJ usam fórmulas diferentes para lon/lat; concordam muito abaixo disso |
 | Tela | O cartão mostra metros inteiros; comparado com o cálculo arredondado |
 
 ## Resultado
@@ -42,6 +43,7 @@ código 1 se qualquer verificação passar da tolerância.
 | Bloco: "Até a borda mais próxima" do ponto escolhido (13) | 1.535 pontos | 0 m |
 | Bloco: "Ponto mais perto da borda" do painel (13) | 40 grupos | 0 m |
 | Bloco: tiros vizinhos sempre a 1× o espaçamento comum (o cartão não esconde salto) | 323 pares | 0 |
+| Exportação: lon/lat de cada ponto (GPX/GeoJSON/CSV) devolvido à grade pelo PROJ (23) | 749 pontos de lote + 1.535 de bloco | 0,000000002 m |
 | Rumo: correção do lote = −convergência meridiana do PROJ (09) | 51 lotes | 0,00008° |
 | Rumo: azimute de grade dos tiros = rumo + correção (09) | 51 lotes | 0° |
 
@@ -74,6 +76,7 @@ dão o mesmo número. Unificar evita que divirjam numa mudança futura.
 
 ## Conclusão e limites
 
-Nenhum erro de medida foi reproduzido nos itens 09–14 e 20. Não foi conferido aqui:
-exportações após edição manual (23) e GPS (24–27). Verificação matemática não
+Nenhum erro de medida foi reproduzido nos itens 09–14, 20 e 23. A consulta após editar
+o plano já tinha sido corrigida na 1.35.1 (PR #14); o teste `audit/block-map-selection-browser.mjs`
+foi reexecutado e passou nas 5 verificações. Não foi conferido aqui: GPS (24–27, etapa E4). Verificação matemática não
 homologa divisa legal, área oficial nem acesso físico entre lotes.

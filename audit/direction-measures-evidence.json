@@ -25,6 +25,11 @@
    "maxErrorM": 0.0,
    "failures": 0
   },
+  "bloco.gpxIdaEVolta": {
+   "cases": 1535,
+   "maxErrorM": 2e-09,
+   "failures": 0
+  },
   "bloco.grade": {
    "cases": 147,
    "maxErrorM": 0.0,
@@ -64,6 +69,11 @@
   "entreTiros.perpendicular": {
    "cases": 157,
    "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "exportacao.gpxIdaEVolta": {
+   "cases": 749,
+   "maxErrorM": 2e-09,
    "failures": 0
   },
   "pontos.dentroDoLote": {
