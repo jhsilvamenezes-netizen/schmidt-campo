@@ -1,0 +1,31 @@
+{
+  "version": "1.34.1",
+  "baseCommit": "d8b64e26680490660b591fd420452574497049e7",
+  "groupsTested": 40,
+  "errors": [],
+  "physicalPhoneTested": false,
+  "published": false,
+  "checks": [
+    "pinch-anchor",
+    "one-finger-after-pinch",
+    "no-accidental-selection",
+    "same-tracks-and-points",
+    "same-storage",
+    "wheel",
+    "fit",
+    "measurements-retained",
+    "cancel-and-restart",
+    "touch-selection",
+    "portrait-landscape-tablet"
+  ],
+  "regressions": {
+    "contractsAndBlocks": 87,
+    "framingWidths": [
+      360,
+      390,
+      768,
+      1280
+    ],
+    "saveOnExitScenarios": 3
+  }
+}

@@ -132,3 +132,11 @@ quebra. [Relatório](REVISAO_1_33_0.md).
 
 "Entrada" nunca coberta por ponto (eram 56 de 208 tiros) e distância sobre
 ponto oculta. [Relatório](REVISAO_1_34_0.md).
+
+## 1.34.1 — candidata de gestos, sem publicação
+
+Pinça e arraste contínuo no mapa conjunto, roda/trackpad ancorados no cursor e
+cancelamento seguro da interação. Preserva o refino da 1.34.0, planos, métodos
+e registros. Teste de gestos dos 40 grupos incluído na esteira de blocos.
+Relatório: [CORRECAO_GESTOS_1_34_1.md](CORRECAO_GESTOS_1_34_1.md).
+APK não recompilado nem distribuído nesta revisão.

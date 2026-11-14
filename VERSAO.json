@@ -1,11 +1,11 @@
 {
-  "entrega": "1.34.0",
+  "entrega": "1.34.1",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-13",
-  "versaoDoApp": "1.34.0",
+  "versaoDoApp": "1.34.1",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "e22bf92bdb4aa71575cddfefc929297fa11bb7693da037c2580a45b6ac9fa0db",
-  "workerSha256": "4c4046fb2532a5b668580182ce2141e2123bdb536b118e331b1a1492354a556c",
+  "htmlSha256": "ad792b8dc0e453612d21d0978d8a0b87f4e2387dc706cb15b0cc134ece57662e",
+  "workerSha256": "c0d4a99b80cc8431fb46a1522c6ccf00460d6e7e1664dc12175b5c3d8c0b8082",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -20,7 +20,8 @@
     "alteração feita logo antes de fechar, recarregar ou trocar de página volta a ficar gravada (a sessão só perde a permissão depois de o aplicativo gravar o pendente)",
     "mapa do bloco revisado: cores do tema (Sol incluído), número dentro do ponto quando cabe, letras de 12 px ou mais, botões de 44 px e do padrão; tela não salta ao abrir",
     "mapa do bloco ocupa a área disponível no tablet e no notebook (número em todos os pontos); topo do celular em uma linha no modo bloco e no guia",
-    "mapa do guia: rótulo \"Entrada\" nunca coberto por ponto e distância sobre ponto oculta (208 tiros medidos)"
+    "mapa do guia: rótulo \"Entrada\" nunca coberto por ponto e distância sobre ponto oculta (208 tiros medidos)",
+    "pinça, arraste contínuo e zoom ancorado no mapa conjunto; preservação dos planos e medidas"
   ],
   "somenteEstudoSemIntegracao": [
     "recuo mínimo obrigatório por divisa",
@@ -34,5 +35,5 @@
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
   "runtimeBlocks": true,
-  "statusEntrega": "versão web 1.34.0; APK sem distribuição"
+  "statusEntrega": "candidata web 1.34.1; sem publicação nesta revisão"
 }
