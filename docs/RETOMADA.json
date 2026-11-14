@@ -1,0 +1,48 @@
+{
+  "schema": "schmidt.handoff.v1",
+  "task": "E1 — referência reproduzível e diagnóstico",
+  "owner": "Disponível para a próxima sessão do Claude",
+  "status": "pronto_para_iniciar",
+  "nextAction": "Ler EXECUCAO_2_0.md; conferir main/PRs; criar branch própria a partir do main vigente levando o protocolo de retomada. Reproduzir build 1.35.1 e consulta de medidas; mapear fronteiras motor/câmera/GPS/legado; comparar abertura/desenho contra a versão anterior e escolher a primeira melhoria interna comprovada. Publicar checkpoint ao iniciar e após cada unidade, sem esperar terminar E1.",
+  "baseMain": "2e4e2be9a44310b847155bdef9d7b78b9865ccd0",
+  "publishedVersion": "1.35.1",
+  "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
+  "latestDeliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/14",
+  "scope": "Direcionamento exclusivo no link móvel, sem coleta/marcação pela equipe. APK adiado.",
+  "tests": [
+    {
+      "command": "node audit/checkpoint.test.mjs",
+      "result": "passou",
+      "evidence": "Teste em repositório temporário: preservação de HEAD, índice, arquivos, rejeição de estado inválido e retomada de campos."
+    },
+    {
+      "command": "node scripts/build-preserved.mjs --check",
+      "result": "passou",
+      "evidence": "Build herdado do main 1.35.1 permaneceu idêntico nesta preparação."
+    },
+    {
+      "command": "E1: benchmark e auditoria espacial novos",
+      "result": "nao_executado",
+      "evidence": "Próxima sessão; não confundir com CI já aprovada da 1.35.1."
+    }
+  ],
+  "blockers": [
+    "Teste físico depende de aparelhos da equipe; preparar roteiro e continuar trabalho interno independente.",
+    "Fonte geradora original completa ainda não recuperada; preservar integração e extrair por trecho com paridade."
+  ],
+  "decisions": [
+    "1.35.1 já entregue; não refazer correção #14.",
+    "Método linear sem anéis, barra 36,48 m, P6 atual, 51 lotes/40 grupos.",
+    "Plano padrão e Satélite opcional; não derivar divisa da fotografia nem impor recuo obrigatório.",
+    "PR #13 é planejamento/protocolo; 2.0 e projeção visual ainda não implementadas.",
+    "Mockup não é oráculo de geometria; gerar projeção determinística com dados reais e conferir escopo visual antes de implementar.",
+    "Último checkpoint enviado é recuperável; uma sessão nova não recebe automaticamente arquivos não publicados nem a conversa da outra IA."
+  ],
+  "snapshot": {
+    "at": "2026-11-14T13:46:45.172Z",
+    "branch": "codex/plano-versao-2-0",
+    "codeCommit": "daeb12c8ca361351c1366f9cc7186fbf1c7f91b3",
+    "changedTrackedFiles": [],
+    "untrackedCount": 0
+  }
+}
