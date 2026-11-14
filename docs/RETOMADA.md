@@ -6,12 +6,12 @@ Gerado por scripts/checkpoint.mjs; registro não executa nem certifica testes.
 - Responsável: Claude
 - Estado: em_andamento
 - Branch: claude/e2-medidas
-- Commit de código observado: 76bbdbb1ace9ba2eb3aef95e10126275346d48b9
-- Registro UTC: 2026-11-14T14:21:09.556Z
+- Commit de código observado: 0003bf8d9636a49be9ad3e1dc69a10110b28f11b
+- Registro UTC: 2026-11-14T14:25:39.189Z
 
 ## Próxima ação
 
-Conferir rumo/norte de grade (09) e distância à borda por ponto no mapa do bloco; depois GPS sintético (24–27) e exportação após edição (23)
+Distância à borda por ponto no mapa do bloco vs GEOS; E1 tempos de abertura/desenho (mediana/p95); exportação após edição (23)
 
 ## Testes declarados pela sessão
 

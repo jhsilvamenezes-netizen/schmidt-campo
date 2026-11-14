@@ -96,6 +96,23 @@
    "maxErrorM": 0.0,
    "failures": 0
   },
+  "rumo.azimuteDeGradeDosTiros": {
+   "cases": 51,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "rumo.correcaoIgualMenosConvergenciaGraus": {
+   "cases": 51,
+   "maxErrorM": 7.6515e-05,
+   "failures": 0
+  },
+  "rumo.variacaoDentroDoLote": {
+   "cases": 51,
+   "maxErrorM": 0.0,
+   "failures": 0,
+   "maxGraus": 0.006033959,
+   "efeitoLateralMaxM": 0.479669584
+  },
   "tela.entreTiros": {
    "cases": 51,
    "maxErrorM": 0.0,

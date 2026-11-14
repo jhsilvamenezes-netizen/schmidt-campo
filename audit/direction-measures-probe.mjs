@@ -37,6 +37,7 @@ try {
         label: c.querySelector('span')?.textContent.trim(), value: c.querySelector('strong')?.textContent.trim() }));
       return {
         geom: field.geom, centroidUTM: field.centroidUTM, bearing: sc.bearing,
+        bearingInput: field.bearing, gridCorrection: field.bearingGridCorrection ?? null,
         tracks: sc.selected.map(t => ({ id: t.id, offsetM: t.offsetM, line: t.line })),
         allTracks: sc.allTracks.map(t => ({ id: t.id, offsetM: t.offsetM, line: t.line })),
         units: sc.units.map(u => ({ id: u.id, trackId: u.trackId, line: u.line, len: u.len })),

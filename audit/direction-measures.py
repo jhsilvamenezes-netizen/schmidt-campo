@@ -99,6 +99,25 @@ for key, f in data['fields'].items():
     k = proj.get_factors(lon, lat).meridional_scale
     scale_factors.append(k)
 
+    # 0) Rumo (item 09): rumo da planilha = norte verdadeiro; o app gira para a grade UTM com a correção do lote.
+    #    Convenção PROJ: azimute verdadeiro = azimute de grade + convergência ⇒ correção esperada = −convergência.
+    if f.get('gridCorrection') is not None and f['tracks']:
+        conv = proj.get_factors(lon, lat).meridian_convergence
+        check('rumo.correcaoIgualMenosConvergenciaGraus', abs(f['gridCorrection'] + conv), code, tol=1e-4)
+        (x0, y0), (x1, y1) = f['tracks'][0]['line'][0], f['tracks'][0]['line'][-1]
+        gaz = math.degrees(math.atan2(x1 - x0, y1 - y0)) % 180
+        diff = (gaz - (f['bearing'] + f['gridCorrection'])) % 180
+        check('rumo.azimuteDeGradeDosTiros', min(diff, 180 - diff), code, tol=1e-9)
+        # A correção é calculada no centroide; nos vértices a convergência muda um pouco.
+        cx, cy = f['centroidUTM']
+        dconv = max(abs(proj.get_factors(*to_ll.transform(x + cx, y + cy)).meridian_convergence - conv)
+                    for ring in f['geom'] for x, y in ring[0])
+        longest = max((u['len'] for u in f['units']), default=0)
+        row = c['rumo.variacaoDentroDoLote']
+        row['cases'] += 1
+        row['maxGraus'] = max(row.get('maxGraus', 0.0), dconv)
+        row['efeitoLateralMaxM'] = max(row.get('efeitoLateralMaxM', 0.0), math.sin(math.radians(dconv)) * longest)
+
     # 1) Entre tiros: diferença de deslocamento (app) × distância perpendicular entre as retas (independente).
     tracks = sorted(f['tracks'], key=lambda t: t['offsetM'])
     for a, b in zip(tracks, tracks[1:]):
