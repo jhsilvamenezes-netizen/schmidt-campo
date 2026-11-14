@@ -2,7 +2,7 @@
 
 Base: 2.0.0, main `2455c19d4a3cc3d5d65f028a7e6b708902290de3`.
 Autorização: após a revisão #18, o proprietário pediu corrigir e entregar o link
-atualizado. Publicação somente depois dos testes e CI do PR.
+atualizado. Publicada pelo PR #19 após testes e CI aprovado; Pages conferido.
 
 ## O que muda
 

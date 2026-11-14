@@ -1,13 +1,13 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "Correções 2.0.1: validação e entrega web autorizada",
-  "owner": "Codex",
-  "status": "em_andamento",
-  "nextAction": "Conferir CI da revisão adicional (retorno ao próprio ponto com GPS menos preciso), depois integrar PR #19 autorizado, verificar Pages e registrar entrega. Primeira rodada de CI aprovada em 00329c4.",
-  "baseMain": "2455c19d4a3cc3d5d65f028a7e6b708902290de3",
-  "publishedVersion": "2.0.0",
+  "task": "2.0.1 web corrigida, publicada e verificada",
+  "owner": "Codex — entrega concluída",
+  "status": "pronto_para_iniciar",
+  "nextAction": "Conferir main e docs/CORRECOES_2_0_1.md. Próxima frente: projetar comparação de ajustes em bloco (F4) preservando grade comum e aplicar/desfazer todos os membros; separar funções legadas do direcionamento (F3) com comparação visual. Não refazer F1/F2/F5. E5/E6 gerais e teste físico ainda abertos.",
+  "baseMain": "705a80988220f10984d770c4fba3c6b9a59eaef8",
+  "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
-  "latestDeliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/17",
+  "latestDeliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",
   "scope": "Direcionamento exclusivo no link móvel, sem coleta/marcação pela equipe. APK adiado.",
   "tests": [
     {
@@ -23,7 +23,17 @@
     {
       "command": "Contratos/blocos, GPS 51 lotes, runtime/enquadramento 40 grupos, GEOS/PROJ",
       "result": "passou",
-      "evidence": "Rodada local final aprovada; 62 execuções de módulos/blocos; 51 lotes; GEOS/PROJ; CI da revisão adicional pendente."
+      "evidence": "Rodada local final aprovada; 62 execuções de módulos/blocos; 51 lotes; GEOS/PROJ; CI da revisão adicional concluído e aprovado, conforme registro abaixo."
+    },
+    {
+      "command": "CI PR #19 (auditoria e blocos)",
+      "result": "passou",
+      "evidence": "Runs 43637233419 e 43637233431 no commit 351d2e7427db5700086c80d5c7a78ef8607d5110."
+    },
+    {
+      "command": "Smoke no Pages público",
+      "result": "passou",
+      "evidence": "HTML idêntico ao testado; bloco de três lotes, medidas, zoom, offline e GPS vencido/chegada conferidos."
     }
   ],
   "blockers": [
@@ -34,24 +44,22 @@
     "Direcionamento pelo link móvel, sem coleta pela equipe; APK adiado.",
     "Método linear sem anéis, barra 36,48 m, P6 atual, 51 lotes e 40 grupos.",
     "2.0.0 publicada no PR #17. #18 é revisão, sem correções de runtime.",
-    "2.0.1 autorizada pelo proprietário após revisão; branch codex/correcao-2-0-1.",
-    "F1/F2 corrigidos na candidata; F3 texto de chegada corrigido, separação do legado pendente; F4 pendente.",
+    "2.0.1 publicada no PR #19 após autorização; mesma URL, sem APK.",
+    "F1/F2 publicados na 2.0.1; F3 texto de chegada corrigido, separação do legado pendente; F4 pendente.",
     "E1/E2 e parte de E3/E4 entregues; E5/E6 gerais e piloto físico não concluídos.",
     "Conferir GitHub e diff; uma sessão não recebe automaticamente o chat da outra."
   ],
   "snapshot": {
-    "at": "2026-11-14T20:22:45.659Z",
-    "branch": "codex/correcao-2-0-1",
-    "codeCommit": "fad4f40eabf2287928b7ca05e66b6c31a40cdf33",
+    "at": "2026-11-14T20:36:02.505Z",
+    "branch": "codex/entrega-2-0-1",
+    "codeCommit": "705a80988220f10984d770c4fba3c6b9a59eaef8",
     "changedTrackedFiles": [
+      "README.md",
       "VERSAO.json",
-      "audit/direction-measures-evidence.json",
       "audit/fix-2-0-1-evidence.json",
-      "audit/guide-next.test.mjs",
       "docs/CORRECOES_2_0_1.md",
-      "index.html",
-      "src/gps/guide-next.mjs",
-      "sw.js"
+      "docs/EXECUCAO_2_0.md",
+      "docs/VERSOES_E_ENTREGAS.md"
     ],
     "untrackedCount": 1
   },

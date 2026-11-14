@@ -46,5 +46,5 @@
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
   "runtimeBlocks": true,
-  "statusEntrega": "2.0.1 candidata; correções e publicação web autorizadas pelo proprietário; aguardando validação"
+  "statusEntrega": "web 2.0.1 publicada e conferida após CI do PR #19; APK não distribuído"
 }
