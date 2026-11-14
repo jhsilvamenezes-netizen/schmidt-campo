@@ -35,7 +35,15 @@ implementa a próxima tarefa. A revisão não precisa concordar com a proposta:
 divergências viram hipóteses comparáveis e testes, não reescritas por preferência.
 Não ampliar uma alteração de câmera para cálculo de pontos ou redesenho geral.
 
-## Próxima fila, a partir da revisão de 13/11/2026
+## Fila atual — preparação da 2.0
+
+Referência 1.35.0 r3, main `a3c0a60ac34d1b01e31d0491fdb2f6626146f31b`.
+Gestos (#11), satélite opcional (#12) e protocolo (#10) já integrados.
+O [plano 2.0](PLANO_VERSAO_2_0.md) passa a ordenar as próximas tarefas.
+Começar por 01–03 e preparar o ensaio físico 04. A fila abaixo é histórica;
+revisar os itens de medidas/rótulos pelos critérios atuais, sem repetir correções entregues.
+
+## Fila histórica, a partir da revisão de 13/11/2026
 
 Referência: main `d8b64e26680490660b591fd420452574497049e7`, versão 1.34.0.
 Conferir novamente antes de iniciar; esta tabela não é uma trava automática.

@@ -71,3 +71,8 @@ não significam que a mudança já está no site ou no APK.
 Para alternar entre Codex e Claude, use o [protocolo compartilhado](docs/COORDENACAO.md)
 e o [estado do projeto](docs/CONTINUIDADE.md). Cada entrega deixa no PR os commits,
 testes, pendências e a próxima ação.
+
+## Próxima evolução
+
+[Plano da versão 2.0](docs/PLANO_VERSAO_2_0.md): prioridades, 33 tarefas, parâmetros e critérios de entrega.
+[Mensagem para iniciar com Claude](docs/INICIO_CLAUDE_2_0.md). Plano proposto; não representa nova versão publicada.

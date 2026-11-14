@@ -12,6 +12,18 @@ modelo de passagem. A Issue #1 continua sendo o backlog principal. Cada PR
 atualiza estes registros junto com a mudança. Não existe execução automática
 de uma sessão pela outra.
 
+## Próxima evolução — plano 2.0 (14/11/2026)
+
+A 1.35.0 r3 foi publicada após CI; merge
+`a3c0a60ac34d1b01e31d0491fdb2f6626146f31b`. Issue #1 e PR #12 registram
+conferência do endereço real, coleta sintética, backup e offline. Os trechos
+anteriores que falam em candidata são históricos.
+
+Próximo trabalho: [plano 2.0](PLANO_VERSAO_2_0.md), com 33 tarefas, critérios,
+parâmetros e sequência. [Texto de início para Claude](INICIO_CLAUDE_2_0.md).
+Começar por inventário e medição (01–03), preparar ensaio físico (04).
+É planejamento: não houve nova alteração do app ou liberação Android.
+
 ## Evolução recente
 
 | Etapa | Entregue |
