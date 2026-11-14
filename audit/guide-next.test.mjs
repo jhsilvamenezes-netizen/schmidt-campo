@@ -79,3 +79,14 @@ test('histerese com geometria curva, sentido invertido e partes separadas', () =
   const state = {}, at = x => schmidtGuideNextPoint(split,{x,y:0,accuracyM:4},new Set(),params,state).id;
   assert.equal(at(90),'A');assert.equal(at(151),'A');assert.equal(at(160),'B');assert.equal(at(250),'B');
 });
+
+
+test('retomar o próprio ponto com precisão regular e raio pequeno não fica preso no seguinte', () => {
+  for (const radius of [5,10,20]) {
+    const state = {}, settings = {arrivalRadiusM:radius,gpsAccuracyMaxM:25};
+    const at = x => schmidtGuideNextPoint(route,{x,y:0,accuracyM:25},new Set(),settings,state).id;
+    assert.equal(at(258),'P1');
+    assert.equal(at(258+radius+15),'P2');
+    assert.equal(at(258),'P1');
+  }
+});

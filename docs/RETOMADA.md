@@ -6,12 +6,12 @@ Gerado por scripts/checkpoint.mjs; registro não executa nem certifica testes.
 - Responsável: Codex
 - Estado: em_andamento
 - Branch: codex/correcao-2-0-1
-- Commit de código observado: 2455c19d4a3cc3d5d65f028a7e6b708902290de3
-- Registro UTC: 2026-11-14T16:25:14.083Z
+- Commit de código observado: fad4f40eabf2287928b7ca05e66b6c31a40cdf33
+- Registro UTC: 2026-11-14T20:22:45.659Z
 
 ## Próxima ação
 
-Conferir os testes finais e CI do PR; publicar a candidata autorizada somente após todos os gates passarem; verificar o link real e registrar entrega.
+Conferir CI da revisão adicional (retorno ao próprio ponto com GPS menos preciso), depois integrar PR #19 autorizado, verificar Pages e registrar entrega. Primeira rodada de CI aprovada em 00329c4.
 
 ## Testes declarados pela sessão
 
@@ -21,6 +21,6 @@ Conferir os testes finais e CI do PR; publicar a candidata autorizada somente ap
 
 ## Recuperação
 
-Leia RETOMADA.json para detalhes, bloqueios e decisões. O commit acima antecede o commit deste checkpoint. Arquivos alterados listados não foram publicados por este comando. Arquivos não rastreados: 4.
+Leia RETOMADA.json para detalhes, bloqueios e decisões. O commit acima antecede o commit deste checkpoint. Arquivos alterados listados não foram publicados por este comando. Arquivos não rastreados: 1.
 
 Somente commit enviado ao GitHub fica disponível para outra sessão. Conferir branch/PR e diff, não apenas este registro. Não existe troca automática de IA.

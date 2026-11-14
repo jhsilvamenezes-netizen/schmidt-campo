@@ -3,7 +3,7 @@
   "task": "Correções 2.0.1: validação e entrega web autorizada",
   "owner": "Codex",
   "status": "em_andamento",
-  "nextAction": "Conferir os testes finais e CI do PR; publicar a candidata autorizada somente após todos os gates passarem; verificar o link real e registrar entrega.",
+  "nextAction": "Conferir CI da revisão adicional (retorno ao próprio ponto com GPS menos preciso), depois integrar PR #19 autorizado, verificar Pages e registrar entrega. Primeira rodada de CI aprovada em 00329c4.",
   "baseMain": "2455c19d4a3cc3d5d65f028a7e6b708902290de3",
   "publishedVersion": "2.0.0",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -23,7 +23,7 @@
     {
       "command": "Contratos/blocos, GPS 51 lotes, runtime/enquadramento 40 grupos, GEOS/PROJ",
       "result": "passou",
-      "evidence": "audit/fix-2-0-1-evidence.json; CI ainda pendente."
+      "evidence": "Rodada local final aprovada; 62 execuções de módulos/blocos; 51 lotes; GEOS/PROJ; CI da revisão adicional pendente."
     }
   ],
   "blockers": [
@@ -40,25 +40,20 @@
     "Conferir GitHub e diff; uma sessão não recebe automaticamente o chat da outra."
   ],
   "snapshot": {
-    "at": "2026-11-14T16:25:14.083Z",
+    "at": "2026-11-14T20:22:45.659Z",
     "branch": "codex/correcao-2-0-1",
-    "codeCommit": "2455c19d4a3cc3d5d65f028a7e6b708902290de3",
+    "codeCommit": "fad4f40eabf2287928b7ca05e66b6c31a40cdf33",
     "changedTrackedFiles": [
-      ".github/workflows/blocos-candidata.yml",
-      "AGENTS.md",
-      "README.md",
       "VERSAO.json",
-      "audit/block-candidate.json",
       "audit/direction-measures-evidence.json",
-      "audit/gps-guidance-browser.mjs",
+      "audit/fix-2-0-1-evidence.json",
       "audit/guide-next.test.mjs",
-      "docs/EXECUCAO_2_0.md",
-      "docs/VERSOES_E_ENTREGAS.md",
+      "docs/CORRECOES_2_0_1.md",
       "index.html",
-      "scripts/build-preserved.mjs",
       "src/gps/guide-next.mjs",
       "sw.js"
     ],
-    "untrackedCount": 4
-  }
+    "untrackedCount": 1
+  },
+  "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19"
 }

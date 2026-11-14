@@ -56,8 +56,9 @@ export function schmidtGuideNextPoint(route, pos, collected, params, state) {
   if (!usable) return previous ?? legacy; // Fix impreciso/antigo não avança a sessão.
   if (previous && previous.id !== next.id) {
     // Faixa de retenção em metros: o raio de chegada não é aumentado.
+    // No máximo metade do raio: retornar ao próprio ponto sempre permite retomá-lo.
     // Depois de avançar, voltar exige cruzar a outra borda dessa faixa.
-    const margin = Math.max(3, Math.min(10, pos.accuracyM));
+    const margin = Math.min(radius / 2, Math.max(3, Math.min(10, pos.accuracyM)));
     const prevIndex = pending.indexOf(previous), nextIndex = pending.indexOf(next);
     const boundary = nextIndex > prevIndex ? previous : next;
     if (here.index === boundary.partIndex && Number.isFinite(boundary.fromEntryM)) {

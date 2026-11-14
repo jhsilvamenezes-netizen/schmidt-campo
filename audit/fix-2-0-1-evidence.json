@@ -1,13 +1,13 @@
 {
   "version": "2.0.1",
   "baseMain": "2455c19d4a3cc3d5d65f028a7e6b708902290de3",
-  "htmlSha256": "b7719f9dd324f40a4014d57f771e47d2c7f8f1895146557446d46bd8d65eee67",
-  "workerSha256": "831de44051f3c53aa52b802ebc6704f72b7d82a2cbe2b9994e874d641c7fb8f4",
+  "htmlSha256": "e81dc12929510186b39089efc3bda7493d7d98d237cd1d488985439e6b907848",
+  "workerSha256": "2d559c4db68b92123f1645df482a916220d8f4632a466d47a3395bf2965438b7",
   "physicalDevice": false,
   "contracts": {
     "passed": 55
   },
-  "blocksUnitExecutions": 61,
+  "blocksUnitExecutions": 62,
   "gps": {
     "lots": 51,
     "steps": 182,
@@ -154,8 +154,8 @@
     "reference": "2455c19d4a3cc3d5d65f028a7e6b708902290de3",
     "fromVersion": "2.0.0",
     "toVersion": "2.0.1",
-    "htmlSha256": "b7719f9dd324f40a4014d57f771e47d2c7f8f1895146557446d46bd8d65eee67",
-    "workerSha256": "831de44051f3c53aa52b802ebc6704f72b7d82a2cbe2b9994e874d641c7fb8f4",
+    "htmlSha256": "e81dc12929510186b39089efc3bda7493d7d98d237cd1d488985439e6b907848",
+    "workerSha256": "2d559c4db68b92123f1645df482a916220d8f4632a466d47a3395bf2965438b7",
     "browser": "141.0.7390.37",
     "checks": [
       "HTML antigo sob worker novo é recusado; cache e cliente anteriores permanecem",
@@ -194,5 +194,17 @@
     "F3: separate legacy controls/data from direction mode",
     "F4: comparison and application of block adjustments",
     "physical field validation and E5/E6 overall"
-  ]
+  ],
+  "blockGestures": {
+    "groups": 40,
+    "errors": []
+  },
+  "previousRevisionCI": {
+    "commit": "00329c4b00145d407c5c3c96e01d8c6c9765db8a",
+    "passed": [
+      43636092939,
+      43636092991
+    ]
+  },
+  "additionalCheck": "Retorno ao próprio ponto com precisão de 25 m e raios 5/10/20 m; histerese limitada à metade do raio."
 }

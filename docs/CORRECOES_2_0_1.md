@@ -12,7 +12,8 @@ atualizado. Publicação somente depois dos testes e CI do PR.
   “GPS bom” deixa de aparecer nesse estado. Uma nova posição válida retoma o guia.
   A seleção de tiro também deixa de usar distâncias/marcador de uma posição antiga.
 - **F2 — oscilação de alvo:** memória temporária da sessão mantém o ponto em uma
-  faixa de histerese de 3 a 10 m, conforme a precisão informada pelo GPS. Para
+  faixa de histerese conforme a precisão informada pelo GPS, limitada a 10 m e
+  à metade do raio de chegada para permitir retornar ao próprio ponto. Para
   precisão de 4 m, o ensaio de 9,5/10,5 m após o ponto conserva o alvo; avançar
   16 m seleciona o próximo; voltar 5 m permite retornar ao anterior. Isso não
   aumenta o raio de chegada e não marca execução. O alerta de chegada não se
