@@ -82,3 +82,5 @@ APK adiado. Novas alterações visuais exigem comparação e conferir a aprovaç
 aplicável. A nova sessão recebe os mesmos limites, decisões e evidências.
 
 Guia para evitar perda por limite: [CONTINUIDADE_SEM_PERDER_TRABALHO.md](CONTINUIDADE_SEM_PERDER_TRABALHO.md).
+
+[Matriz por parâmetro](MATRIZ_PARAMETROS_2_0.md): 35 campos do catálogo, estruturais e contextos, com cálculo/validação, apresentação e prova.

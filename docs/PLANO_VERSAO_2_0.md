@@ -179,3 +179,5 @@ Incluir também campos estruturais como `selectionIds`, `optimizer.allowCountMov
 
 [Oito entregas e critérios extras](EXECUCAO_2_0.md). [Registro vigente](RETOMADA.md).
 [Como salvar progresso e trocar de IA](CONTINUIDADE_SEM_PERDER_TRABALHO.md).
+
+[Matriz por parâmetro](MATRIZ_PARAMETROS_2_0.md): 35 campos do catálogo, estruturais e contextos, com cálculo/validação, apresentação e prova.

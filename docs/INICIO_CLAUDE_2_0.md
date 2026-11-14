@@ -1,7 +1,8 @@
 # Mensagem para iniciar a próxima sessão do Claude
 
 > Retome primeiro docs/RETOMADA.md e docs/RETOMADA.json na branch/PR ativa.
-> Leia docs/EXECUCAO_2_0.md e docs/CONTINUIDADE_SEM_PERDER_TRABALHO.md.
+> Leia docs/EXECUCAO_2_0.md, docs/MATRIZ_PARAMETROS_2_0.md e
+> docs/CONTINUIDADE_SEM_PERDER_TRABALHO.md.
 > Continue o SCHMIDT Campo em jhsilvamenezes-netizen/schmidt-campo. Leia AGENTS.md,
 > docs/PLANO_VERSAO_2_0.md, docs/APROFUNDAMENTO_2_0_WEB.md, docs/CONTINUIDADE.md,
 > docs/COORDENACAO.md, Issue #1 e PRs. Plano: PR #13, branch codex/plano-versao-2-0.
