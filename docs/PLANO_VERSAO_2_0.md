@@ -8,9 +8,11 @@ não uma declaração de funcionalidades entregues. Revalidar main ao começar.
 
 Uma ferramenta confiável no celular para escolher lote ou bloco, entender o
 plano, seguir tiros e pontos, coletar e retomar o trabalho, inclusive sem rede.
-A 2.0 estará pronta quando isso for comprovado em aparelhos da equipe e quando
-o APK tiver distribuição e migração seguras. O número da versão não substitui
-esses critérios. Separar a entrega web da liberação Android se houver dependência.
+A **2.0 web** estará pronta quando isso for comprovado pelo link no navegador
+dos celulares da equipe. Prioridade definida pelo proprietário em 14/11/2026:
+melhorar o site e sua experiência móvel. Instalar como PWA é opcional; o fluxo
+principal deve funcionar ao abrir o endereço. APK fica fora do caminho crítico
+e não é requisito de entrega. O número da versão não substitui os critérios.
 
 ## Onde estamos
 
@@ -19,9 +21,9 @@ esses critérios. Separar a entrega web da liberação Android se houver depend�
 | 51 lotes individuais e 40 opções de bloco; contornos, tiros, pontos e medidas | Operação real em telefone, ao sol e com rede/GPS instáveis |
 | Pinça, arraste e enquadramento do mapa conjunto | Cobertura de gestos e leitura no conjunto de aparelhos utilizados |
 | Plano padrão e Satélite opcional, com limites de rede e memória | Desempenho, bateria e disponibilidade da imagem em campo; satélite não é garantido offline |
-| Backup com integridade, restauração, proteção de gravação e atualização offline testados | Ensaio de migração do APK instalado e recuperação com dados representativos |
+| Backup com integridade, restauração, proteção de gravação e atualização offline testados | Recuperação no navegador com dados representativos e troca de telefone via backup |
 | Fontes legíveis de correções e build determinístico sobre artefato preservado | Fonte original completa ou substituição gradual dos trechos legados, com paridade comprovada |
-| CI aprovada e site publicado conferido | Assinatura Android privada estável; a chave antiga não está disponível |
+| CI aprovada e site publicado conferido | Compatibilidade nos navegadores utilizados e atualização pelo mesmo endereço |
 
 Evidências: [Issue #1](https://github.com/jhsilvamenezes-netizen/schmidt-campo/issues/1),
 [PR #12](https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/12),
@@ -51,7 +53,7 @@ pequena ou um PR; registrar estado na Issue #1, sem marcar proposta como feita.
 | 01 | Reconciliar versão, documentação, PRs e artefatos | main, VERSAO.json, pacote e site apontam para arquivos verificáveis; registros antigos identificados como históricos |
 | 02 | Mapear a fonte que existe e os trechos legados | Há inventário de cálculo, persistência, GPS, câmera e UI; cada parte tem origem, teste e fronteira de substituição. Não chamar bundle de fonte recuperada |
 | 03 | Medir abertura, cálculo, toque, desenho e memória | Comparação repetida da 1.35.0 com versão imediatamente anterior, mesmo aparelho/dados; tempos mediano/p95, tarefas longas e recursos registrados |
-| 04 | Reproduzir a tarefa completa em dois Android representativos | Individual e bloco: abrir → planejar → coletar → sair/voltar → backup → offline. Registrar modelo, RAM, Android/WebView, tamanho, falhas e passos |
+| 04 | Reproduzir a tarefa completa no navegador de dois celulares representativos | Individual e bloco: abrir → planejar → coletar → sair/voltar → backup → offline. Registrar modelo, RAM, sistema/navegador, tamanho, falhas e passos |
 
 Gargalo já observado: na CI sintética, CPU limitada a 4×, mediana de abertura
 532,6 → 636,9 ms contra a referência histórica `8232d79`; cálculo dos cenários
@@ -110,7 +112,7 @@ geometria e o espaço permitirem; resumo não deve esconder distâncias essencia
 |---|---|---|
 | 21 | Rever aquisição e qualidade de posição | Timestamp, ordem, idade, precisão e sessão verificados; permissão negada, retorno e baixa precisão não tornam posição antiga atual |
 | 22 | Revisar chegada, desvio e rumo | Limiares compatíveis com precisão e velocidade observadas; GPS parado não cria rumo confiável; nenhum salto provoca coleta ou troca de tiro indevida |
-| 23 | Testar energia e ciclo do Android | Suspender/retomar, bloquear tela, modo economia e processo encerrado conservam dados; observadores GPS e tela acordada encerrados quando deixam de ser necessários |
+| 23 | Testar energia e ciclo do navegador | Suspender/retomar, bloquear tela, modo economia e navegador encerrado conservam dados; observadores GPS e recursos de tela acordada encerrados quando deixam de ser necessários; APIs indisponíveis têm alternativa segura |
 
 Não prometer precisão centimétrica com GPS comum. Filtragem/histerese são opções
 depois de comparar trilhas simuladas e ensaio físico; conservar fix bruto e
@@ -133,15 +135,20 @@ Direção arquitetural proposta: dados de origem → domínio (geometria/parâme
 microserviços, IA ou WebGL apenas para chamar a versão de avançada. Worker exige
 tratamento de cancelamento, serialização e retorno; índice exige invalidação correta.
 
-### Etapa 7 — Android, segurança e liberação (P0 para APK)
+### Etapa 7 — link, PWA e entrega web (P1)
 
 | ID | Fazer | Considerar concluído quando |
 |---|---|---|
-| 29 | Definir identidade privada estável | Responsável pela chave, armazenamento seguro/recuperação, assinatura release, package ID e versionCode documentados; nunca guardar chave/senha no repositório ou chat |
-| 30 | Preparar migração do instalado | Backup verificado antes de qualquer troca; ensaio em aparelho reserva com restauração completa. Informar necessidade possível de reinstalação; não prometer atualização por cima |
-| 31 | Rever plataforma e dependências | Capacitor/Android/SDK/WebView e permissões compatíveis com os aparelhos; dependências suportadas, lockfiles e auditoria; atualização isolada com teste de paridade |
-| 32 | Consolidar CI e identificação de entrega | Gates proporcionais, testes separados de publicação, artefatos/hash verificáveis, versão coerente em título/manifesto/metadados/APK; evitar rótulo 1.31.0 remanescente em app mais novo |
-| 33 | Liberar candidata e piloto antes da 2.0 | Critérios abaixo atendidos, problemas restantes classificados, rollback web e recuperação de dados ensaiados; APK só com assinatura e migração prontas |
+| 29 | Garantir acesso direto e permissões claras | HTTPS e mesmo endereço/origem preservados; GPS negado/retomado funciona sem bloquear planejamento; uso não exige instalar PWA; mudança futura de domínio tem plano para os dados locais |
+| 30 | Consolidar atualização e offline da PWA | Primeiro acesso online e reabertura offline testados; worker novo espera clientes antigos e valida integridade; backup e registros sobrevivem à atualização; falta de espaço tem tratamento e recuperação |
+| 31 | Rever navegadores e dependências web | Chrome Android como alvo inicial e demais navegadores conforme uso real; detectar suporte a armazenamento, GPS e outras APIs, oferecer fallback; lockfiles e dependências auditados sem troca ampla de plataforma |
+| 32 | Consolidar CI e identificação de entrega | Gates proporcionais, testes separados de publicação, artefatos/hash verificáveis, versão coerente em título/manifesto/metadados; evitar rótulo 1.31.0 remanescente em versão mais nova |
+| 33 | Liberar candidata web e piloto antes da 2.0 | Critérios abaixo atendidos no link real, problemas restantes classificados, rollback web e recuperação de dados ensaiados; instrução de atualização sem limpar dados |
+
+**APK adiado:** preservar documentação de assinatura e migração, mas não investir
+em build, Capacitor, SDK ou distribuição nesta fase. Retomar somente se surgir
+necessidade concreta e nova priorização. A ausência da chave privada não bloqueia
+a evolução ou a publicação do site.
 
 Sincronização entre aparelhos, contas, edição colaborativa e mapas offline de
 satélite ficam em avaliação posterior (P2). Exigem necessidade real, política de
@@ -183,10 +190,10 @@ Preservar valor bruto e precisão interna; arredondar apenas para apresentação
 | Resistência | Sem rede, provedor falhando/lento, quota, arquivo inválido, fechamento durante gravação/restauração, retomada e atualização com aba antiga |
 | GPS | Negado, atrasado, fora de ordem, impreciso, parado, retomado e perda de sinal; simulação mais teste físico |
 | Desempenho | Baseline atual e versão anterior; p50/p95, tarefas longas, resposta durante gesto, heap/recursos, requisições e consumo em sessão representativa |
-| Android | Assets e regras iguais à web, assinatura privada verificável, migração com backup restaurado; ensaio em aparelho reserva |
+| Link/PWA | Acesso direto por HTTPS, navegadores-alvo, permissões, instalação opcional, atualização com aba antiga, offline e recuperação por backup |
 
 Critérios de liberação: nenhum defeito conhecido que provoque perda/duplicação
-de coleta ou orientação incorreta; gates automatizados aprovados; piloto com
+de coleta ou orientação incorreta; gates automatizados aprovados; piloto no link com
 operadores concluído; limitações e recuperação documentadas. Metas iniciais para
 avaliar, não promessas: controles ≥44 px, tarefa sem ajuda e sem erro crítico,
 sem crescimento contínuo de recursos após ciclos repetidos. Definir orçamento

@@ -21,7 +21,8 @@ anteriores que falam em candidata são históricos.
 
 Próximo trabalho: [plano 2.0](PLANO_VERSAO_2_0.md), com 33 tarefas, critérios,
 parâmetros e sequência. [Texto de início para Claude](INICIO_CLAUDE_2_0.md).
-Começar por inventário e medição (01–03), preparar ensaio físico (04).
+Prioridade atual: link/site no navegador móvel; APK adiado e fora dos critérios
+da 2.0 web. Começar por inventário e medição (01–03), preparar ensaio físico (04).
 É planejamento: não houve nova alteração do app ou liberação Android.
 
 ## Evolução recente

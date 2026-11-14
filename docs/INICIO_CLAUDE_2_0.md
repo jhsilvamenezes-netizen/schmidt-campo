@@ -8,6 +8,10 @@ Copie a mensagem abaixo para o Claude com acesso ao repositório:
 > leia a branch codex/plano-versao-2-0 antes de começar. Confira o main atual;
 > a base desta passagem é 1.35.0 r3, merge a3c0a60ac34d1b01e31d0491fdb2f6626146f31b.
 >
+> A prioridade atual é o link/site no navegador do celular. APK está adiado e
+> não bloqueia a 2.0 web. PWA instalada é opcional; valide também o acesso direto.
+> Não investir em build, assinatura ou migração Android nesta fase.
+>
 > Primeiro revise a entrega anterior e execute os itens 01–03 do plano:
 > reconciliar identificação, mapear fontes e medir inicialização/cálculo/desenho
 > contra a versão imediatamente anterior. Prepare o roteiro do item 04 para
