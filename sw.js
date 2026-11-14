@@ -1,6 +1,6 @@
 // Atualização controlada: esta versão espera as abas da anterior fecharem.
-const CACHE = 'schmidt-1.31-a7f80d1dfb';
-const INDEX_SHA256 = 'ad792b8dc0e453612d21d0978d8a0b87f4e2387dc706cb15b0cc134ece57662e';
+const CACHE = 'schmidt-1.31-db0b3229ad';
+const INDEX_SHA256 = 'ef9772e2025b1863f65eb87dd3c3fb48874217cff140c364a847c5863d6a8902';
 const ARQUIVOS = ['./','index.html','manifest.webmanifest','icone.svg','icone-192.png','icone-512.png','icone-180.png'];
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{

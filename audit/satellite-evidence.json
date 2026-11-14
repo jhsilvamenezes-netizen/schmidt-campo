@@ -1,0 +1,37 @@
+{
+  "version": "1.35.0",
+  "base": "026d6872ee73a8abb23119386a02bdd7fbf32ca3",
+  "unitContractsAndBlocks": 87,
+  "satelliteUnitChecks": 4,
+  "individualsMocked": 51,
+  "groupsMocked": 40,
+  "liveProviderScope": "BA1 + BA2 + BA3",
+  "realImagePoints": 58,
+  "defaultExternalRequests": 0,
+  "visualWidths": [
+    360,
+    390,
+    412,
+    768
+  ],
+  "tabletScreenshotScale": 2,
+  "visualToleranceUnchanged": true,
+  "backupRestorePassed": true,
+  "saveOnExitScenarios": 3,
+  "physicalPhoneTested": false,
+  "published": false,
+  "revision": "r3",
+  "boundedResponseChecks": 10,
+  "invalidImageChecks": true,
+  "backgroundPauseAndResume": true,
+  "imageURLsReleasedOnPlan": true,
+  "previousImplementationCommit": "af8e744896cfc252809947482a8719725f408973",
+  "inheritedFromR1": [
+    "visualWidths",
+    "tabletScreenshotScale",
+    "visualToleranceUnchanged",
+    "backupRestorePassed",
+    "saveOnExitScenarios"
+  ],
+  "lateDecodeTimeoutPassed": true
+}

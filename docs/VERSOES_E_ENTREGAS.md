@@ -140,3 +140,11 @@ cancelamento seguro da interação. Preserva o refino da 1.34.0, planos, método
 e registros. Teste de gestos dos 40 grupos incluído na esteira de blocos.
 Relatório: [CORRECAO_GESTOS_1_34_1.md](CORRECAO_GESTOS_1_34_1.md).
 APK não recompilado nem distribuído nesta revisão.
+
+## 1.35.0 — candidata de satélite opcional
+
+Plano como padrão; Satélite ao final das opções, em lote individual e bloco.
+Retorno ao Plano em falha/offline, cálculos e registros preservados. Rede apenas
+após escolha explícita; imagem real conferida no bloco BA1/BA2/BA3.
+Sem publicação e sem novo APK nesta etapa. Relatório:
+[SATELITE_OPCIONAL_1_35_0.md](SATELITE_OPCIONAL_1_35_0.md).

@@ -104,6 +104,35 @@ não declarar publicação ou teste físico sem evidência do resultado.
 
 Sobre a base 1.34.0, foi preparada a correção de pinça, arraste e zoom ancorado
 no mapa conjunto. Ver [relatório e passagem](CORRECAO_GESTOS_1_34_1.md).
-Candidata em branch, sem nova publicação ou APK nesta revisão. Consultar o PR
-para o commit, os resultados finais e a próxima revisão do Claude. O protocolo
-compartilhado está proposto no PR #10; não presumir que já foi integrado.
+PRs #10 e #11 integrados em main após CI aprovada. Gestos e protocolo compartilhado
+já fazem parte do projeto; merge de referência: f990ceb265ae495e5fd6efb675a08928db7cbff3.
+
+## Candidata 1.35.0 — Satélite como última opção
+
+Plano permanece padrão; Satélite foi integrado como opção secundária em
+individuais e blocos, sem consulta externa até a seleção. Ver
+[SATELITE_OPCIONAL_1_35_0.md](SATELITE_OPCIONAL_1_35_0.md) e
+[prioridades de revisão móvel](REVISAO_PRIORIDADES_MOBILE.md).
+Esta candidata depende da revisão de gestos do PR #11; não representa nova
+publicação, APK ou validação em telefone físico.
+
+### Revisão r2 da candidata 1.35.0
+
+Leitura incremental limitada, validação PNG/JPEG, pausa de consultas em segundo
+plano e liberação de recursos. Ver [REVISAO_MEMORIA_REDE_R2.md](REVISAO_MEMORIA_REDE_R2.md).
+Mesmo visual e dados; entrega r2 separada da r1, ainda sem publicação.
+
+## Integração autorizada — revisão r3
+
+PR #12 retargetado para main e sincronizado com #10/#11. A revisão r3 também
+rejeita decodificação de imagem que termine depois dos 10 segundos de prazo;
+o bitmap é fechado antes do descarte. Teste reproduz atraso de 10,5 segundos.
+
+Consultar o PR #12 e o workflow Pages para o estado efetivo de publicação;
+esta anotação registra a preparação, não comprova deploy. Plano segue padrão,
+Satélite opcional. Sem mudança de cálculos, dados ou distribuição Android.
+
+Próxima sessão: conferir o commit de main e VERSAO.json no endereço público;
+repetir pinça, coleta, saída/retorno e consulta de satélite em telefone físico.
+Não confundir testes automatizados com homologação de campo. Evitar novos
+refinos sem reprodução e critério mensurável; manter fontes legíveis e build verificável.

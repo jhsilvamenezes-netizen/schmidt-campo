@@ -1,11 +1,11 @@
 {
-  "entrega": "1.34.1",
+  "entrega": "1.35.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-13",
-  "versaoDoApp": "1.34.1",
+  "versaoDoApp": "1.35.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "ad792b8dc0e453612d21d0978d8a0b87f4e2387dc706cb15b0cc134ece57662e",
-  "workerSha256": "c0d4a99b80cc8431fb46a1522c6ccf00460d6e7e1664dc12175b5c3d8c0b8082",
+  "htmlSha256": "ef9772e2025b1863f65eb87dd3c3fb48874217cff140c364a847c5863d6a8902",
+  "workerSha256": "986b0de015cd87d5cba284fb2388f8c3463c995a36af70d40e6a3c3d35176e61",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -21,7 +21,8 @@
     "mapa do bloco revisado: cores do tema (Sol incluído), número dentro do ponto quando cabe, letras de 12 px ou mais, botões de 44 px e do padrão; tela não salta ao abrir",
     "mapa do bloco ocupa a área disponível no tablet e no notebook (número em todos os pontos); topo do celular em uma linha no modo bloco e no guia",
     "mapa do guia: rótulo \"Entrada\" nunca coberto por ponto e distância sobre ponto oculta (208 tiros medidos)",
-    "pinça, arraste contínuo e zoom ancorado no mapa conjunto; preservação dos planos e medidas"
+    "pinça, arraste contínuo e zoom ancorado no mapa conjunto; preservação dos planos e medidas",
+    "satélite opcional em lotes e blocos; Plano padrão, sem consulta externa até escolha explícita"
   ],
   "somenteEstudoSemIntegracao": [
     "recuo mínimo obrigatório por divisa",
@@ -35,5 +36,5 @@
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
   "runtimeBlocks": true,
-  "statusEntrega": "candidata web 1.34.1; sem publicação nesta revisão"
+  "statusEntrega": "web 1.35.0 r3; integração autorizada após validação"
 }

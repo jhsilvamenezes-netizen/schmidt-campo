@@ -43,7 +43,7 @@ test('HTML e worker correspondem ao build determinístico das correções', asyn
 });
 test('CSS/HTML estáticos, dados e scripts auxiliares preservam a referência; Plano muda por adaptador aprovado', () => {
   const original = execFileSync('git',['show',`${baseline.commit}:index.html`],{cwd:root,maxBuffer:4*1024*1024}).toString();
-  const presentation = text => text.replace(/<script type="module" crossorigin>[\s\S]*?<\/script>/,'MODULE').replace(/script-src [^;]+;/,'HASHES');
+  const presentation = text => text.replace("connect-src 'self' blob: data: https://services.arcgisonline.com;", "connect-src 'self' blob: data:;").replace(/<script type="module" crossorigin>[\s\S]*?<\/script>/,'MODULE').replace(/script-src [^;]+;/,'HASHES');
   assert.equal(presentation(read('index.html').toString()),presentation(original));
   const worker=read('sw.js').toString();
   assert.ok(worker.includes(createHash('sha256').update(read('index.html')).digest('hex')));
