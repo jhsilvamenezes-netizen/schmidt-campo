@@ -2,31 +2,26 @@
 
 Gerado por scripts/checkpoint.mjs; registro não executa nem certifica testes.
 
-- Tarefa: 1.37.0 pronta (PR #16); 1.36.0 publicada
+- Tarefa: 2.0.0 web — unificação e publicação
 - Responsável: Claude
-- Estado: pronto_para_revisao
-- Branch: claude/2-0-esquema
-- Commit de código observado: 79ace178e6cf26ee9d81ec31285f6182fe36e125
-- Registro UTC: 2026-11-14T15:23:02.546Z
+- Estado: em_andamento
+- Branch: claude/versao-2-0
+- Commit de código observado: 0966b080da26c64990ac7dee80ef2f166d3970b8
+- Registro UTC: 2026-11-14T15:35:54.777Z
 
 ## Próxima ação
 
-Aguardar autorização do dono para publicar a 1.37.0 (PR #16). Depois: E5/E6 visual (lote × bloco, tiros, direção e distâncias no mapa), E7 robustez do link (offline/atualização), E8 piloto
+Concluir bateria completa, abrir PR da 2.0.0, CI verde, merge e conferir deploy
 
 ## Testes declarados pela sessão
 
-- passou: node scripts/build-preserved.mjs --check
-- passou: cd audit && node direction-measures-probe.mjs && python -I direction-measures.py
-- passou: PERF_REF=026d687 node audit/performance-browser.mjs
-- passou: node audit/block-map-selection-browser.mjs
-- passou: node audit/adjust-alternatives.test.mjs && node audit/operational-summary.test.mjs && node audit/adjust-compare-browser.mjs
-- passou: sequência do CI blocos-candidata.yml (test:blocks, checkpoint, build --check, 40 grupos, mapas, adjust-compare, satélite, validate-runtime-blocks) + operational-plan-browser
-- falhou: node audit/browser.mjs (congelamento visual, fora do CI)
-- passou: node audit/guide-next.test.mjs && node audit/gps-guidance-browser.mjs
-- passou: bateria completa 1.37.0 (CI blocos-candidata + sessões + correções + gravar ao sair)
+- passou: node audit/gps-guidance-browser.mjs
+- passou: UPGRADE_REF=0966b08 node audit/worker-upgrade-browser.mjs
+- passou: axe WCAG 2.1 AA em todas as telas 360/1440
+- nao_executado: bateria completa 2.0.0
 
 ## Recuperação
 
-Leia RETOMADA.json para detalhes, bloqueios e decisões. O commit acima antecede o commit deste checkpoint. Arquivos alterados listados não foram publicados por este comando. Arquivos não rastreados: 0.
+Leia RETOMADA.json para detalhes, bloqueios e decisões. O commit acima antecede o commit deste checkpoint. Arquivos alterados listados não foram publicados por este comando. Arquivos não rastreados: 2.
 
 Somente commit enviado ao GitHub fica disponível para outra sessão. Conferir branch/PR e diff, não apenas este registro. Não existe troca automática de IA.

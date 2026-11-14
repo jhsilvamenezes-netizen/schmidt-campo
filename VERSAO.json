@@ -1,11 +1,11 @@
 {
-  "entrega": "1.37.0",
+  "entrega": "2.0.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-14",
-  "versaoDoApp": "1.37.0",
+  "versaoDoApp": "2.0.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "26799bab400ebc1c9802b46a1d9167544af610200858bf7e2c981f92c18bbb64",
-  "workerSha256": "73a73a67b7d4d4f3013a8d1ebd7428ef24315038b756b8dab32398f315160f63",
+  "htmlSha256": "51596f46b1cc2c1126f7b1255d9e4086e2713ddfca3fe428a0c66e2c2dd88bfe",
+  "workerSha256": "5a54e78f49310055db8a05160ec817f962565549996fbe38495795ec7bc8faa5",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -27,7 +27,9 @@
     "Ajuste fino › Tiros: \"Comparar antes de aplicar\" mostra distâncias e quantidades vizinhas (tiros, pontos, entre tiros, entre pontos, borda, cobertura e caminhada) sem mudar o plano; \"Usar\" aplica pelo mesmo campo, com Desfazer",
     "cartão \"Entre pontos\" diz \"Um em cada tiro\" quando cada tiro tem um só ponto (antes ficava vazio)",
     "\"Esquema das distâncias\" desenha 1 ou 2 linhas e 1 ou 3 pontos conforme o plano; sem seta para medida que não existe",
-    "guia por GPS sem marcação de coleta: orienta ao próximo ponto à frente e anuncia a chegada em cada ponto (antes ficava preso no ponto 1); com marcações, ordem marcada como antes"
+    "guia por GPS sem marcação de coleta: orienta ao próximo ponto à frente e anuncia a chegada em cada ponto (antes ficava preso no ponto 1); com marcações, ordem marcada como antes",
+    "2.0: monitor com o mapa na altura certa ao voltar das abas do plano (antes ficava cortado no celular)",
+    "2.0: no monitor, \"Ligar GPS\" é a ação principal; \"Ponto coletado\" continua disponível sem destaque"
   ],
   "somenteEstudoSemIntegracao": [
     "recuo mínimo obrigatório por divisa",
@@ -41,5 +43,5 @@
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
   "runtimeBlocks": true,
-  "statusEntrega": "candidata 1.37.0; direcionamento sem marcação e esquema fiel; sem publicação"
+  "statusEntrega": "web 2.0.0; publicação autorizada pelo proprietário em 14/11/2026"
 }

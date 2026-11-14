@@ -8,6 +8,20 @@ export function installSchmidtLotMap({ document, events }) {
   style.textContent = '#map .m-gap.schmidt-hidden-label{display:none}';
   document.head.append(style);
 
+  // 2.0: a altura do mapa só é recalculada no evento "resize". Ao entrar ou sair do monitor depois de usar as
+  // abas do plano, o mapa ficava com a altura antiga (162 px de 348 no celular): tiro cortado e faixa vazia.
+  // Trocar de modo agora pede o mesmo recálculo que girar a tela pediria.
+  const view = document.defaultView, body = document.body;
+  if (view && body) {
+    let monitor = body.classList.contains('mode-monitor');
+    new view.MutationObserver(() => {
+      const now = body.classList.contains('mode-monitor');
+      if (now === monitor) return;
+      monitor = now;
+      view.requestAnimationFrame(() => view.dispatchEvent(new view.Event('resize')));
+    }).observe(body, { attributes: true, attributeFilter: ['class'] });
+  }
+
   const overlaps = (a, b) => a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1;
   // Maior círculo de cada ponto visível (o anel do próximo ponto conta); pontos de outros tiros são marcas pequenas.
   const pointBoxes = () => [...map.querySelectorAll('.m-pt')].map(g => [...g.querySelectorAll('circle:not(.m-pt-hit)')]

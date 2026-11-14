@@ -43,6 +43,20 @@ try {
   });
   const emit = async (x, y, acc, dt) => { await page.waitForTimeout(15); await page.evaluate(([x, y, a, d]) => window.__gps(x, y, a, d), [x, y, acc ?? 4, dt ?? 0]); await page.waitForTimeout(60); };
 
+  // 2.0: depois de usar as abas do plano, o monitor abre com o mapa na altura certa e "Ligar GPS" em destaque.
+  for (const v of ['plano', 'tiros', 'dados', 'auditoria']) { await page.click(`[data-v08-view="${v}"]`); await page.waitForTimeout(150); }
+  await page.click('#monitor-toggle'); await page.click('.mon-track'); await page.waitForTimeout(300);
+  report.monitorLayout = await page.evaluate(() => {
+    const map = document.getElementById('map'), wrap = map.closest('.map-wrap'), vb = map.getAttribute('viewBox').split(' ').map(Number);
+    const gps = document.getElementById('gps-toggle'), collect = document.getElementById('mon-collect');
+    return { mapH: map.clientHeight, wrapH: wrap.clientHeight, viewBoxH: vb[3],
+      gpsFirst: !!(gps.compareDocumentPosition(collect) & Node.DOCUMENT_POSITION_FOLLOWING), gpsPrimary: gps.classList.contains('primary'), collectPrimary: collect.classList.contains('primary') };
+  });
+  { const m = report.monitorLayout;
+    if (m.viewBoxH !== m.mapH || m.mapH < m.wrapH - 4) fail('monitor', `mapa com altura antiga: ${JSON.stringify(m)}`);
+    if (!m.gpsFirst || !m.gpsPrimary || m.collectPrimary) fail('monitor', `botões: ${JSON.stringify(m)}`); }
+  await page.click('#monitor-toggle');
+
   const keys = (await page.evaluate(() => Object.keys(SCHMIDT.app.fields))).sort();
   for (const key of keys) {
     // Volta ao plano, troca o lote e entra no monitor no primeiro tiro com GPS ligado.
