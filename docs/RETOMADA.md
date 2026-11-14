@@ -6,20 +6,21 @@ Gerado por scripts/checkpoint.mjs; registro não executa nem certifica testes.
 - Responsável: Claude
 - Estado: em_andamento
 - Branch: claude/e2-medidas
-- Commit de código observado: 745f391008b2b3d9aa162b8f38db7b6c60a35652
-- Registro UTC: 2026-11-14T14:28:04.334Z
+- Commit de código observado: 7da35d3e1833993cbc57cdb81824cf867b8cc39a
+- Registro UTC: 2026-11-14T14:29:09.986Z
 
 ## Próxima ação
 
-E1: tempos de abertura/desenho (mediana/p95) 1.35.1 vs 1.34; depois exportação após edição (23) e GPS sintético (24–27)
+E2 item 23: medidas e exportação após editar o plano (IDs ida e volta); depois E4 GPS sintético (24–27)
 
 ## Testes declarados pela sessão
 
 - passou: node scripts/build-preserved.mjs --check
 - passou: cd audit && node direction-measures-probe.mjs && python -I direction-measures.py
+- passou: PERF_REF=026d687 node audit/performance-browser.mjs
 
 ## Recuperação
 
-Leia RETOMADA.json para detalhes, bloqueios e decisões. O commit acima antecede o commit deste checkpoint. Arquivos alterados listados não foram publicados por este comando. Arquivos não rastreados: 0.
+Leia RETOMADA.json para detalhes, bloqueios e decisões. O commit acima antecede o commit deste checkpoint. Arquivos alterados listados não foram publicados por este comando. Arquivos não rastreados: 2.
 
 Somente commit enviado ao GitHub fica disponível para outra sessão. Conferir branch/PR e diff, não apenas este registro. Não existe troca automática de IA.

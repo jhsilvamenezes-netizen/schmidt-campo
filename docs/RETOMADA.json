@@ -3,7 +3,7 @@
   "task": "E1/E2 — referência e medidas de direcionamento",
   "owner": "Claude",
   "status": "em_andamento",
-  "nextAction": "E1: tempos de abertura/desenho (mediana/p95) 1.35.1 vs 1.34; depois exportação após edição (23) e GPS sintético (24–27)",
+  "nextAction": "E2 item 23: medidas e exportação após editar o plano (IDs ida e volta); depois E4 GPS sintético (24–27)",
   "baseMain": "2e4e2be9a44310b847155bdef9d7b78b9865ccd0",
   "publishedVersion": "1.35.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -19,6 +19,11 @@
       "command": "cd audit && node direction-measures-probe.mjs && python -I direction-measures.py",
       "result": "passou",
       "evidence": "22 verificações (rumo 09, borda do bloco 13), 51 lotes e 40 grupos, erro 0 m; mutações detectadas. docs/E2_MEDIDAS_DIRECIONAMENTO.md"
+    },
+    {
+      "command": "PERF_REF=026d687 node audit/performance-browser.mjs",
+      "result": "passou",
+      "evidence": "1.35.1 × 1.34.1: abrir 185/210 ms × 191/231 (CPU×1), desenho 33 ms; sem regressão. docs/E1_REFERENCIA.md"
     }
   ],
   "blockers": [
@@ -38,15 +43,12 @@
     "E2 item 09: rumo da planilha = norte verdadeiro; tiros retos na grade; variação da convergência no lote ≤0,006° (≤0,48 m); norte magnético não usado."
   ],
   "snapshot": {
-    "at": "2026-11-14T14:28:04.334Z",
+    "at": "2026-11-14T14:29:09.986Z",
     "branch": "claude/e2-medidas",
-    "codeCommit": "745f391008b2b3d9aa162b8f38db7b6c60a35652",
+    "codeCommit": "7da35d3e1833993cbc57cdb81824cf867b8cc39a",
     "changedTrackedFiles": [
-      "audit/direction-measures-evidence.json",
-      "audit/direction-measures-probe.mjs",
-      "audit/direction-measures.py",
-      "docs/E2_MEDIDAS_DIRECIONAMENTO.md"
+      "audit/performance-browser.mjs"
     ],
-    "untrackedCount": 0
+    "untrackedCount": 2
   }
 }
