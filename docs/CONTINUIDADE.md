@@ -5,6 +5,11 @@ e o commit atual de main. O site é https://jhsilvamenezes-netizen.github.io/sch
 Este documento permite continuar a revisão com outro desenvolvedor ou assistente,
 inclusive Claude. Não existe integração automática entre sessões.
 
+## Ponto de retomada vigente
+
+Começar por [RETOMADA.md](RETOMADA.md) e JSON, depois [EXECUCAO_2_0.md](EXECUCAO_2_0.md).
+Salvar durante a execução, não apenas ao encerrar. [Guia](CONTINUIDADE_SEM_PERDER_TRABALHO.md).
+
 ## Alternar entre Codex e Claude
 
 Leia [COORDENACAO.md](COORDENACAO.md): fila imediata, protocolo de revisão e
@@ -12,23 +17,19 @@ modelo de passagem. A Issue #1 continua sendo o backlog principal. Cada PR
 atualiza estes registros junto com a mudança. Não existe execução automática
 de uma sessão pela outra.
 
-## Próxima evolução — plano 2.0 (14/11/2026)
+## Base atual e próxima execução
 
-A 1.35.0 r3 foi publicada após CI; merge
-`a3c0a60ac34d1b01e31d0491fdb2f6626146f31b`. Issue #1 e PR #12 registram
-conferência do endereço real, coleta sintética, backup e offline. Os trechos
-anteriores que falam em candidata são históricos.
+**1.35.1 publicada e conferida**, merge
+`2e4e2be9a44310b847155bdef9d7b78b9865ccd0`, PR #14. Consulta de ponto acompanha
+posição, ordem e borda atualizadas; ponto removido fecha a consulta. Ver
+[relatório](CORRECAO_CONSULTA_MEDIDAS_1_35_1.md) e Issue #1 para evidências.
 
-Próximo trabalho: [plano 2.0 revisto](PLANO_VERSAO_2_0.md) e
+A evolução 2.0 ainda é trabalho a executar: [plano](PLANO_VERSAO_2_0.md),
 [caderno espacial e visual](APROFUNDAMENTO_2_0_WEB.md).
-**Premissa atual do proprietário: exclusivamente direcionamento; a equipe não
-coleta nem marca dados.** Não desenvolver concluídos/produtividade/sincronização
-de coletas. Preservar dados legados por compatibilidade, sem apagá-los.
-Foco no link móvel; APK adiado. A numeração 01–45 foi redistribuída e substitui
-as tarefas anteriores centradas em coleta. Começar por 01–03, preparar roteiro
-04 e auditar 05–14 e 20/23; depois produzir projeções visuais de 28–35.
-[Texto atualizado para Claude](INICIO_CLAUDE_2_0.md).
-É planejamento, sem nova alteração do motor, interface ou site publicado.
+Direcionamento exclusivo pelo link móvel, sem coleta/marcação pela equipe.
+Preservar legado; APK adiado. Não executar listas antigas centradas em coleta.
+[Texto para Claude](INICIO_CLAUDE_2_0.md).
+
 
 ## Evolução recente
 

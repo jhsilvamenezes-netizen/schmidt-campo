@@ -368,7 +368,21 @@ export function createSchmidtBlockMap({ document, selectMember }) {
       if (record?.id !== next.id || live !== isLive || !!record?.geometryOnly !== !!next.geometryOnly) {
         resetGestures(); focus = null; zoom = 1; pan = [0, 0]; selected = null; info.hidden = true;
       } else if (isLive && lastField && currentField !== lastField) focus = currentField;
-      record = next; fields = allFields; scenarios = plans; live = isLive; lastField = currentField; render();
+      record = next; fields = allFields; scenarios = plans; live = isLive; lastField = currentField;
+      // A consulta é uma referência ao plano vigente, não um snapshot do ponto
+      // anterior. Atualizações podem editar/remover pontos mantendo o grupo.
+      if (selected) {
+        const key = selected.key, index = record.members.indexOf(key);
+        const sc = index >= 0 ? scenarios[index] : null;
+        const point = sc?.samples.find(p => p.id === selected.p.id);
+        if (point && fields[key]) {
+          selected = {key, p:point};
+          describePoint(key, fields[key], point, samplesByUnit(sc).get(point.unitId) || []);
+        } else {
+          selected = null; info.replaceChildren(); info.hidden = true;
+        }
+      }
+      render();
     },
     focus: key => view(key),
     clear() {

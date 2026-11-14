@@ -39,6 +39,7 @@ jobs:
       - name: Testes e build isolado
         run: |
           npm --prefix audit run test:blocks
+          node audit/checkpoint.test.mjs
           node scripts/build-preserved.mjs --check
           node scripts/build-block-candidate.mjs
       - name: Referência individual e 40 alternativas
@@ -50,6 +51,7 @@ jobs:
           node blocks-ui-browser.mjs
           node block-map-framing-browser.mjs
           node block-map-gestures-browser.mjs
+          node block-map-selection-browser.mjs
           node bounded-response.test.mjs
           node satellite-map.test.mjs
           node satellite-browser.mjs

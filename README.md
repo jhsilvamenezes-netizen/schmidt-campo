@@ -78,3 +78,5 @@ testes, pendências e a próxima ação.
 [Mensagem para iniciar com Claude](docs/INICIO_CLAUDE_2_0.md). Plano proposto; não representa nova versão publicada.
 
 [Revisão aprofundada da 2.0 web](docs/APROFUNDAMENTO_2_0_WEB.md): métodos geográficos, medidas verificadas e 12 frentes de design de orientação.
+
+[Retomada vigente](docs/RETOMADA.md) · [Fila de execução](docs/EXECUCAO_2_0.md) · [Troca entre sessões](docs/CONTINUIDADE_SEM_PERDER_TRABALHO.md).

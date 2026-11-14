@@ -1,10 +1,12 @@
 # Mensagem para iniciar a próxima sessão do Claude
 
+> Retome primeiro docs/RETOMADA.md e docs/RETOMADA.json na branch/PR ativa.
+> Leia docs/EXECUCAO_2_0.md e docs/CONTINUIDADE_SEM_PERDER_TRABALHO.md.
 > Continue o SCHMIDT Campo em jhsilvamenezes-netizen/schmidt-campo. Leia AGENTS.md,
 > docs/PLANO_VERSAO_2_0.md, docs/APROFUNDAMENTO_2_0_WEB.md, docs/CONTINUIDADE.md,
 > docs/COORDENACAO.md, Issue #1 e PRs. Plano: PR #13, branch codex/plano-versao-2-0.
-> Confira main; base desta passagem: 1.35.0 r3,
-> a3c0a60ac34d1b01e31d0491fdb2f6626146f31b.
+> Confira main; base desta passagem: 1.35.1,
+> 2e4e2be9a44310b847155bdef9d7b78b9865ccd0.
 >
 > CORREÇÃO DO PROPRIETÁRIO: ferramenta exclusivamente para direcionamento,
 > planejamento e consulta espacial. A equipe não vai coletar ou marcar dados.
@@ -28,3 +30,9 @@
 > numérica/visual. Atualize Issue #1 e passagem com commit, resultados, limites e
 > próxima tarefa. GitHub é o estado compartilhado; não há comunicação automática
 > com Codex. Não declarar homologação física ou publicação sem evidência.
+
+> Publique checkpoint no início, a cada unidade de código/teste e antes de pausa;
+> em trabalho longo procure intervalos de 10–15 minutos. Use scripts/checkpoint.mjs,
+> revise arquivos públicos, commit/envie na branch e confira o SHA remoto. Não espere
+> terminar a tarefa; WIP fica no PR, nunca em main. Se houver interrupção, a outra
+> sessão retoma do último checkpoint enviado, sem inferir sucesso de teste pendente.

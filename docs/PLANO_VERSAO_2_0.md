@@ -1,7 +1,7 @@
 # SCHMIDT Campo 2.0 web — planejamento e direcionamento
 
 Revisão de escopo em 14/11/2026. Base publicada conferida anteriormente:
-1.35.0 r3, main `a3c0a60ac34d1b01e31d0491fdb2f6626146f31b`.
+1.35.1, main `2e4e2be9a44310b847155bdef9d7b78b9865ccd0`.
 Conferir main novamente antes de implementar.
 
 ## Premissa corrigida pelo proprietário
@@ -174,3 +174,8 @@ Catálogo histórico de 35 entradas; nomes para localizar código e testes, não
 | `optimizer.searchGridCells` | Busca: células da grade | células |
 
 Incluir também campos estruturais como `selectionIds`, `optimizer.allowCountMoves`, membros do bloco, referências A/B, geometria/CRS, IDs e edições; equipe também aparece em contexto externo ao catálogo; reconciliar sua relação com `selectionCount` (rótulo histórico “Pessoas / tiros”), sem assumir que são o mesmo conceito. O schema histórico lista modos que não fazem parte da metodologia aprovada: não ativar anéis/circular ao reconciliar o contrato. Valores legados precisam de diagnóstico e migração explícita, nunca descarte silencioso.
+
+## Execução e interrupção de sessão
+
+[Oito entregas e critérios extras](EXECUCAO_2_0.md). [Registro vigente](RETOMADA.md).
+[Como salvar progresso e trocar de IA](CONTINUIDADE_SEM_PERDER_TRABALHO.md).

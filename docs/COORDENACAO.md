@@ -4,6 +4,14 @@ O GitHub guarda o estado comum. O proprietário alterna entre as sessões;
 nenhuma delas inicia, monitora ou envia mensagens para a outra automaticamente.
 Não depende do nome comercial ou da versão do modelo.
 
+## Retomada durante a execução
+
+Não esperar o fim da sessão: ler [RETOMADA.md](RETOMADA.md)/JSON e
+[fila executável](EXECUCAO_2_0.md). Gerar checkpoint após cada unidade e antes de
+pausa; publicar código/testes/estado na branch, WIP identificado. O gerador não
+faz push; verificar SHA remoto. [Procedimento e limites](CONTINUIDADE_SEM_PERDER_TRABALHO.md).
+Esta é uma rotina de trabalho, não comunicação ou troca automática de IA.
+
 ## Onde conferir cada informação
 
 - `VERSAO.json`, main e histórico de publicação: versão integrada; confirmar o endereço real antes de afirmar que está publicada.
@@ -37,7 +45,7 @@ Não ampliar uma alteração de câmera para cálculo de pontos ou redesenho ger
 
 ## Fila atual — preparação da 2.0
 
-Referência 1.35.0 r3, main `a3c0a60ac34d1b01e31d0491fdb2f6626146f31b`.
+Referência 1.35.1, main `2e4e2be9a44310b847155bdef9d7b78b9865ccd0`.
 Gestos (#11), satélite opcional (#12) e protocolo (#10) já integrados.
 O [plano 2.0 revisto](PLANO_VERSAO_2_0.md) ordena as próximas tarefas:
 direcionamento exclusivo pelo link móvel, sem coleta ou marcação pela equipe.
