@@ -212,6 +212,11 @@ for blk in data['blocks']:
         for p in m['samples']:
             pt = Point(p['x'], p['y'])
             check('bloco.pontosDentroDoLote', 0.0 if poly.covers(pt) else poly.distance(pt), f'{blk["id"]} {p["id"]}')
+            if 'appBorderM' in p:  # "Até a borda mais próxima" do ponto escolhido no mapa do bloco
+                check('bloco.bordaDoPonto', abs(poly.boundary.distance(pt) - p['appBorderM']), f'{blk["id"]} {p["id"]}')
+    if all('appBorderM' in m for m in blk['members']):  # "Ponto mais perto da borda" do painel do bloco
+        geos = min(mpoly(fields[m['key']]['geom']).boundary.distance(Point(p['x'], p['y'])) for m in blk['members'] for p in m['samples'])
+        check('bloco.pontoMaisPertoDaBorda', abs(geos - min(m['appBorderM'] for m in blk['members'] if m['appBorderM'] is not None)), blk['id'])
 
 report['checks'] = {k: {kk: (round(vv, 9) if isinstance(vv, float) and math.isfinite(vv) else vv) for kk, vv in v.items()} for k, v in sorted(c.items())}
 report['projecao'] = {

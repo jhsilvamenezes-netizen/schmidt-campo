@@ -67,6 +67,13 @@ try {
     return out;
   });
 
+  // "Ponto mais perto da borda" do bloco: a mesma função que o painel usa (src, igual ao HTML pelo build --check).
+  const { schmidtBlockBorderDistance } = await import('../src/application/block-planning.mjs');
+  for (const b of blocks) for (const m of b.members) {
+    m.appBorderM = schmidtBlockBorderDistance(fields[m.key].geom, m.samples);
+    for (const p of m.samples) p.appBorderM = schmidtBlockBorderDistance(fields[m.key].geom, [p]);
+  }
+
   assert.equal(Object.keys(fields).length, 51);
   assert.equal(blocks.length, 40);
   const result = { htmlSha256: createHash('sha256').update(html).digest('hex'), browser: browser.version(), fields, blocks };

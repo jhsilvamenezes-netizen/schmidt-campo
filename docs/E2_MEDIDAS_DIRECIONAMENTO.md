@@ -39,6 +39,9 @@ código 1 se qualquer verificação passar da tolerância.
 | Bloco: entre tiros múltiplo do espaçamento comum no lote (20) | 323 pares | 0 m |
 | Bloco: pontos dentro do lote (14, 20) | 1.535 pontos | 0 m |
 | Menor distância de ponto à divisa (13) | 51 lotes | registrada: 10,54 m no mínimo |
+| Bloco: "Até a borda mais próxima" do ponto escolhido (13) | 1.535 pontos | 0 m |
+| Bloco: "Ponto mais perto da borda" do painel (13) | 40 grupos | 0 m |
+| Bloco: tiros vizinhos sempre a 1× o espaçamento comum (o cartão não esconde salto) | 323 pares | 0 |
 | Rumo: correção do lote = −convergência meridiana do PROJ (09) | 51 lotes | 0,00008° |
 | Rumo: azimute de grade dos tiros = rumo + correção (09) | 51 lotes | 0° |
 
@@ -63,9 +66,14 @@ a linha de rumo verdadeiro constante se afasta dele no máximo **0,48 m** no fim
 mais longo. Para direcionar a pé, a reta é a referência certa; o valor fica registrado
 para não ser confundido com erro.
 
+## Oportunidade (não é defeito)
+
+A distância à borda é calculada por duas funções iguais: `schmidtBlockBorderDistance`
+(painel) e `schmidtMapClosestBorder` (mapa, que também devolve o ponto da divisa). Hoje
+dão o mesmo número. Unificar evita que divirjam numa mudança futura.
+
 ## Conclusão e limites
 
 Nenhum erro de medida foi reproduzido nos itens 09–14 e 20. Não foi conferido aqui:
-distância à borda mostrada por ponto no mapa do bloco, exportações após edição
-manual (23) e GPS (24–27). Verificação matemática não
+exportações após edição manual (23) e GPS (24–27). Verificação matemática não
 homologa divisa legal, área oficial nem acesso físico entre lotes.

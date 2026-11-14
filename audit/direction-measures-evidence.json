@@ -15,6 +15,11 @@
  "lots": 51,
  "blocks": 40,
  "checks": {
+  "bloco.bordaDoPonto": {
+   "cases": 1535,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
   "bloco.entreTirosNoLote": {
    "cases": 323,
    "maxErrorM": 0.0,
@@ -27,6 +32,11 @@
   },
   "bloco.paralelismoGraus": {
    "cases": 411,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "bloco.pontoMaisPertoDaBorda": {
+   "cases": 40,
    "maxErrorM": 0.0,
    "failures": 0
   },
