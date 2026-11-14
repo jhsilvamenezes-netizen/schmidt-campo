@@ -74,5 +74,7 @@ testes, pendências e a próxima ação.
 
 ## Próxima evolução
 
-[Plano da versão 2.0](docs/PLANO_VERSAO_2_0.md): foco no link e navegador móvel, 33 tarefas, parâmetros e critérios de entrega web. APK adiado.
+[Plano da versão 2.0](docs/PLANO_VERSAO_2_0.md): foco no link e navegador móvel, 45 itens, parâmetros e critérios de entrega web. APK adiado.
 [Mensagem para iniciar com Claude](docs/INICIO_CLAUDE_2_0.md). Plano proposto; não representa nova versão publicada.
+
+[Revisão aprofundada da 2.0 web](docs/APROFUNDAMENTO_2_0_WEB.md): vínculo de coletas, prontidão offline e critérios avançados.

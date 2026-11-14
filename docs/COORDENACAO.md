@@ -42,6 +42,8 @@ Gestos (#11), satélite opcional (#12) e protocolo (#10) já integrados.
 O [plano 2.0](PLANO_VERSAO_2_0.md) passa a ordenar as próximas tarefas.
 Foco definido pelo proprietário: link e navegador móvel; APK adiado.
 Atualização PWA, offline, compatibilidade e recuperação web compõem a etapa final.
+O [aprofundamento](APROFUNDAMENTO_2_0_WEB.md) acrescenta 34–45 e critérios para
+plano/coleta, prontidão offline e recuperação; investigar 34–38 junto do diagnóstico inicial.
 Começar por 01–03 e preparar o ensaio físico 04. A fila abaixo é histórica;
 revisar os itens de medidas/rótulos pelos critérios atuais, sem repetir correções entregues.
 

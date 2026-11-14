@@ -207,12 +207,26 @@ Começar pelos itens **01–03**, em branch própria, e preparar o roteiro do it
 04 para o telefone da equipe. Reproduzir a 1.35.0, comparar a abertura com a
 versão anterior, instrumentar etapas e só então corrigir o maior custo comprovado.
 Se a fonte original não aparecer, continuar pela extração incremental com testes,
-sem substituir o app por um piloto antigo. Não tentar executar os 33 itens em um PR.
+sem substituir o app por um piloto antigo. Não tentar executar todos os itens em um PR.
 
 Cada entrega registra: problema, reprodução, alternativa escolhida, arquivos,
 teste, resultado antes/depois, riscos, recuperação e próxima tarefa. Usar
 [CONTINUIDADE.md](CONTINUIDADE.md), [COORDENACAO.md](COORDENACAO.md) e Issue #1.
 Texto pronto de início: [INICIO_CLAUDE_2_0.md](INICIO_CLAUDE_2_0.md).
+
+## Complemento da revisão aprofundada
+
+O [aprofundamento web](APROFUNDAMENTO_2_0_WEB.md) acrescenta os itens **34–45**:
+saúde do armazenamento, prontidão offline, vínculo da coleta à revisão do plano,
+estados de aplicação, ações repetidas, precisão geométrica, estabilidade da
+avaliação de cobertura, desenho/seleção, equipe, importação, compatibilidade de
+recuperação e ensaio de tarefa. São **45 itens de trabalho** no total, com
+sobreposição intencional de critérios e execução em PRs pequenos.
+
+Ler esse complemento antes de editar o domínio de plano/coleta. Não presumir
+falha de mecanismos já existentes: ele identifica recursos encontrados no código
+e distingue a proposta da reprodução. A primeira frente continua sendo 01–03,
+com reprodução dirigida de 34–38 e preparação do ensaio físico 04.
 
 ## Anexo — campos técnicos a reconciliar
 
