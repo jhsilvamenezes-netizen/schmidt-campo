@@ -164,3 +164,10 @@ Guia por GPS orienta ao próximo ponto à frente e anuncia a chegada em cada pon
 sem marcar coleta (antes ficava preso no ponto 1). Esquema das distâncias fiel ao
 plano. Prova em 51 lotes com GPS simulado. Relatório:
 [E4_DIRECIONAMENTO_GPS.md](E4_DIRECIONAMENTO_GPS.md).
+
+## 2.0.0 — planejamento e direcionamento pelo link
+
+Unifica E1–E4 e E7: medidas conferidas com GEOS/PROJ, comparar antes de aplicar,
+guia por GPS sem marcação, esquema fiel, monitor com mapa correto no celular e
+"Ligar GPS" em destaque, atualização segura da 1.37.0. Relatório:
+[ENTREGA_2_0.md](ENTREGA_2_0.md).

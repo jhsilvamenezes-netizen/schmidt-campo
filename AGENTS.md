@@ -157,6 +157,12 @@ Escopo: integrar o PR #15 (E1/E2, 1.36.0 "Comparar antes de aplicar" e correçã
 cartão "Entre pontos") na `main` após o CI verde, e atualizar o Pages. Não inclui APK.
 As próximas etapas da 2.0 continuam por PR e testes; nova publicação exige nova autorização.
 
+### Autorização de publicação da 1.37.0 e da 2.0.0 — 14/11/2026
+
+O proprietário respondeu: **"Pode sim, aí agora unifique e faça as últimas melhorias pra já fazer e
+entregar o link da 2.0"**. Escopo: publicar a 1.37.0 (PR #16) e, com CI verde, a 2.0.0 web
+(planejamento e direcionamento pelo link). Não inclui APK, coleta, marcação nem controle de execução.
+
 ## Fluxo
 - Trabalhar somente em branch de desenvolvimento e PR.
 - Criar mudanças pequenas com testes, relatório de impacto e meios de reproduzir.
