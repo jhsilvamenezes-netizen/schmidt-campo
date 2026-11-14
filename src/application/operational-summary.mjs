@@ -15,8 +15,9 @@ export function readOperationalSummary(sc, peopleValue, measurements) {
     counts: `${tracks} ${tracks === 1 ? unit : units} · ${points} ${points === 1 ? 'ponto' : 'pontos'}`,
     acrossLabel: `Entre ${units}`,
     alongHint: `Ao longo do mesmo ${unit}`,
-    across: tracks === 0 ? '—' : tracks > 1 ? measurements.faixa(mesh.entreTiros) : `${unit === 'anel' ? 'Anel' : unit === 'trajeto' ? 'Trajeto' : 'Tiro'} único`,
-    along: points === 0 ? '—' : points > 1 ? measurements.faixa(mesh.entrePontos) : 'Ponto único',
+    across: tracks === 0 ? '—' : tracks > 1 ? (mesh.entreTiros ? measurements.faixa(mesh.entreTiros) : '—') : `${unit === 'anel' ? 'Anel' : unit === 'trajeto' ? 'Trajeto' : 'Tiro'} único`,
+    // Sem intervalo ao longo de nenhum tiro (um ponto em cada): o cartão diz isso em vez de ficar vazio.
+    along: points === 0 ? '—' : points > 1 ? (mesh.entrePontos ? measurements.faixa(mesh.entrePontos) : `Um em cada ${unit}`) : 'Ponto único',
     crew: people > 0 && people <= 20 && people !== tracks
       ? `Equipe: ${people} ${people === 1 ? 'pessoa' : 'pessoas'} para ${tracks} ${tracks === 1 ? unit : units}. Planeje o percurso em Tiros.` : '',
   };

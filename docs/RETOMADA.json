@@ -29,6 +29,16 @@
       "command": "node audit/block-map-selection-browser.mjs",
       "result": "passou",
       "evidence": "Revisão da entrega anterior (PR #14): 5/5 verificações da consulta após editar o plano."
+    },
+    {
+      "command": "node audit/adjust-alternatives.test.mjs && node audit/operational-summary.test.mjs && node audit/adjust-compare-browser.mjs",
+      "result": "passou",
+      "evidence": "1.36.0: Usar = prévia em 51/51 lotes; abrir não grava; RA9/RB9 corrigido; axe 0 violações. docs/E3_COMPARAR_ANTES_DE_APLICAR.md"
+    },
+    {
+      "command": "bateria do CI local (blocos-candidata.yml + browser.mjs + operational-plan-browser.mjs)",
+      "result": "pendente",
+      "evidence": "em execução no checkpoint"
     }
   ],
   "blockers": [
@@ -46,7 +56,8 @@
     "Claude 14/11: E1 reproduz build e mede medidas; E2 confronta entre tiros, entre pontos e borda com GEOS/PROJ nos 51 lotes e 40 grupos (audit/direction-measures).",
     "E2 itens 10–14/20: sem erro reproduzido; distâncias são de grade UTM (−0,02–0,03% no terreno), documentado.",
     "E2 item 09: rumo da planilha = norte verdadeiro; tiros retos na grade; variação da convergência no lote ≤0,006° (≤0,48 m); norte magnético não usado.",
-    "E2 concluída sem defeito reproduzido em 09–14, 20, 23; nenhuma mudança no app foi necessária."
+    "E2 concluída sem defeito reproduzido em 09–14, 20, 23; nenhuma mudança no app foi necessária.",
+    "1.36.0: aviso de mudança continua sem lista (decisão aprovada); comparação fica em quadro recolhido na etapa Tiros; Usar passa pelo campo existente."
   ],
   "snapshot": {
     "at": "2026-11-14T14:31:36.722Z",

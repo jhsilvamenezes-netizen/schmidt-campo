@@ -38,3 +38,10 @@ test('barra operacional é 36,48; a apresentação alerta divergência sem reesc
  assert.equal(readOperationalSummary(plan(40,false),'5',measures).boomNeedsReview,false);
  assert.equal(readOperationalSummary(plan(40,true,'importado'),'5',measures).boomNeedsReview,false);
 });
+test('um ponto em cada tiro: "Entre pontos" diz isso em vez de ficar vazio (RA9/RB9)',()=>{
+  const single={malhaDoPlano:()=>({entreTiros:'transversal',entrePontos:null}),faixa:measures.faixa};
+  const result=readOperationalSummary(scenario('espacamento',2,2),'2',single);
+  assert.equal(result.across,'438 m');assert.equal(result.along,'Um em cada tiro');
+  const noRange=readOperationalSummary(scenario('espacamento',2,2),'2',{malhaDoPlano:()=>({entreTiros:null,entrePontos:null}),faixa:measures.faixa});
+  assert.equal(noRange.across,'—');
+});
