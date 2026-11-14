@@ -75,7 +75,7 @@ testes, pendências e a próxima ação.
 ## Próxima evolução
 
 [Plano da versão 2.0](docs/PLANO_VERSAO_2_0.md): foco no link e navegador móvel, 45 itens de direcionamento e análise espacial, parâmetros e critérios de entrega web. Sem coleta/marcação pela equipe; APK adiado.
-[Mensagem para iniciar com Claude](docs/INICIO_CLAUDE_2_0.md). A 2.0.0 já foi publicada; consultar a retomada para correções e pendências atuais.
+[Mensagem para iniciar com Claude](docs/INICIO_CLAUDE_2_0.md). A 2.0.1 está publicada; consultar a retomada e [correções entregues](docs/CORRECOES_2_0_1.md) para continuar.
 
 [Revisão aprofundada da 2.0 web](docs/APROFUNDAMENTO_2_0_WEB.md): métodos geográficos, medidas verificadas e 12 frentes de design de orientação.
 

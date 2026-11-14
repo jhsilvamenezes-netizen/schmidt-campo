@@ -175,7 +175,7 @@ guia por GPS sem marcação, esquema fiel, monitor com mapa correto no celular e
 
 ## 2.0.1 — correções do direcionamento GPS
 
-Candidata autorizada após a revisão #18. Expira a orientação dinâmica de posições
+Publicada pelo PR #19, com autorização após a revisão #18 e CI aprovado. Expira a orientação dinâmica de posições
 antigas, estabiliza a troca de alvo e evita repetir o alerta de chegada por ruído.
 Chegada com texto voltado às distâncias; nenhum registro histórico é apagado.
 Testes de regressão e limites: [CORRECOES_2_0_1.md](CORRECOES_2_0_1.md).

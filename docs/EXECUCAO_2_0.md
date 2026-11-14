@@ -1,7 +1,7 @@
 # Fila de execução — direcionamento 2.0 web
 
-Base de passagem: **2.0.0 publicada**, main
-`2455c19d4a3cc3d5d65f028a7e6b708902290de3`, PR #17. Correção 2.0.1 em validação.
+Base de passagem: **2.0.1 publicada**, main
+`705a80988220f10984d770c4fba3c6b9a59eaef8`, PR #19. Site público conferido.
 Conferir RETOMADA.json e o GitHub antes de trabalhar. Esta fila distingue o que
 foi entregue das partes ainda abertas; o número 2.0 não encerra todos os itens.
 Plano e caderno: [01–45](PLANO_VERSAO_2_0.md), [métodos/design](APROFUNDAMENTO_2_0_WEB.md).
@@ -13,7 +13,7 @@ Plano e caderno: [01–45](PLANO_VERSAO_2_0.md), [métodos/design](APROFUNDAMENT
 | E1 — referência reproduzível | 01–03 | Inventário fonte/legado, versão/cenários fixos, tempos mediano/p95 de abertura e desenho contra versão anterior; scripts reproduzíveis e relatório sem dados privados | Base/inventário entregues em #15; medição repetida na revisão #18 |
 | E2 — medidas de direcionamento | 05–14,20,23 | Tabela por caso com motor vs GEOS/PROJ, unidade/tolerância e erro; testar 51 lotes/40 grupos e consulta após editar plano; corrigir primeiro erro reproduzido | Conferência inicial entregue em #15; gate independente incluído na 2.0.1; campo pendente |
 | E3 — cobertura e ajustes | 15–19,22 | Estabilidade da avaliação e alternativas de fase/espaçamento/quantidade; todos os parâmetros preservados e sem impor regra agronômica | Comparação individual entregue; comparação em blocos e alternativas de fase pendentes |
-| E4 — GPS e consulta | 24–27 | Fix inválido não orienta; distinguir rumo/curso e desvio lateral/avanço; seleção manual estável, sem marcar execução | Guia entregue em #16/#17; expiração e histerese corrigidas na candidata 2.0.1; campo pendente |
+| E4 — GPS e consulta | 24–27 | Fix inválido não orienta; distinguir rumo/curso e desvio lateral/avanço; seleção manual estável, sem marcar execução | Guia entregue em #16/#17; expiração e histerese corrigidas na 2.0.1 publicada; campo pendente |
 | E5 — desenho com dados reais | 28–35 | Projeção determinística sobre mesmo cenário antes/depois: lote, bloco, medidas, ajustes de tiros/pontos, temas, rótulos e larguras móveis; conferir escopo aprovado | Projeção geral ainda pendente; não confundir melhorias pontuais com E5 concluída |
 | E6 — implementação móvel | 28–35,40,42 | Entregar cada refino aprovado por PR pequeno; comparação visual, gestos/teclado e mesma geometria de cálculo/exportação | Altura do monitor corrigida em #17; implementação geral depende de E5 |
 | E7 — robustez do link | 36–44 | Offline real, importação limitada, cache invalidado, retomada/rollback e recursos limitados; corrigir gargalo medido com paridade | Cache/upgrade já entregues e testados; restrições em aparelho físico pendentes |

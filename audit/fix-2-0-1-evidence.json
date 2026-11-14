@@ -189,7 +189,28 @@
     "errors": []
   },
   "spatialEvidence": "audit/direction-measures-evidence.json",
-  "publication": "pending CI and public verification",
+  "publication": {
+    "status": "published and verified",
+    "merge": "705a80988220f10984d770c4fba3c6b9a59eaef8",
+    "pr": 19,
+    "publicSmoke": {
+      "checks": [
+        "published-gps-expiration-and-arrival",
+        "html-identical-to-tested-build",
+        "three-members-58-points",
+        "point-query-and-zoom-preserve-plan",
+        "plan-default-no-external-query",
+        "offline-reload-preserves-plan-with-active-field-default-normalization"
+      ],
+      "errors": [],
+      "physicalPhoneTested": false,
+      "published": true
+    },
+    "ciRuns": [
+      43637233419,
+      43637233431
+    ]
+  },
   "remaining": [
     "F3: separate legacy controls/data from direction mode",
     "F4: comparison and application of block adjustments",
