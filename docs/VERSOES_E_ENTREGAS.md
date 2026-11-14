@@ -148,3 +148,12 @@ Retorno ao Plano em falha/offline, cálculos e registros preservados. Rede apena
 após escolha explícita; imagem real conferida no bloco BA1/BA2/BA3.
 Sem publicação e sem novo APK nesta etapa. Relatório:
 [SATELITE_OPCIONAL_1_35_0.md](SATELITE_OPCIONAL_1_35_0.md).
+
+## 1.36.0 — comparar antes de aplicar (2.0 web, E3)
+
+Ajuste fino › Tiros ganha "Comparar antes de aplicar": distâncias (passadas da
+barra) ou quantidades vizinhas com tiros, pontos, entre tiros, entre pontos,
+borda, cobertura e caminhada, sem mudar o plano. "Usar" aplica pelo mesmo campo,
+com Desfazer. Corrige o cartão "Entre pontos" vazio quando cada tiro tem um
+ponto (RA9/RB9). Sem publicação e sem APK. Relatório:
+[E3_COMPARAR_ANTES_DE_APLICAR.md](E3_COMPARAR_ANTES_DE_APLICAR.md).

@@ -150,6 +150,13 @@ O index.html versionado na raiz é um **artefato compilado**; o README menciona 
 - Testar cache offline e atualização de service worker sem descartar registros.
 - **Somente auditar** a interface mobile do mapa e Modo Campo, sem alterar CSS, telas, textos ou fluxos; registrar propostas para aprovação visual futura. Diferenciar simulação de informação operacional homologada apenas sem mudar o visual atual.
 
+### Autorização de publicação da 1.36.0 — 14/11/2026
+
+O proprietário respondeu: **"Autorizo publicar a 1.36.0 e seguir com as melhorias"**.
+Escopo: integrar o PR #15 (E1/E2, 1.36.0 "Comparar antes de aplicar" e correção do
+cartão "Entre pontos") na `main` após o CI verde, e atualizar o Pages. Não inclui APK.
+As próximas etapas da 2.0 continuam por PR e testes; nova publicação exige nova autorização.
+
 ## Fluxo
 - Trabalhar somente em branch de desenvolvimento e PR.
 - Criar mudanças pequenas com testes, relatório de impacto e meios de reproduzir.

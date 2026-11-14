@@ -1,0 +1,462 @@
+{
+  "status": "passed",
+  "reference": "026d687",
+  "beforeSha256": "ad792b8dc0e453612d21d0978d8a0b87f4e2387dc706cb15b0cc134ece57662e",
+  "candidateSha256": "cea2c21f6399a5a992aea155303444ffd5d319c33080bc2e4357a0d5dbbb1de6",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "runsPerVariantAndCPU": 5,
+  "network": "loopback; no service worker",
+  "physicalDevice": false,
+  "rows": [
+    {
+      "variant": "before",
+      "cpuRate": 1,
+      "run": 0,
+      "readyMs": 219.40000000002328,
+      "longTaskMs": 93,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 122.09999999997672,
+      "maxFieldMs": 13.199999999953434,
+      "drawMedianMs": 33,
+      "drawMaxMs": 35.40000000002328,
+      "heapAtReadyBytes": 2716316,
+      "heapAfterScenariosBytes": 3643052
+    },
+    {
+      "variant": "after",
+      "cpuRate": 1,
+      "run": 0,
+      "readyMs": 209.5,
+      "longTaskMs": 105,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 113.5,
+      "maxFieldMs": 11.099999999976717,
+      "drawMedianMs": 30.29999999993015,
+      "drawMaxMs": 33.5,
+      "heapAtReadyBytes": 2737988,
+      "heapAfterScenariosBytes": 3670016
+    },
+    {
+      "variant": "after",
+      "cpuRate": 1,
+      "run": 1,
+      "readyMs": 182.79999999993015,
+      "longTaskMs": 86,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 110.49999999988358,
+      "maxFieldMs": 10.5,
+      "drawMedianMs": 32.59999999997672,
+      "drawMaxMs": 39.800000000046566,
+      "heapAtReadyBytes": 2732352,
+      "heapAfterScenariosBytes": 3668168
+    },
+    {
+      "variant": "before",
+      "cpuRate": 1,
+      "run": 1,
+      "readyMs": 180.69999999995343,
+      "longTaskMs": 83,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 109.80000000004657,
+      "maxFieldMs": 9.800000000046566,
+      "drawMedianMs": 32.5,
+      "drawMaxMs": 33.70000000006985,
+      "heapAtReadyBytes": 2720264,
+      "heapAfterScenariosBytes": 3645308
+    },
+    {
+      "variant": "before",
+      "cpuRate": 1,
+      "run": 2,
+      "readyMs": 190.5,
+      "longTaskMs": 87,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 127.40000000002328,
+      "maxFieldMs": 13.099999999976717,
+      "drawMedianMs": 37.5,
+      "drawMaxMs": 38.59999999997672,
+      "heapAtReadyBytes": 2719520,
+      "heapAfterScenariosBytes": 3645888
+    },
+    {
+      "variant": "after",
+      "cpuRate": 1,
+      "run": 2,
+      "readyMs": 197.90000000002328,
+      "longTaskMs": 90,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 140.40000000002328,
+      "maxFieldMs": 17.5,
+      "drawMedianMs": 33.10000000009313,
+      "drawMaxMs": 36.90000000002328,
+      "heapAtReadyBytes": 2733236,
+      "heapAfterScenariosBytes": 3665276
+    },
+    {
+      "variant": "after",
+      "cpuRate": 1,
+      "run": 3,
+      "readyMs": 184.90000000002328,
+      "longTaskMs": 92,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 116.09999999997672,
+      "maxFieldMs": 9.599999999976717,
+      "drawMedianMs": 32.09999999997672,
+      "drawMaxMs": 33.09999999997672,
+      "heapAtReadyBytes": 2733956,
+      "heapAfterScenariosBytes": 3670232
+    },
+    {
+      "variant": "before",
+      "cpuRate": 1,
+      "run": 3,
+      "readyMs": 230.90000000002328,
+      "longTaskMs": 119,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 118,
+      "maxFieldMs": 10.900000000023283,
+      "drawMedianMs": 31.900000000023283,
+      "drawMaxMs": 33.800000000046566,
+      "heapAtReadyBytes": 2724944,
+      "heapAfterScenariosBytes": 3643828
+    },
+    {
+      "variant": "before",
+      "cpuRate": 1,
+      "run": 4,
+      "readyMs": 190.19999999995343,
+      "longTaskMs": 84,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 99.09999999997672,
+      "maxFieldMs": 11.099999999976717,
+      "drawMedianMs": 32.90000000002328,
+      "drawMaxMs": 36.800000000046566,
+      "heapAtReadyBytes": 2719968,
+      "heapAfterScenariosBytes": 3644072
+    },
+    {
+      "variant": "after",
+      "cpuRate": 1,
+      "run": 4,
+      "readyMs": 180.89999999990687,
+      "longTaskMs": 83,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 114.99999999988358,
+      "maxFieldMs": 10,
+      "drawMedianMs": 33.199999999953434,
+      "drawMaxMs": 33.39999999990687,
+      "heapAtReadyBytes": 2745004,
+      "heapAfterScenariosBytes": 3665696
+    },
+    {
+      "variant": "before",
+      "cpuRate": 4,
+      "run": 0,
+      "readyMs": 883.9000000000233,
+      "longTaskMs": 612,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 372.80000000004657,
+      "maxFieldMs": 43.800000000046566,
+      "drawMedianMs": 122.69999999995343,
+      "drawMaxMs": 134.20000000006985,
+      "heapAtReadyBytes": 2714608,
+      "heapAfterScenariosBytes": 3636788
+    },
+    {
+      "variant": "after",
+      "cpuRate": 4,
+      "run": 0,
+      "readyMs": 809.5,
+      "longTaskMs": 480,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 399.89999999990687,
+      "maxFieldMs": 45.800000000046566,
+      "drawMedianMs": 109.59999999997672,
+      "drawMaxMs": 119.29999999993015,
+      "heapAtReadyBytes": 2716340,
+      "heapAfterScenariosBytes": 3654436
+    },
+    {
+      "variant": "after",
+      "cpuRate": 4,
+      "run": 1,
+      "readyMs": 612.2000000000698,
+      "longTaskMs": 301,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 386.4000000001397,
+      "maxFieldMs": 41.800000000046566,
+      "drawMedianMs": 110.09999999997672,
+      "drawMaxMs": 118.20000000006985,
+      "heapAtReadyBytes": 2738348,
+      "heapAfterScenariosBytes": 3654172
+    },
+    {
+      "variant": "before",
+      "cpuRate": 4,
+      "run": 1,
+      "readyMs": 748,
+      "longTaskMs": 457,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 419.79999999981374,
+      "maxFieldMs": 53.40000000002328,
+      "drawMedianMs": 105.09999999997672,
+      "drawMaxMs": 119,
+      "heapAtReadyBytes": 2715784,
+      "heapAfterScenariosBytes": 3639112
+    },
+    {
+      "variant": "before",
+      "cpuRate": 4,
+      "run": 2,
+      "readyMs": 755.1999999999534,
+      "longTaskMs": 502,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 364.5999999999767,
+      "maxFieldMs": 38.90000000002328,
+      "drawMedianMs": 113.69999999995343,
+      "drawMaxMs": 129.19999999995343,
+      "heapAtReadyBytes": 2703220,
+      "heapAfterScenariosBytes": 3634500
+    },
+    {
+      "variant": "after",
+      "cpuRate": 4,
+      "run": 2,
+      "readyMs": 788,
+      "longTaskMs": 571,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 427,
+      "maxFieldMs": 54.09999999997672,
+      "drawMedianMs": 113.70000000006985,
+      "drawMaxMs": 128.90000000002328,
+      "heapAtReadyBytes": 2715980,
+      "heapAfterScenariosBytes": 3654976
+    },
+    {
+      "variant": "after",
+      "cpuRate": 4,
+      "run": 3,
+      "readyMs": 738.2999999999302,
+      "longTaskMs": 510,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 386.19999999995343,
+      "maxFieldMs": 50.09999999997672,
+      "drawMedianMs": 113.80000000004657,
+      "drawMaxMs": 135.19999999995343,
+      "heapAtReadyBytes": 2715996,
+      "heapAfterScenariosBytes": 3655500
+    },
+    {
+      "variant": "before",
+      "cpuRate": 4,
+      "run": 3,
+      "readyMs": 819.5999999999767,
+      "longTaskMs": 507,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 361.69999999995343,
+      "maxFieldMs": 41.800000000046566,
+      "drawMedianMs": 111.30000000004657,
+      "drawMaxMs": 113.69999999995343,
+      "heapAtReadyBytes": 2702728,
+      "heapAfterScenariosBytes": 3638168
+    },
+    {
+      "variant": "before",
+      "cpuRate": 4,
+      "run": 4,
+      "readyMs": 760.6999999999534,
+      "longTaskMs": 472,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 374.5,
+      "maxFieldMs": 47.90000000002328,
+      "drawMedianMs": 106,
+      "drawMaxMs": 118.5,
+      "heapAtReadyBytes": 2701460,
+      "heapAfterScenariosBytes": 3634012
+    },
+    {
+      "variant": "after",
+      "cpuRate": 4,
+      "run": 4,
+      "readyMs": 792.2999999999302,
+      "longTaskMs": 492,
+      "fields": 51,
+      "samples": 749,
+      "totalMs": 360,
+      "maxFieldMs": 43.5,
+      "drawMedianMs": 114.90000000002328,
+      "drawMaxMs": 124.5,
+      "heapAtReadyBytes": 2719980,
+      "heapAfterScenariosBytes": 3658012
+    }
+  ],
+  "summary": [
+    {
+      "variant": "before",
+      "cpuRate": 1,
+      "readyMs": {
+        "median": 190.5,
+        "p95": 230.90000000002328
+      },
+      "drawMedianMs": {
+        "median": 32.90000000002328,
+        "p95": 37.5
+      },
+      "drawMaxMs": {
+        "median": 35.40000000002328,
+        "p95": 38.59999999997672
+      },
+      "totalMs": {
+        "median": 118,
+        "p95": 127.40000000002328
+      },
+      "maxFieldMs": {
+        "median": 11.099999999976717,
+        "p95": 13.199999999953434
+      },
+      "longTaskMs": {
+        "median": 87,
+        "p95": 119
+      },
+      "heapAtReadyBytes": {
+        "median": 2719968,
+        "p95": 2724944
+      },
+      "heapAfterScenariosBytes": {
+        "median": 3644072,
+        "p95": 3645888
+      }
+    },
+    {
+      "variant": "after",
+      "cpuRate": 1,
+      "readyMs": {
+        "median": 184.90000000002328,
+        "p95": 209.5
+      },
+      "drawMedianMs": {
+        "median": 32.59999999997672,
+        "p95": 33.199999999953434
+      },
+      "drawMaxMs": {
+        "median": 33.5,
+        "p95": 39.800000000046566
+      },
+      "totalMs": {
+        "median": 114.99999999988358,
+        "p95": 140.40000000002328
+      },
+      "maxFieldMs": {
+        "median": 10.5,
+        "p95": 17.5
+      },
+      "longTaskMs": {
+        "median": 90,
+        "p95": 105
+      },
+      "heapAtReadyBytes": {
+        "median": 2733956,
+        "p95": 2745004
+      },
+      "heapAfterScenariosBytes": {
+        "median": 3668168,
+        "p95": 3670232
+      }
+    },
+    {
+      "variant": "before",
+      "cpuRate": 4,
+      "readyMs": {
+        "median": 760.6999999999534,
+        "p95": 883.9000000000233
+      },
+      "drawMedianMs": {
+        "median": 111.30000000004657,
+        "p95": 122.69999999995343
+      },
+      "drawMaxMs": {
+        "median": 119,
+        "p95": 134.20000000006985
+      },
+      "totalMs": {
+        "median": 372.80000000004657,
+        "p95": 419.79999999981374
+      },
+      "maxFieldMs": {
+        "median": 43.800000000046566,
+        "p95": 53.40000000002328
+      },
+      "longTaskMs": {
+        "median": 502,
+        "p95": 612
+      },
+      "heapAtReadyBytes": {
+        "median": 2703220,
+        "p95": 2715784
+      },
+      "heapAfterScenariosBytes": {
+        "median": 3636788,
+        "p95": 3639112
+      }
+    },
+    {
+      "variant": "after",
+      "cpuRate": 4,
+      "readyMs": {
+        "median": 788,
+        "p95": 809.5
+      },
+      "drawMedianMs": {
+        "median": 113.70000000006985,
+        "p95": 114.90000000002328
+      },
+      "drawMaxMs": {
+        "median": 124.5,
+        "p95": 135.19999999995343
+      },
+      "totalMs": {
+        "median": 386.4000000001397,
+        "p95": 427
+      },
+      "maxFieldMs": {
+        "median": 45.800000000046566,
+        "p95": 54.09999999997672
+      },
+      "longTaskMs": {
+        "median": 492,
+        "p95": 571
+      },
+      "heapAtReadyBytes": {
+        "median": 2716340,
+        "p95": 2738348
+      },
+      "heapAfterScenariosBytes": {
+        "median": 3654976,
+        "p95": 3658012
+      }
+    }
+  ],
+  "browser": "153.0.8010.12"
+}

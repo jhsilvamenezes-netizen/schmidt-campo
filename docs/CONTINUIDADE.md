@@ -5,6 +5,11 @@ e o commit atual de main. O site é https://jhsilvamenezes-netizen.github.io/sch
 Este documento permite continuar a revisão com outro desenvolvedor ou assistente,
 inclusive Claude. Não existe integração automática entre sessões.
 
+## Ponto de retomada vigente
+
+Começar por [RETOMADA.md](RETOMADA.md) e JSON, depois [EXECUCAO_2_0.md](EXECUCAO_2_0.md).
+Salvar durante a execução, não apenas ao encerrar. [Guia](CONTINUIDADE_SEM_PERDER_TRABALHO.md).
+
 ## Alternar entre Codex e Claude
 
 Leia [COORDENACAO.md](COORDENACAO.md): fila imediata, protocolo de revisão e
@@ -12,14 +17,19 @@ modelo de passagem. A Issue #1 continua sendo o backlog principal. Cada PR
 atualiza estes registros junto com a mudança. Não existe execução automática
 de uma sessão pela outra.
 
-## Correção candidata 1.35.1 — consulta do plano
+## Base atual e próxima execução
 
-Consulta de ponto passa a acompanhar edição/reordenação/borda do cenário atual;
-ponto removido fecha a consulta. Ver [relatório](CORRECAO_CONSULTA_MEDIDAS_1_35_1.md).
-Uso atual definido pelo proprietário: direcionamento sem coleta/marcação pela
-equipe. Preservar legado. PR #13 contém plano espacial/visual; esta candidata
-não implementa a projeção visual nem altera o motor de distribuição.
-Conferir PR e Issue #1 antes de afirmar publicação.
+**1.35.1 publicada e conferida**, merge
+`2e4e2be9a44310b847155bdef9d7b78b9865ccd0`, PR #14. Consulta de ponto acompanha
+posição, ordem e borda atualizadas; ponto removido fecha a consulta. Ver
+[relatório](CORRECAO_CONSULTA_MEDIDAS_1_35_1.md) e Issue #1 para evidências.
+
+A evolução 2.0 ainda é trabalho a executar: [plano](PLANO_VERSAO_2_0.md),
+[caderno espacial e visual](APROFUNDAMENTO_2_0_WEB.md).
+Direcionamento exclusivo pelo link móvel, sem coleta/marcação pela equipe.
+Preservar legado; APK adiado. Não executar listas antigas centradas em coleta.
+[Texto para Claude](INICIO_CLAUDE_2_0.md).
+
 
 ## Evolução recente
 

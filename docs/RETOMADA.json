@@ -1,0 +1,76 @@
+{
+  "schema": "schmidt.handoff.v1",
+  "task": "E3 — comparar antes de aplicar (1.36.0)",
+  "owner": "Claude",
+  "status": "pronto_para_revisao",
+  "nextAction": "Revisar PR #15 e autorizar integração/publicação da 1.36.0; depois: esquema das distâncias com a quantidade real de pontos; E4 GPS sintético (24–27)",
+  "baseMain": "2e4e2be9a44310b847155bdef9d7b78b9865ccd0",
+  "publishedVersion": "1.35.1",
+  "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
+  "latestDeliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/14",
+  "scope": "Direcionamento exclusivo no link móvel, sem coleta/marcação pela equipe. APK adiado.",
+  "tests": [
+    {
+      "command": "node scripts/build-preserved.mjs --check",
+      "result": "passou",
+      "evidence": "1.35.1 reproduzida (HTML cea2c21f…)."
+    },
+    {
+      "command": "cd audit && node direction-measures-probe.mjs && python -I direction-measures.py",
+      "result": "passou",
+      "evidence": "24 verificações (rumo 09, borda 13, GPX ida e volta 23), 51 lotes e 40 grupos, erro ≤ 2e-9 m; mutações detectadas. docs/E2_MEDIDAS_DIRECIONAMENTO.md"
+    },
+    {
+      "command": "PERF_REF=026d687 node audit/performance-browser.mjs",
+      "result": "passou",
+      "evidence": "1.35.1 × 1.34.1: abrir 185/210 ms × 191/231 (CPU×1), desenho 33 ms; sem regressão. docs/E1_REFERENCIA.md"
+    },
+    {
+      "command": "node audit/block-map-selection-browser.mjs",
+      "result": "passou",
+      "evidence": "Revisão da entrega anterior (PR #14): 5/5 verificações da consulta após editar o plano."
+    },
+    {
+      "command": "node audit/adjust-alternatives.test.mjs && node audit/operational-summary.test.mjs && node audit/adjust-compare-browser.mjs",
+      "result": "passou",
+      "evidence": "1.36.0: Usar = prévia em 51/51 lotes; abrir não grava; RA9/RB9 corrigido; axe 0 violações. docs/E3_COMPARAR_ANTES_DE_APLICAR.md"
+    },
+    {
+      "command": "sequência do CI blocos-candidata.yml (test:blocks, checkpoint, build --check, 40 grupos, mapas, adjust-compare, satélite, validate-runtime-blocks) + operational-plan-browser",
+      "result": "passou",
+      "evidence": "todas OK na 1.36.0"
+    },
+    {
+      "command": "node audit/browser.mjs (congelamento visual, fora do CI)",
+      "result": "falhou",
+      "evidence": "ruído de 1/255 em 34–44 px que muda de tela entre execuções; a 1.35.1 falha igual (390/auditoria 44 px). Preexistente, não causado pela 1.36.0"
+    }
+  ],
+  "blockers": [
+    "Teste físico depende de aparelhos da equipe; preparar roteiro e continuar trabalho interno independente.",
+    "Fonte geradora original completa ainda não recuperada; preservar integração e extrair por trecho com paridade."
+  ],
+  "decisions": [
+    "1.35.1 já entregue; não refazer correção #14.",
+    "Método linear sem anéis, barra 36,48 m, P6 atual, 51 lotes/40 grupos.",
+    "Plano padrão e Satélite opcional; não derivar divisa da fotografia nem impor recuo obrigatório.",
+    "PR #13 é planejamento/protocolo; 2.0 e projeção visual ainda não implementadas.",
+    "Mockup não é oráculo de geometria; gerar projeção determinística com dados reais e conferir escopo visual antes de implementar.",
+    "Último checkpoint enviado é recuperável; uma sessão nova não recebe automaticamente arquivos não publicados nem a conversa da outra IA.",
+    "Matriz de parâmetros é critério de validação/execução, não nova recomendação de valores nem funcionalidade implementada.",
+    "Claude 14/11: E1 reproduz build e mede medidas; E2 confronta entre tiros, entre pontos e borda com GEOS/PROJ nos 51 lotes e 40 grupos (audit/direction-measures).",
+    "E2 itens 10–14/20: sem erro reproduzido; distâncias são de grade UTM (−0,02–0,03% no terreno), documentado.",
+    "E2 item 09: rumo da planilha = norte verdadeiro; tiros retos na grade; variação da convergência no lote ≤0,006° (≤0,48 m); norte magnético não usado.",
+    "E2 concluída sem defeito reproduzido em 09–14, 20, 23; nenhuma mudança no app foi necessária.",
+    "1.36.0: aviso de mudança continua sem lista (decisão aprovada); comparação fica em quadro recolhido na etapa Tiros; Usar passa pelo campo existente."
+  ],
+  "snapshot": {
+    "at": "2026-11-14T15:00:22.134Z",
+    "branch": "claude/e2-medidas",
+    "codeCommit": "129f8ff2cf9c0e7e1b43580db997038a567baec1",
+    "changedTrackedFiles": [
+      "docs/E3_COMPARAR_ANTES_DE_APLICAR.md"
+    ],
+    "untrackedCount": 0
+  }
+}

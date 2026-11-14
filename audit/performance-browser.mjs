@@ -8,10 +8,11 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
-const before=execFileSync('git',['show','8232d79:index.html'],{cwd:root,maxBuffer:4*1024*1024});
+const reference=process.env.PERF_REF||'8232d79'; // E1: PERF_REF=<commit da versão anterior>
+const before=execFileSync('git',['show',`${reference}:index.html`],{cwd:root,maxBuffer:4*1024*1024});
 const after=await readFile(root+'index.html');
 const hash=value=>createHash('sha256').update(value).digest('hex');
-const report={status:'failed',reference:'8232d79',beforeSha256:hash(before),candidateSha256:hash(after),
+const report={status:'failed',reference,beforeSha256:hash(before),candidateSha256:hash(after),
   viewport:{width:390,height:844},runsPerVariantAndCPU:5,network:'loopback; no service worker',
   physicalDevice:false,rows:[],summary:[]};
 const server=createServer(async(req,res)=>{
@@ -55,6 +56,20 @@ try {
         }
         return {fields,samples,totalMs:times.reduce((a,b)=>a+b,0),maxFieldMs:Math.max(...times)};
       });
+      // Desenho: trocar de lote até o mapa pintado (dois quadros após o app trocar o cenário). Mesmos 5 lotes sempre.
+      const draw=await page.evaluate(async()=>{
+        const keys=Object.keys(SCHMIDT.app.fields).sort().filter((_,i)=>i%10===3).slice(0,5),times=[];
+        const frame=()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+        for(const key of keys){
+          const started=performance.now();
+          const farm=document.getElementById('farm');farm.value=key.split('|')[0];farm.dispatchEvent(new Event('change',{bubbles:true}));
+          const field=document.getElementById('field');field.value=key;field.dispatchEvent(new Event('change',{bubbles:true}));
+          while(`${SCHMIDT.app.field.farm}|${SCHMIDT.app.field.code}`!==key||(SCHMIDT.app.sc?.field?.code??SCHMIDT.app.sc?.field)!==SCHMIDT.app.field.code) await new Promise(r=>setTimeout(r,5));
+          await frame();times.push(performance.now()-started);
+        }
+        return {drawMedianMs:[...times].sort((a,b)=>a-b)[2],drawMaxMs:Math.max(...times)};
+      });
+      Object.assign(engine,draw);
       assert.equal(engine.fields,51);assert.equal(engine.samples,749);
       await cdp.send('HeapProfiler.collectGarbage');
       const row={variant,cpuRate,run,...startup,...engine,heapAtReadyBytes:heapAtReady,heapAfterScenariosBytes:await heap()};
@@ -66,7 +81,7 @@ try {
   for(const cpuRate of [1,4]) for(const variant of ['before','after']) {
     const rows=report.rows.filter(r=>r.cpuRate===cpuRate&&r.variant===variant);
     const summary={variant,cpuRate};
-    for(const metric of ['readyMs','totalMs','maxFieldMs','longTaskMs','heapAtReadyBytes','heapAfterScenariosBytes']) {
+    for(const metric of ['readyMs','drawMedianMs','drawMaxMs','totalMs','maxFieldMs','longTaskMs','heapAtReadyBytes','heapAfterScenariosBytes']) {
       summary[metric]={median:percentile(rows.map(r=>r[metric]),0.5),p95:percentile(rows.map(r=>r[metric]),0.95)};
     }
     report.summary.push(summary);
@@ -76,6 +91,6 @@ try {
 } finally {
   await browser.close();await new Promise(resolve=>server.close(resolve));
   await mkdir(root+'audit/results',{recursive:true});
-  await writeFile(root+'audit/results/performance-report.json',JSON.stringify(report,null,2)+'\n');
+  await writeFile(root+(process.env.PERF_OUT||'audit/results/performance-report.json'),JSON.stringify(report,null,2)+'\n');
 }
 console.log(JSON.stringify({status:report.status,browser:report.browser,cpuRates:[1,4],runs:report.rows.length,physicalDevice:false,summary:report.summary}));

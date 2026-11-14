@@ -1,0 +1,151 @@
+{
+ "htmlSha256": "cea2c21f6399a5a992aea155303444ffd5d319c33080bc2e4357a0d5dbbb1de6",
+ "browser": "153.0.8010.12",
+ "versions": {
+  "shapely": "2.1.2",
+  "geos": "3.13.1",
+  "pyproj": "3.7.2",
+  "proj": "9.5.1"
+ },
+ "crs": "EPSG:32723 (WGS 84 / UTM 23S); coordenadas locais = UTM − centroide do lote",
+ "tolerances": {
+  "geometryM": 1e-06,
+  "screen": "metros inteiros (arredondamento do cartão)"
+ },
+ "lots": 51,
+ "blocks": 40,
+ "checks": {
+  "bloco.bordaDoPonto": {
+   "cases": 1535,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "bloco.entreTirosNoLote": {
+   "cases": 323,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "bloco.gpxIdaEVolta": {
+   "cases": 1535,
+   "maxErrorM": 2e-09,
+   "failures": 0
+  },
+  "bloco.grade": {
+   "cases": 147,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "bloco.paralelismoGraus": {
+   "cases": 411,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "bloco.pontoMaisPertoDaBorda": {
+   "cases": 40,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "bloco.pontosDentroDoLote": {
+   "cases": 1535,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "borda.menorDistanciaPorLote": {
+   "cases": 51,
+   "maxErrorM": 0.0,
+   "failures": 0,
+   "minM": 10.540507669
+  },
+  "entrePontos.aoLongoDoTrecho": {
+   "cases": 538,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "entreTiros.paralelismoGraus": {
+   "cases": 157,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "entreTiros.perpendicular": {
+   "cases": 157,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "exportacao.gpxIdaEVolta": {
+   "cases": 749,
+   "maxErrorM": 2e-09,
+   "failures": 0
+  },
+  "pontos.dentroDoLote": {
+   "cases": 749,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "pontos.posicaoAoLongo": {
+   "cases": 749,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "pontos.semDuplicacao": {
+   "cases": 749,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "pontos.sobreOTrecho": {
+   "cases": 749,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "recorte.comprimento": {
+   "cases": 211,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "recorte.foraDoLote": {
+   "cases": 211,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "recorte.naoInventaTrecho": {
+   "cases": 208,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "recorte.pontaNaDivisa": {
+   "cases": 422,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "rumo.azimuteDeGradeDosTiros": {
+   "cases": 51,
+   "maxErrorM": 0.0,
+   "failures": 0
+  },
+  "rumo.correcaoIgualMenosConvergenciaGraus": {
+   "cases": 51,
+   "maxErrorM": 7.6515e-05,
+   "failures": 0
+  },
+  "rumo.variacaoDentroDoLote": {
+   "cases": 51,
+   "maxErrorM": 0.0,
+   "failures": 0,
+   "maxGraus": 0.006033959,
+   "efeitoLateralMaxM": 0.479669584
+  },
+  "tela.entreTiros": {
+   "cases": 51,
+   "maxErrorM": 0.0,
+   "failures": 0
+  }
+ },
+ "failures": [],
+ "projecao": {
+  "metodo": "pyproj Proj.get_factors no centroide de cada lote (EPSG:32723)",
+  "fatorEscalaMin": 0.999726,
+  "fatorEscalaMax": 0.999778,
+  "efeitoEm438m": "0.12 a 0.10 m",
+  "leitura": "Distâncias do app são de grade UTM. No terreno diferem pelo fator de escala; ver efeitoEm438m."
+ },
+ "status": "ok"
+}

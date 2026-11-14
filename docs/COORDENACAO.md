@@ -4,6 +4,14 @@ O GitHub guarda o estado comum. O proprietário alterna entre as sessões;
 nenhuma delas inicia, monitora ou envia mensagens para a outra automaticamente.
 Não depende do nome comercial ou da versão do modelo.
 
+## Retomada durante a execução
+
+Não esperar o fim da sessão: ler [RETOMADA.md](RETOMADA.md)/JSON e
+[fila executável](EXECUCAO_2_0.md). Gerar checkpoint após cada unidade e antes de
+pausa; publicar código/testes/estado na branch, WIP identificado. O gerador não
+faz push; verificar SHA remoto. [Procedimento e limites](CONTINUIDADE_SEM_PERDER_TRABALHO.md).
+Esta é uma rotina de trabalho, não comunicação ou troca automática de IA.
+
 ## Onde conferir cada informação
 
 - `VERSAO.json`, main e histórico de publicação: versão integrada; confirmar o endereço real antes de afirmar que está publicada.
@@ -35,7 +43,19 @@ implementa a próxima tarefa. A revisão não precisa concordar com a proposta:
 divergências viram hipóteses comparáveis e testes, não reescritas por preferência.
 Não ampliar uma alteração de câmera para cálculo de pontos ou redesenho geral.
 
-## Próxima fila, a partir da revisão de 13/11/2026
+## Fila atual — preparação da 2.0
+
+Referência 1.35.1, main `2e4e2be9a44310b847155bdef9d7b78b9865ccd0`.
+Gestos (#11), satélite opcional (#12) e protocolo (#10) já integrados.
+O [plano 2.0 revisto](PLANO_VERSAO_2_0.md) ordena as próximas tarefas:
+direcionamento exclusivo pelo link móvel, sem coleta ou marcação pela equipe.
+O [caderno espacial/visual](APROFUNDAMENTO_2_0_WEB.md) detalha ferramentas GIS,
+medidas, validação e 12 frentes de design. APK adiado. Preservar legado sem apagá-lo.
+IDs 01–45 foram redistribuídos; não executar a fila anterior centrada em coleta.
+Começar por 01–03 e roteiro 04; validar medidas 05–14/20/23 antes das projeções
+28–35. A fila abaixo é histórica e não deve reabrir recursos já entregues.
+
+## Fila histórica, a partir da revisão de 13/11/2026
 
 Referência: main `d8b64e26680490660b591fd420452574497049e7`, versão 1.34.0.
 Conferir novamente antes de iniciar; esta tabela não é uma trava automática.
