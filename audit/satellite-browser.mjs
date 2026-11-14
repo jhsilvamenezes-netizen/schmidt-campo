@@ -56,6 +56,17 @@ try{
  await p.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'));});
  const hiddenCount=requests.length;await p.waitForTimeout(1200);assert.equal(requests.length,hiddenCount);assert.equal(await p.locator('.schmidt-satellite-image').count(),0);
  delay=0;await p.evaluate(()=>{delete document.hidden;document.dispatchEvent(new Event('visibilitychange'));});await p.waitForSelector('#block-overview.satellite-on');checks.push('background-cancels-request-and-foreground-recovers');
+ await p.selectOption('#satellite-mode','plan');
+ await p.evaluate(()=>{
+  window.originalDecode=createImageBitmap;
+  window.decodeClosed=false;
+  window.createImageBitmap=async blob=>{const bitmap=await originalDecode(blob);await new Promise(resolve=>setTimeout(resolve,10500));return {width:bitmap.width,height:bitmap.height,close(){bitmap.close();window.decodeClosed=true;}};};
+ });
+ await p.selectOption('#satellite-mode','satellite');
+ await p.waitForFunction(()=>document.getElementById('satellite-mode').value==='plan',{},{timeout:15000});
+ assert.equal(await p.evaluate(()=>decodeClosed),true);assert.equal(await p.locator('.schmidt-satellite-image').count(),0);assert.equal(await p.evaluate(()=>imageURLs.size),0);
+ await p.evaluate(()=>{window.createImageBitmap=originalDecode;delete window.originalDecode;});
+ checks.push('late-image-decode-respects-timeout-and-releases-bitmap');
  await p.selectOption('#satellite-mode','plan');assert.equal(await p.evaluate(()=>localStorage.getItem('monitoramento.v03')),raw);
  for(const width of [360,390,412]){await p.setViewportSize({width,height:844});await p.locator('#satellite-mode').scrollIntoViewIfNeeded();assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);}
  assert.equal(await p.evaluate(()=>imageURLs.size),0,'Plano deve liberar imagens');checks.push('plan-releases-image-object-urls');

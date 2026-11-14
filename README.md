@@ -65,3 +65,9 @@ npm --prefix audit run test:blocks
 A identificação em VERSAO.json informa se os arquivos desta branch são uma
 versão publicada ou uma versão em preparação. Estudos e imagens de proposta
 não significam que a mudança já está no site ou no APK.
+
+## Continuidade do desenvolvimento
+
+Para alternar entre Codex e Claude, use o [protocolo compartilhado](docs/COORDENACAO.md)
+e o [estado do projeto](docs/CONTINUIDADE.md). Cada entrega deixa no PR os commits,
+testes, pendências e a próxima ação.

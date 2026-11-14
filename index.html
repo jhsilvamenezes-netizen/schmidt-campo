@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/><meta name="schmidt-web" content="1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#17594a"><link rel="apple-touch-icon" href="icone-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="SCHMIDT"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <!-- 1.8: só código e imagens embutidos; nenhuma conexão com a internet (app offline) -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-iPCLsnrZIYTzQaEx2bVxKwxulKvYNQYGAG2Ffm5kaq8=' 'sha256-NVqkuWANoDOmSJXJG0zwfexIHzTpz44QZtuPs+aUCwc='; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob: 'self'; connect-src 'self' blob: data: https://services.arcgisonline.com; font-src data:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-9aGXIzdbzlzBHRICbEdJQG7gKqV9fOSTsP54jSpiFFM=' 'sha256-NVqkuWANoDOmSJXJG0zwfexIHzTpz44QZtuPs+aUCwc='; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob: 'self'; connect-src 'self' blob: data: https://services.arcgisonline.com; font-src data:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#123b33" name="theme-color"/>
 <title>SCHMIDT · Planejamento de amostragem v1.31.0</title>
@@ -1801,6 +1801,9 @@ function installSchmidtSatelliteMap({document}) {
       const blob = new Blob([bytes],{type:mime});
       const bitmap = await win.createImageBitmap(blob);
       try { if(bitmap.width!==meta.width||bitmap.height!==meta.height)throw Error('Imagem inválida'); } finally { bitmap.close(); }
+      // A decodificação nativa não recebe AbortSignal: conferir o prazo também
+      // depois dela, antes de aceitar uma imagem que terminou tarde demais.
+      if (controller.signal.aborted) throw Error('Tempo de imagem excedido');
       if (id!==serial || mode!=='satellite') return;
       const entry = {scope:frame.scope,bbox:actual,width:meta.width,scale:frame.scale,url:win.URL.createObjectURL(blob)};
       cache.push(entry); while (cache.length>2) win.URL.revokeObjectURL(cache.shift().url);

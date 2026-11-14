@@ -20,17 +20,18 @@
   "saveOnExitScenarios": 3,
   "physicalPhoneTested": false,
   "published": false,
-  "revision": "r2",
+  "revision": "r3",
   "boundedResponseChecks": 10,
   "invalidImageChecks": true,
   "backgroundPauseAndResume": true,
   "imageURLsReleasedOnPlan": true,
-  "previousImplementationCommit": "ccfe7dcf80114e2258e2baaeeb18ef4f590577d8",
+  "previousImplementationCommit": "af8e744896cfc252809947482a8719725f408973",
   "inheritedFromR1": [
     "visualWidths",
     "tabletScreenshotScale",
     "visualToleranceUnchanged",
     "backupRestorePassed",
     "saveOnExitScenarios"
-  ]
+  ],
+  "lateDecodeTimeoutPassed": true
 }

@@ -91,6 +91,9 @@ export function installSchmidtSatelliteMap({document}) {
       const blob = new Blob([bytes],{type:mime});
       const bitmap = await win.createImageBitmap(blob);
       try { if(bitmap.width!==meta.width||bitmap.height!==meta.height)throw Error('Imagem inválida'); } finally { bitmap.close(); }
+      // A decodificação nativa não recebe AbortSignal: conferir o prazo também
+      // depois dela, antes de aceitar uma imagem que terminou tarde demais.
+      if (controller.signal.aborted) throw Error('Tempo de imagem excedido');
       if (id!==serial || mode!=='satellite') return;
       const entry = {scope:frame.scope,bbox:actual,width:meta.width,scale:frame.scale,url:win.URL.createObjectURL(blob)};
       cache.push(entry); while (cache.length>2) win.URL.revokeObjectURL(cache.shift().url);
