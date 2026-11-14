@@ -50,6 +50,7 @@ jobs:
           node blocks-ui-browser.mjs
           node block-map-framing-browser.mjs
           node block-map-gestures-browser.mjs
+          node block-map-selection-browser.mjs
           node bounded-response.test.mjs
           node satellite-map.test.mjs
           node satellite-browser.mjs
