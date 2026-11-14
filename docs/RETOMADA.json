@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "2.0.0 web — unificação e publicação",
+  "task": "2.0.0 web publicada",
   "owner": "Claude",
-  "status": "em_andamento",
-  "nextAction": "Concluir bateria completa, abrir PR da 2.0.0, CI verde, merge e conferir deploy",
+  "status": "pronto_para_iniciar",
+  "nextAction": "E8 piloto em telefone físico (GPS real, bateria, offline em campo); E5/E6 refinamento visual de lote × bloco conforme retorno do piloto",
   "baseMain": "2e4e2be9a44310b847155bdef9d7b78b9865ccd0",
   "publishedVersion": "1.35.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -27,8 +27,8 @@
     },
     {
       "command": "bateria completa 2.0.0",
-      "result": "nao_executado",
-      "evidence": "em execução"
+      "result": "passou",
+      "evidence": "24/24 OK; CI do PR #17 verde"
     }
   ],
   "blockers": [
@@ -49,24 +49,14 @@
     "E2 concluída sem defeito reproduzido em 09–14, 20, 23; nenhuma mudança no app foi necessária.",
     "1.36.0: aviso de mudança continua sem lista (decisão aprovada); comparação fica em quadro recolhido na etapa Tiros; Usar passa pelo campo existente.",
     "1.37.0: sem marcação, o guia orienta pelo ponto à frente (projeção); com marcação, legado. Texto 'toque em Ponto coletado' mantido (fluxo legado preservado).",
-    "2.0.0: monitor recalcula o mapa ao trocar de modo; 'Ligar GPS' destacado; publicação autorizada em 14/11/2026."
+    "2.0.0: monitor recalcula o mapa ao trocar de modo; 'Ligar GPS' destacado; publicação autorizada em 14/11/2026.",
+    "2.0.0 publicada em 14/11/2026 (PR #17, main 2455c19, deploy Pages ok, htmlSha256 51596f46…)."
   ],
   "snapshot": {
-    "at": "2026-11-14T15:35:54.777Z",
-    "branch": "claude/versao-2-0",
-    "codeCommit": "0966b080da26c64990ac7dee80ef2f166d3970b8",
-    "changedTrackedFiles": [
-      "AGENTS.md",
-      "VERSAO.json",
-      "audit/block-candidate.json",
-      "audit/gps-guidance-browser.mjs",
-      "audit/worker-upgrade-browser.mjs",
-      "docs/VERSOES_E_ENTREGAS.md",
-      "index.html",
-      "scripts/build-preserved.mjs",
-      "src/ui/lot-map.mjs",
-      "sw.js"
-    ],
-    "untrackedCount": 2
+    "at": "2026-11-14T15:46:50.974Z",
+    "branch": "claude/pos-2-0",
+    "codeCommit": "2455c19d4a3cc3d5d65f028a7e6b708902290de3",
+    "changedTrackedFiles": [],
+    "untrackedCount": 0
   }
 }
