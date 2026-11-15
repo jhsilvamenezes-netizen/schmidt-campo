@@ -196,3 +196,8 @@ Página e worker calculam com o motor reescrito (`src/engine`), com resultados i
 Bloco 8× a 40× mais rápido; limite da cobertura provado contra o cálculo exato; motor com tipos
 estritos e propriedades em lotes aleatórios; revisão de tela (10 itens) e 23% menos texto nas abas.
 Relatório: [ENTREGA_2_3.md](ENTREGA_2_3.md).
+
+## 2.4.0 — celular primeiro
+
+Mapa ao planejar 19% → 26% da tela (lote 40% maior), menos texto em todas as telas, mapa sem redesenhos
+repetidos e motor numa cópia só (278 KB comprimido). Relatório: [ENTREGA_2_4.md](ENTREGA_2_4.md).

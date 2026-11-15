@@ -55,9 +55,9 @@ try {
   report.states.push({width,height,distanceValues:distanceBoxes,...initial});
   if(width===390){
    const lot=page.locator('select:visible').nth(1);
-   await lot.selectOption({label:'BA1'});await page.waitForFunction(()=>document.querySelector('.op-context').textContent.startsWith('BA1'));
+   await lot.selectOption({label:'BA1'});await page.waitForFunction(c=>SCHMIDT.app.field.code===c&&document.querySelector('.op-context').textContent===`Área: ${SCHMIDT.app.field.areaOfficialHa.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})} ha`,'BA1');
    assert.equal(await page.evaluate(()=>SCHMIDT.app.field.code),'BA1');
-   await lot.selectOption({label:'BD3'});await page.waitForFunction(()=>document.querySelector('.op-context').textContent.startsWith('BD3'));await page.waitForTimeout(500);
+   await lot.selectOption({label:'BD3'});await page.waitForFunction(c=>SCHMIDT.app.field.code===c&&document.querySelector('.op-context').textContent===`Área: ${SCHMIDT.app.field.areaOfficialHa.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})} ha`,'BD3');await page.waitForTimeout(500);
    assert.equal(await page.locator('.op-counts').innerText(),initial.summary);
    await page.locator('#qMonitors').fill('1');await page.locator('#qMonitors').dispatchEvent('change');await page.waitForTimeout(600);
    assert.match(await page.locator('.op-crew').innerText(),/1 pessoa para 5 tiros/);
@@ -135,8 +135,8 @@ try {
   const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(`http://127.0.0.1:${server.address().port}/${name}`);
   await page.waitForFunction(()=>window.SCHMIDT?.app?.sc);await page.evaluate(()=>document.fonts.ready);await page.waitForTimeout(600);
   const box=await page.locator('#param-stage-inicio').evaluate(e=>{const r=e.getBoundingClientRect(),p=e.closest('#panel-plano').getBoundingClientRect();return {top:Math.floor(r.top)*2,left:Math.floor(p.left)*2,right:Math.ceil(p.right)*2};});
-  // 15/11/2026 (2.3, autorizado pelo proprietário): coluna de Tiros com textos repetidos retirados, selo de dados e cartão "Descoberto · além de N m".
-  const extra=await page.evaluate(()=>[...['panel-tiros','v08-quality'].map(id=>document.getElementById(id)),[...document.querySelectorAll('.goal')].find(e=>e.textContent.includes('Descoberto'))].filter(e=>e&&e.getBoundingClientRect().width).map(e=>{const r=e.getBoundingClientRect();return {left:Math.floor(r.left)*2,right:Math.ceil(r.right)*2,top:Math.floor(r.top)*2,bottom:Math.ceil(r.bottom)*2};}));
+  // 15/11/2026 (2.3, autorizado pelo proprietário): coluna de Tiros com textos repetidos retirados, selo de dados e cartão "Descoberto · além de N m"; 2.4: sem a faixa "Simulação" e cartão do lote enxuto.
+  const extra=await page.evaluate(()=>[...['panel-tiros','v08-quality','geo-status','lote-resumo'].map(id=>document.getElementById(id)),[...document.querySelectorAll('.goal')].find(e=>e.textContent.includes('Descoberto'))].filter(e=>e&&e.getBoundingClientRect().width).map(e=>{const r=e.getBoundingClientRect();return {left:Math.floor(r.left)*2,right:Math.ceil(r.right)*2,top:Math.floor(r.top)*2,bottom:Math.ceil(r.bottom)*2};}));
   desktop.push({box,extra,png:PNG.sync.read(await page.screenshot({path:out+'1280-'+name.replace('.html','')+'-protected.png'}))});await ctx.close();
  }
  assert.deepEqual(desktop[0].box,desktop[1].box);const a=desktop[0].png,b=desktop[1].png,box=desktop[0].box;

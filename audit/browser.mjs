@@ -84,6 +84,7 @@ function comparePNG(a, b, label, approvedRegion = null, extraRegions = []) {
   assert.equal(first.width, second.width);
   assert.equal(first.height, second.height);
   let pixels = 0, maxChannelDelta = 0, approvedPixels = 0;
+  const box = { left: Infinity, right: -1, top: Infinity, bottom: -1 };
   for (let i = 0; i < first.data.length; i += 4) {
     let different = false;
     const x = (i / 4) % first.width, y = Math.floor(i / 4 / first.width);
@@ -93,11 +94,12 @@ function comparePNG(a, b, label, approvedRegion = null, extraRegions = []) {
       if (!approved) maxChannelDelta = Math.max(maxChannelDelta, delta);
       different ||= delta > 0;
     }
-    if (different) { if (approved) approvedPixels++; else pixels++; }
+    if (different) { if (approved) approvedPixels++; else { pixels++; box.left = Math.min(box.left, x); box.right = Math.max(box.right, x); box.top = Math.min(box.top, y); box.bottom = Math.max(box.bottom, y); } }
   }
   // Apenas ruído mínimo: no máximo 20 pixels com delta de 1/255 por canal.
   // Diferenças maiores falham e exigem inspeção manual; nenhum elemento mascarado.
-  assert.ok(pixels <= 20 && maxChannelDelta <= 1, `${label}: ${pixels} pixels, delta ${maxChannelDelta}`);
+  // Em falha, diz onde estão os pixels diferentes e quais áreas estavam aprovadas (diagnóstico sem as imagens do CI).
+  assert.ok(pixels <= 20 && maxChannelDelta <= 1, `${label}: ${pixels} pixels, delta ${maxChannelDelta}; diferenças em ${JSON.stringify(box)}; aprovadas ${JSON.stringify(extraRegions)}`);
   return { identical: pixels === 0 && approvedPixels === 0, differingPixelsOutsideApproval: pixels, differingPixels: pixels, maxChannelDelta, approvedPixels, approvedRegion };
 }
 try {
@@ -127,14 +129,19 @@ try {
           const box = e => { if (!e) return null; const r = e.getBoundingClientRect(); return r.width ? { left: Math.floor(r.left), right: Math.ceil(r.right), top: Math.floor(r.top), bottom: Math.ceil(r.bottom) } : null; };
           // O selo divide a linha com o resumo (#field-readout): mudar o texto do selo muda a largura do resumo.
           return [box(document.getElementById('v08-quality')), box(document.getElementById('field-readout')), ...(st === 'tiros' || st === 'auditoria' ? [box(document.getElementById('sheet'))] : []),
-            ...(w >= 600 ? [box(document.querySelector('.map-area'))] : [])].filter(Boolean);
+            ...(w >= 600 ? [box(document.querySelector('.map-area'))] : []),
+            // 15/11/2026 (2.4, aprovado pelo proprietário: "pode fazer", foco no celular): no celular mudaram a barra
+            // Fazenda/Lote (sem rótulo visível), o mapa (sem a faixa "Simulação", escala curta) e a folha (mais baixa,
+            // moldura enxuta, textos cortados). Fica protegido o cabeçalho (logotipo, Sol, Monitorar).
+            ...(w < 600 ? [box(document.querySelector('.mobile-context')), box(document.querySelector('.map-area')), box(document.getElementById('sheet'))] : [])].filter(Boolean);
         }, [state, width]));
         images.push(await page.screenshot({ path: fileURLToPath(new URL(`${width}-${state}-${label}.png`, results)), animations: 'disabled' }));
         await ctx.close();
       }
       let approvedRegion = null;
       if (state === 'plano') {
-        assert.equal(regions[0].top, regions[1].top, 'Início da etapa preservado');
+        // No celular (< 600 px) a folha inteira foi reorganizada na 2.4 (região aprovada); no tablet o início segue igual.
+        if (width >= 600) assert.equal(regions[0].top, regions[1].top, 'Início da etapa preservado');
         assert.equal(regions[0].left, regions[1].left); assert.equal(regions[0].right, regions[1].right);
         approvedRegion=Object.fromEntries(Object.entries({...regions[0],bottom:Math.max(regions[0].bottom,regions[1].bottom)}).map(([key,value])=>[key,value*scale]));
       }
@@ -144,7 +151,7 @@ try {
     }
   }
   for (const scenario of (functionalOnly ? [] : ['negado', 'indisponivel', 'aproximado'])) {
-    const images = [];
+    const images = [], gpsRegions = [];
     for (const [label, url] of [['original',reference],['candidata',candidate]]) {
       const { ctx, page } = await context();
       await ctx.addInitScript(scenario => {
@@ -163,10 +170,21 @@ try {
       await page.locator('#mon-pick-gps').click();
       await page.waitForFunction(() => window.auditGPSCalls > 0);
       await page.waitForTimeout(500);
+      // 2.4 (aprovado): faixa "Simulação · limites…" fora do mapa e escala curta em mapa baixo; só essas áreas mudam
+      // (inclui o botão "Norte para cima", semitransparente sobre o mapa: no CI recompõe 2/255).
+      // A camada de baixo mudou: borda arredondada e sombra do aviso (#status) recompõem 1–2/255 (no CI, mais pixels);
+      // só a moldura (12 px para dentro, 10 px de sombra) entra; o texto do aviso segue comparado.
+      gpsRegions.push(...await page.evaluate(() => {
+        const out = [document.getElementById('geo-status'), document.querySelector('#map .m-scale'), document.getElementById('map-direction-state')].map(e => e?.getBoundingClientRect())
+          .filter(r => r && r.width).map(r => ({ left: Math.floor(r.left) - 2, right: Math.ceil(r.right) + 2, top: Math.floor(r.top) - 2, bottom: Math.ceil(r.bottom) + 2 }));
+        const t = document.getElementById('status')?.getBoundingClientRect();
+        if (t && t.width) { const L = Math.floor(t.left) - 10, R = Math.ceil(t.right) + 10, T = Math.floor(t.top) - 10, B = Math.ceil(t.bottom) + 10;
+          out.push({ left: L, right: R, top: T, bottom: T + 22 }, { left: L, right: R, top: B - 22, bottom: B }, { left: L, right: L + 22, top: T, bottom: B }, { left: R - 22, right: R, top: T, bottom: B }); }
+        return out; }));
       images.push(await page.screenshot({ path: fileURLToPath(new URL(`390-gps-${scenario}-${label}.png`, results)), animations: 'disabled' }));
       await ctx.close();
     }
-    const comparison = comparePNG(images[0], images[1], `GPS/${scenario}`);
+    const comparison = comparePNG(images[0], images[1], `GPS/${scenario}`, null, gpsRegions);
     report.visual.push({ width: 390, height: 844, state: `gps-${scenario}`, ...comparison });
     console.log(`Visual GPS preservado: ${scenario} (${comparison.differingPixels} pixels)`);
   }

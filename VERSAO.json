@@ -1,11 +1,11 @@
 {
-  "entrega": "2.3.0",
+  "entrega": "2.4.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-15",
-  "versaoDoApp": "2.3.0",
+  "versaoDoApp": "2.4.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "cc79159de9586f77044cf77976ff156d68ce687ad73097666c317cba32833889",
-  "workerSha256": "409194dcbe0cbd2b2d76fb9f983f8de471a21f6fc7b145fb08f7c8cae76c715c",
+  "htmlSha256": "27ef9309a925cb7184589b300089129c21204d83bb3115c36d95babb27df0bb0",
+  "workerSha256": "4ea35383a4c71f3feadda68c73b859a903a4d8924cf6d0aaded2ec8430dc700b",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -38,7 +38,11 @@
     "2.3: montar bloco 8× a 40× mais rápido (só o plano dos candidatos, p95 por seleção, pausa por tempo com scheduler.yield); mesmos resultados nos 40 grupos; limite superior da cobertura rigoroso (conferido com Voronoi exato)",
     "2.3: revisão de tela: mapa inteiro ao sair do monitor, título e prévia de compartilhamento, níveis reais em Dados do lote, legenda no tablet, cartão \"Área descoberta\" legível",
     "2.3: tema Noite opcional no botão Sol (Normal → Sol → Noite), contraste conferido",
-    "2.3: 23% menos texto nas abas (textos repetidos ou óbvios retirados; números, avisos e ações mantidos)"
+    "2.3: 23% menos texto nas abas (textos repetidos ou óbvios retirados; números, avisos e ações mantidos)",
+    "2.4 (celular): mapa ao planejar 162 → 220 px (lote 40% maior); folha mais baixa e moldura enxuta; distâncias do Plano seguem visíveis sem rolar",
+    "2.4: sem a faixa \"Simulação\" sobre o mapa; cartão, Plano, Tiros, Dados, Auditoria e etapas com textos repetidos retirados; selo \"Sem alertas\"",
+    "2.4: mapa não redesenha quando nada mudou (Tiros: 7 → 1 desenho por toque); escala curta em mapa baixo",
+    "2.4: motor 2 numa cópia só para página e worker (arquivo 909 → 850 KB; 297 → 278 KB comprimido)"
   ],
   "somenteEstudoSemIntegracao": [
     "recuo mínimo obrigatório por divisa",

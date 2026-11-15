@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "2.3.0: motor conferido, revisão de tela, tema Noite e menos texto",
+  "task": "2.4.0: celular primeiro",
   "owner": "Claude",
   "status": "pronto_para_revisao",
-  "nextAction": "PR da 2.3.0; CI verde; merge; conferir Pages e hash do index.html = VERSAO.json",
+  "nextAction": "PR da 2.4.0; CI verde; merge; conferir Pages e hash = VERSAO.json; depois Unidade D",
   "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -11,29 +11,24 @@
   "scope": "Direcionamento exclusivo no link móvel, sem coleta/marcação pela equipe. APK adiado.",
   "tests": [
     {
-      "command": "bateria local 2.3.0 (CI blocos-candidata + corrections-browser + operational-plan-browser + browser.mjs)",
+      "command": "bateria local 2.4.0 (CI blocos-candidata + validacao + sessões + upgrade + android)",
       "result": "passou",
-      "evidence": "29/29; browser.mjs com ruído local de 1/255 já conhecido (passa no CI)"
+      "evidence": "31/31; validate-runtime-blocks na ordem do CI"
     },
     {
-      "command": "npm --prefix audit run test:types (TypeScript 7.0.2 estrito em src/engine)",
+      "command": "browser.mjs e operational-plan-browser.mjs (guardas visuais com áreas aprovadas da 2.4)",
       "result": "passou",
-      "evidence": "0 erros"
+      "evidence": "sem diferença fora das áreas aprovadas; só ruído local de 1/255"
     },
     {
-      "command": "node --test engine-properties.test.mjs (fast-check 4.10.2, 5 × 300)",
+      "command": "engine-swap-browser.mjs (motor numa cópia só)",
       "result": "passou",
-      "evidence": "300/300 planos gerados"
+      "evidence": "página 51/51; worker otimização 9/9 e recomendação 9/9"
     },
     {
-      "command": "night-theme-browser.mjs (axe 4.14.0)",
+      "command": "night-theme-browser.mjs",
       "result": "passou",
-      "evidence": "contraste 0 falhas em Normal, Sol e Noite, 390 e 1440"
-    },
-    {
-      "command": "coverage-exact.py (Shapely/GEOS)",
-      "result": "passou",
-      "evidence": "0 violações do limite superior em 153 planos"
+      "evidence": "contraste 0 falhas"
     }
   ],
   "blockers": [
@@ -53,13 +48,16 @@
     "2.1.0: comparação de bloco usa as opções já calculadas pela preparação; lista não gravada; Usar bloco atômico.",
     "15/11: 2.1.0 publicada (PR #22, main cd25d4b). Motor 2 em src/engine, ainda não usado pelo app; troca exige paramCatalog+dataQuality reescritos e substituição na página e no worker.",
     "2.2.0: motor 2 na página e no worker (build troca 11 módulos em cada); oráculo dos testes = index.html de cd25d4b.",
-    "15/11: revisão de tela (10 itens) e corte de texto autorizados pelo proprietário; guardas visuais aceitam só regiões declaradas da 2.3"
+    "15/11: revisão de tela (10 itens) e corte de texto autorizados pelo proprietário; guardas visuais aceitam só regiões declaradas da 2.3",
+    "15/11: proprietário aprovou o layout de celular da 2.4 (\"pode fazer\"), pediu menos texto e foco no uso no celular; APK depois"
   ],
   "snapshot": {
-    "at": "2026-11-15T07:32:32.701Z",
+    "at": "2026-11-15T08:55:59.494Z",
     "branch": "claude/motor-evolucao",
-    "codeCommit": "3608fa4fc0115ce55a3212aaba11b0d9538de1e3",
-    "changedTrackedFiles": [],
+    "codeCommit": "89abe0cfc71ed277b024578300e5ab0229c86c23",
+    "changedTrackedFiles": [
+      "audit/direction-measures-evidence.json"
+    ],
     "untrackedCount": 0
   },
   "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",
