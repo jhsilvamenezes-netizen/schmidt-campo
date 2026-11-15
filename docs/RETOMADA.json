@@ -1,39 +1,39 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "2.0.1 web corrigida, publicada e verificada",
-  "owner": "Codex — entrega concluída",
-  "status": "pronto_para_iniciar",
-  "nextAction": "Conferir main e docs/CORRECOES_2_0_1.md. Próxima frente: projetar comparação de ajustes em bloco (F4) preservando grade comum e aplicar/desfazer todos os membros; separar funções legadas do direcionamento (F3) com comparação visual. Não refazer F1/F2/F5. E5/E6 gerais e teste físico ainda abertos.",
-  "baseMain": "705a80988220f10984d770c4fba3c6b9a59eaef8",
+  "task": "Reescrita do motor: etapa 1 espacial implementada em candidata",
+  "owner": "Codex",
+  "status": "pronto_para_revisao",
+  "nextAction": "Conferir CI e relatório REESCRITA_MOTOR_ETAPA_1.md. Prosseguir com contratos/projeção/polilinhas e depois recorte/alocação; comparar com legado e GEOS/PROJ. BVH permanece opt-in: construir a árvore por chamada foi mais lento. App público continua 2.0.1; núcleo completo e visual ainda não reescritos.",
+  "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
   "latestDeliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",
   "scope": "Direcionamento exclusivo no link móvel, sem coleta/marcação pela equipe. APK adiado.",
   "tests": [
     {
-      "command": "node audit/gps-stability-browser.mjs",
+      "command": "npm --prefix audit test; npm --prefix audit run test:blocks",
       "result": "passou",
-      "evidence": "20 estados, alvo estável, alerta único, expiração por timer, recuperação e histórico preservado."
+      "evidence": "Contratos e módulos incluindo 5 novos grupos de testes espaciais, 4000 consultas sintéticas."
     },
     {
-      "command": "UPGRADE_REF=2455c19d4a3cc3d5d65f028a7e6b708902290de3 node audit/worker-upgrade-browser.mjs",
+      "command": "node audit/boundary-engine-real.mjs",
       "result": "passou",
-      "evidence": "2.0.0 → candidata 2.0.1; offline, dados/imagens/histórico preservados."
+      "evidence": "2284 consultas; 51 lotes/40 grupos; distância e projeção preservadas."
     },
     {
-      "command": "Contratos/blocos, GPS 51 lotes, runtime/enquadramento 40 grupos, GEOS/PROJ",
+      "command": "node audit/boundary-engine-benchmark.mjs",
       "result": "passou",
-      "evidence": "Rodada local final aprovada; 62 execuções de módulos/blocos; 51 lotes; GEOS/PROJ; CI da revisão adicional concluído e aprovado, conforme registro abaixo."
+      "evidence": "15 rodadas/variante; caminho direto mantido após BVH por chamada ficar mais lenta."
     },
     {
-      "command": "CI PR #19 (auditoria e blocos)",
+      "command": "node audit/block-map-selection-browser.mjs",
       "result": "passou",
-      "evidence": "Runs 43637233419 e 43637233431 no commit 351d2e7427db5700086c80d5c7a78ef8607d5110."
+      "evidence": "5 fluxos de consulta/edição/câmera/remover ponto; zero erros."
     },
     {
-      "command": "Smoke no Pages público",
+      "command": "node audit/direction-measures-probe.mjs && python audit/direction-measures.py",
       "result": "passou",
-      "evidence": "HTML idêntico ao testado; bloco de três lotes, medidas, zoom, offline e GPS vencido/chegada conferidos."
+      "evidence": "GEOS/PROJ; 51 lotes e 40 grupos; hash da candidata conferido, sem falhas."
     }
   ],
   "blockers": [
@@ -47,21 +47,30 @@
     "2.0.1 publicada no PR #19 após autorização; mesma URL, sem APK.",
     "F1/F2 publicados na 2.0.1; F3 texto de chegada corrigido, separação do legado pendente; F4 pendente.",
     "E1/E2 e parte de E3/E4 entregues; E5/E6 gerais e piloto físico não concluídos.",
-    "Conferir GitHub e diff; uma sessão não recebe automaticamente o chat da outra."
+    "Conferir GitHub e diff; uma sessão não recebe automaticamente o chat da outra.",
+    "Pedido posterior autoriza reescrita estruturada do motor; primeira unidade espacial integrada só na candidata.",
+    "Fonte completa ainda não recuperada; reescrita não deve renomear todo o motor nem declarar substituição completa prematuramente."
   ],
   "snapshot": {
-    "at": "2026-11-14T20:36:02.505Z",
-    "branch": "codex/entrega-2-0-1",
-    "codeCommit": "705a80988220f10984d770c4fba3c6b9a59eaef8",
+    "at": "2026-11-15T01:28:24.612Z",
+    "branch": "codex/reescrita-motor-etapa-1",
+    "codeCommit": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
     "changedTrackedFiles": [
-      "README.md",
+      ".github/workflows/blocos-candidata.yml",
+      "AGENTS.md",
       "VERSAO.json",
-      "audit/fix-2-0-1-evidence.json",
-      "docs/CORRECOES_2_0_1.md",
+      "audit/direction-measures-evidence.json",
+      "audit/package.json",
       "docs/EXECUCAO_2_0.md",
-      "docs/VERSOES_E_ENTREGAS.md"
+      "index.html",
+      "scripts/build-preserved.mjs",
+      "src/application/adjust-alternatives.mjs",
+      "src/application/block-planning.mjs",
+      "src/ui/block-map.mjs",
+      "sw.js"
     ],
-    "untrackedCount": 1
+    "untrackedCount": 9
   },
-  "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19"
+  "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",
+  "developmentBranch": "codex/reescrita-motor-etapa-1"
 }

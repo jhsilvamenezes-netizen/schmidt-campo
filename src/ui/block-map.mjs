@@ -1,22 +1,11 @@
+import { createSchmidtBoundaryIndex } from '../engine/boundary.mjs';
 import { publishSchmidtSatelliteFrame } from './satellite-map.mjs';
 import { schmidtBlockBorderDistance } from '../application/block-planning.mjs';
 
 // Menor segmento geométrico até uma borda, incluindo furos do polígono.
 export function schmidtMapClosestBorder(point, geom) {
-  let best = { metres: Infinity, xy: null };
-  for (const poly of geom) {
-    for (const ring of poly) {
-      for (let i = 0; i < ring.length; i++) {
-        const a = ring[i], b = ring[(i + 1) % ring.length];
-        const dx = b[0] - a[0], dy = b[1] - a[1], len = dx * dx + dy * dy;
-        const t = len ? Math.max(0, Math.min(1, ((point[0] - a[0]) * dx + (point[1] - a[1]) * dy) / len)) : 0;
-        const xy = [a[0] + t * dx, a[1] + t * dy];
-        const metres = Math.hypot(point[0] - xy[0], point[1] - xy[1]);
-        if (metres < best.metres) best = { metres, xy };
-      }
-    }
-  }
-  return best;
+  const result = createSchmidtBoundaryIndex(geom, {indexed:false}).nearest(point);
+  return result ? {metres:result.metres,xy:result.xy} : {metres:Infinity,xy:null};
 }
 
 // 1.32: aparência do mapa do bloco. Só tokens do aplicativo (o tema Sol vale aqui), letra de 12 px ou mais

@@ -1,0 +1,47 @@
+{
+  "schema": "schmidt.motor-stage1.v1",
+  "candidateHtmlSha256": "93ccce3825a4d8071256317f11efe1efa20e7ee7d71b07af0b10c14eb13070d0",
+  "publishedBase": "2.0.1",
+  "scope": "Consulta de bordas; restante do motor legado preservado",
+  "testsPassed": {
+    "contracts": 55,
+    "modules": 67
+  },
+  "syntheticQueries": 4000,
+  "realGeometry": {
+    "fields": 51,
+    "blocks": 40,
+    "queries": 2284,
+    "maxErrorVsRecordedBorderM": 2.2737367544323206e-13,
+    "indexedSegmentTests": 27174,
+    "linearSegmentTests": 140768,
+    "physicalDevice": false
+  },
+  "independentSpatial": {
+    "status": "ok",
+    "evidence": "direction-measures-evidence.json",
+    "versions": {
+      "shapely": "2.1.2",
+      "geos": "3.13.1",
+      "pyproj": "3.7.2",
+      "proj": "9.5.1"
+    }
+  },
+  "benchmark": {
+    "runtime": "v24.22.1",
+    "cases": 139,
+    "runsPerVariant": 15,
+    "preparedIndexEnabledInApp": false,
+    "physicalDevice": false,
+    "legacyMedianMs": 3.536215999999996,
+    "sharedMedianMs": 3.6139790000000005
+  },
+  "browserSelectionChecks": 5,
+  "limits": [
+    "Sem medição em aparelho físico",
+    "Sem ganho de velocidade total demonstrado",
+    "BVH preparada é opcional; app usa busca direta",
+    "Reescrita completa e novo visual pendentes",
+    "Candidata sem publicação"
+  ]
+}

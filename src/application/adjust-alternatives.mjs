@@ -1,3 +1,4 @@
+import { schmidtBoundaryMinimum } from '../engine/boundary.mjs';
 import { readOperationalSummary } from './operational-summary.mjs';
 
 // E3 (2.0 web): alternativas de distância/quantidade de tiros para comparar ANTES de aplicar.
@@ -54,16 +55,7 @@ export function schmidtTrackAlternatives(params, { span = 2 } = {}) {
 
 // Menor distância de um ponto à divisa (contorno externo e furos), em metros de grade.
 export function schmidtMinBorderDistance(geom, samples) {
-  let best = Infinity;
-  for (const p of samples || []) for (const poly of geom || []) for (const ring of poly) {
-    const n = ring.length;
-    for (let i = 0; i < n; i++) {
-      const a = ring[i], b = ring[(i + 1) % n], dx = b[0] - a[0], dy = b[1] - a[1], len = dx * dx + dy * dy;
-      const t = len ? Math.max(0, Math.min(1, ((p.x - a[0]) * dx + (p.y - a[1]) * dy) / len)) : 0;
-      best = Math.min(best, Math.hypot(p.x - a[0] - t * dx, p.y - a[1] - t * dy));
-    }
-  }
-  return Number.isFinite(best) ? best : null;
+  return schmidtBoundaryMinimum(geom || [], samples || []);
 }
 
 // Resumo de um cenário com as MESMAS funções do cartão "Plano em uso" (measurements = módulo de medidas do app).

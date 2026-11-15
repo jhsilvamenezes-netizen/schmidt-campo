@@ -184,3 +184,7 @@ estabilidade do alvo e texto de chegada focado no direcionamento. Não inclui
 APK, novos dados privados, mudança do método ou reformulação geral de telas.
 A comparação de ajustes para blocos e a separação completa do legado permanecem
 pendentes, conforme `docs/CORRECOES_2_0_1.md`.
+
+### Reescrita estruturada do motor — pedido posterior
+
+O proprietário pediu: “De sequência estrturada e literalmente reescrever o motor para algo muito mais avançado,tecnológico e melhorado que o atual”. Executar por módulos verificáveis, preservando métodos, dados, testes diferenciais e histórico. Plano em docs/UPGRADE_MOTOR_E_MOBILE.md; primeira entrega em docs/REESCRITA_MOTOR_ETAPA_1.md. Não declarar o motor inteiro reescrito ao entregar só um componente.

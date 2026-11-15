@@ -9,7 +9,7 @@ import { applySchmidtBlocks, blockSourceFiles } from './block-transform.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const baseline = JSON.parse(await readFile(root+'audit/baseline.json'));
-const preservedSourceFiles = ['src/persistence/backup-service.mjs','src/persistence/backup-format.mjs',
+const preservedSourceFiles = ['src/engine/boundary.mjs','src/persistence/backup-service.mjs','src/persistence/backup-format.mjs',
   'src/gps/fix-policy.mjs','src/platform/browser-backup-adapters.mjs','src/platform/browser-session-lock.mjs','src/platform/browser-write-barrier.mjs','src/platform/legacy-integration.mjs',
   'src/application/operational-summary.mjs','src/ui/plan-presentation.mjs','src/ui/operational-plan.mjs','src/ui/refinements.mjs','src/ui/lot-map.mjs','src/platform/bounded-response.mjs','src/ui/satellite-map.mjs',
   'src/application/adjust-alternatives.mjs','src/ui/adjust-compare.mjs','src/gps/guide-next.mjs','src/ui/monitor-direction.mjs'];

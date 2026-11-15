@@ -85,3 +85,7 @@ aplicável. A nova sessão recebe os mesmos limites, decisões e evidências.
 Guia para evitar perda por limite: [CONTINUIDADE_SEM_PERDER_TRABALHO.md](CONTINUIDADE_SEM_PERDER_TRABALHO.md).
 
 [Matriz por parâmetro](MATRIZ_PARAMETROS_2_0.md): 35 campos do catálogo, estruturais e contextos, com cálculo/validação, apresentação e prova.
+
+## Reescrita estruturada do motor
+
+Plano: [UPGRADE_MOTOR_E_MOBILE.md](UPGRADE_MOTOR_E_MOBILE.md). Primeira unidade de código: [REESCRITA_MOTOR_ETAPA_1.md](REESCRITA_MOTOR_ETAPA_1.md), candidata isolada. Integra U1 a E2/E3; não substitui os estados e critérios das demais etapas.

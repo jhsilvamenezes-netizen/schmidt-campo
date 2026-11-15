@@ -1,3 +1,4 @@
+import { schmidtBoundaryMinimum } from '../engine/boundary.mjs';
 // Planejamento conjunto usa somente os dados já embarcados no aplicativo.
 // A/B igual identifica referência; não prova passagem entre lotes.
 export const SCHMIDT_BLOCK_SCHEMA = 'schmidt.blocks.v1';
@@ -58,13 +59,7 @@ export function schmidtReferenceBlocks(fields) {
 }
 
 export function schmidtBlockBorderDistance(geom, samples) {
-  let minimum=Infinity;
-  for (const p of samples) for (const poly of geom) for (const ring of poly) for (let i=0;i<ring.length;i++) {
-    const a=ring[i],b=ring[(i+1)%ring.length],dx=b[0]-a[0],dy=b[1]-a[1],len=dx*dx+dy*dy;
-    const t=len?Math.max(0,Math.min(1,((p.x-a[0])*dx+(p.y-a[1])*dy)/len)):0;
-    minimum=Math.min(minimum,Math.hypot(p.x-a[0]-t*dx,p.y-a[1]-t*dy));
-  }
-  return Number.isFinite(minimum)?minimum:null;
+  return schmidtBoundaryMinimum(geom, samples);
 }
 
 export function schmidtCommonBlockFields(fields, members, common) {
