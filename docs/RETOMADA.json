@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "Motor 2 — reescrita por etapas com oráculo do motor antigo",
+  "task": "2.2.0 — motor 2 no app",
   "owner": "Claude",
-  "status": "em_andamento",
-  "nextAction": "Reescrever paramCatalog (validação/textos) e dataQuality; depois trocar o motor no app (página e worker) com GEOS/PROJ, 51 lotes e 40 grupos no navegador; só então publicar",
+  "status": "pronto_para_revisao",
+  "nextAction": "CI do PR e publicação; depois reescrever paramCatalog/dataQuality/recomendação e remover o motor antigo do artefato",
   "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -11,9 +11,9 @@
   "scope": "Direcionamento exclusivo no link móvel, sem coleta/marcação pela equipe. APK adiado.",
   "tests": [
     {
-      "command": "npm --prefix audit run test:blocks (inclui engine-diff, engine-plan-diff, engine-metrics-diff, engine-scenario-diff, engine-optimize-diff)",
+      "command": "bateria completa 2.2.0 (CI + sessões + upgrade 2.1.0→2.2.0)",
       "result": "passou",
-      "evidence": "motor 2: 83.931 casos de núcleo; 1.122 planos; 459 coberturas; 630 cenários completos; 265 otimizações — todos idênticos ao motor 0.5.1"
+      "evidence": "27/27; engine-swap-browser: página 51/51, worker otimização e recomendação 9/9 idênticas"
     }
   ],
   "blockers": [
@@ -31,13 +31,17 @@
     "Pedido posterior autoriza reescrita estruturada do motor; primeira unidade espacial integrada só na candidata.",
     "Fonte completa ainda não recuperada; reescrita não deve renomear todo o motor nem declarar substituição completa prematuramente.",
     "2.1.0: comparação de bloco usa as opções já calculadas pela preparação; lista não gravada; Usar bloco atômico.",
-    "15/11: 2.1.0 publicada (PR #22, main cd25d4b). Motor 2 em src/engine, ainda não usado pelo app; troca exige paramCatalog+dataQuality reescritos e substituição na página e no worker."
+    "15/11: 2.1.0 publicada (PR #22, main cd25d4b). Motor 2 em src/engine, ainda não usado pelo app; troca exige paramCatalog+dataQuality reescritos e substituição na página e no worker.",
+    "2.2.0: motor 2 na página e no worker (build troca 11 módulos em cada); oráculo dos testes = index.html de cd25d4b."
   ],
   "snapshot": {
-    "at": "2026-11-15T02:54:59.796Z",
+    "at": "2026-11-15T05:30:44.969Z",
     "branch": "claude/motor-2",
-    "codeCommit": "74491efae7959e4aa39e1a6976dd3baeb91c9bdf",
-    "changedTrackedFiles": [],
+    "codeCommit": "2bb36e83da111b56d6ac8dacd378d41e9df85bac",
+    "changedTrackedFiles": [
+      "audit/legacy-engine.mjs",
+      "docs/MOTOR_2_NO_APP_2_2.md"
+    ],
     "untrackedCount": 0
   },
   "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",

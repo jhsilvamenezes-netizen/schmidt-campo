@@ -30,7 +30,9 @@ O build confere marcadores únicos e a ordem dos módulos. Qualquer diferença n
 | Testes diferenciais no Node (`engine-*-diff`) | 83.931 casos de núcleo, 1.122 planos, 459 coberturas, 630 cenários completos e 265 otimizações idênticos |
 | Pacote = motor antigo nos 51 lotes | idêntico |
 | `audit/engine-swap-browser.mjs` (navegador) | página 51/51 idêntica; otimização no worker (modo `web_worker`) 9/9; recomendação no worker 9/9; versão 2.0.0; 0 erro |
-| Bateria completa do CI e GEOS/PROJ | ver PR |
+| Bateria local (CI completo + sessões, correções, gravar ao sair, atualização 2.1.0 → 2.2.0) | 27/27 |
+| GEOS/PROJ (51 lotes, 40 grupos) | 24 verificações ok |
+| Tempos × 2.1.0 (mediana/p95) | abrir 197/244 × 210/277 ms (CPU×1); 51 lotes 495/503 × 456/591 ms (CPU×4); desenho igual |
 
 ## Reverter
 
