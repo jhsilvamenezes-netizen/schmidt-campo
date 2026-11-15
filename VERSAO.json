@@ -1,11 +1,11 @@
 {
-  "entrega": "2.2.0",
+  "entrega": "2.3.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-15",
-  "versaoDoApp": "2.2.0",
+  "versaoDoApp": "2.3.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "f368ca26f62a74299a325b52371aef19841b21007dc88937564e58e0c886d5b1",
-  "workerSha256": "bd9d0363b31e1eb1e5b3ff363cbbf3e4eadaf727bff2c7cf8a625794491e9517",
+  "htmlSha256": "cc79159de9586f77044cf77976ff156d68ce687ad73097666c317cba32833889",
+  "workerSha256": "409194dcbe0cbd2b2d76fb9f983f8de471a21f6fc7b145fb08f7c8cae76c715c",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -34,7 +34,11 @@
     "2.0.1: histerese temporária estabiliza o alvo sem marcar pontos; avanço e retorno permanecem possíveis",
     "2.0.1: chegada prioriza distância até próximo ponto ou borda; funções e registros legados preservados",
     "2.1: bloco com \"Comparar antes de usar\": melhor opção de cada espaçamento comum (conjunto e por lote), escolha troca o rascunho e Usar bloco aplica tudo de uma vez; opções que pioram a cobertura ficam recolhidas e bloqueadas",
-    "2.2: motor 2 (src/engine, código legível) no lugar do motor 0.5.1 na página e no worker; resultados idênticos ao motor antigo (versão declarada 2.0.0); validação de parâmetros e qualidade dos dados ainda do motor antigo"
+    "2.2: motor 2 (src/engine, código legível) no lugar do motor 0.5.1 na página e no worker; resultados idênticos ao motor antigo (versão declarada 2.0.0); validação de parâmetros e qualidade dos dados ainda do motor antigo",
+    "2.3: montar bloco 8× a 40× mais rápido (só o plano dos candidatos, p95 por seleção, pausa por tempo com scheduler.yield); mesmos resultados nos 40 grupos; limite superior da cobertura rigoroso (conferido com Voronoi exato)",
+    "2.3: revisão de tela: mapa inteiro ao sair do monitor, título e prévia de compartilhamento, níveis reais em Dados do lote, legenda no tablet, cartão \"Área descoberta\" legível",
+    "2.3: tema Noite opcional no botão Sol (Normal → Sol → Noite), contraste conferido",
+    "2.3: 23% menos texto nas abas (textos repetidos ou óbvios retirados; números, avisos e ações mantidos)"
   ],
   "somenteEstudoSemIntegracao": [
     "recuo mínimo obrigatório por divisa",
@@ -48,5 +52,5 @@
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
   "runtimeBlocks": true,
-  "statusEntrega": "candidata 2.2.0; motor 2 na página e no worker; publicação após CI verde (autorização de 15/11/2026)"
+  "statusEntrega": "web 2.3.0; publicação autorizada pelo proprietário (15/11/2026: executar sem pedir permissão)"
 }

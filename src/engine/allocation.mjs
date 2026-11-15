@@ -16,7 +16,9 @@ export function minimumPoints(areaHa, haPerPoint) {
 
 /** Trecho que mais precisa de um ponto: maior raio de cobertura; empate → mais longo → id menor. */
 function neediest(units, counts, radius) {
-  let best = null, bestR = -Infinity;
+  /** @type {{id: string, len: number} | null} */
+  let best = null;
+  let bestR = -Infinity;
   for (const u of units) {
     const r = radius(u.len, counts.get(u.id) || 0), tie = r === bestR || Math.abs(r - bestR) <= ALLOC_EPS_M;
     if ((!tie && r > bestR) || (tie && best && (u.len > best.len || (u.len === best.len && u.id < best.id)))) { best = u; bestR = r; }

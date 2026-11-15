@@ -78,6 +78,7 @@ export function optimizeDistribution({ geom, units, counts: initialCounts, polic
   if (opt.mode !== 'regularidade') for (let it = 0; it < opt.maxIterations && !signal?.cancelled; it++) {
     let improved = tunePhases(units);
     if (opt.allowCountMoves && opt.mode === 'qualidade_espacial') {
+      /** @type {{a: any, b: any, sc: number, trial: Map<any, number>, trialShifts: Map<any, number>} | null} */
       let bestMove = null;
       for (const from of units) {
         if ((counts.get(from.id) || 0) < 2) continue;

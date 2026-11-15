@@ -24,7 +24,7 @@ test('otimização idêntica (direto e no cenário)', () => {
   const legacy = { assertParams: old.paramCatalog.assertParams, buildWarnings: old.diagnostics.buildWarnings, optimizeDistribution };
   for (const k of keys.filter((_, i) => i % 5 === 1)) {
     const a = buildScenario(fields[k], P0, { optimize: true }, legacy), b = old.index.buildScenario(fields[k], P0, { optimize: true });
-    for (const x of [a, b]) { delete x.generatedAt; if (x.optimization) x.optimization.elapsedMs = 0; }
+    for (const x of [a, b]) { delete x.generatedAt; if (x.optimization) x.optimization.elapsedMs = 0; if (x.coverage) x.coverage.maxUpperBoundM = 0; }
     assert.deepStrictEqual(a, b, `${k} cenário otimizado`); n++;
   }
   console.log(`# otimizações idênticas: ${n} (aceitas: ${accepted})`);

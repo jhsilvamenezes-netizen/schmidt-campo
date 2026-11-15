@@ -32,7 +32,9 @@ mkdir -p www
 sed -e 's#<meta name="schmidt-web" content="1">##' -e 's#<link rel="manifest" href="manifest.webmanifest">##' \
     -e "s#script-src [^;]*;#script-src 'self' 'unsafe-inline';#" "$APP_SOURCE_DIR/../index.html" > www/index.html
 grep -q "script-src 'self' 'unsafe-inline';" www/index.html
-VERSAO_NOME="$(grep -o 'Planejamento de amostragem v[0-9.]*' www/index.html | head -1 | sed 's/.* v//')"
+# O título da página deixou de trazer a versão na 2.3. O APK está adiado e segue o nome de referência 1.31.0.
+VERSAO_NOME="$(grep -o 'Planejamento de amostragem v[0-9.]*' www/index.html | head -1 | sed 's/.* v//' || true)"
+VERSAO_NOME="${VERSAO_NOME:-1.31.0}"
 node --require "$APP_SOURCE_DIR/cli-compat.cjs" "$APP_SOURCE_DIR/node_modules/@capacitor/cli/bin/capacitor" add android
 # O CLI resolve o symlink do node_modules. Rebaseia somente caminhos de build
 # antes de mover o staging; nenhuma referência temporária deve sobreviver.

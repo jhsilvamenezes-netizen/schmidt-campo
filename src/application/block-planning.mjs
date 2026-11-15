@@ -149,19 +149,36 @@ export function validateSchmidtBlocks(state, sanitizeParams) {
 
 // Redistribui pontos pelo motor real em vez de só deslocar os pontos antigos.
 // Busca limitada e cancelável; mede cobertura nas mesmas células por lote.
-export async function prepareSchmidtBlock({ group, fields, parametersFor, editsFor = () => null, engine, metrics, signal, yieldTask = () => Promise.resolve() }) {
+export async function prepareSchmidtBlock({ group, fields, parametersFor, editsFor = () => null, engine, metrics, signal, yieldTask = () => Promise.resolve(), yieldEveryMs = 12 }) {
   if (signal?.aborted) throw Error('Preparação cancelada');
-  const pause = async () => { await yieldTask(); if (signal?.aborted) throw Error('Preparação cancelada'); };
+  // Cede a vez à tela por TEMPO (a cada yieldEveryMs ms de cálculo, padrão 12), não a cada candidato: cada pausa custa ≥ 4 ms no
+  // navegador (setTimeout) e centenas delas somavam mais de 1 s de espera. Cancelamento continua conferido sempre.
+  const clock = () => (globalThis.performance?.now?.() ?? Date.now());
+  let lastYield = clock();
+  const pause = async () => {
+    if (signal?.aborted) throw Error('Preparação cancelada');
+    if (clock() - lastYield < yieldEveryMs) return;
+    await yieldTask(); lastYield = clock();
+    if (signal?.aborted) throw Error('Preparação cancelada');
+  };
   if (!group.compatible) throw Error('Referências diferentes: usar os lotes individualmente');
   const anchor = fields[group.members[0]];
   const common = { absoluteA: blockAbsoluteA(anchor), gridCorrection: anchor.bearingGridCorrection || 0,
     bearingDeg: ((anchor.bearing % 180) + 180) % 180 };
   const commonFields = schmidtCommonBlockFields(fields, group.members, common);
+  // Candidatos só precisam do plano (tiros e pontos); a cobertura é medida aqui, nas células de cada lote.
+  // planScenario evita calcular cobertura, entre tiros, caminhada e avisos de cada candidato (mesmos pontos).
+  const plan = engine.planScenario ? (f, p) => engine.planScenario(f, p) : (f, p) => engine.buildScenario(f, p);
   const originals = {}, cells = {}, baseline = {}, counts = {}, input = {};
+  // p95 pelo posto ⌊0,95·n⌋ e máximo. Com metrics.kthSmallest (motor 2) não ordena as ~1.500 distâncias de cada
+  // candidato: seleção de Hoare dá o mesmo valor que ordenar e indexar.
   const distanceStats = (grid, samples) => {
-    const ds = Float64Array.from(metrics.nearestDistances(grid,samples)).sort();
-    if (!ds.length) throw Error('Sem células para comparar cobertura');
-    return { p95: ds[Math.min(ds.length - 1, Math.floor(.95 * ds.length))], max: ds.at(-1) };
+    const d = metrics.nearestDistances(grid,samples), n = d.length;
+    if (!n) throw Error('Sem células para comparar cobertura');
+    const k = Math.min(n - 1, Math.floor(.95 * n));
+    if (metrics.kthSmallest) { let max = -Infinity; for (let i = 0; i < n; i++) if (d[i] > max) max = d[i]; return { p95: metrics.kthSmallest(d, k), max }; }
+    const ds = Float64Array.from(d).sort();
+    return { p95: ds[k], max: ds.at(-1) };
   };
   for (const key of group.members) {
     const p = blockCopy(parametersFor(fields[key])); input[key] = p;
@@ -195,7 +212,7 @@ export async function prepareSchmidtBlock({ group, fields, parametersFor, editsF
         trackPhaseM: phaseM, alignToBoom: true, boomWidthM: 36.48, bearingDeg: common.bearingDeg,
         selectionMode: 'todos', selectionIds: [], pointMode: 'total', totalPoints: counts[key] };
       let sc;
-      try { sc = engine.buildScenario(commonFields[key], p); } catch { valid = false; break; }
+      try { sc = plan(commonFields[key], p); } catch { valid = false; break; }
       // Recusa o fallback do motor para linha no meio do lote sem fase comum.
       const v = sc.frame.v, origin = commonFields[key].referenceA;
       const offset = origin[0] * v[0] + origin[1] * v[1] + phaseM;
@@ -229,7 +246,7 @@ export async function prepareSchmidtBlock({ group, fields, parametersFor, editsF
     for (let n = originalCount + 1; candidate.coverage[key].ratio > 1 + 1e-6 && n <= cap; n++) {
       if (signal?.aborted) throw Error('Preparação cancelada');
       const p = { ...candidate.params[key], totalPoints: n };
-      const sc = engine.buildScenario(commonFields[key], p);
+      const sc = plan(commonFields[key], p);
       redistributionCandidates++;
       if (sc.samples.length !== n) { await pause(); continue; }
       const stats = distanceStats(cells[key], sc.samples);

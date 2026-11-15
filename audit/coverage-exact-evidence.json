@@ -1,0 +1,28 @@
+{
+ "versions": {
+  "shapely": "2.1.2",
+  "geos": "3.13.1"
+ },
+ "planos": 153,
+ "lotes": 51,
+ "limiteSuperior": {
+  "violacoes": 0,
+  "folgaMinM": 8.564,
+  "folgaMedianaM": 22.92
+ },
+ "maxDaGrade": {
+  "excedeExato": 0,
+  "subestimaMedianaM": 8.043,
+  "subestimaMaxM": 28.525
+ },
+ "p95": {
+  "erroMedianoM": 0.322,
+  "erroP90M": 0.806,
+  "erroMaxM": 1.929,
+  "erroRelativoMediano": 0.0009,
+  "erroRelativoMax": 0.0048,
+  "dentroDaIncertezaOuMeioPasso": "153/153"
+ },
+ "failures": [],
+ "status": "ok"
+}

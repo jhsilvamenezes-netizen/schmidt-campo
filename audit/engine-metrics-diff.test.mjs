@@ -16,7 +16,10 @@ test('métricas = motor antigo nos 51 lotes × variações (inclui cobertura em 
     const field = fields[k], sc = old.index.buildScenario(field, { ...P0, ...v });
     assert.deepStrictEqual(M.longitudinal(sc.samples, sc.units), sc.longitudinal, `${k} longitudinal`);
     const cov = M.coverage(field.geom, sc.samples, sc.params.coverage);
-    assert.deepStrictEqual(cov, sc.coverage, `${k} ${JSON.stringify(v)} cobertura`);
+    // 2.3: limite superior do vazio corrigido (rigoroso, ver coverage-exact.py); nunca menor que o antigo.
+    const { maxUpperBoundM: ubNew, ...restNew } = cov, { maxUpperBoundM: ubOld, ...restOld } = sc.coverage;
+    assert.deepStrictEqual(restNew, restOld, `${k} ${JSON.stringify(v)} cobertura`);
+    assert.ok(ubNew >= ubOld, `${k} limite superior novo < antigo`);
     assert.deepStrictEqual(M.transverse(sc.units, sc.selected.map(t => t.id)), sc.transverse, `${k} transversal`);
     assert.deepStrictEqual(M.route(sc.units), sc.route, `${k} rota`);
     n++; cells += cov.cells;

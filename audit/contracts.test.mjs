@@ -44,8 +44,11 @@ test('HTML e worker correspondem ao build determinístico das correções', asyn
 });
 test('CSS/HTML estáticos, dados e scripts auxiliares preservam a referência; Plano muda por adaptador aprovado', () => {
   const original = execFileSync('git',['show',`${baseline.commit}:index.html`],{cwd:root,maxBuffer:4*1024*1024}).toString();
-  const presentation = text => text.replace("connect-src 'self' blob: data: https://services.arcgisonline.com;", "connect-src 'self' blob: data:;").replace(/<script type="module" crossorigin>[\s\S]*?<\/script>/,'MODULE').replace(/script-src [^;]+;/,'HASHES');
+  const presentation = text => text.replace("connect-src 'self' blob: data: https://services.arcgisonline.com;", "connect-src 'self' blob: data:;").replace(/<script type="module" crossorigin>[\s\S]*?<\/script>/,'MODULE').replace(/script-src [^;]+;/,'HASHES')
+    // 2.3: cabeçalho público declarado no build (título sem versão e prévia de compartilhamento); o resto segue fixo.
+    .replace(/<title>SCHMIDT[^<]*<\/title>(<meta property="og:[a-z]+" content="[^"]*">)*/,'HEAD');
   assert.equal(presentation(read('index.html').toString()),presentation(original));
+  assert.match(read('index.html').toString(),/<meta property="og:image" content="https:\/\/[^"]+icone-512\.png">/);
   const worker=read('sw.js').toString();
   assert.ok(worker.includes(createHash('sha256').update(read('index.html')).digest('hex')));
   assert.doesNotMatch(worker,/self\.skipWaiting\s*\(/);

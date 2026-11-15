@@ -130,6 +130,9 @@ function selectKth(a, k) {
   return a[k];
 }
 
+/** k-ésimo menor valor (0-based) sem ordenar tudo; não altera a entrada. Mesmo valor que ordenar e indexar. */
+export function kthSmallest(values, k) { return selectKth(Float64Array.from(values), k); }
+
 /** p95 (percentil pelo posto ⌈0,95·n⌉), máximo e média das distâncias. */
 export function distanceStats(d) {
   if (!d.length) return { p95: null, max: null, mean: null };
@@ -142,16 +145,43 @@ export function distanceStats(d) {
 export const gridStep = (geom, opts) => Math.min(opts.maxStepM, Math.max(opts.minStepM, Math.sqrt(geomArea(geom) / opts.gridTargetCells)));
 
 /**
- * Cobertura do lote: distância de cada célula ao ponto mais próximo, na grade fina (meio passo).
- * A grade grossa estima a incerteza do p95; maxUpperBoundM soma meia diagonal da célula fina ao máximo
- * (limite superior para o vazio contínuo, não só nos centros testados).
+ * Cobertura do lote: distância de cada célula ao ponto mais próximo, na grade fina (meio passo, h).
+ * A grade grossa estima a incerteza do p95.
+ * maxUpperBoundM é um limite superior RIGOROSO do pior vazio contínuo (corrigido na 2.3; antes faltavam até
+ * 10,9 m em 16 de 153 planos, ver audit/coverage-exact.py). Para x no lote: se o centro c da célula de x está
+ * no lote, d(x) ≤ d(c) + h/√2; se está fora, o segmento x→c cruza a divisa em y com |x−y| ≤ h/√2, e y fica a
+ * ≤ δ/2 de uma amostra b da divisa (espaçamento δ = h), logo d(x) ≤ d(b) + h/√2 + δ/2.
  */
 export function coverage(geom, samples, opts) {
   if (!samples.length) return { p95: null, max: null, mean: null, stepM: null, fineStepM: null, uncertaintyP95M: null, maxUpperBoundM: null, cells: 0 };
   const step = gridStep(geom, opts), coarse = distanceStats(nearestDistances(coverageGrid(geom, step), samples));
-  const fineGrid = coverageGrid(geom, step / 2), fine = distanceStats(nearestDistances(fineGrid, samples));
-  return { p95: fine.p95, max: fine.max, mean: fine.mean, stepM: step, fineStepM: step / 2, p95CoarseM: coarse.p95,
-    uncertaintyP95M: Math.abs((fine.p95 ?? 0) - (coarse.p95 ?? 0)), maxUpperBoundM: (fine.max ?? 0) + step / 2 * Math.SQRT1_2, cells: fineGrid.x.length };
+  const h = step / 2, fineGrid = coverageGrid(geom, h), fine = distanceStats(nearestDistances(fineGrid, samples));
+  const border = nearestDistances(boundaryPoints(geom, h), samples);
+  let borderMax = 0;
+  for (let i = 0; i < border.length; i++) if (border[i] > borderMax) borderMax = border[i];
+  const maxUpperBoundM = Math.max((fine.max ?? 0) + h * Math.SQRT1_2, borderMax + h * Math.SQRT1_2 + h / 2);
+  return { p95: fine.p95, max: fine.max, mean: fine.mean, stepM: step, fineStepM: h, p95CoarseM: coarse.p95,
+    uncertaintyP95M: Math.abs((fine.p95 ?? 0) - (coarse.p95 ?? 0)), maxUpperBoundM, cells: fineGrid.x.length };
+}
+
+const borderCache = new WeakMap();
+/** Pontos sobre todas as divisas (contornos e furos), com no máximo `spacing` entre vizinhos; em cache por lote. */
+export function boundaryPoints(geom, spacing) {
+  let byStep = borderCache.get(geom);
+  if (!byStep) { byStep = new Map(); borderCache.set(geom, byStep); }
+  const key = spacing.toFixed(6);
+  if (byStep.has(key)) return byStep.get(key);
+  const xs = [], ys = [];
+  for (const polygon of geom) for (const ring of polygon) {
+    const n0 = ring.length, n = n0 > 1 && ring[0][0] === ring[n0 - 1][0] && ring[0][1] === ring[n0 - 1][1] ? n0 - 1 : n0;
+    for (let i = 0; i < n; i++) {
+      const a = ring[i], b = ring[(i + 1) % n], len = Math.hypot(b[0] - a[0], b[1] - a[1]), parts = Math.max(1, Math.ceil(len / spacing));
+      for (let k = 0; k < parts; k++) { const t = k / parts; xs.push(a[0] + t * (b[0] - a[0])); ys.push(a[1] + t * (b[1] - a[1])); }
+    }
+  }
+  const pts = { x: Float64Array.from(xs), y: Float64Array.from(ys) };
+  byStep.set(key, pts);
+  return pts;
 }
 
 export const quickP95 = (grid, samples) => distanceStats(nearestDistances(grid, samples));

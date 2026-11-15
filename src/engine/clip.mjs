@@ -13,7 +13,7 @@ const { CUT_MERGE_TOL_M } = TOLERANCES;
  *   pieces: trechos dentro com comprimento ≥ minPieceM; discarded: os mais curtos (listados, não somem).
  */
 export function clipPolylineToGeom(line, geom, { minPieceM = 0 } = {}) {
-  const cum = cumulative(line), total = cum.at(-1), edges = geomEdges(geom);
+  const cum = cumulative(line), total = /** @type {number} */ (cum.at(-1)), edges = geomEdges(geom);
   // 1. Posições de corte ao longo da linha: pontas + cada cruzamento com uma aresta.
   const cuts = [0, total];
   for (let i = 1; i < line.length; i++) {
@@ -25,9 +25,11 @@ export function clipPolylineToGeom(line, geom, { minPieceM = 0 } = {}) {
     }
   }
   cuts.sort((x, y) => x - y);
+  /** @type {number[]} */
   const unique = [];
-  for (const s of cuts) if (!unique.length || s - unique.at(-1) > CUT_MERGE_TOL_M) unique.push(s);
+  for (const s of cuts) if (!unique.length || s - /** @type {number} */ (unique.at(-1)) > CUT_MERGE_TOL_M) unique.push(s);
   // 2. Intervalos entre cortes com o ponto médio dentro do lote; vizinhos encostados viram um só.
+  /** @type {{s0: number, s1: number}[]} */
   const inside = [];
   for (let k = 0; k < unique.length - 1; k++) {
     const s0 = unique[k], s1 = unique[k + 1];
@@ -40,7 +42,7 @@ export function clipPolylineToGeom(line, geom, { minPieceM = 0 } = {}) {
   let parts = inside.map(({ s0, s1 }) => ({ s0, s1, len: s1 - s0, line: slice(line, s0, s1, cum), wraps: false }));
   // 3. Linha fechada que começa e termina dentro: emenda o último trecho com o primeiro.
   if (isClosed(line) && parts.length > 1) {
-    const first = parts[0], last = parts.at(-1);
+    const first = parts[0], last = parts[parts.length - 1];
     if (first.s0 <= CUT_MERGE_TOL_M && total - last.s1 <= CUT_MERGE_TOL_M) {
       parts = [{ s0: last.s0, s1: first.s1 + total, len: last.len + first.len, line: last.line.concat(first.line.slice(1)), wraps: true }, ...parts.slice(1, -1)];
     }

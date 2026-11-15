@@ -21,7 +21,7 @@ export const lengthOf = line => cumulative(line).at(-1);
 
 /** Ponto a s metros do início (busca binária no acumulado). Fora de [0, L] além da folga: erro. */
 export function pointAt(line, s, cum = cumulative(line)) {
-  const length = cum.at(-1);
+  const length = /** @type {number} */ (cum.at(-1));
   if (!(length > 0) || !Number.isFinite(s) || s < -ALONG_S_EPS_M || s > length + ALONG_S_EPS_M) throw Error('Distância fora do trajeto válido');
   const target = Math.min(Math.max(s, 0), length);
   let lo = 0, hi = cum.length - 1;

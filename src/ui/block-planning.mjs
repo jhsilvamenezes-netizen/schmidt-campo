@@ -181,7 +181,7 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
       status.textContent = 'Calculando os tiros e pontos de cada lote…';
       const candidate = existing || await prepareSchmidtBlock({ group, fields: app.fields, parametersFor: schmidt.parametrosDo,
         editsFor:f=>app.saved.editsByField?.[`${f.farm}|${f.code}`], engine, metrics,
-        signal: abort.signal, yieldTask: () => new Promise(resolve => setTimeout(resolve, 0)) });
+        signal: abort.signal, yieldTask: () => (globalThis.scheduler?.yield ? globalThis.scheduler.yield() : new Promise(resolve => setTimeout(resolve, 0))) });
       if (abort.signal.aborted) return;
       if(!existing&&signature!==inputSignature(group.members))throw Error('Os parâmetros mudaram. Prepare o bloco novamente.');
       const { alternatives, ...plain } = candidate;

@@ -1,6 +1,8 @@
+
 // Motor espacial novo: coordenadas cartesianas em metros; nenhuma dependência DOM/estado.
 // Snapshot privado da geometria: editar a entrada depois não invalida consultas em andamento.
 // BVH exata para consultas em lote. Empates preservam a primeira aresta da entrada.
+/** @typedef {{metres:number,xy:number[],polygon:number,ring:number,edge:number,t:number,order:number}} BoundaryHit */
 export function createSchmidtBoundaryIndex(geometry, { indexed = true } = {}) {
   const segments = [];
   for (const [polygon, rings] of geometry.entries()) for (const [ring, vertices] of rings.entries()) {
@@ -27,6 +29,7 @@ export function createSchmidtBoundaryIndex(geometry, { indexed = true } = {}) {
   const nearest = (point, stats) => {
     const [x,y]=point;
     if(!Number.isFinite(x)||!Number.isFinite(y))throw new TypeError('Ponto de consulta inválido');
+    /** @type {BoundaryHit|null} */
     let best=null;
     const visit=s=>{
       if(stats)stats.segmentTests=(stats.segmentTests||0)+1;
@@ -47,7 +50,8 @@ export function createSchmidtBoundaryIndex(geometry, { indexed = true } = {}) {
     };
     if(tree)search(tree);else for(const s of segments)visit(s);
     if(!best)return null;
-    const {order,...result}=best;return result;
+    // best é atribuído dentro de visit(); o verificador não acompanha a atribuição em closure.
+    const {order,...result}=/** @type {BoundaryHit} */(/** @type {unknown} */(best));return result;
   };
   return Object.freeze({segmentCount:segments.length,nearest});
 }

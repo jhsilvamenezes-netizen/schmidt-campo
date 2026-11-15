@@ -24,7 +24,8 @@ const server = createServer((q, r) => { r.setHeader('Content-Type', 'text/html')
 await new Promise(r => server.listen(0, '127.0.0.1', r));
 const browser = await chromium.launch({ ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}), args: ['--no-sandbox', '--disable-gpu'] });
 // Remove o que muda por execução ou por versão declarada: hora, tempo medido e versão do motor.
-const norm = x => JSON.parse(JSON.stringify(x, (k, v) => (k === 'generatedAt' || k === 'elapsedMs' || k === 'engineVersion' ? undefined : v)));
+// maxUpperBoundM: corrigido na 2.3 (limite rigoroso, conferido em coverage-exact.py); demais campos idênticos.
+const norm = x => JSON.parse(JSON.stringify(x, (k, v) => (k === 'generatedAt' || k === 'elapsedMs' || k === 'engineVersion' || k === 'maxUpperBoundM' ? undefined : v)));
 const report = { pageSame: 0, workerOptimize: 0, workerRecommend: 0, modes: [], versions: [], failures: [] };
 const errors = [];
 try {

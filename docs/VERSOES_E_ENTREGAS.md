@@ -190,3 +190,9 @@ cobertura recolhidas e bloqueadas. Relatório: [BLOCO_COMPARAR_2_1.md](BLOCO_COM
 
 Página e worker calculam com o motor reescrito (`src/engine`), com resultados idênticos ao motor
 0.5.1. Relatório: [MOTOR_2_NO_APP_2_2.md](MOTOR_2_NO_APP_2_2.md).
+
+## 2.3.0 — motor conferido, tela mais enxuta e tema Noite
+
+Bloco 8× a 40× mais rápido; limite da cobertura provado contra o cálculo exato; motor com tipos
+estritos e propriedades em lotes aleatórios; revisão de tela (10 itens) e 23% menos texto nas abas.
+Relatório: [ENTREGA_2_3.md](ENTREGA_2_3.md).

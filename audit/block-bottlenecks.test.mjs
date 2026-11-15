@@ -2,7 +2,8 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {prepareSchmidtBlock} from '../src/application/block-planning.mjs';
 const fields=Object.fromEntries(['A','B'].map(code=>['F|'+code,{farm:'F',code,ref:'AB',referenceA:[0,0],centroidUTM:[0,0],bearing:0,geom:[],areaOfficialHa:1}]));
-const args={group:{id:'F|AB',members:Object.keys(fields),compatible:true},fields,parametersFor:()=>({trackMode:'espacamento',maxPointsCap:20}),engine:{buildScenario:()=>({minPoints:1,deltaM:109.44,samples:[{x:0,y:0}],units:[{}],frame:{v:[1,0]},allTracks:[]})},metrics:{gridStep:()=>1,coverageGrid:()=>[{}],nearestDistances:()=>[1]}};
+// yieldEveryMs: 0 = pausa a cada passo, para exercitar o cancelamento em cada pausa (a política por tempo é só agendamento).
+const args={yieldEveryMs:0,group:{id:'F|AB',members:Object.keys(fields),compatible:true},fields,parametersFor:()=>({trackMode:'espacamento',maxPointsCap:20}),engine:{buildScenario:()=>({minPoints:1,deltaM:109.44,samples:[{x:0,y:0}],units:[{}],frame:{v:[1,0]},allTracks:[]})},metrics:{gridStep:()=>1,coverageGrid:()=>[{}],nearestDistances:()=>[1]}};
 test('cancelar na última pausa não entrega um resultado concluído',async()=>{
  let yields=0;await prepareSchmidtBlock({...args,yieldTask:async()=>{yields++;}});
  const controller=new AbortController();let step=0;
