@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "2.5.0 publicada; foco no link",
+  "task": "R2.4 + Unidade D: motor 2 completo, sem motor 0.5.1 no arquivo",
   "owner": "Claude",
-  "status": "pronto_para_iniciar",
-  "nextAction": "Correções e melhorias do link: tela a partir de src (sem remendos), motor antigo fora do arquivo, tipografia e números. APK só se o proprietário pedir.",
+  "status": "pronto_para_revisao",
+  "nextAction": "R1 contrato; R3 prévias de tela para aprovação do proprietário",
   "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -54,11 +54,11 @@
     "15/11: APK só quando o proprietário pedir (não propor nem citar como próximo passo); foco em correções e melhorias do link"
   ],
   "snapshot": {
-    "at": "2026-11-15T13:38:43.287Z",
+    "at": "2026-11-15T16:17:54.968Z",
     "branch": "claude/motor-evolucao",
-    "codeCommit": "8895d735589efff3243339a8fed07b32e87a25f4",
+    "codeCommit": "ec270b405725f9415a3d4a1aa12c4d66d1de8c33",
     "changedTrackedFiles": [
-      "AGENTS.md"
+      "audit/parameter-constraints.test.mjs"
     ],
     "untrackedCount": 0
   },

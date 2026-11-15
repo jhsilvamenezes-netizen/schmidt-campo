@@ -13,16 +13,19 @@ const has = (result, field, code) => result.issues.some(i => i.field === field &
 test('catálogo e defaults preservam a referência estudada, com identidade da versão separada', () => {
   const reference=execFileSync('git',['show','5e03a8b3a1400054627d825ed749ea45bbd04cf8:index.html'],{cwd:fileURLToPath(new URL('../',import.meta.url)),maxBuffer:4*1024*1024});
   assert.equal(createHash('sha256').update(reference).digest('hex'),schema.htmlSha256);
+  // 3.0 (Unidade D): o motor antigo saiu do arquivo; compara-se o VALOR (catálogo e padrões do motor publicado,
+  // lido do <script id="schmidt-engine">) com o do motor da referência estudada, executado à parte.
   const current=readFileSync(new URL('../index.html',import.meta.url),'utf8');
-  const extract=(html,start,end)=>{
-    const a=html.indexOf(start);assert.ok(a>=0&&a===html.lastIndexOf(start),'Início de módulo único');
-    const b=html.indexOf(end,a);assert.ok(b>a,'Fim de módulo encontrado');return html.slice(a,b);
-  };
-  // Fim do catálogo: a declaração do módulo seguinte (_), qualquer que seja seu conteúdo (desde a 2.2.0 é o motor 2).
-  const catalog=html=>extract(html,'g=(()=>{let{DomainError:e,ERR:t}=h','})(),_=');
-  const defaults=html=>extract(html,'l=(()=>{let e=Object.freeze({boomWidthM:','})(),u=(()=>{let e=new Map').replace(/APP_VERSION:`[^`]+`/,'APP_VERSION:IDENTITY').replace(/ENGINE_VERSION:`[^`]+`/,'ENGINE_VERSION:IDENTITY');
-  assert.equal(catalog(current),catalog(reference.toString()));
-  assert.equal(defaults(current),defaults(reference.toString()));
+  const m=/<script id="schmidt-engine">([\s\S]*?)<\/script>/.exec(current);assert.ok(m,'Motor publicado encontrado');
+  const now=new Function(m[1]+';return schmidtEngine2;')();
+  const ref=reference.toString(),start=ref.indexOf('var e={SEGMENT_T_EPS:'),end=ref.indexOf(',O=(()=>{',start);
+  assert.ok(start>=0&&end>start,'Motor da referência encontrado');
+  const old=new Function('let '+ref.slice(start+4,end)+';return {g,l};')();
+  const plain=v=>JSON.parse(JSON.stringify(v));
+  assert.deepStrictEqual(plain(now.paramCatalog.CATALOG),plain(old.g.CATALOG));
+  assert.deepStrictEqual([...now.paramCatalog.KNOWN_TOP],[...old.g.KNOWN_TOP]);
+  assert.deepStrictEqual(plain(now.paramCatalog.KNOWN_NESTED),plain(old.g.KNOWN_NESTED));
+  assert.deepStrictEqual(plain(now.params.DEFAULT_PARAMS),plain(old.l.DEFAULT_PARAMS));
 });
 test('defaults reais e opcionais explícitos permanecem válidos, sem reescrever entradas', () => {
   const patch = { boomWidthM: 36.48, bearingDeg: null, totalPoints: null, maxAcceptableGapM: null };
