@@ -169,13 +169,14 @@ try {
       await page.waitForFunction(() => window.auditGPSCalls > 0);
       await page.waitForTimeout(500);
       // 2.4 (aprovado): faixa "Simulação · limites…" fora do mapa e escala curta em mapa baixo; só essas áreas mudam.
-      // A camada de baixo mudou: os cantos arredondados do aviso (#status) recompõem 1–2/255; só a faixa da borda de
-      // cima (12 px) entra; o texto do aviso segue comparado.
+      // A camada de baixo mudou: borda arredondada e sombra do aviso (#status) recompõem 1–2/255 (no CI, mais pixels);
+      // só a moldura (12 px para dentro, 10 px de sombra) entra; o texto do aviso segue comparado.
       gpsRegions.push(...await page.evaluate(() => {
         const out = [document.getElementById('geo-status'), document.querySelector('#map .m-scale')].map(e => e?.getBoundingClientRect())
           .filter(r => r && r.width).map(r => ({ left: Math.floor(r.left) - 2, right: Math.ceil(r.right) + 2, top: Math.floor(r.top) - 2, bottom: Math.ceil(r.bottom) + 2 }));
         const t = document.getElementById('status')?.getBoundingClientRect();
-        if (t && t.width) out.push({ left: Math.floor(t.left) - 6, right: Math.ceil(t.right) + 6, top: Math.floor(t.top) - 6, bottom: Math.floor(t.top) + 12 });
+        if (t && t.width) { const L = Math.floor(t.left) - 10, R = Math.ceil(t.right) + 10, T = Math.floor(t.top) - 10, B = Math.ceil(t.bottom) + 10;
+          out.push({ left: L, right: R, top: T, bottom: T + 22 }, { left: L, right: R, top: B - 22, bottom: B }, { left: L, right: L + 22, top: T, bottom: B }, { left: R - 22, right: R, top: T, bottom: B }); }
         return out; }));
       images.push(await page.screenshot({ path: fileURLToPath(new URL(`390-gps-${scenario}-${label}.png`, results)), animations: 'disabled' }));
       await ctx.close();
