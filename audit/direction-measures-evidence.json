@@ -1,6 +1,6 @@
 {
- "htmlSha256": "93ccce3825a4d8071256317f11efe1efa20e7ee7d71b07af0b10c14eb13070d0",
- "browser": "141.0.7390.37",
+ "htmlSha256": "4fc0c117637c0d14e8a4166345dd7551d62de6eb6bfef5d0f7cc9f7e8c91b3a0",
+ "browser": "153.0.8010.12",
  "versions": {
   "shapely": "2.1.2",
   "geos": "3.13.1",

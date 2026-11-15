@@ -53,10 +53,11 @@ jobs:
           node block-map-gestures-browser.mjs
           node block-map-selection-browser.mjs
           node adjust-compare-browser.mjs
+          node block-compare-browser.mjs
           node gps-guidance-browser.mjs
           node gps-stability-browser.mjs
           node direction-measures-probe.mjs
-          python direction-measures.py
+          DIRECTION_EVIDENCE_OUT=results/direction-measures-ci.json python direction-measures.py
           node boundary-engine-real.mjs
           node bounded-response.test.mjs
           node satellite-map.test.mjs

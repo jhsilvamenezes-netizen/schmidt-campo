@@ -179,3 +179,9 @@ Publicada pelo PR #19, com autorização após a revisão #18 e CI aprovado. Exp
 antigas, estabiliza a troca de alvo e evita repetir o alerta de chegada por ruído.
 Chegada com texto voltado às distâncias; nenhum registro histórico é apagado.
 Testes de regressão e limites: [CORRECOES_2_0_1.md](CORRECOES_2_0_1.md).
+
+## 2.1.0 — comparar antes de usar no modo bloco
+
+Melhor opção de cada espaçamento comum, com conjunto e detalhe por lote; escolha
+troca o rascunho e "Usar bloco" aplica tudo de uma vez; opções com perda de
+cobertura recolhidas e bloqueadas. Relatório: [BLOCO_COMPARAR_2_1.md](BLOCO_COMPARAR_2_1.md).

@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "Reescrita do motor: etapa 1 espacial implementada em candidata",
-  "owner": "Codex",
-  "status": "pronto_para_revisao",
-  "nextAction": "Conferir CI e relatório REESCRITA_MOTOR_ETAPA_1.md. Prosseguir com contratos/projeção/polilinhas e depois recorte/alocação; comparar com legado e GEOS/PROJ. BVH permanece opt-in: construir a árvore por chamada foi mais lento. App público continua 2.0.1; núcleo completo e visual ainda não reescritos.",
+  "task": "2.1.0 — comparar antes de usar no bloco; depois reescrita do motor (U2)",
+  "owner": "Claude",
+  "status": "em_andamento",
+  "nextAction": "PR da 2.1.0, CI e publicação; depois U2: reescrever geração de tiros/recorte em src/engine com comparação diferencial nos 51 lotes/40 grupos e GEOS",
   "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -11,29 +11,24 @@
   "scope": "Direcionamento exclusivo no link móvel, sem coleta/marcação pela equipe. APK adiado.",
   "tests": [
     {
+      "command": "node audit/block-compare-browser.mjs",
+      "result": "passou",
+      "evidence": "40 grupos, 517 opções (355 bloqueadas), 7 aplicações = prometido, plano individual intacto"
+    },
+    {
       "command": "npm --prefix audit test; npm --prefix audit run test:blocks",
       "result": "passou",
-      "evidence": "Contratos e módulos incluindo 5 novos grupos de testes espaciais, 4000 consultas sintéticas."
+      "evidence": "2.1.0"
     },
     {
-      "command": "node audit/boundary-engine-real.mjs",
+      "command": "adjust-compare, gps-guidance, gps-stability, blocks-runtime, block-map-selection, operational-plan (browser)",
       "result": "passou",
-      "evidence": "2284 consultas; 51 lotes/40 grupos; distância e projeção preservadas."
+      "evidence": "2.1.0"
     },
     {
-      "command": "node audit/boundary-engine-benchmark.mjs",
+      "command": "node audit/blocks-ui-browser.mjs",
       "result": "passou",
-      "evidence": "15 rodadas/variante; caminho direto mantido após BVH por chamada ficar mais lenta."
-    },
-    {
-      "command": "node audit/block-map-selection-browser.mjs",
-      "result": "passou",
-      "evidence": "5 fluxos de consulta/edição/câmera/remover ponto; zero erros."
-    },
-    {
-      "command": "node audit/direction-measures-probe.mjs && python audit/direction-measures.py",
-      "result": "passou",
-      "evidence": "GEOS/PROJ; 51 lotes e 40 grupos; hash da candidata conferido, sem falhas."
+      "evidence": "3 de 4 rodadas; 1 falha isolada sem reprodução (oscilação)"
     }
   ],
   "blockers": [
@@ -49,27 +44,26 @@
     "E1/E2 e parte de E3/E4 entregues; E5/E6 gerais e piloto físico não concluídos.",
     "Conferir GitHub e diff; uma sessão não recebe automaticamente o chat da outra.",
     "Pedido posterior autoriza reescrita estruturada do motor; primeira unidade espacial integrada só na candidata.",
-    "Fonte completa ainda não recuperada; reescrita não deve renomear todo o motor nem declarar substituição completa prematuramente."
+    "Fonte completa ainda não recuperada; reescrita não deve renomear todo o motor nem declarar substituição completa prematuramente.",
+    "2.1.0: comparação de bloco usa as opções já calculadas pela preparação; lista não gravada; Usar bloco atômico."
   ],
   "snapshot": {
-    "at": "2026-11-15T01:28:24.612Z",
-    "branch": "codex/reescrita-motor-etapa-1",
-    "codeCommit": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
+    "at": "2026-11-15T02:13:40.913Z",
+    "branch": "claude/motor-e-bloco",
+    "codeCommit": "8d82e60fd36edd19f72f750a44c3f142458808a2",
     "changedTrackedFiles": [
       ".github/workflows/blocos-candidata.yml",
       "AGENTS.md",
       "VERSAO.json",
-      "audit/direction-measures-evidence.json",
-      "audit/package.json",
-      "docs/EXECUCAO_2_0.md",
+      "audit/block-candidate.json",
+      "docs/VERSOES_E_ENTREGAS.md",
       "index.html",
-      "scripts/build-preserved.mjs",
-      "src/application/adjust-alternatives.mjs",
+      "scripts/block-transform.mjs",
       "src/application/block-planning.mjs",
-      "src/ui/block-map.mjs",
+      "src/ui/block-planning.mjs",
       "sw.js"
     ],
-    "untrackedCount": 9
+    "untrackedCount": 3
   },
   "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",
   "developmentBranch": "codex/reescrita-motor-etapa-1"

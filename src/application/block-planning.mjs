@@ -251,12 +251,38 @@ export async function prepareSchmidtBlock({ group, fields, parametersFor, editsF
     || (a.worstRatio>1+1e-6 ? a.worstRatio-b.worstRatio : a.extraCount-b.extraCount)
     || a.worstRatio-b.worstRatio);
   best = shortlist[0];
-  return { id: group.id, members: [...group.members], sourceSignature: schmidtBlockSourceSignature(fields, group.members),
-    common: best.common, state: { paramsByField: best.params, editsByField: {}, monitor: {} },
-    assessment: { tested, redistributionCandidates, coverage: best.coverage, worstRatio: best.worstRatio, addedPointsByField: best.addedPointsByField,
-      minimumBorderMByField:Object.fromEntries(group.members.map(k=>[k,schmidtBlockBorderDistance(fields[k].geom,best.scenarios[k].samples)])),
-      coverageTradeoff: best.worstRatio > 1 + 1e-6, routeValidated: false, timeSavingMeasured: false },
-    createdAt: new Date().toISOString() };
+  const sourceSignature = schmidtBlockSourceSignature(fields, group.members), createdAt = new Date().toISOString();
+  const toRecord = c => ({ id: group.id, members: [...group.members], sourceSignature,
+    common: c.common, state: { paramsByField: c.params, editsByField: {}, monitor: {} },
+    assessment: { tested, redistributionCandidates, coverage: c.coverage, worstRatio: c.worstRatio, addedPointsByField: c.addedPointsByField,
+      minimumBorderMByField:Object.fromEntries(group.members.map(k=>[k,schmidtBlockBorderDistance(fields[k].geom,c.scenarios[k].samples)])),
+      coverageTradeoff: c.worstRatio > 1 + 1e-6, routeValidated: false, timeSavingMeasured: false },
+    createdAt });
+  const record = toRecord(best);
+  // 2.1 (F4/U4): a melhor opção de cada espaçamento já calculada (mesma grade comum, mesmas células de
+  // cobertura e mesma redistribuição) fica disponível para comparar ANTES de usar o bloco. Não é gravada:
+  // a interface retira esta lista antes de controller.enter(). Usar continua sendo uma operação única.
+  // Uma por espaçamento: a primeira na mesma ordenação final que escolheu a recomendada (inclui a recomendada).
+  const perSpacing = new Map();
+  for (const c of shortlist) if (!perSpacing.has(c.common.spacingM)) perSpacing.set(c.common.spacingM, c);
+  record.alternatives = [...perSpacing.values()].sort((a, b) => a.common.spacingM - b.common.spacingM)
+    .map(c => ({ record: c === best ? null : toRecord(c), chosen: c === best, summary: schmidtBlockAlternativeSummary(fields, group.members, c) }));
+  return record;
+}
+
+// Resumo de uma alternativa de bloco: conjunto e cada lote, com os números do próprio cenário calculado.
+export function schmidtBlockAlternativeSummary(fields, members, candidate) {
+  const perField = members.map(key => {
+    const sc = candidate.scenarios[key];
+    return { key, code: fields[key].code, tracks: sc.selected?.length ?? 0, points: sc.samples?.length ?? 0,
+      added: candidate.addedPointsByField?.[key] ?? 0, ratio: candidate.coverage[key].ratio,
+      borderM: sc.samples ? schmidtBlockBorderDistance(fields[key].geom, sc.samples) : null };
+  });
+  const worst = perField.reduce((a, b) => (b.ratio > a.ratio ? b : a));
+  return { spacingM: candidate.common.spacingM, passes: Math.round(candidate.common.spacingM / 36.48), phaseM: candidate.common.phaseM,
+    tracks: perField.reduce((n, f) => n + f.tracks, 0), points: perField.reduce((n, f) => n + f.points, 0),
+    added: perField.reduce((n, f) => n + f.added, 0), worstRatio: candidate.worstRatio, worstCode: worst.code,
+    coverageTradeoff: candidate.worstRatio > 1 + 1e-6, borderM: Math.min(...perField.map(f => f.borderM ?? Infinity)), perField };
 }
 
 let schmidtBlockController;
