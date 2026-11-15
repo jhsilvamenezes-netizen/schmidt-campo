@@ -44,7 +44,8 @@ test('HTML e worker correspondem ao build determinístico das correções', asyn
 });
 test('CSS/HTML estáticos, dados e scripts auxiliares preservam a referência; Plano muda por adaptador aprovado', () => {
   const original = execFileSync('git',['show',`${baseline.commit}:index.html`],{cwd:root,maxBuffer:4*1024*1024}).toString();
-  const presentation = text => text.replace("connect-src 'self' blob: data: https://services.arcgisonline.com;", "connect-src 'self' blob: data:;").replace(/<script type="module" crossorigin>[\s\S]*?<\/script>/,'MODULE').replace(/script-src [^;]+;/,'HASHES')
+  // 2.4: motor 2 num script próprio (uma cópia para página e worker); fora da comparação estática.
+  const presentation = text => text.replace(/<script id="schmidt-engine">[\s\S]*?<\/script>/,'').replace("connect-src 'self' blob: data: https://services.arcgisonline.com;", "connect-src 'self' blob: data:;").replace(/<script type="module" crossorigin>[\s\S]*?<\/script>/,'MODULE').replace(/script-src [^;]+;/,'HASHES')
     // 2.3: cabeçalho público declarado no build (título sem versão e prévia de compartilhamento); o resto segue fixo.
     .replace(/<title>SCHMIDT[^<]*<\/title>(<meta property="og:[a-z]+" content="[^"]*">)*/,'HEAD');
   assert.equal(presentation(read('index.html').toString()),presentation(original));

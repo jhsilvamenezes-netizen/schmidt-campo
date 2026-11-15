@@ -20,7 +20,11 @@ export async function buildCandidate({includeBlocks}={}) {
   if(includeBlocks===undefined)includeBlocks=!!JSON.parse(await readFile(root+'VERSAO.json','utf8')).runtimeBlocks;
   const original = execFileSync('git',['show',`${baseline.commit}:index.html`],{cwd:root,maxBuffer:4*1024*1024}).toString();
   if(sha(original)!==baseline.files['index.html'].sha256) throw new Error('Baseline HTML inesperado');
-  const blocks=[await bundleEngine()]; // motor 2 primeiro: os módulos abaixo e o motor da página o usam
+  // 2.4: o motor 2 vai num <script id="schmidt-engine"> próprio (com hash na CSP). A página usa a constante global
+  // e o worker é montado com o MESMO texto (lido do DOM): uma cópia só do motor no arquivo, em vez de duas.
+  const engineBundle=await bundleEngine();
+  if(engineBundle.includes('</script'))throw new Error('Motor contém </script>');
+  const blocks=[];
   const available = new Set();
   for(const file of preservedSourceFiles) {
     const source=await readFile(root+file,'utf8');
@@ -51,7 +55,7 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
   }
   // async já é usado pelo baseline. Evita exigir suporte novo a top-level await
   // dos WebViews Android: o await de recuperação fica dentro desta função.
-  replace('<script type="module" crossorigin>','<script type="module" crossorigin>\n(async()=>{\n'+blocks.join('\n')+'\n','fontes-legíveis');
+  replace('<script type="module" crossorigin>','<script id="schmidt-engine">'+engineBundle+'</script><script type="module" crossorigin>\n(async()=>{\n'+blocks.join('\n')+'\n','fontes-legíveis');
   // Motor 2 no lugar do motor 0.5.1 DA PÁGINA. Cada módulo antigo (do seu início até o início do seguinte) vira
   // o namespace equivalente; validação de parâmetros (g) e qualidade dos dados (d) seguem do antigo, injetadas.
   // Marcadores únicos e ordem conferidos: qualquer mudança no artefato base interrompe o build.
@@ -110,9 +114,7 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
     }
     if(lit.split('ENGINE_VERSION:`0.5.1-sim`').length!==2)throw new Error('Worker: versão do motor não encontrada');
     lit=lit.replace('ENGINE_VERSION:`0.5.1-sim`','ENGINE_VERSION:`2.0.0`');
-    const bundle=(await bundleEngine()).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
     if(!lit.startsWith('(function(){let e='))throw new Error('Worker: forma inesperada');
-    lit='(function(){'+bundle+'let e='+lit.slice('(function(){let e='.length);
     candidate=candidate.slice(0,at+3)+lit+candidate.slice(end);changes.push('motor-2-no-worker');
   }
   replace('__m_ui_lotes:ne,__m_main:J};</script>', '__m_ui_lotes:ne,__m_main:J};\ninstallSchmidtRefinements(document);\ninstallSchmidtLotMap({document,events:A});\ninstallSchmidtSatelliteMap({document});\ninstallSchmidtOperationalPlan({document,schmidt:SCHMIDT,events:A,measurements:N});\ninstallSchmidtAdjustCompare({document,schmidt:SCHMIDT,events:A,measurements:N});\ninstallSchmidtMonitorDirection({document});\ninstallSchmidtNightTheme({document});\ninstallSchmidtTextTrim({document});\n})();</script>', 'escopo-assíncrono-e-plano-aprovado');
@@ -169,6 +171,8 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
   // 2.3: Auditoria › "Dados do lote" marcava "!" (problema) até para notas só informativas (B gerado pelo rumo,
   // área publicada × KML, KML já corrigido). Agora "!" só com alerta ou erro; só notas → "i"; nada → "✓".
   replace('[!T.length,`Dados do lote`,','[T.some(e=>e.level!==`info`)?!1:T.length?null:!0,`Dados do lote`,','auditoria-dados-nivel-real');
+  replace('new Blob([`(self.URL || self.webkitURL).revokeObjectURL(self.location.href);`,H]',
+    'new Blob([`(self.URL || self.webkitURL).revokeObjectURL(self.location.href);`,document.getElementById(`schmidt-engine`)?.textContent||``,`;`,H]','worker-usa-o-mesmo-motor-da-pagina');
   // 2.4: com a folha mais baixa o mapa do celular tem ~300 px; a escala longa (110 px) cobria o primeiro tiro.
   replace('ne=F((d.H<300?56:110)/d.s)','ne=F((d.H<420?56:110)/d.s)','escala-curta-no-mapa-do-celular');
   // 2.3: "limite 376 m" pedia interpretação; "além de 376 m" cabe no cartão e diz o que conta.
@@ -187,7 +191,7 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
     +'<meta property="og:image" content="https://jhsilvamenezes-netizen.github.io/schmidt-campo/icone-512.png">'
     +'<meta property="og:url" content="https://jhsilvamenezes-netizen.github.io/schmidt-campo/">';
   replace(HEAD_FROM,HEAD_TO,'cabecalho-publico-titulo-e-previa');
-  const presentation = value => value.replace(HEAD_FROM,HEAD_TO).replace("connect-src 'self' blob: data: https://services.arcgisonline.com;", "connect-src 'self' blob: data:;").replace(/<script type="module" crossorigin>[\s\S]*?<\/script>/,'<script type="module" crossorigin></script>').replace(/script-src [^;]+;/,'script-src HASHES;');
+  const presentation = value => value.replace(/<script id="schmidt-engine">[\s\S]*?<\/script>/,'').replace(HEAD_FROM,HEAD_TO).replace("connect-src 'self' blob: data: https://services.arcgisonline.com;", "connect-src 'self' blob: data:;").replace(/<script type="module" crossorigin>[\s\S]*?<\/script>/,'<script type="module" crossorigin></script>').replace(/script-src [^;]+;/,'script-src HASHES;');
   if(presentation(candidate)!==presentation(original))throw new Error('Apresentação/dados fora do módulo foram alterados');
   if(!candidate.includes(`function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`))throw new Error('Tratamento visual original não preservado');
   const workerTemplate=await readFile(root+'src/platform/service-worker.js','utf8');

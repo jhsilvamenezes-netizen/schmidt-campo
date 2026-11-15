@@ -5,6 +5,8 @@
 const HIDE = 'sx-trim';
 const nbsp = / /g;
 const leaf = e => !e.children.length;
+// Esconde a nota e o subtítulo logo antes dela (seção que só diria "nada a fazer").
+const withHeading = e => { const h = e.previousElementSibling; return h && /^H[2-6]$/.test(h.tagName) ? [e, h] : [e]; };
 export const TRIM_RULES = [
   // Tiros, Dados e Auditoria: "Para que serve: …" (o nome da aba já diz).
   { sel: 'p.aba-intro', when: t => t.startsWith('Para que serve'), hide: true },
@@ -59,6 +61,17 @@ export const TRIM_RULES = [
   { sel: 'small#op-density-help', when: t => t === 'Define o mínimo', hide: true },
   { sel: 'p.op-caption', when: t => t.startsWith('Mínimo pela área: '), text: t => t.replace('Mínimo pela área: ', 'Mínimo: ') },
   { sel: '.op-distance small', when: t => t === 'De um ao vizinho, de lado' || t === 'Ao longo do mesmo tiro', hide: true },
+  // Etapas do Planejar: o resumo verde do topo já diz "sem área descoberta"; repetir abaixo não ajuda quem lê.
+  { sel: '#param-stage-diagnostico p.v16-line', when: t => t.startsWith('Cada ponto cuida de'), hide: true },
+  { sel: '#param-stage-diagnostico p', when: t => t.startsWith('Malha equilibrada:'), html: () => '<b>Malha equilibrada.</b>' },
+  { sel: 'p.fx-note', when: t => t === 'Nenhuma mancha relevante.' || t.startsWith('Nada a corrigir.'), hide: withHeading },
+  // Ajuste fino: "Padrão: Todos" embaixo de um campo que já mostra "Todos".
+  { sel: 'small.param-meta', live: true, whenEl: e => { const m = /^Padrão: (.+)$/.exec(e.textContent.trim()), sel = e.closest('label')?.querySelector('select');
+    return !!(m && sel && sel.selectedOptions[0]?.textContent.trim() === m[1].trim()); } },
+  // Ajuste fino: título "Monitor em campo (calibração)" sem nenhum campo visível (só aparecem nas opções avançadas).
+  { sel: 'fieldset.mon-calib', live: true, whenEl: e => ![...e.querySelectorAll('label')].some(l => getComputedStyle(l).display !== 'none') },
+  // Conferência: o botão "Enviar plano aos monitores" está nesta mesma etapa.
+  { sel: '.fx-verdict small', when: t => t === 'Envie o plano na etapa Arquivos.', hide: true },
   // Selo de dados: "Base histórica" não diz nada a quem usa; sem alerta do motor, o selo diz exatamente isso.
   { sel: '#v08-quality', when: t => t === 'Base histórica',
     fix: e => { e.textContent = 'Sem alertas'; e.setAttribute('aria-label', 'Sem alertas nos dados do lote. Limites do KML não homologados. Toque para ver os dados.'); return true; } },
@@ -82,10 +95,10 @@ export function applyTextTrim(root, rules = TRIM_RULES) {
   rules.forEach((r, i) => { for (const e of root.querySelectorAll(r.sel)) {
     const t = e.textContent.replace(nbsp, ' ').trim();
     // Regra "live": o elemento troca de texto (ex.: faixa do mapa mostra o estado do satélite); some só enquanto casar.
-    if (r.live) { const on = r.when(t); if (on !== (e.dataset.sxTrim === String(i))) { e.classList.toggle(HIDE, on); on ? (e.dataset.sxTrim = String(i)) : delete e.dataset.sxTrim; changed++; } continue; }
+    if (r.live) { const on = r.whenEl ? r.whenEl(e) : r.when(t); if (on !== (e.dataset.sxTrim === String(i))) { e.classList.toggle(HIDE, on); on ? (e.dataset.sxTrim = String(i)) : delete e.dataset.sxTrim; changed++; } continue; }
     if (e.classList.contains(HIDE)) continue;
     if (!r.when(t)) continue;
-    if (r.hide) { const target = typeof r.hide === 'function' ? r.hide(e) : e; if (target) { target.classList.add(HIDE); changed++; } continue; }
+    if (r.hide) { const target = typeof r.hide === 'function' ? r.hide(e) : e; for (const x of [target].flat()) if (x) { x.classList.add(HIDE); changed++; } continue; }
     if (r.fix) { if (r.fix(e)) changed++; continue; }
     if (r.html) { const h = r.html(e); if (h !== null) { e.innerHTML = h; changed++; } continue; }
     if (r.text && leaf(e)) {
@@ -109,7 +122,9 @@ export function installSchmidtTextTrim({ document }) {
   new view.MutationObserver(list => {
     if (queued || list.every(m => map?.contains(m.target))) return;
     queued = true; view.requestAnimationFrame(run);
-  }).observe(document.body, { childList: true, subtree: true, characterData: true });
+  }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class', 'hidden', 'open'] });
+  // Trocar a opção de um seletor não muda o DOM: reavalia as regras "live" (ex.: "Padrão: …") a cada troca.
+  document.addEventListener('change', () => { if (!queued) { queued = true; view.requestAnimationFrame(run); } }, true);
   run();
   return true;
 }
