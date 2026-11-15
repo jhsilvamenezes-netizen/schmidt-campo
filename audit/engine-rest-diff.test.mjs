@@ -130,3 +130,86 @@ test('edição: mover, acrescentar, recalcular e restaurar iguais nos 51 lotes',
   }
   assert.ok(n > 1500, `casos: ${n}`);
 });
+
+// ---- qualidade do cadastro e recomendação ----
+import * as dq from '../src/engine/dataQuality.mjs';
+import * as rec from '../src/engine/recommend.mjs';
+
+test('qualidade do cadastro: mesmos achados nos 51 lotes e em lotes alterados', () => {
+  const L = old.dataQuality.QUALITY_LIMITS;
+  assert.deepStrictEqual({ ...dq.QUALITY_LIMITS }, { ...L });
+  for (const k of keys) {
+    const f = fields[k], strict = { ...L, shortEdgeM: 50, spikeAngleDeg: 40, weakABDistanceM: 1e4 };
+    assert.deepStrictEqual(dq.assessField({ ...f }), old.dataQuality.assessField({ ...f }), k);
+    assert.deepStrictEqual(dq.assessField({ ...f }, strict), old.dataQuality.assessField({ ...f }, strict), k);
+    const r = f.geom[0][0], bow = [[r[0], r[2], r[1], r[3], r[0]]];
+    for (const g of [{ ...f, geom: [bow] }, { ...f, bearing: (f.bearing ?? 0) + 7, bearingCalc: f.bearing ?? 0, refDistanceM: 10 },
+      { ...f, flags: ['Polígono sobreposto — x', 'repetido', 'ponto A fora', 'outro aviso'] }, { ...f, areaKMLHa: f.areaOfficialHa * 1.2, referenceA: [1e7, 1e7] }])
+      assert.deepStrictEqual(dq.assessField(g), old.dataQuality.assessField(g), `${k} alterado`);
+  }
+  for (const [a, b] of [[10, 190], [0, 179], [-30, 30], [359, 1]]) assert.equal(dq.axisDifferenceDeg(a, b), old.dataQuality.axisDifferenceDeg(a, b));
+});
+
+test('recomendação: mesmo plano, alternativas e explicação nos 51 lotes', () => {
+  const strip = r => JSON.parse(JSON.stringify(r));
+  assert.deepStrictEqual(rec.SHAPE_KEYS, old.recommend.SHAPE_KEYS);
+  for (const k of keys) { const f = fields[k];
+    for (const o of [{}, { fitTeam: true, monitors: 3 }]) {
+      const a = rec.recommendPlan(f, {}, o, build), b = old.recommend.recommendPlan(f, {}, o);
+      assert.deepStrictEqual(strip(a), strip(b), `${k} ${JSON.stringify(o)}`);
+      if (b && o.fitTeam) for (const g of [{ alignToBoom: false }, { haPerPoint: 10, boomWidthM: 24 }]) assert.deepStrictEqual(strip(rec.recommendPlan(f, g, {}, build)), strip(old.recommend.recommendPlan(f, g, {})), `${k} ${JSON.stringify(g)}`);
+      if (b) assert.deepStrictEqual(strip(rec.recommendPlan(f, { trackSpacingM: 999 }, { preset: b.preset }, build)), strip(old.recommend.recommendPlan(f, { trackSpacingM: 999 }, { preset: b.preset })));
+    }
+  }
+});
+
+// ---- arquivos de saída ----
+import * as ex from '../src/engine/exporters.mjs';
+
+test('arquivos: CSV, GPX, KML, GeoJSON e CSV do piloto idênticos byte a byte nos 51 lotes', () => {
+  const V = old.params.APP_VERSION;
+  for (const k of keys) {
+    const f = fields[k], sc = build(f, old.index.DEFAULT_PARAMS);
+    const moved = old.editing.moveSample(sc, f, sc.samples[0]?.id, { x: 1, y: 1 }, { allowOffTrack: true });
+    const scs = [sc, moved.ok ? old.editing.withSamples(f, sc, moved.samples) : sc];
+    for (const s of scs) {
+      assert.equal(ex.toCSV(s, f), old.exporters.toCSV(s, f), `${k} csv`);
+      assert.deepStrictEqual(ex.toGeoJSON(s, f), old.exporters.toGeoJSON(s, f), `${k} geojson`);
+      const routes = s.selected.filter(t => s.units.some(u => u.trackId === t.id)).map(t => old.route.buildRoute(s, f, t.id));
+      assert.equal(ex.toGPX(routes, f, s, V), old.exporters.toGPX(routes, f, s), `${k} gpx`);
+      assert.equal(ex.toKML(routes, f, s), old.exporters.toKML(routes, f, s), `${k} kml`);
+    }
+    for (const poly of f.geom) assert.deepStrictEqual(ex.rfc7946Rings(poly), old.exporters.rfc7946Rings(poly));
+  }
+  const marks = [{ at: '2026-03-02T10:05:00Z', track: 'T1', number: 2, planned: [-45.1, -12.1], marked: [-45.10001, -12.10002], distM: 2.345, accuracyM: 4, fromEntryM: 120.55, steps: 160 },
+    { at: '2026-03-02T09:58:00Z', track: 'T;1', number: 1, planned: [-45.2, -12.2], marked: null, distM: null, accuracyM: NaN, fromEntryM: null, steps: null }];
+  const meta = { field: { farm: 'Faz;enda', code: 'P6' }, monitor: 'Ana', stepLengthM: 0.75, engineVersion: '0.5.1-sim' };
+  assert.equal(ex.pilotCSV(marks, meta), old.exporters.pilotCSV(marks, meta));
+});
+
+// ---- catálogo de parâmetros ----
+import * as cat from '../src/engine/paramCatalog.mjs';
+
+test('catálogo: mesmos dados, checagem, recusa, exibição e limpeza', () => {
+  const C = old.paramCatalog;
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(cat.CATALOG)), JSON.parse(JSON.stringify(C.CATALOG)));
+  assert.deepStrictEqual([...cat.KNOWN_TOP], [...C.KNOWN_TOP]);
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(cat.KNOWN_NESTED)), JSON.parse(JSON.stringify(C.KNOWN_NESTED)));
+  const D = old.index.DEFAULT_PARAMS, cases = [D, {}, null, undefined, 5, [], 'x', { trackMode: 'x' }, { trackSpacingM: 10, trackCount: 2.5, boomWidthM: 'a' },
+    { optimizer: { mode: 'zzz', maxGapIncreaseFrac: 3, foo: 1 }, monitor: [], coverage: { minStepM: 100, maxStepM: 50 }, bar: 2 },
+    { selectionIds: ['a', 'b'] }, { selectionIds: ['x'.repeat(65)] }, { selectionIds: 'a' }, { alignToBoom: true, bearingDeg: 181, maxPointsCap: 1e9, haPerPoint: NaN },
+    { 'monitor': { stepLengthM: 0.1, arrivalRadiusM: 50 } }, { totalPoints: -4 }, { trackPhaseM: -6000, coverage: { gridTargetCells: 200.5 } }];
+  for (const p of cases) {
+    const clone = () => JSON.parse(JSON.stringify(p ?? null)) ?? p;
+    assert.deepStrictEqual(cat.sanitizeParams(clone()), C.sanitizeParams(clone()), JSON.stringify(p));
+    if (p && typeof p === 'object') {
+      assert.deepStrictEqual(cat.checkParams(p), C.checkParams(p));
+      let a = null, b = null;
+      try { cat.assertParams(p); } catch (e) { a = [e.name, e.code, e.message, e.field, e.value]; }
+      try { C.assertParams(p); } catch (e) { b = [e.name, e.code, e.message, e.field, e.value]; }
+      assert.deepStrictEqual(a, b);
+    }
+  }
+  for (const path of Object.keys(C.CATALOG)) for (const v of [null, true, false, 0, 0.25, 1234.5, 'texto']) assert.equal(cat.displayValue(path, v), C.displayValue(path, v));
+  assert.equal(cat.getParam(D, 'optimizer.mode'), C.getParam(D, 'optimizer.mode'));
+});

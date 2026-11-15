@@ -75,7 +75,7 @@ export function guide(route, pos, collected, monitor, nextPoint) {
   const accuracyOk = Number.isFinite(pos.accuracyM) && pos.accuracyM <= monitor.gpsAccuracyMaxM, stale = Number.isFinite(pos.ageMs) && pos.ageMs > GPS_MAX_AGE_MS;
   if (!next) return { done: true, collected: nCollected, total: route.points.length, accuracyOk, stale };
   const dx = next.x - pos.x, dy = next.y - pos.y, distM = Math.hypot(dx, dy), az = azimuth(dx, dy);
-  let lateralM = null, lado = null, voltaDir = null, along = null;
+  /** @type {any} */ let lateralM = null, /** @type {any} */ lado = null, /** @type {any} */ voltaDir = null, /** @type {any} */ along = null;
   const part = next.partIndex === null ? null : route.parts[next.partIndex];
   if (part) {
     const near = locate(part.line, [pos.x, pos.y]);
@@ -91,7 +91,7 @@ export function guide(route, pos, collected, monitor, nextPoint) {
     const ex = part.entry[0] - pos.x, ey = part.entry[1] - pos.y, toEntry = Math.hypot(ex, ey);
     if (toEntry < distM) { const azE = azimuth(ex, ey); alvo = { tipo: 'entrada', distM: toEntry, azimuthDeg: azE, direction: cardinal(azE), x: part.entry[0], y: part.entry[1] }; }
   }
-  let trecho = null;
+  /** @type {any} */ let trecho = null;
   if (part && !offLine && Number.isFinite(next.fromEntryM)) {
     const prev = next.firstInPart ? null : route.points.find(p => p.partIndex === next.partIndex && p.seq === next.seq - 1);
     const from = prev ? prev.fromEntryM : 0, total = next.fromEntryM - from, left = next.fromEntryM - along;
@@ -109,7 +109,7 @@ export function tiroErrado(units, trackId, pos, toleranceM) {
   for (const u of units) { const d = locate(u.line, [pos.x, pos.y]).dist; if (!(nearest.get(u.trackId) <= d)) nearest.set(u.trackId, d); }
   const mine = nearest.get(trackId);
   if (mine === undefined || mine <= toleranceM) return null;
-  let best = null;
+  /** @type {{trackId:any, distM:number}|null} */ let best = null;
   for (const [id, d] of nearest) if (id !== trackId && d <= toleranceM && (!best || d < best.distM)) best = { trackId: id, distM: d };
   return best ? { ...best, meuM: mine } : null;
 }

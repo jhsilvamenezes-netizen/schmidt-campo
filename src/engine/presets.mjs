@@ -32,7 +32,7 @@ const summary = sc => {
 
 /** Mesmo número de pontos por monitor × proporcional ao tamanho do tiro. `build(field, params)` monta o cenário. */
 export function compareTeamSplits(field, monitors, given = {}, build) {
-  const equal = presetParams('equipe', field, { monitors, haPerPoint: given.haPerPoint }), total = equal.pointsPerTrack * equal.trackCount;
+  const equal = /** @type {any} */ (presetParams('equipe', field, { monitors, haPerPoint: given.haPerPoint })), total = equal.pointsPerTrack * equal.trackCount;
   const options = [{ id: 'igual', titulo: 'Mesmo número por monitor', params: equal },
     { id: 'proporcional', titulo: 'Proporcional ao tamanho do tiro', params: { ...equal, pointMode: POINT_MODE.TOTAL, totalPoints: total } }]
     .map(o => ({ ...o, ...summary(build(field, { ...given, ...o.params })) }));

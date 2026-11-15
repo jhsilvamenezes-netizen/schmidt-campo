@@ -8,7 +8,7 @@ import { TRACK_KINDS } from './tracks.mjs';
 const fail = (code, error) => ({ ok: false, code, error });
 
 function nearestUnit(units, x, y, onlyUnit) {
-  let best = null;
+  /** @type {{u:any, hit:{s:number,x:number,y:number,dist:number}}|null} */ let best = null;
   for (const u of units) {
     if (onlyUnit && u.id !== onlyUnit) continue;
     const hit = locate(u.line, [x, y]);
