@@ -40,7 +40,12 @@ jobs:
         run: |
           npm --prefix audit run test:blocks
           node audit/checkpoint.test.mjs
+          npm --prefix audit test
+          node scripts/build-3.mjs --check
           node scripts/build-preserved.mjs --check
+          (cd audit && node app3-browser.mjs && node migration-browser.mjs)
+          # 3.0 conferida acima; a partir daqui a raiz recebe a 2.5 (só no CI) para os testes da tela antiga.
+          node scripts/build-preserved.mjs --root
           node scripts/build-block-candidate.mjs
       - name: Referência individual e 40 alternativas
         working-directory: audit
@@ -57,7 +62,6 @@ jobs:
           node engine-swap-browser.mjs
           node night-theme-browser.mjs
           node balanced-plan-browser.mjs
-          node app3-browser.mjs
           node gps-guidance-browser.mjs
           node gps-stability-browser.mjs
           node direction-measures-probe.mjs

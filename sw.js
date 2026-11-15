@@ -1,6 +1,6 @@
 // Atualização controlada: esta versão espera as abas da anterior fecharem.
-const CACHE = 'schmidt-1.31-ade331b252';
-const INDEX_SHA256 = '3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf';
+const CACHE = 'schmidt-3-919c4f49d2';
+const INDEX_SHA256 = '919c4f49d2d1666f28fbf5133bb3be69189e40aa152629516ed38731d7d7cade';
 const ARQUIVOS = ['./','index.html','manifest.webmanifest','icone.svg','icone-192.png','icone-512.png','icone-180.png'];
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
@@ -25,7 +25,7 @@ self.addEventListener('activate',event=>{
 });
 self.addEventListener('fetch',event=>{
   const request=event.request;
-  if(request.method!=='GET'||new URL(request.url).origin!==location.origin)return;
+  if(request.method!=='GET'||new URL(request.url).origin!==location.origin)return;if(new URL(request.url).pathname.includes('/legado/'))return;
   event.respondWith(caches.open(CACHE).then(async cache=>{
     const cached=await cache.match(request,{ignoreSearch:true});
     if(cached)return cached;

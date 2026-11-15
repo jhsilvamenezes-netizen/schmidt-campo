@@ -1,7 +1,7 @@
 // Reconstrução parcial e declarada: aplica fontes novas a pontos de integração
 // verificados do artefato imutável. Não assume que o minificado é fonte original.
 import { execFileSync } from 'node:child_process';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { posix } from 'node:path';
@@ -239,11 +239,17 @@ if(process.argv[1]===fileURLToPath(import.meta.url)) {
   if(process.argv.includes('--inspect')) {
     console.log(JSON.stringify({htmlSha256:sha(result.html),changes:result.changes,staticPresentationPreserved:result.staticPresentationPreserved,approvedVisualScope:result.approvedVisualScope,approvedTextScope:result.approvedTextScope,originalFailureHandlerReused:result.originalFailureHandlerReused}));
   } else if(process.argv.includes('--check')) {
-    if(await readFile(root+'index.html','utf8')!==result.html || await readFile(root+'sw.js','utf8')!==result.worker) throw new Error('Artefatos diferentes das fontes de correção');
+    // 3.0: a 2.5 fica guardada em legado/index.html (reserva publicada, sem service worker próprio).
+    if(await readFile(root+'legado/index.html','utf8')!==result.html) throw new Error('Artefatos diferentes das fontes de correção');
     console.log('Build determinístico conferido.');
-  } else {
+  } else if(process.argv.includes('--root')) {
+    // Só no CI: monta a 2.5 na raiz para os testes de navegador da tela 2.5 (não é gravado no Git).
     await writeFile(root+'index.html',result.html);
     await writeFile(root+'sw.js',result.worker);
-    console.log(`Candidata gerada com ${result.changes.length} integrações verificadas.`);
+    console.log('2.5 montada na raiz para os testes da tela antiga.');
+  } else {
+    await mkdir(root+'legado',{recursive:true});
+    await writeFile(root+'legado/index.html',result.html);
+    console.log(`Candidata 2.5 gerada em legado/ com ${result.changes.length} integrações verificadas.`);
   }
 }

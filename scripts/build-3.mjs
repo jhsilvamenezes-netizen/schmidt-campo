@@ -1,6 +1,6 @@
 // 3.0 (R4) · gera a página nova SÓ a partir de src/: motor 2 (src/engine) + tela (src/app3) + dados dos lotes.
 // Sem HTML da 1.31, sem trocas de texto. Saída: build/3/index.html (fora do Git; não vai ao link até a R5).
-import { readFile, writeFile, mkdir, copyFile } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, copyFile, access } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { bundleEngine, ENGINE_MODULES } from './bundle-engine.mjs';
@@ -11,7 +11,7 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', 'app3/store', 'app3/plan-file', 'app3/planner', 'app3/map', 'app3/views',
   'app3/advanced', 'app3/gestures', 'app3/monitor', 'persistence/backup-service', 'persistence/backup-format', 'platform/browser-backup-adapters', 'platform/browser-session-lock',
   'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/versions', 'app3/backup', 'app3/main'];
-export const APP_VERSION = '3.0.0-dev';
+export const APP_VERSION = '3.0.0';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
 /** Cada módulo no seu escopo; importações do motor viram o namespace schmidtEngine2. */
@@ -46,7 +46,9 @@ async function bundleApp() {
 const sha = t => `'sha256-${createHash('sha256').update(t).digest('base64')}'`;
 
 export async function build3() {
-  const current = await readFile(root + 'index.html', 'utf8');
+  // Dados dos lotes e da safra: os mesmos da 2.5 (legado/index.html); antes da troca, do index.html da raiz.
+  const source = await access(root + 'legado/index.html').then(() => 'legado/index.html', () => 'index.html');
+  const current = await readFile(root + source, 'utf8');
   const fields = /<script id="fields-data" type="application\/json">([\s\S]*?)<\/script>/.exec(current)?.[1];
   if (!fields) throw Error('Dados dos lotes não encontrados');
   const safra = /<script id="safra-dados" type="application\/json">([\s\S]*?)<\/script>/.exec(current)?.[1];
@@ -65,9 +67,22 @@ export async function build3() {
   for (const f of ['icone.svg', 'manifest.webmanifest', 'icone-192.png', 'icone-512.png', 'icone-180.png']) await copyFile(root + f, root + 'build/3/' + f);
   // service worker: mesmo modelo da 2.x (cache conferido pelo SHA-256 da página; sem troca no meio do uso)
   const tpl = await readFile(root + 'src/platform/service-worker.js', 'utf8'), digest = createHash('sha256').update(html).digest('hex');
-  const worker = tpl.replace('__SCHMIDT_CACHE__', `schmidt-3-${digest.slice(0, 10)}`).replace('__SCHMIDT_INDEX_SHA256__', digest);
+  let worker = tpl.replace('__SCHMIDT_CACHE__', `schmidt-3-${digest.slice(0, 10)}`).replace('__SCHMIDT_INDEX_SHA256__', digest);
+  // A reserva 2.5 em legado/ não passa por este worker (senão a navegação cairia na página 3.0 do cache).
+  const hook = "if(request.method!=='GET'||new URL(request.url).origin!==location.origin)return;";
+  if (worker.split(hook).length !== 2) throw Error('Modelo do service worker mudou');
+  worker = worker.replace(hook, hook + "if(new URL(request.url).pathname.includes('/legado/'))return;");
   await writeFile(root + 'build/3/sw.js', worker);
   return { html, worker, bytes: Buffer.byteLength(html), engine: engine.length, app: app.length };
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) { const r = await build3(); console.log('3.0 gerada em build/3/index.html', { bytes: r.bytes, engine: r.engine, app: r.app }); }
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const r = await build3();
+  if (process.argv.includes('--check')) {
+    if (await readFile(root + 'index.html', 'utf8') !== r.html || await readFile(root + 'sw.js', 'utf8') !== r.worker) throw Error('index.html/sw.js diferentes do build da 3.0 (rode node scripts/build-3.mjs --root)');
+    console.log('3.0 conferida: index.html e sw.js = build de src/.');
+  } else if (process.argv.includes('--root')) {
+    await writeFile(root + 'index.html', r.html); await writeFile(root + 'sw.js', r.worker);
+    console.log('3.0 gravada na raiz', { bytes: r.bytes });
+  } else console.log('3.0 gerada em build/3/index.html', { bytes: r.bytes, engine: r.engine, app: r.app });
+}
