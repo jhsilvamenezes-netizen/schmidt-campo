@@ -13,7 +13,7 @@ import { localToLonLat } from '../src/engine/projection.mjs';
 
 await build3();
 const dir = fileURLToPath(new URL('../build/3/', import.meta.url));
-const types = { html: 'text/html', svg: 'image/svg+xml', webmanifest: 'application/manifest+json' };
+const types = { html: 'text/html', svg: 'image/svg+xml', webmanifest: 'application/manifest+json', js: 'text/javascript', png: 'image/png' };
 const server = createServer(async (q, r) => { try { const f = q.url === '/' ? 'index.html' : q.url.slice(1); r.setHeader('Content-Type', types[f.split('.').pop()] || 'text/plain'); r.end(await readFile(dir + f)); } catch { r.statusCode = 404; r.end(); } });
 await new Promise(r => server.listen(0, '127.0.0.1', r));
 const url = `http://127.0.0.1:${server.address().port}/`;
@@ -109,8 +109,9 @@ try {
     await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="copia"]');
     await p.setInputFiles('#backup-input', file); await p.waitForSelector('[data-act="restore-go"]');
     assert.match(await p.textContent('.sheet'), /lotes com parâmetros próprios/);
+    const reloaded = p.waitForEvent('load', { timeout: 15000 });
     await Promise.all([p.waitForEvent('download'), p.click('[data-act="restore-go"]')]);
-    await p.waitForLoadState('load'); await ready(p);
+    await reloaded; await ready(p);
     assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3'].haPerPoint), 15);
     // cópia alterada é recusada pelo hash
     const bad = { ...backup, dados: { ...backup.dados, extra: 1 } };
@@ -122,6 +123,42 @@ try {
     await p.click('[data-tab="enviar"]'); await p.click('[data-act="fichas"]');
     assert.ok(await p.evaluate(() => window.__printed) >= 4);
     assert.deepStrictEqual(errors, []);
+    await ctx.close();
+  }
+  // R4.4 · bloco: BB2 + BC2 tem opção sem perda de cobertura; usar, ver os dois lotes no mapa, sair
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'pt-BR' });
+    const p = await ctx.newPage(), errors = [];
+    p.on('pageerror', e => errors.push(e.message));
+    await p.goto(url); await ready(p);
+    await p.click('button.lot'); await p.click('[data-lot="Bananal|BB2"]');
+    await p.click('[data-tab="plano"]'); await p.click('[data-open="bloco"]');
+    await p.click('[data-block="0"]'); await p.waitForSelector('[data-block-use]', { timeout: 20000 });
+    await p.click('[data-block-use]');
+    await p.waitForSelector('[data-act="block-leave"]');
+    assert.match(await p.textContent('.card'), /Bloco BB2 \+ BC2/);
+    const blocks = await p.evaluate(() => JSON.parse(localStorage.getItem('monitoramento.v03')).planningBlocks);
+    assert.equal(blocks.schema, 'schmidt.blocks.v1');
+    await p.click('[data-tab="mapa"]'); await p.waitForSelector('.map-svg .lot.other');
+    await p.click('[data-tab="plano"]'); await p.click('[data-act="block-leave"]');
+    await p.waitForSelector('[data-open="bloco"]');
+    assert.deepStrictEqual(errors, []);
+    await ctx.close();
+  }
+  // R4.4 · sem internet: depois da 1ª visita o service worker serve a página; e duas abas: a segunda não grava
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'pt-BR' });
+    const p = await ctx.newPage();
+    await p.goto(url); await ready(p);
+    await p.evaluate(() => navigator.serviceWorker.ready);
+    await p.reload(); await ready(p);
+    assert.ok(await p.evaluate(() => !!navigator.serviceWorker.controller), 'página controlada pelo service worker');
+    await ctx.setOffline(true); await p.reload(); await ready(p);
+    assert.equal(await p.textContent('#lot-name') !== '…', true, 'abre sem internet');
+    await ctx.setOffline(false);
+    const second = await ctx.newPage(); await second.goto(url); await ready(second);
+    await second.click('[data-tab="plano"]'); await second.click('[data-inc="people"]');
+    await second.waitForFunction(() => /Outra janela do SCHMIDT está aberta/.test(document.getElementById('toast').textContent));
     await ctx.close();
   }
   // R4.3 · Monitorar com GPS simulado: no ponto 1 do T1 → "Chegou"; 150 m antes → seta e distância

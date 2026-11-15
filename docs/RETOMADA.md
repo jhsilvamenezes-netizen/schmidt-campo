@@ -2,16 +2,16 @@
 
 Gerado por scripts/checkpoint.mjs; registro não executa nem certifica testes.
 
-- Tarefa: R4.3 Monitorar na 3.0
+- Tarefa: R4.4 completa na 3.0
 - Responsável: Claude
 - Estado: em_andamento
 - Branch: claude/motor-evolucao
-- Commit de código observado: 08a08fcabd113dfd962f1d061a755f75d6209fee
-- Registro UTC: 2026-11-15T23:16:16.392Z
+- Commit de código observado: 73de56817bbe254f79186fc0758f9ac2eb1a466e
+- Registro UTC: 2026-11-15T23:26:52.913Z
 
 ## Próxima ação
 
-R4.4 arquivos, cópia de segurança, versões, safra, todos os lotes, bloco, sem internet
+R5: index.html = 3.0, versão 3.0.0, migração, bateria, PR, publicar
 
 ## Testes declarados pela sessão
 

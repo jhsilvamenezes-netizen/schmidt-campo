@@ -13,8 +13,9 @@ import { teamPlan } from '../engine/team.mjs';
 import { num, range, km, plural } from './format.mjs';
 
 export const ENGINE_LABEL = '2.0.0';
-const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
+export const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
+/** @type {any} */ (deps).metrics = metrics;
 
 /** Cenário completo; `balanced` = plano equilibrado da 2.5 (mesmo critério). */
 export const scenarioOf = (field, params, balanced = true) => buildScenario(field, params, { balanced }, deps);

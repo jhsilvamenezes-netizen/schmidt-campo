@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/><meta name="schmidt-web" content="1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#17594a"><link rel="apple-touch-icon" href="icone-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="SCHMIDT"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <!-- 1.8: só código e imagens embutidos; nenhuma conexão com a internet (app offline) -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-73SxIFqUUnfXC9KoPn6fQy4TSqAaHYJ5GSxBXpFhk6g=' 'sha256-NVqkuWANoDOmSJXJG0zwfexIHzTpz44QZtuPs+aUCwc='; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob: 'self'; connect-src 'self' blob: data: https://services.arcgisonline.com; font-src data:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-irKtEcwFd4lr8dE6/lP/7ZAyN5817TwTJUiO/Q0t8Ls=' 'sha256-NVqkuWANoDOmSJXJG0zwfexIHzTpz44QZtuPs+aUCwc='; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob: 'self'; connect-src 'self' blob: data: https://services.arcgisonline.com; font-src data:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#123b33" name="theme-color"/>
 <title>SCHMIDT Campo · Planejamento de amostragem</title><meta property="og:type" content="website"><meta property="og:title" content="SCHMIDT Campo"><meta property="og:description" content="Planejamento de tiros e pontos de amostragem por lote, no celular e offline."><meta property="og:image" content="https://jhsilvamenezes-netizen.github.io/schmidt-campo/icone-512.png"><meta property="og:url" content="https://jhsilvamenezes-netizen.github.io/schmidt-campo/">
@@ -3288,6 +3288,7 @@ return Object.freeze({tolerances:__tolerances,vocab:__vocab,errors:__errors,nume
 (async()=>{
 
 // src/application/block-planning.mjs
+// @ts-nocheck — módulo da 2.x, sem anotações de tipo; coberto pelos testes de blocos (audit/block-*.test.mjs).
 // Planejamento conjunto usa somente os dados já embarcados no aplicativo.
 // A/B igual identifica referência; não prova passagem entre lotes.
 const SCHMIDT_BLOCK_SCHEMA = 'schmidt.blocks.v1';
@@ -4702,6 +4703,7 @@ function createSchmidtImageRepository(indexedDB) {
 }
 
 // src/platform/browser-session-lock.mjs
+// @ts-nocheck — módulo da 2.x sem anotações de tipo; coberto por audit/session-lock-browser.mjs.
 // Clientes desta versão mantêm presença compartilhada durante a vida da página.
 // Uma operação destrutiva exige presença exclusiva; não usa prazo/lease renovável.
 function createSchmidtSessionLock(locks) {

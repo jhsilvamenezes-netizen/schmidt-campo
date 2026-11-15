@@ -9,8 +9,8 @@ import { ICONS } from '../src/app3/views.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
 /** Módulos da tela, caminho relativo a src/ (ordem: dependências primeiro). Motor: src/engine via schmidtEngine2. */
 export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', 'app3/store', 'app3/plan-file', 'app3/planner', 'app3/map', 'app3/views',
-  'app3/advanced', 'app3/gestures', 'app3/monitor', 'persistence/backup-service', 'persistence/backup-format', 'platform/browser-backup-adapters',
-  'app3/versions', 'app3/backup', 'app3/main'];
+  'app3/advanced', 'app3/gestures', 'app3/monitor', 'persistence/backup-service', 'persistence/backup-format', 'platform/browser-backup-adapters', 'platform/browser-session-lock',
+  'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/versions', 'app3/backup', 'app3/main'];
 export const APP_VERSION = '3.0.0-dev';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
@@ -25,7 +25,7 @@ async function bundleApp() {
       if (!m) throw Error(`Importação fora do contrato em ${id}: ${line.trim()}`);
       const target = m[3] === '.' ? `${dir}/${m[4]}` : `${m[4]}/${m[5]}`;
       let from;
-      if (target.startsWith('engine/')) {
+      if (target.startsWith('engine/') && !APP_MODULES.includes(target)) {
         if (!ENGINE_MODULES.includes(target.slice(7))) throw Error(`Módulo do motor inexistente: ${target}`);
         from = `schmidtEngine2.${target.slice(7)}`;
       } else {
@@ -55,15 +55,19 @@ export async function build3() {
   for (const [n, t] of [['motor', engine], ['tela', app], ['dados', fields], ['safra', safra]]) if (/<\/script/i.test(t)) throw Error(`${n} contém </script>`);
   const nav = [['mapa', 'Mapa'], ['plano', 'Plano'], ['enviar', 'Enviar'], ['monitorar', 'Monitorar']]
     .map(([k, l]) => `<button data-tab="${k}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>${l}</button>`).join('');
-  const csp = `default-src 'self'; script-src ${sha(engine)} ${sha(app)}; style-src ${sha(css)}; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'`;
+  const csp = `default-src 'self'; script-src ${sha(engine)} ${sha(app)}; style-src ${sha(css)}; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'`;
   const html = shell.replace('__CSP__', csp).replace('__CSS__', () => css).replace('__ICON_SOL__', ICONS.sol).replace('__ICON_MAIS__', ICONS.mais)
     .replace('__NAV__', nav).replace('__FIELDS__', () => fields).replace('__SAFRA__', () => safra).replace('__ENGINE__', () => engine).replace('__APP__', () => app);
   if (/__[A-Z_]+__/.test(html)) throw Error('Marcador do modelo sem valor');
   if (/\sstyle=/.test(html.replace(/<script[\s\S]*?<\/script>/g, ''))) throw Error('Estilo inline no HTML (CSP)');
   await mkdir(root + 'build/3', { recursive: true });
   await writeFile(root + 'build/3/index.html', html);
-  for (const f of ['icone.svg', 'manifest.webmanifest']) await copyFile(root + f, root + 'build/3/' + f);
-  return { bytes: Buffer.byteLength(html), engine: engine.length, app: app.length };
+  for (const f of ['icone.svg', 'manifest.webmanifest', 'icone-192.png', 'icone-512.png', 'icone-180.png']) await copyFile(root + f, root + 'build/3/' + f);
+  // service worker: mesmo modelo da 2.x (cache conferido pelo SHA-256 da página; sem troca no meio do uso)
+  const tpl = await readFile(root + 'src/platform/service-worker.js', 'utf8'), digest = createHash('sha256').update(html).digest('hex');
+  const worker = tpl.replace('__SCHMIDT_CACHE__', `schmidt-3-${digest.slice(0, 10)}`).replace('__SCHMIDT_INDEX_SHA256__', digest);
+  await writeFile(root + 'build/3/sw.js', worker);
+  return { html, worker, bytes: Buffer.byteLength(html), engine: engine.length, app: app.length };
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) console.log('3.0 gerada em build/3/index.html', await build3());
+if (process.argv[1] === fileURLToPath(import.meta.url)) { const r = await build3(); console.log('3.0 gerada em build/3/index.html', { bytes: r.bytes, engine: r.engine, app: r.app }); }

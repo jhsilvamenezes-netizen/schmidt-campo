@@ -9,23 +9,51 @@ import { advancedForm, applyField } from './advanced.mjs';
 import { attachGestures } from './gestures.mjs';
 import { routeFor, fixToPos, guideModel } from './monitor.mjs';
 import { createVersions } from './versions.mjs';
+import { blocksFor, prepareBlock, storeBlock, blockScenario } from './blocks.mjs';
 import { makeBackup, readBackup, ITEM_LABELS } from './backup.mjs';
 import { createSchmidtBackupService } from '../persistence/backup-service.mjs';
 import { createSchmidtJournal, createSchmidtImageRepository } from '../platform/browser-backup-adapters.mjs';
+import { createSchmidtSessionLock, installSchmidtSessionLifecycle } from '../platform/browser-session-lock.mjs';
 import { buildRoute } from '../engine/guidance.mjs';
 import { toCSV, toGeoJSON, toGPX, toKML } from '../engine/exporters.mjs';
 import { explainScenario } from '../engine/explain.mjs';
 import { assessField } from '../engine/dataQuality.mjs';
 
-/** @param {{document:any, window:any, fields:any, appVersion:string, safra?:any}} opts */
-export function startApp({ document, window, fields, appVersion, safra = null }) {
-  const $ = s => document.querySelector(s), store = createStore(window.localStorage);
+/** Entra na sessão (trava entre abas da 2.x) e só então lê o estado e desenha. */
+export async function startApp(opts) {
+  const session = createSchmidtSessionLock(opts.window.navigator.locks);
+  try { await session.enter(); } catch { /* sem trava: segue só leitura se a sessão disser que não pode gravar */ }
+  installSchmidtSessionLifecycle(opts.window, session);
+  const app = runApp({ ...opts, session });
+  registerWorker(opts.window, app.toast);
+  return app;
+}
+
+function registerWorker(window, toast) {
+  const sw = window.navigator.serviceWorker;
+  if (!sw || !/^https?:$/.test(window.location.protocol)) return;
+  const had = !!sw.controller;
+  sw.register('sw.js').catch(() => { /* sem service worker: funciona só com internet */ });
+  sw.addEventListener('controllerchange', () => { if (had) toast('Nova versão instalada.', { label: 'Recarregar', run: () => window.location.reload() }); });
+}
+
+/** @param {{document:any, window:any, fields:any, appVersion:string, safra?:any, session:any}} opts */
+function runApp({ document, window, fields, appVersion, safra = null, session }) {
+  const $ = s => document.querySelector(s);
+  let blockedShown = false;
+  const store = createStore(window.localStorage, { canWrite: () => session.canWrite(),
+    onBlocked: () => { if (!blockedShown) { blockedShown = true; toast(session.writeError().userMessage); } } });
   const keys = Object.keys(fields).sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true }));
   const ui = { view: 'mapa', key: fields[store.get().fieldKey] ? store.get().fieldKey : keys[0] };
   const recCache = new Map();
   const versions = createVersions(window.indexedDB);
-  const backupService = window.indexedDB ? createSchmidtBackupService({ storage: window.localStorage, images: createSchmidtImageRepository(window.indexedDB), history: versions.history, journal: createSchmidtJournal(window.indexedDB) }) : null;
+  const backupService = window.indexedDB ? createSchmidtBackupService({ storage: window.localStorage, images: createSchmidtImageRepository(window.indexedDB), history: versions.history, journal: createSchmidtJournal(window.indexedDB),
+    exclusive: window.navigator.locks ? op => session.exclusive(op) : op => op() }) : null;
   let versionTimer = 0;
+  const BLOCK_KEY = 'schmidt3.blocoAtivo';
+  /** @type {any} */ let blockUi = { groups: [], prepared: null, busy: false, abort: null };
+  const activeBlockId = () => { try { return window.localStorage.getItem(BLOCK_KEY); } catch { return null; } };
+  const activeBlock = () => { const id = activeBlockId(), r = id && saved().planningBlocks?.records?.[id]; return r && r.members.includes(ui.key) ? r : null; };
   /** @type {any} */ let pendingRestore = null;
   let toastTimer = 0;
   /** @type {any} */ let toastAction = null;
@@ -53,6 +81,18 @@ export function startApp({ document, window, fields, appVersion, safra = null })
   }
   /** Plano do lote atual (recomendado na primeira vez, depois o salvo). */
   function compute() {
+    const block = activeBlock();
+    if (block) {
+      try {
+        const { field, sc } = blockScenario(fields, block, ui.key);
+        const list = P.checks(sc, people(), P.uncovered(field, sc)), split = P.team(sc, people());
+        const members = block.members.map(k => ({ key: k, code: fields[k].code, on: k === ui.key, pontos: block.state.paramsByField[k].totalPoints }));
+        cur = { field, params: sc.params, base: P.baseOf(sc.params), rec: null, sc, f: P.figures(sc), list, split, inUseIsRec: true,
+          block: { title: block.members.map(k => fields[k].code).join(' + '), members, passes: Math.round(block.common.spacingM / 36.48), spacingM: block.common.spacingM },
+          others: block.members.filter(k => k !== ui.key).map(k => blockScenario(fields, block, k)) };
+        return cur;
+      } catch (e) { try { window.localStorage.removeItem(BLOCK_KEY); } catch { /* ignora */ } toast(/** @type {Error} */ (e).message); }
+    }
     const field = fields[ui.key], st = saved();
     let params = st.paramsByField?.[ui.key];
     const base = P.baseOf(params);
@@ -60,10 +100,11 @@ export function startApp({ document, window, fields, appVersion, safra = null })
     if (!params && rec) { params = { ...base, ...rec.chosen.params }; store.update({ paramsByField: { ...(st.paramsByField || {}), [ui.key]: params } }); }
     const sc = P.planInUse(field, params || base, st.editsByField?.[ui.key]);
     const blind = P.uncovered(field, sc), list = P.checks(sc, people(), blind), split = P.team(sc, people());
-    cur = { field, params: params || base, base, rec, sc, f: P.figures(sc), blind, list, split, inUseIsRec: !!rec && P.sameShape(params, rec.chosen.params) };
+    cur = { field, params: params || base, base, rec, sc, f: P.figures(sc), blind, list, split, inUseIsRec: !!rec && P.sameShape(params, rec.chosen.params), block: null, others: [] };
     return cur;
   }
   /** Troca o plano do lote (com Desfazer). `edits`: undefined = manter, null = apagar, objeto = gravar. */
+  const storeUpdateBlocks = planningBlocks => store.update({ planningBlocks });
   function setParams(params, msg = 'Plano alterado', edits) {
     const st = saved(), key = ui.key, before = { params: st.paramsByField?.[key], edits: st.editsByField?.[key] };
     const write = (p, e) => {
@@ -80,7 +121,7 @@ export function startApp({ document, window, fields, appVersion, safra = null })
     for (const el of document.querySelectorAll('[data-map]')) {
       const r = el.getBoundingClientRect();
       if (r.width < 10 || r.height < 10) continue;
-      el.innerHTML = mapMarkup(cur.field, cur.sc, Math.round(r.width), Math.round(r.height), { small: el.dataset.map !== 'full', pad: el.dataset.map !== 'full' ? 22 : 30, view, selected: el.dataset.map === 'guide' ? (mon.active ? monitorData().target : null) : selectedPt, pos: el.dataset.map === 'guide' ? mon.pos : null })
+      el.innerHTML = mapMarkup(cur.field, cur.sc, Math.round(r.width), Math.round(r.height), { small: el.dataset.map !== 'full', pad: el.dataset.map !== 'full' ? 22 : 30, view, selected: el.dataset.map === 'guide' ? (mon.active ? monitorData().target : null) : selectedPt, pos: el.dataset.map === 'guide' ? mon.pos : null, others: cur.others || [] })
         + (view.k > 1.01 ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : '') + balloon();
       if (!el.dataset.g) {
         el.dataset.g = '1';
@@ -152,7 +193,7 @@ export function startApp({ document, window, fields, appVersion, safra = null })
   // ---------- folhas (menu, lote, dados, cálculo, ajustes) ----------
   const host = $('#sheets');
   const openSheet = (title, body) => { host.innerHTML = V.sheet(title, body); host.querySelector('.close')?.focus(); };
-  const closeSheet = () => { host.innerHTML = ''; };
+  const closeSheet = () => { host.innerHTML = ''; blockUi?.abort?.abort(); };
   const lotButton = k => `<button class="lotb${k === ui.key ? ' on' : ''}" data-lot="${esc(k)}">${esc(fields[k].code)}<small>${num(fields[k].areaOfficialHa)} ha</small></button>`;
   function lotList(q = '') {
     const norm = t => t.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase(), nq = norm(q.trim());
@@ -171,6 +212,7 @@ export function startApp({ document, window, fields, appVersion, safra = null })
     todos: () => { openSheet('Todos os lotes', '<p class="mu">Calculando…</p>'); setTimeout(() => { if (host.innerHTML) openSheet('Todos os lotes', V.allLotsBody(allLots())); }, 30); },
     versoes: async () => { openSheet(`Versões · ${cur.field.code}`, '<p class="mu">…</p>'); const rows = await versions.list(ui.key); openSheet(`Versões · ${cur.field.code}`, V.versionsBody(rows)); },
     copia: () => openSheet('Cópia de segurança', V.backupBody('', lastBackup())),
+    bloco: () => { blockUi = { groups: blocksFor(fields, ui.key), prepared: null, busy: false, abort: null }; openSheet('Planejar em bloco', V.blockPickBody(blockUi.groups, null, false)); },
     lote: () => openSheet('Escolher lote', lotPicker()),
     dados: () => openSheet(`Dados · ${cur.field.code}`, V.dadosBody(cur.field, assessField(cur.field), safra?.data?.[ui.key], safra?.source)),
     calculo: () => openSheet('Como foi calculado', V.calculoBody(explainScenario(cur.sc, cur.field))),
@@ -216,6 +258,7 @@ export function startApp({ document, window, fields, appVersion, safra = null })
   const ACTIONS = {
     fit: () => { view = { k: 1, x: 0, y: 0 }; drawMaps(); },
     fichas: () => printFichas(),
+    'block-leave': () => { try { window.localStorage.removeItem(BLOCK_KEY); } catch { /* ignora */ } render(); toast('De volta ao plano do lote.'); },
     async backup() {
       try { const b = await doBackup(); download(JSON.stringify(b), `schmidt_copia_${stamp()}.json`, 'application/json'); try { window.localStorage.setItem(LAST_BACKUP, String(Date.now())); } catch { /* só não lembra */ } toast('Cópia de segurança baixada.'); }
       catch (e) { toast(`Cópia não feita: ${/** @type {Error} */ (e).message}.`); }
@@ -265,6 +308,24 @@ export function startApp({ document, window, fields, appVersion, safra = null })
     if (t.dataset.tab) { ui.view = t.dataset.tab; render(); return; }
     if (t.dataset.go) { ui.view = t.dataset.go; render(); return; }
     if (t.dataset.open) { SHEETS[t.dataset.open]?.(); return; }
+    if (t.dataset.block) {
+      const g = blockUi.groups[+t.dataset.block], st = saved(), ctl = new AbortController();
+      blockUi = { ...blockUi, busy: true, abort: ctl }; openSheet(`Bloco ${g.title}`, V.blockPickBody([], null, true));
+      const paramsOf = k => st.paramsByField?.[k] ?? { ...recFor(fields[k], {}, k).chosen.params };
+      prepareBlock(fields, g, paramsOf, ctl.signal).then(rec => { blockUi = { ...blockUi, busy: false, prepared: rec }; if (host.innerHTML) openSheet(`Bloco ${g.title}`, V.blockPickBody([], rec, false)); })
+        .catch(err => { blockUi.busy = false; if (host.innerHTML) openSheet(`Bloco ${g.title}`, `<p class="ck alerta">${esc(err.message)}</p>`); });
+      return;
+    }
+    if (t.dataset.blockUse) {
+      const rec = blockUi.prepared, alt = rec?.alternatives?.[+t.dataset.blockUse];
+      if (!alt || alt.summary.coverageTradeoff) return;
+      try {
+        const { store, id } = storeBlock(saved(), fields, alt.record || rec);
+        window.localStorage.setItem(BLOCK_KEY, id); /* bloco ativo só nesta 3.0 */
+        storeUpdateBlocks(store); closeSheet(); render(); toast('Bloco em uso. "Sair do bloco" volta ao plano de cada lote.');
+      } catch (e) { toast(/** @type {Error} */ (e).message); }
+      return;
+    }
     if (t.dataset.ver) { versions.list(ui.key).then(rows => { const r = rows.find(x => String(x.id) === t.dataset.ver); if (r?.estado?.params) { closeSheet(); setParams(r.estado.params, 'Versão anterior em uso', r.estado.edits ?? null); } }); return; }
     if (t.dataset.track) { mon.trackId = t.dataset.track; mon.session = {}; mon.arrivedId = null; render(); return; }
     if (t.dataset.lot) { if (mon.active) gpsStop(); mon.trackId = null; ui.key = t.dataset.lot; pushRecent(ui.key); view = { k: 1, x: 0, y: 0 }; selectedPt = null; store.update({ fieldKey: ui.key }); closeSheet(); render(); return; }
@@ -319,5 +380,5 @@ export function startApp({ document, window, fields, appVersion, safra = null })
   pushRecent(ui.key);
   render();
   document.documentElement.dataset.ready = '1';
-  return { render, get state() { return { ...ui, cur } } };
+  return { render, toast, get state() { return { ...ui, cur } } };
 }
