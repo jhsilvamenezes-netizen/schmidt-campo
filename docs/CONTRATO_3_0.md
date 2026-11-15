@@ -43,7 +43,7 @@ Estado salvo `monitoramento.v03`, versões do plano (IndexedDB), cópia de segur
 
 - 4 abas: Mapa · Plano · Enviar · Monitorar. As 5 etapas e as abas Tiros, Dados e Auditoria saem.
 - Texto: 5 tamanhos (12, 14, 16, 20, 28) e 3 pesos (400, 600, 700). Cores da marca; tema escuro próprio.
-- Prévias: `docs/previas-3-0/` (claro e escuro). **Aguardando aprovação do proprietário (R3).**
+- Prévias: `docs/previas-3-0/` (claro e escuro). **Aprovadas pelo proprietário em 15/11/2026.**
 
 ## R4.1 · tela nova funcionando (15/11/2026)
 
