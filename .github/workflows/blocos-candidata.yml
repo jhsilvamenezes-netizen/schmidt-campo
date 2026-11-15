@@ -63,6 +63,8 @@ jobs:
           DIRECTION_EVIDENCE_OUT=results/direction-measures-ci.json python direction-measures.py
           node coverage-exact-export.mjs
           COVERAGE_EXACT_OUT=results/coverage-exact-ci.json python coverage-exact.py
+          python voronoi-shapely.py
+          node --test voronoi-exact.test.mjs
           node boundary-engine-real.mjs
           node bounded-response.test.mjs
           node satellite-map.test.mjs

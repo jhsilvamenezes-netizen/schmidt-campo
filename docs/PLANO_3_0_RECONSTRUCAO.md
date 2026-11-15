@@ -37,3 +37,18 @@ Até a R5, o link continua na 2.5.0, que funciona. Correções urgentes no 2.5 e
 - Uma folha de estilo única, sem `!important` e sem camadas de versões.
 - Link abrindo em menos de 3 s no 3G; resposta ao toque abaixo de 200 ms no celular lento.
 - Dados salvos de 2.x abrindo sem perda.
+
+## Andamento
+
+### R2.1 · Base geométrica exata (15/11/2026)
+
+| Peça | Origem | Validação |
+|---|---|---|
+| `src/engine/predicates.mjs` · lado exato de um ponto em relação a uma reta | robust-predicates 3.0.3 (Shewchuk, domínio público) | Caso quase colinear: a fórmula comum dá 0; a exata dá o lado certo |
+| `src/engine/delaunay.mjs` · triangulação de Delaunay | delaunator 5.1.0 (Mapbox, ISC), com o predicado exato | Usada só como atalho; o resultado é conferido (linha abaixo) |
+| `src/engine/voronoi.mjs` · cobertura exata (pior vazio, onde fica, área de cada ponto) | Próprio: Voronoi recortado pelo lote, com autoverificação (soma das áreas = lote; senão recalcula com todos os pares) | 153 planos e 2.880 pontos contra Shapely/GEOS: diferença máxima de 4,5·10⁻¹³ m (pior vazio) e 5,7·10⁻⁹ m² (área); 0,58 ms por plano |
+
+A propriedade com lotes aleatórios (fast-check, 300 casos, incluindo pontos colineares) passa: áreas somam o lote,
+nenhuma distância real passa do pior vazio exato, e o exato fica entre o máximo e o limite superior da grade.
+Achado durante a validação: com pontos quase colineares, o Delaunay descarta um ponto. A autoverificação pega e
+corrige.

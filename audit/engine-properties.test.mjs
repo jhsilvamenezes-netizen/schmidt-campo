@@ -115,3 +115,23 @@ test('plano equilibrado: mesma equipe, p95 e pior vazio nunca piores', () => {
     for (const q of s) assert.ok(pointInGeom(q.x, q.y, f.geom), 'ponto fora do lote');
   }), { ...settings, numRuns: Math.min(RUNS, 150) });
 });
+
+// R2.1 · cobertura exata (Voronoi recortado) em lotes aleatórios, inclusive pontos colineares de propósito.
+import { exactCoverage } from '../src/engine/voronoi.mjs';
+test('cobertura exata: áreas somam o lote; pior vazio ≥ qualquer distância real e ≤ limite da grade', () => {
+  const arbCase = fc.tuple(arbField, fc.integer({ min: 1, max: 40 }), fc.boolean(), fc.array(fc.tuple(fc.double({ min: 0, max: 1, noNaN: true }), fc.double({ min: 0, max: 1, noNaN: true })), { minLength: 80, maxLength: 80 }));
+  fc.assert(fc.property(arbCase, ([f, n, collinear, probes]) => {
+    const b = geomBounds(f.geom), lot = geomArea(f.geom);
+    const cand = probes.map(([u, v]) => [b.minX + u * (b.maxX - b.minX), collinear ? (b.minY + b.maxY) / 2 + u * 1e-9 : b.minY + v * (b.maxY - b.minY)]);
+    const samples = [...new Map(cand.filter(([x, y]) => pointInGeom(x, y, f.geom)).slice(0, n).map(([x, y]) => [`${x},${y}`, { x, y }])).values()];
+    if (!samples.length) return true;
+    const c = exactCoverage(f.geom, samples);
+    assert.ok(Math.abs(c.totalAreaM2 - lot) <= Math.max(1e-6 * lot, 1e-3), `soma ${c.totalAreaM2} × lote ${lot} (${c.method})`);
+    const inside = probes.map(([u, v]) => [b.minX + v * (b.maxX - b.minX), b.minY + u * (b.maxY - b.minY)]).filter(([x, y]) => pointInGeom(x, y, f.geom));
+    for (const ring of f.geom[0]) for (const q of ring) inside.push(q);
+    const d = nearestDistances({ x: Float64Array.from(inside, q => q[0]), y: Float64Array.from(inside, q => q[1]) }, samples);
+    for (let i = 0; i < d.length; i++) assert.ok(d[i] <= c.worstGapM + 1e-6, `distância real ${d[i]} > pior vazio exato ${c.worstGapM}`);
+    const g = coverage(f.geom, samples, resolveParams({}).coverage);
+    assert.ok(c.worstGapM <= g.maxUpperBoundM + 1e-6 && c.worstGapM + 1e-6 >= g.max, `exato ${c.worstGapM} fora de [${g.max}, ${g.maxUpperBoundM}]`);
+  }), settings);
+});

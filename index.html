@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/><meta name="schmidt-web" content="1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#17594a"><link rel="apple-touch-icon" href="icone-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="SCHMIDT"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <!-- 1.8: só código e imagens embutidos; nenhuma conexão com a internet (app offline) -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-iZwh6f8/cLh+5C69sNOJpOylDwT3qbhl1w4PgFnZ+LY=' 'sha256-Gh23wh7bZOGrv9XlkyykQkuUe8vsM97C6Vq1QqRMgnI=' 'sha256-NVqkuWANoDOmSJXJG0zwfexIHzTpz44QZtuPs+aUCwc='; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob: 'self'; connect-src 'self' blob: data: https://services.arcgisonline.com; font-src data:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-NsQbtnK2t66ONvLCIemPm19UWSNHsMc5T35zF31n0Wo=' 'sha256-Gh23wh7bZOGrv9XlkyykQkuUe8vsM97C6Vq1QqRMgnI=' 'sha256-NVqkuWANoDOmSJXJG0zwfexIHzTpz44QZtuPs+aUCwc='; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob: 'self'; connect-src 'self' blob: data: https://services.arcgisonline.com; font-src data:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#123b33" name="theme-color"/>
 <title>SCHMIDT Campo · Planejamento de amostragem</title><meta property="og:type" content="website"><meta property="og:title" content="SCHMIDT Campo"><meta property="og:description" content="Planejamento de tiros e pontos de amostragem por lote, no celular e offline."><meta property="og:image" content="https://jhsilvamenezes-netizen.github.io/schmidt-campo/icone-512.png"><meta property="og:url" content="https://jhsilvamenezes-netizen.github.io/schmidt-campo/">
@@ -162,6 +162,1019 @@ function validateGeom(geom) {
       problems.push('Coordenadas parecem graus (lon/lat); projete para metros antes de medir distâncias');
   }
   return problems;
+}
+
+// src/engine/predicates.mjs
+// Motor 2 · predicados geométricos exatos (precisão adaptativa de Shewchuk).
+// orient2d(a, b, c) com y para cima (UTM): > 0 quando c fica à DIREITA de a→b (sentido horário), < 0 à esquerda,
+// 0 exatamente colinear. (A biblioteca descreve o sinal com y para baixo, de tela.) leftOf() dá o sentido usual.
+// Código de robust-predicates 3.0.3 (Vladimir Agafonkin, Unlicense / domínio público), port de
+// "Adaptive Precision Floating-Point Arithmetic and Fast Robust Geometric Predicates" (J. R. Shewchuk, 1997).
+// Alterações: só o necessário para orient2d; nomes internos com prefixo rp (escopo único do motor). Lógica intacta.
+const rpEpsilon = 1.1102230246251565e-16;
+const rpSplitter = 134217729;
+const rpResultErrBound = (3 + 8 * rpEpsilon) * rpEpsilon;
+
+// fast_expansion_sum_zeroelim routine from original code
+function rpSum(elen, e, flen, f, h) {
+    let Q, Qnew, hh, bvirt;
+    let enow = e[0];
+    let fnow = f[0];
+    let eindex = 0;
+    let findex = 0;
+    if ((fnow > enow) === (fnow > -enow)) {
+        Q = enow;
+        enow = e[++eindex];
+    } else {
+        Q = fnow;
+        fnow = f[++findex];
+    }
+    let hindex = 0;
+    if (eindex < elen && findex < flen) {
+        if ((fnow > enow) === (fnow > -enow)) {
+            Qnew = enow + Q;
+            hh = Q - (Qnew - enow);
+            enow = e[++eindex];
+        } else {
+            Qnew = fnow + Q;
+            hh = Q - (Qnew - fnow);
+            fnow = f[++findex];
+        }
+        Q = Qnew;
+        if (hh !== 0) {
+            h[hindex++] = hh;
+        }
+        while (eindex < elen && findex < flen) {
+            if ((fnow > enow) === (fnow > -enow)) {
+                Qnew = Q + enow;
+                bvirt = Qnew - Q;
+                hh = Q - (Qnew - bvirt) + (enow - bvirt);
+                enow = e[++eindex];
+            } else {
+                Qnew = Q + fnow;
+                bvirt = Qnew - Q;
+                hh = Q - (Qnew - bvirt) + (fnow - bvirt);
+                fnow = f[++findex];
+            }
+            Q = Qnew;
+            if (hh !== 0) {
+                h[hindex++] = hh;
+            }
+        }
+    }
+    while (eindex < elen) {
+        Qnew = Q + enow;
+        bvirt = Qnew - Q;
+        hh = Q - (Qnew - bvirt) + (enow - bvirt);
+        enow = e[++eindex];
+        Q = Qnew;
+        if (hh !== 0) {
+            h[hindex++] = hh;
+        }
+    }
+    while (findex < flen) {
+        Qnew = Q + fnow;
+        bvirt = Qnew - Q;
+        hh = Q - (Qnew - bvirt) + (fnow - bvirt);
+        fnow = f[++findex];
+        Q = Qnew;
+        if (hh !== 0) {
+            h[hindex++] = hh;
+        }
+    }
+    if (Q !== 0 || hindex === 0) {
+        h[hindex++] = Q;
+    }
+    return hindex;
+}
+
+
+// scale_expansion_zeroelim routine from oritinal code
+
+
+function rpEstimate(elen, e) {
+    let Q = e[0];
+    for (let i = 1; i < elen; i++) Q += e[i];
+    return Q;
+}
+
+function rpVec(n) {
+    return new Float64Array(n);
+}
+
+
+const rpCcwErrA = (3 + 16 * rpEpsilon) * rpEpsilon;
+const rpCcwErrB = (2 + 12 * rpEpsilon) * rpEpsilon;
+const rpCcwErrC = (9 + 64 * rpEpsilon) * rpEpsilon * rpEpsilon;
+
+const rpB = rpVec(4);
+const rpC1 = rpVec(8);
+const rpC2 = rpVec(12);
+const rpD = rpVec(16);
+const rpU = rpVec(4);
+
+function rpOrient2dAdapt(ax, ay, bx, by, cx, cy, detsum) {
+    let acxtail, acytail, bcxtail, bcytail;
+    let bvirt, c, ahi, alo, bhi, blo, _i, _j, _0, s1, s0, t1, t0, u3;
+
+    const acx = ax - cx;
+    const bcx = bx - cx;
+    const acy = ay - cy;
+    const bcy = by - cy;
+
+    s1 = acx * bcy;
+    c = rpSplitter * acx;
+    ahi = c - (c - acx);
+    alo = acx - ahi;
+    c = rpSplitter * bcy;
+    bhi = c - (c - bcy);
+    blo = bcy - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = acy * bcx;
+    c = rpSplitter * acy;
+    ahi = c - (c - acy);
+    alo = acy - ahi;
+    c = rpSplitter * bcx;
+    bhi = c - (c - bcx);
+    blo = bcx - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    rpB[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    rpB[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    rpB[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    rpB[3] = u3;
+
+    let det = rpEstimate(4, rpB);
+    let errbound = rpCcwErrB * detsum;
+    if (det >= errbound || -det >= errbound) {
+        return det;
+    }
+
+    bvirt = ax - acx;
+    acxtail = ax - (acx + bvirt) + (bvirt - cx);
+    bvirt = bx - bcx;
+    bcxtail = bx - (bcx + bvirt) + (bvirt - cx);
+    bvirt = ay - acy;
+    acytail = ay - (acy + bvirt) + (bvirt - cy);
+    bvirt = by - bcy;
+    bcytail = by - (bcy + bvirt) + (bvirt - cy);
+
+    if (acxtail === 0 && acytail === 0 && bcxtail === 0 && bcytail === 0) {
+        return det;
+    }
+
+    errbound = rpCcwErrC * detsum + rpResultErrBound * Math.abs(det);
+    det += (acx * bcytail + bcy * acxtail) - (acy * bcxtail + bcx * acytail);
+    if (det >= errbound || -det >= errbound) return det;
+
+    s1 = acxtail * bcy;
+    c = rpSplitter * acxtail;
+    ahi = c - (c - acxtail);
+    alo = acxtail - ahi;
+    c = rpSplitter * bcy;
+    bhi = c - (c - bcy);
+    blo = bcy - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = acytail * bcx;
+    c = rpSplitter * acytail;
+    ahi = c - (c - acytail);
+    alo = acytail - ahi;
+    c = rpSplitter * bcx;
+    bhi = c - (c - bcx);
+    blo = bcx - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    rpU[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    rpU[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    rpU[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    rpU[3] = u3;
+    const C1len = rpSum(4, rpB, 4, rpU, rpC1);
+
+    s1 = acx * bcytail;
+    c = rpSplitter * acx;
+    ahi = c - (c - acx);
+    alo = acx - ahi;
+    c = rpSplitter * bcytail;
+    bhi = c - (c - bcytail);
+    blo = bcytail - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = acy * bcxtail;
+    c = rpSplitter * acy;
+    ahi = c - (c - acy);
+    alo = acy - ahi;
+    c = rpSplitter * bcxtail;
+    bhi = c - (c - bcxtail);
+    blo = bcxtail - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    rpU[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    rpU[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    rpU[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    rpU[3] = u3;
+    const C2len = rpSum(C1len, rpC1, 4, rpU, rpC2);
+
+    s1 = acxtail * bcytail;
+    c = rpSplitter * acxtail;
+    ahi = c - (c - acxtail);
+    alo = acxtail - ahi;
+    c = rpSplitter * bcytail;
+    bhi = c - (c - bcytail);
+    blo = bcytail - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = acytail * bcxtail;
+    c = rpSplitter * acytail;
+    ahi = c - (c - acytail);
+    alo = acytail - ahi;
+    c = rpSplitter * bcxtail;
+    bhi = c - (c - bcxtail);
+    blo = bcxtail - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    rpU[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    rpU[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    rpU[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    rpU[3] = u3;
+    const Dlen = rpSum(C2len, rpC2, 4, rpU, rpD);
+
+    return rpD[Dlen - 1];
+}
+
+function orient2d(ax, ay, bx, by, cx, cy) {
+    const detleft = (ay - cy) * (bx - cx);
+    const detright = (ax - cx) * (by - cy);
+    const det = detleft - detright;
+
+    const detsum = Math.abs(detleft + detright);
+    if (Math.abs(det) >= rpCcwErrA * detsum) return det;
+
+    return -rpOrient2dAdapt(ax, ay, bx, by, cx, cy, detsum);
+}
+
+function orient2dFast(ax, ay, bx, by, cx, cy) {
+    return (ay - cy) * (bx - cx) - (ax - cx) * (by - cy);
+}
+
+/** Lado exato de c em relação à reta a→b, com y para cima: > 0 à esquerda, < 0 à direita, 0 sobre a reta. */
+function leftOf(ax, ay, bx, by, cx, cy) { return -orient2d(ax, ay, bx, by, cx, cy); }
+
+// src/engine/delaunay.mjs
+// Motor 2 · triangulação de Delaunay (base do diagrama de Voronoi da cobertura exata).
+// Código de delaunator 5.1.0 (Mapbox, licença ISC: uso, cópia e modificação livres com este aviso). Usa o predicado
+// exato orient2d. Alterações: importação local, export nomeado, nomes internos com prefixo dln. Lógica intacta.
+// ISC License — Copyright (c) 2026, Mapbox. Permission to use, copy, modify, and/or distribute this software for any
+// purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice
+// appear in all copies. THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES.
+const DLN_EPSILON = Math.pow(2, -52);
+const DLN_EDGE_STACK = new Uint32Array(512);
+
+
+
+/** @template {ArrayLike<number>} T */
+class Delaunator {
+
+    /**
+     * Constructs a delaunay triangulation object given an array of points (`[x, y]` by default).
+     * `getX` and `getY` are optional functions of the form `(point) => value` for custom point formats.
+     *
+     * @template P
+     * @param {P[]} points
+     * @param {(p: P) => number} [getX]
+     * @param {(p: P) => number} [getY]
+     */
+    // @ts-expect-error TS2322
+    static from(points, getX = dlnGetX, getY = dlnGetY) {
+        const n = points.length;
+        const coords = new Float64Array(n * 2);
+
+        for (let i = 0; i < n; i++) {
+            const p = points[i];
+            coords[2 * i] = getX(p);
+            coords[2 * i + 1] = getY(p);
+        }
+
+        return new Delaunator(coords);
+    }
+
+    /**
+     * Constructs a delaunay triangulation object given an array of point coordinates of the form:
+     * `[x0, y0, x1, y1, ...]` (use a typed array for best performance). Duplicate points are skipped.
+     *
+     * @param {T} coords
+     */
+    constructor(coords) {
+        const n = coords.length >> 1;
+        if (n > 0 && typeof coords[0] !== 'number') throw new Error('Expected coords to contain numbers.');
+
+        this.coords = coords;
+
+        // arrays that will store the triangulation graph
+        const maxTriangles = Math.max(2 * n - 5, 0);
+        /** @private */ this._triangles = new Uint32Array(maxTriangles * 3);
+        /** @private */ this._halfedges = new Int32Array(maxTriangles * 3);
+
+        // temporary arrays for tracking the edges of the advancing convex hull
+        /** @private */ this._hashSize = Math.ceil(Math.sqrt(n));
+        /** @private */ this._hullPrev = new Uint32Array(n); // edge to prev edge
+        /** @private */ this._hullNext = new Uint32Array(n); // edge to next edge
+        /** @private */ this._hullTri = new Uint32Array(n); // edge to adjacent triangle
+        /** @private */ this._hullHash = new Int32Array(this._hashSize); // angular edge hash
+
+        // temporary arrays for sorting points
+        /** @private */ this._ids = new Uint32Array(n);
+        /** @private */ this._dists = new Float64Array(n);
+
+        /** @private */ this.trianglesLen = 0;
+        /** @private */ this._cx = 0;
+        /** @private */ this._cy = 0;
+        /** @private */ this._hullStart = 0;
+
+
+        /** A `Uint32Array` array of indices that reference points on the convex hull of the input data, counter-clockwise. */
+        this.hull = this._triangles;
+        /** A `Uint32Array` array of triangle vertex indices (each group of three numbers forms a triangle). All triangles are directed counterclockwise. */
+        this.triangles = this._triangles;
+        /**
+         * A `Int32Array` array of triangle half-edge indices that allows you to traverse the triangulation.
+         * `i`-th half-edge in the array corresponds to vertex `triangles[i]` the half-edge is coming from.
+         * `halfedges[i]` is the index of a twin half-edge in an adjacent triangle (or `-1` for outer half-edges on the convex hull).
+         */
+        this.halfedges = this._halfedges;
+
+        this.update();
+    }
+
+    /**
+     * Updates the triangulation if you modified `delaunay.coords` values in place, avoiding expensive memory allocations.
+     * Useful for iterative relaxation algorithms such as Lloyd's.
+     */
+    update() {
+        const {coords, _hullPrev: hullPrev, _hullNext: hullNext, _hullTri: hullTri, _hullHash: hullHash} =  this;
+        const n = coords.length >> 1;
+
+        // populate an array of point indices; calculate input data bbox
+        let minX = Infinity;
+        let minY = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
+
+        for (let i = 0; i < n; i++) {
+            const x = coords[2 * i];
+            const y = coords[2 * i + 1];
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+            if (x > maxX) maxX = x;
+            if (y > maxY) maxY = y;
+            this._ids[i] = i;
+        }
+        const cx = (minX + maxX) / 2;
+        const cy = (minY + maxY) / 2;
+
+        let i0 = 0, i1 = 0, i2 = 0;
+
+        // pick a seed point close to the center
+        for (let i = 0, minDist = Infinity; i < n; i++) {
+            const d = dlnDist(cx, cy, coords[2 * i], coords[2 * i + 1]);
+            if (d < minDist) {
+                i0 = i;
+                minDist = d;
+            }
+        }
+        const i0x = coords[2 * i0];
+        const i0y = coords[2 * i0 + 1];
+
+        // find the point closest to the seed
+        for (let i = 0, minDist = Infinity; i < n; i++) {
+            if (i === i0) continue;
+            const d = dlnDist(i0x, i0y, coords[2 * i], coords[2 * i + 1]);
+            if (d < minDist && d > 0) {
+                i1 = i;
+                minDist = d;
+            }
+        }
+        let i1x = coords[2 * i1];
+        let i1y = coords[2 * i1 + 1];
+
+        let minRadius = Infinity;
+
+        // find the third point which forms the smallest circumcircle with the first two
+        for (let i = 0; i < n; i++) {
+            if (i === i0 || i === i1) continue;
+            const r = dlnCircumradius(i0x, i0y, i1x, i1y, coords[2 * i], coords[2 * i + 1]);
+            if (r < minRadius) {
+                i2 = i;
+                minRadius = r;
+            }
+        }
+        let i2x = coords[2 * i2];
+        let i2y = coords[2 * i2 + 1];
+
+        if (minRadius === Infinity) {
+            // order collinear points by dx (or dy if all x are identical)
+            // and return the list as a hull
+            for (let i = 0; i < n; i++) {
+                this._dists[i] = (coords[2 * i] - coords[0]) || (coords[2 * i + 1] - coords[1]);
+            }
+            dlnQuicksort(this._ids, this._dists, 0, n - 1);
+            const hull = new Uint32Array(n);
+            let j = 0;
+            for (let i = 0, d0 = -Infinity; i < n; i++) {
+                const id = this._ids[i];
+                const d = this._dists[id];
+                if (d > d0) {
+                    hull[j++] = id;
+                    d0 = d;
+                }
+            }
+            this.hull = hull.subarray(0, j);
+            this.triangles = new Uint32Array(0);
+            this.halfedges = new Int32Array(0);
+            return;
+        }
+
+        // dlnSwap the order of the seed points for counter-clockwise orientation
+        if (orient2d(i0x, i0y, i1x, i1y, i2x, i2y) < 0) {
+            const i = i1;
+            const x = i1x;
+            const y = i1y;
+            i1 = i2;
+            i1x = i2x;
+            i1y = i2y;
+            i2 = i;
+            i2x = x;
+            i2y = y;
+        }
+
+        const center = dlnCircumcenter(i0x, i0y, i1x, i1y, i2x, i2y);
+        this._cx = center.x;
+        this._cy = center.y;
+
+        for (let i = 0; i < n; i++) {
+            this._dists[i] = dlnDist(coords[2 * i], coords[2 * i + 1], center.x, center.y);
+        }
+
+        // sort the points by distance from the seed triangle dlnCircumcenter
+        dlnQuicksort(this._ids, this._dists, 0, n - 1);
+
+        // set up the seed triangle as the starting hull
+        this._hullStart = i0;
+        let hullSize = 3;
+
+        hullNext[i0] = hullPrev[i2] = i1;
+        hullNext[i1] = hullPrev[i0] = i2;
+        hullNext[i2] = hullPrev[i1] = i0;
+
+        hullTri[i0] = 0;
+        hullTri[i1] = 1;
+        hullTri[i2] = 2;
+
+        hullHash.fill(-1);
+        hullHash[this._hashKey(i0x, i0y)] = i0;
+        hullHash[this._hashKey(i1x, i1y)] = i1;
+        hullHash[this._hashKey(i2x, i2y)] = i2;
+
+        this.trianglesLen = 0;
+        this._addTriangle(i0, i1, i2, -1, -1, -1);
+
+        for (let k = 0, xp = 0, yp = 0; k < this._ids.length; k++) {
+            const i = this._ids[k];
+            const x = coords[2 * i];
+            const y = coords[2 * i + 1];
+
+            // skip near-duplicate points
+            if (k > 0 && Math.abs(x - xp) <= DLN_EPSILON && Math.abs(y - yp) <= DLN_EPSILON) continue;
+            xp = x;
+            yp = y;
+
+            // skip seed triangle points
+            if (i === i0 || i === i1 || i === i2) continue;
+
+            // find a visible edge on the convex hull using edge hash
+            let start = 0;
+            for (let j = 0, key = this._hashKey(x, y); j < this._hashSize; j++) {
+                start = hullHash[(key + j) % this._hashSize];
+                if (start !== -1 && start !== hullNext[start]) break;
+            }
+
+            start = hullPrev[start];
+            let e = start, q;
+            while (q = hullNext[e], orient2d(x, y, coords[2 * e], coords[2 * e + 1], coords[2 * q], coords[2 * q + 1]) >= 0) {
+                e = q;
+                if (e === start) {
+                    e = -1;
+                    break;
+                }
+            }
+            if (e === -1) continue; // likely a near-duplicate point; skip it
+
+            // add the first triangle from the point
+            let t = this._addTriangle(e, i, hullNext[e], -1, -1, hullTri[e]);
+
+            // recursively flip triangles from the point until they satisfy the Delaunay condition
+            hullTri[i] = this._legalize(t + 2);
+            hullTri[e] = t; // keep track of boundary triangles on the hull
+            hullSize++;
+
+            // walk forward through the hull, adding more triangles and flipping recursively
+            let n = hullNext[e];
+            while (q = hullNext[n], orient2d(x, y, coords[2 * n], coords[2 * n + 1], coords[2 * q], coords[2 * q + 1]) < 0) {
+                t = this._addTriangle(n, i, q, hullTri[i], -1, hullTri[n]);
+                hullTri[i] = this._legalize(t + 2);
+                hullNext[n] = n; // mark as removed
+                hullSize--;
+                n = q;
+            }
+
+            // walk backward from the other side, adding more triangles and flipping
+            if (e === start) {
+                while (q = hullPrev[e], orient2d(x, y, coords[2 * q], coords[2 * q + 1], coords[2 * e], coords[2 * e + 1]) < 0) {
+                    t = this._addTriangle(q, i, e, -1, hullTri[e], hullTri[q]);
+                    this._legalize(t + 2);
+                    hullTri[q] = t;
+                    hullNext[e] = e; // mark as removed
+                    hullSize--;
+                    e = q;
+                }
+            }
+
+            // update the hull indices
+            this._hullStart = hullPrev[i] = e;
+            hullNext[e] = hullPrev[n] = i;
+            hullNext[i] = n;
+
+            // save the two new edges in the hash table
+            hullHash[this._hashKey(x, y)] = i;
+            hullHash[this._hashKey(coords[2 * e], coords[2 * e + 1])] = e;
+        }
+
+        this.hull = new Uint32Array(hullSize);
+        for (let i = 0, e = this._hullStart; i < hullSize; i++) {
+            this.hull[i] = e;
+            e = hullNext[e];
+        }
+
+        // trim typed triangle mesh arrays
+        this.triangles = this._triangles.subarray(0, this.trianglesLen);
+        this.halfedges = this._halfedges.subarray(0, this.trianglesLen);
+    }
+
+    /**
+     * Calculate an angle-based key for the edge hash used for advancing convex hull.
+     *
+     * @param {number} x
+     * @param {number} y
+     * @private
+     */
+    _hashKey(x, y) {
+        return Math.floor(dlnPseudoAngle(x - this._cx, y - this._cy) * this._hashSize) % this._hashSize;
+    }
+
+    /**
+     * Flip an edge in a pair of triangles if it doesn't satisfy the Delaunay condition.
+     *
+     * @param {number} a
+     * @private
+     */
+    _legalize(a) {
+        const {_triangles: triangles, _halfedges: halfedges, coords} = this;
+
+        let i = 0;
+        let ar = 0;
+
+        // recursion eliminated with a fixed-size stack
+        while (true) {
+            const b = halfedges[a];
+
+            /* if the pair of triangles doesn't satisfy the Delaunay condition
+             * (p1 is inside the circumcircle of [p0, pl, pr]), flip them,
+             * then do the same check/flip recursively for the new pair of triangles
+             *
+             *           pl                    pl
+             *          /||\                  /  \
+             *       al/ || \bl            al/    \a
+             *        /  ||  \              /      \
+             *       /  a||b  \    flip    /___ar___\
+             *     p0\   ||   /p1   =>   p0\---bl---/p1
+             *        \  ||  /              \      /
+             *       ar\ || /br             b\    /br
+             *          \||/                  \  /
+             *           pr                    pr
+             */
+            const a0 = a - a % 3;
+            ar = a0 + (a + 2) % 3;
+
+            if (b === -1) { // convex hull edge
+                if (i === 0) break;
+                a = DLN_EDGE_STACK[--i];
+                continue;
+            }
+
+            const b0 = b - b % 3;
+            const al = a0 + (a + 1) % 3;
+            const bl = b0 + (b + 2) % 3;
+
+            const p0 = triangles[ar];
+            const pr = triangles[a];
+            const pl = triangles[al];
+            const p1 = triangles[bl];
+
+            const illegal = dlnInCircle(
+                coords[2 * p0], coords[2 * p0 + 1],
+                coords[2 * pr], coords[2 * pr + 1],
+                coords[2 * pl], coords[2 * pl + 1],
+                coords[2 * p1], coords[2 * p1 + 1]);
+
+            if (illegal) {
+                triangles[a] = p1;
+                triangles[b] = p0;
+
+                const hbl = halfedges[bl];
+
+                // edge swapped on the other side of the hull (rare); fix the half-edge reference
+                if (hbl === -1) {
+                    let e = this._hullStart;
+                    do {
+                        if (this._hullTri[e] === bl) {
+                            this._hullTri[e] = a;
+                            break;
+                        }
+                        e = this._hullPrev[e];
+                    } while (e !== this._hullStart);
+                }
+                this._link(a, hbl);
+                this._link(b, halfedges[ar]);
+                this._link(ar, bl);
+
+                const br = b0 + (b + 1) % 3;
+
+                // don't worry about hitting the cap: it can only happen on extremely degenerate input
+                if (i < DLN_EDGE_STACK.length) {
+                    DLN_EDGE_STACK[i++] = br;
+                }
+            } else {
+                if (i === 0) break;
+                a = DLN_EDGE_STACK[--i];
+            }
+        }
+
+        return ar;
+    }
+
+    /**
+     * Link two half-edges to each other.
+     * @param {number} a
+     * @param {number} b
+     * @private
+     */
+    _link(a, b) {
+        this._halfedges[a] = b;
+        if (b !== -1) this._halfedges[b] = a;
+    }
+
+    /**
+     * Add a new triangle given vertex indices and adjacent half-edge ids.
+     *
+     * @param {number} i0
+     * @param {number} i1
+     * @param {number} i2
+     * @param {number} a
+     * @param {number} b
+     * @param {number} c
+     * @private
+     */
+    _addTriangle(i0, i1, i2, a, b, c) {
+        const t = this.trianglesLen;
+
+        this._triangles[t] = i0;
+        this._triangles[t + 1] = i1;
+        this._triangles[t + 2] = i2;
+
+        this._link(t, a);
+        this._link(t + 1, b);
+        this._link(t + 2, c);
+
+        this.trianglesLen += 3;
+
+        return t;
+    }
+}
+
+/**
+ * Monotonically increases with real angle, but doesn't need expensive trigonometry.
+ *
+ * @param {number} dx
+ * @param {number} dy
+ */
+function dlnPseudoAngle(dx, dy) {
+    const p = dx / (Math.abs(dx) + Math.abs(dy));
+    return (dy > 0 ? 3 - p : 1 + p) / 4; // [0..1]
+}
+
+/**
+ * Squared distance between two points.
+ *
+ * @param {number} ax
+ * @param {number} ay
+ * @param {number} bx
+ * @param {number} by
+ */
+function dlnDist(ax, ay, bx, by) {
+    const dx = ax - bx;
+    const dy = ay - by;
+    return dx * dx + dy * dy;
+}
+
+/**
+ * Check whether point P is inside a circle formed by points A, B, C.
+ *
+ * @param {number} ax
+ * @param {number} ay
+ * @param {number} bx
+ * @param {number} by
+ * @param {number} cx
+ * @param {number} cy
+ * @param {number} px
+ * @param {number} py
+ */
+function dlnInCircle(ax, ay, bx, by, cx, cy, px, py) {
+    const dx = ax - px;
+    const dy = ay - py;
+    const ex = bx - px;
+    const ey = by - py;
+    const fx = cx - px;
+    const fy = cy - py;
+
+    const ap = dx * dx + dy * dy;
+    const bp = ex * ex + ey * ey;
+    const cp = fx * fx + fy * fy;
+
+    return dx * (ey * cp - bp * fy) -
+           dy * (ex * cp - bp * fx) +
+           ap * (ex * fy - ey * fx) < 0;
+}
+
+/**
+ * Squared radius of the circle formed by points A, B, C.
+ *
+ * @param {number} ax
+ * @param {number} ay
+ * @param {number} bx
+ * @param {number} by
+ * @param {number} cx
+ * @param {number} cy
+ */
+function dlnCircumradius(ax, ay, bx, by, cx, cy) {
+    const dx = bx - ax;
+    const dy = by - ay;
+    const ex = cx - ax;
+    const ey = cy - ay;
+
+    const bl = dx * dx + dy * dy;
+    const cl = ex * ex + ey * ey;
+    const d = 0.5 / (dx * ey - dy * ex);
+
+    const x = (ey * bl - dy * cl) * d;
+    const y = (dx * cl - ex * bl) * d;
+
+    return x * x + y * y;
+}
+
+/**
+ * Get coordinates of a dlnCircumcenter for points A, B, C.
+ *
+ * @param {number} ax
+ * @param {number} ay
+ * @param {number} bx
+ * @param {number} by
+ * @param {number} cx
+ * @param {number} cy
+ */
+function dlnCircumcenter(ax, ay, bx, by, cx, cy) {
+    const dx = bx - ax;
+    const dy = by - ay;
+    const ex = cx - ax;
+    const ey = cy - ay;
+
+    const bl = dx * dx + dy * dy;
+    const cl = ex * ex + ey * ey;
+    const d = 0.5 / (dx * ey - dy * ex);
+
+    const x = ax + (ey * bl - dy * cl) * d;
+    const y = ay + (dx * cl - ex * bl) * d;
+
+    return {x, y};
+}
+
+/**
+ * Sort points by distance via an array of point indices and an array of calculated distances.
+ *
+ * @param {Uint32Array} ids
+ * @param {Float64Array} dists
+ * @param {number} left
+ * @param {number} right
+ */
+function dlnQuicksort(ids, dists, left, right) {
+    if (right - left <= 20) {
+        for (let i = left + 1; i <= right; i++) {
+            const temp = ids[i];
+            const tempDist = dists[temp];
+            let j = i - 1;
+            while (j >= left && dists[ids[j]] > tempDist) ids[j + 1] = ids[j--];
+            ids[j + 1] = temp;
+        }
+    } else {
+        const median = (left + right) >> 1;
+        let i = left + 1;
+        let j = right;
+        dlnSwap(ids, median, i);
+        if (dists[ids[left]] > dists[ids[right]]) dlnSwap(ids, left, right);
+        if (dists[ids[i]] > dists[ids[right]]) dlnSwap(ids, i, right);
+        if (dists[ids[left]] > dists[ids[i]]) dlnSwap(ids, left, i);
+
+        const temp = ids[i];
+        const tempDist = dists[temp];
+        while (true) {
+            do i++; while (dists[ids[i]] < tempDist);
+            do j--; while (dists[ids[j]] > tempDist);
+            if (j < i) break;
+            dlnSwap(ids, i, j);
+        }
+        ids[left + 1] = ids[j];
+        ids[j] = temp;
+
+        if (right - i + 1 >= j - left) {
+            dlnQuicksort(ids, dists, i, right);
+            dlnQuicksort(ids, dists, left, j - 1);
+        } else {
+            dlnQuicksort(ids, dists, left, j - 1);
+            dlnQuicksort(ids, dists, i, right);
+        }
+    }
+}
+
+/**
+ * @param {Uint32Array} arr
+ * @param {number} i
+ * @param {number} j
+ */
+function dlnSwap(arr, i, j) {
+    const tmp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = tmp;
+}
+
+/** @param {[number, number]} p */
+function dlnGetX(p) {
+    return p[0];
+}
+/** @param {[number, number]} p */
+function dlnGetY(p) {
+    return p[1];
+}
+
+// src/engine/voronoi.mjs
+// Motor 2 · cobertura EXATA por diagrama de Voronoi recortado pelo lote.
+// Para cada ponto, a célula de Voronoi (lugares mais perto dele que de qualquer outro) é a interseção dos
+// semiplanos "mais perto de i que de j" com os vizinhos de Delaunay j. Recortar cada anel do lote por esses
+// semiplanos (Sutherland–Hodgman: recorte convexo, vale para lote côncavo e com furos) dá:
+//  · área que cada ponto representa (soma das áreas com sinal dos anéis recortados);
+//  · pior vazio exato: a distância ao ponto é convexa dentro da célula, logo o máximo está num vértice da região
+//    (vértice do lote dentro da célula, cruzamento borda × célula ou vértice de Voronoi dentro do lote).
+// Sem grade: o número é exato a menos do ponto flutuante. Conferido contra Shapely/GEOS (audit/voronoi-*).
+
+const ON_EDGE_TOL_M = 1e-7;
+
+/** Pares vizinhos (i < j) do diagrama: arestas de Delaunay; casos degenerados (1, 2 ou todos colineares) à parte. */
+function voronoiNeighbors(xy) {
+  const n = xy.length, nb = Array.from({ length: n }, () => new Set());
+  if (n < 2) return nb;
+  const d = Delaunator.from(xy);
+  if (d.triangles.length) {
+    for (let e = 0; e < d.triangles.length; e++) {
+      const a = d.triangles[e], b = d.triangles[e % 3 === 2 ? e - 2 : e + 1];
+      nb[a].add(b); nb[b].add(a);
+    }
+  } else {
+    // todos colineares: vizinhos são os consecutivos na ordem da reta (o casco que o Delaunator devolve)
+    const h = [...d.hull];
+    for (let k = 1; k < h.length; k++) { nb[h[k - 1]].add(h[k]); nb[h[k]].add(h[k - 1]); }
+  }
+  // pontos repetidos ficam fora da triangulação: mesmo lugar, mesma célula — repartem a área ao meio por par
+  return nb;
+}
+
+/** Recorta um anel aberto pelo semiplano (p − m)·d ≤ 0. */
+function clipRing(ring, mx, my, dx, dy) {
+  const out = [], n = ring.length;
+  if (!n) return out;
+  let [px, py] = ring[n - 1], pf = (px - mx) * dx + (py - my) * dy;
+  for (let k = 0; k < n; k++) {
+    const [cx, cy] = ring[k], cf = (cx - mx) * dx + (cy - my) * dy;
+    if (cf <= 0) {
+      if (pf > 0) { const t = pf / (pf - cf); out.push([px + t * (cx - px), py + t * (cy - py)]); }
+      out.push([cx, cy]);
+    } else if (pf <= 0) { const t = pf / (pf - cf); out.push([px + t * (cx - px), py + t * (cy - py)]); }
+    px = cx; py = cy; pf = cf;
+  }
+  return out;
+}
+
+const openRing = ring => (ring.length > 1 && ring[0][0] === ring.at(-1)[0] && ring[0][1] === ring.at(-1)[1] ? ring.slice(0, -1) : ring.slice());
+
+/** Ponto do lote (dentro ou sobre a divisa, com folga de 1e-7 m). */
+function inLotClosed(x, y, geom) {
+  if (pointInGeom(x, y, geom)) return true;
+  for (const polygon of geom) for (const ring of polygon) {
+    for (let k = 1; k < ring.length; k++) {
+      const [ax, ay] = ring[k - 1], [bx, by] = ring[k], ex = bx - ax, ey = by - ay, L2 = ex * ex + ey * ey;
+      const t = L2 ? Math.max(0, Math.min(1, ((x - ax) * ex + (y - ay) * ey) / L2)) : 0;
+      if (Math.hypot(x - (ax + t * ex), y - (ay + t * ey)) <= ON_EDGE_TOL_M) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Células de Voronoi recortadas pelo lote.
+ * @param {number[][][][]} geom  multipolígono: [polígono][anel][vértice] = [x, y] (metros)
+ * @param {{x:number,y:number}[]} samples
+ * @returns {{cells: {areaM2:number, worstM:number, worstAt:number[]|null, rings:number[][][]}[], worstGapM:number, worstAt:number[]|null, worstIndex:number, totalAreaM2:number, method:string}}
+ */
+function exactCoverage(geom, samples) {
+  const xy = samples.map(s => [s.x, s.y]);
+  const fast = cellsWith(geom, xy, voronoiNeighbors(xy));
+  // Autoverificação: com pontos quase colineares o Delaunay pode descartar um ponto (fica sem vizinhos) ou deixar de
+  // ligar vizinhos — aí as células se sobrepõem e a soma passa da área do lote. Nesses casos refaz com TODOS os pares
+  // (cada célula recortada por todas as bissetrizes): exato em qualquer configuração, só que O(n²).
+  const lot = geomArea(geom), tol = Math.max(1e-6 * lot, 1e-3);
+  if (xy.length < 2 || Math.abs(fast.totalAreaM2 - lot) <= tol) return { ...fast, method: 'delaunay' };
+  const all = xy.map((_, i) => new Set(xy.map((__, j) => j).filter(j => j !== i)));
+  return { ...cellsWith(geom, xy, all), method: 'todos-os-pares' };
+}
+
+function cellsWith(geom, xy, nb) {
+  const n = xy.length;
+  const cells = [];
+  let worstGapM = n ? 0 : Infinity, worstIndex = -1, totalAreaM2 = 0;
+  /** @type {number[]|null} */ let worstAt = null;
+  for (let i = 0; i < n; i++) {
+    const [sx, sy] = xy[i], rings = [];
+    let area = 0, worst = 0;
+    /** @type {number[]|null} */ let at = null;
+    for (const polygon of geom) polygon.forEach((ring0, r) => {
+      const orient = Math.sign(ringSignedArea(ring0)) || 1, hole = r > 0;
+      let ring = openRing(ring0);
+      for (const j of nb[i]) {
+        const [tx, ty] = xy[j];
+        if (tx === sx && ty === sy) continue;
+        ring = clipRing(ring, (sx + tx) / 2, (sy + ty) / 2, tx - sx, ty - sy);
+        if (!ring.length) break;
+      }
+      if (ring.length < 3) return;
+      const a = Math.abs(ringSignedArea([...ring, ring[0]])) * (Math.sign(ringSignedArea([...ring, ring[0]])) === orient ? 1 : -1);
+      area += hole ? -a : a;
+      rings.push(ring);
+      for (const [x, y] of ring) {
+        const dist = Math.hypot(x - sx, y - sy);
+        if (dist > worst && inLotClosed(x, y, geom)) { worst = dist; at = [x, y]; }
+      }
+    });
+    cells.push({ areaM2: Math.max(0, area), worstM: worst, worstAt: at, rings });
+    totalAreaM2 += Math.max(0, area);
+    if (worst > worstGapM) { worstGapM = worst; worstAt = at; worstIndex = i; }
+  }
+  return { cells, worstGapM, worstAt, worstIndex, totalAreaM2 };
 }
 
 // src/engine/polyline.mjs
@@ -1176,7 +2189,7 @@ function buildScenario(field, given = {}, opts = {}, legacy) {
   }, legacy.buildWarnings);
 }
 
-return Object.freeze({tolerances:Object.freeze({TOLERANCES}),geometry:Object.freeze({DEGREE_LIKE_EXTENT,ringEdges,ringSignedArea,polygonArea,geomArea,pointInRing,pointInPolygon,pointInGeom,geomBounds,geomCentroid,segmentIntersectionT,geomEdges,validateGeom}),polyline:Object.freeze({assertPolyline,cumulative,lengthOf,pointAt,locate,slice,isClosed,circlePolyline}),clip:Object.freeze({clipPolylineToGeom}),tracks:Object.freeze({TRACK_KINDS,trackKindLabel,trackFrame,projectionRange,straightOffsets,buildStraightTracks,buildCircularTracks,buildImportedTracks,selectTracks,clipTracks,trackLength}),sampling:Object.freeze({effectiveMargin,positions,internalGap,alongCoverageRadius,shiftedPositions,trackPosition,sampleUnits,numberSamples}),allocation:Object.freeze({minimumPoints,allocateBalanced,allocatePerTrack,countForSpacing,allocateBySpacing}),metrics:Object.freeze({summarize,longitudinal,coverageGrid,nearestDistances,kthSmallest,distanceStats,gridStep,coverage,boundaryPoints,quickP95,transverse,route}),optimize:Object.freeze({optimizeDistribution}),params:Object.freeze({ENGINE_VERSION,DEFAULT_PARAMS,resolveParams,paramsSignature}),plan:Object.freeze({planCore}),diagnostics:Object.freeze({LEVEL,buildWarnings}),scenario:Object.freeze({STATUS,trackRows,withMetrics,BALANCED_MIN_GAIN,planScenario,buildScenario})});
+return Object.freeze({tolerances:Object.freeze({TOLERANCES}),geometry:Object.freeze({DEGREE_LIKE_EXTENT,ringEdges,ringSignedArea,polygonArea,geomArea,pointInRing,pointInPolygon,pointInGeom,geomBounds,geomCentroid,segmentIntersectionT,geomEdges,validateGeom}),predicates:Object.freeze({orient2d,leftOf}),delaunay:Object.freeze({Delaunator}),voronoi:Object.freeze({exactCoverage}),polyline:Object.freeze({assertPolyline,cumulative,lengthOf,pointAt,locate,slice,isClosed,circlePolyline}),clip:Object.freeze({clipPolylineToGeom}),tracks:Object.freeze({TRACK_KINDS,trackKindLabel,trackFrame,projectionRange,straightOffsets,buildStraightTracks,buildCircularTracks,buildImportedTracks,selectTracks,clipTracks,trackLength}),sampling:Object.freeze({effectiveMargin,positions,internalGap,alongCoverageRadius,shiftedPositions,trackPosition,sampleUnits,numberSamples}),allocation:Object.freeze({minimumPoints,allocateBalanced,allocatePerTrack,countForSpacing,allocateBySpacing}),metrics:Object.freeze({summarize,longitudinal,coverageGrid,nearestDistances,kthSmallest,distanceStats,gridStep,coverage,boundaryPoints,quickP95,transverse,route}),optimize:Object.freeze({optimizeDistribution}),params:Object.freeze({ENGINE_VERSION,DEFAULT_PARAMS,resolveParams,paramsSignature}),plan:Object.freeze({planCore}),diagnostics:Object.freeze({LEVEL,buildWarnings}),scenario:Object.freeze({STATUS,trackRows,withMetrics,BALANCED_MIN_GAIN,planScenario,buildScenario})});
 })();</script><script type="module" crossorigin>
 (async()=>{
 

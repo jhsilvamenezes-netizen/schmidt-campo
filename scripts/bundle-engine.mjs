@@ -6,7 +6,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-export const ENGINE_MODULES = ['tolerances', 'geometry', 'polyline', 'clip', 'tracks', 'sampling', 'allocation', 'metrics', 'optimize', 'params', 'plan', 'diagnostics', 'scenario'];
+export const ENGINE_MODULES = ['tolerances', 'geometry', 'predicates', 'delaunay', 'voronoi', 'polyline', 'clip', 'tracks', 'sampling', 'allocation', 'metrics', 'optimize', 'params', 'plan', 'diagnostics', 'scenario'];
 
 export async function bundleEngine() {
   const declared = new Map(), parts = [], namespaces = [];
