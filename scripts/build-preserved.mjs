@@ -133,7 +133,9 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
   replace('b.mapUi={trackId:null,pos:b.pos}', 'b.mapUi={trackId:null,pos:Date.now()-b.posAt>15e3?null:b.pos}', 'selecao-de-tiro-sem-marcador-antigo');
   replace("connect-src 'self' blob: data:;", "connect-src 'self' blob: data: https://services.arcgisonline.com;", 'satellite-single-origin-opt-in');
   replace('t.innerHTML=L.join(``),A.emit(`mapa:desenhado`,{monitor:!!H})',
-    't.innerHTML=L.join(``),publishSchmidtSatelliteFrame({svg:t,layer:t.querySelector(`.m-rot`),scope:e.key||e.farm+`|`+e.code,width:d.W,height:d.H,scale:d.s,angle:d.rot,origin:[d.W/2-(d.cx+e.centroidUTM[0])*d.s,d.H/2+(d.cy+e.centroidUTM[1])*d.s]}),A.emit(`mapa:desenhado`,{monitor:!!H})', 'individual-map-georeferenced-frame');
+    // 2.4: um toque pedia até 7 desenhos iguais do mapa (abrir aba, redimensionar, painel). Desenho idêntico ao que já
+    // está na tela (mesmo SVG e mesmo tamanho) não troca o DOM: sem novo estilo, layout, pintura nem reajuste de rótulos.
+    't.__sxNext=L.join(``)+`|`+d.W+`x`+d.H,(t.__sxHtml!==t.__sxNext||!t.firstChild)&&(t.innerHTML=L.join(``),t.__sxHtml=t.__sxNext,publishSchmidtSatelliteFrame({svg:t,layer:t.querySelector(`.m-rot`),scope:e.key||e.farm+`|`+e.code,width:d.W,height:d.H,scale:d.s,angle:d.rot,origin:[d.W/2-(d.cx+e.centroidUTM[0])*d.s,d.H/2+(d.cy+e.centroidUTM[1])*d.s]}),A.emit(`mapa:desenhado`,{monitor:!!H}))', 'individual-map-georeferenced-frame');
   replace('catch(e){'+originalFailureBody+'}}return{loadState:t,saveState:n}',
     'catch(e){return schmidtReportStoreFailure(e)}}return{loadState:t,saveState:n}', 'reutilização-exata-do-erro-existente');
   replace('J=(()=>{let{buildScenario:e,','J=(await initialiseSchmidtCorrections(q,z),(()=>{let{buildScenario:e,','recuperação-antes-da-inicialização');
@@ -167,6 +169,8 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
   // 2.3: Auditoria › "Dados do lote" marcava "!" (problema) até para notas só informativas (B gerado pelo rumo,
   // área publicada × KML, KML já corrigido). Agora "!" só com alerta ou erro; só notas → "i"; nada → "✓".
   replace('[!T.length,`Dados do lote`,','[T.some(e=>e.level!==`info`)?!1:T.length?null:!0,`Dados do lote`,','auditoria-dados-nivel-real');
+  // 2.4: com a folha mais baixa o mapa do celular tem ~300 px; a escala longa (110 px) cobria o primeiro tiro.
+  replace('ne=F((d.H<300?56:110)/d.s)','ne=F((d.H<420?56:110)/d.s)','escala-curta-no-mapa-do-celular');
   // 2.3: "limite 376 m" pedia interpretação; "além de 376 m" cabe no cartão e diz o que conta.
   replace('`Descoberto`,`${J(c.haBlind,+(c.haBlind<10))} ha`,l?`${c.pct} · Diagnóstico`:`limite ${J(c.limitM,0)} m`','`Descoberto`,`${J(c.haBlind,+(c.haBlind<10))} ha`,l?`${c.pct} · Diagnóstico`:`além de ${J(c.limitM,0)} m`','cartao-descoberto-legivel');
   if(includeBlocks){const blocks=await applySchmidtBlocks(candidate);candidate=blocks.html;changes.push(...blocks.changes);}
