@@ -73,3 +73,20 @@ cobertura (`metrics`/`evaluate`), otimização e rota.
 
 O núcleo do plano e as métricas do cenário já estão reescritos. Faltam a resolução e validação
 de parâmetros, os avisos (diagnostics) e a otimização. Depois vem a troca no app.
+
+## Etapa 5: cenário completo
+
+- `src/engine/params.mjs`: padrões, resolução e assinatura. A versão declarada do motor
+  continua `0.5.1-sim` para não invalidar ajustes manuais guardados.
+- `src/engine/scenario.mjs`: `buildScenario` completo (validação de geometria e área, núcleo
+  do plano, métricas, linhas por tiro, status). Validação detalhada de parâmetros, avisos e
+  otimização ainda são do motor antigo, **injetados** como dependência.
+- `audit/engine-scenario-diff.test.mjs`: o cenário inteiro, objeto completo, é igual ao do motor
+  antigo em **426 cenários** (51 lotes × 8 variações e otimização em dois modos). As mensagens
+  de erro também são idênticas. Só a hora de geração e o tempo medido da otimização são ignorados.
+
+### Próximo
+
+1. Reescrever `paramCatalog` (validação), `diagnostics` (avisos) e `optimize`, com o mesmo teste.
+2. Trocar o motor no app: página **e** worker (que tem cópia própria do motor), com a conferência
+   GEOS/PROJ, os 51 lotes e os 40 grupos no navegador.
