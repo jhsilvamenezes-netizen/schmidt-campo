@@ -1,11 +1,11 @@
 {
-  "entrega": "2.4.0",
+  "entrega": "2.5.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-15",
-  "versaoDoApp": "2.4.0",
+  "versaoDoApp": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "27ef9309a925cb7184589b300089129c21204d83bb3115c36d95babb27df0bb0",
-  "workerSha256": "4ea35383a4c71f3feadda68c73b859a903a4d8924cf6d0aaded2ec8430dc700b",
+  "htmlSha256": "541a3abad2028dd99ee292e00e158540275a6af873b93480a8ba5454d7ad1754",
+  "workerSha256": "1ebe75b5939e5e0e47f716b70a1fb1c4b0737d4540388607dd1ca763d1b34a40",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -42,7 +42,10 @@
     "2.4 (celular): mapa ao planejar 162 → 220 px (lote 40% maior); folha mais baixa e moldura enxuta; distâncias do Plano seguem visíveis sem rolar",
     "2.4: sem a faixa \"Simulação\" sobre o mapa; cartão, Plano, Tiros, Dados, Auditoria e etapas com textos repetidos retirados; selo \"Sem alertas\"",
     "2.4: mapa não redesenha quando nada mudou (Tiros: 7 → 1 desenho por toque); escala curta em mapa baixo",
-    "2.4: motor 2 numa cópia só para página e worker (arquivo 909 → 850 KB; 297 → 278 KB comprimido)"
+    "2.4: motor 2 numa cópia só para página e worker (arquivo 909 → 850 KB; 297 → 278 KB comprimido)",
+    "2.5: plano equilibrado por padrão: pontos deslocados dentro de cada tiro quando a cobertura melhora ≥ 2% (31 de 51 lotes; p95 −11% na mediana, até −32%); mesma equipe e mesmo total de pontos; pior vazio nunca maior",
+    "2.5: rótulos de área por ponto sem sobrepor ponto, outro rótulo ou borda (697 de 730 visíveis, os demais escondidos); escala sempre curta; crédito do satélite fora da escala",
+    "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "somenteEstudoSemIntegracao": [
     "recuo mínimo obrigatório por divisa",

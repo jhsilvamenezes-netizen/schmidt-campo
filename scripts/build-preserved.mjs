@@ -56,6 +56,7 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
   // async já é usado pelo baseline. Evita exigir suporte novo a top-level await
   // dos WebViews Android: o await de recuperação fica dentro desta função.
   replace('<script type="module" crossorigin>','<script id="schmidt-engine">'+engineBundle+'</script><script type="module" crossorigin>\n(async()=>{\n'+blocks.join('\n')+'\n','fontes-legíveis');
+  // 2.5: plano padrão equilibrado (página e worker iguais); {balanced:false} dá o plano cru, igual ao motor 0.5.1.
   // Motor 2 no lugar do motor 0.5.1 DA PÁGINA. Cada módulo antigo (do seu início até o início do seguinte) vira
   // o namespace equivalente; validação de parâmetros (g) e qualidade dos dados (d) seguem do antigo, injetadas.
   // Marcadores únicos e ordem conferidos: qualquer mudança no artefato base interrompe o build.
@@ -70,7 +71,7 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
     ['c',',c=(()=>{let{cumulative:t,pointAt:r}=n',',l=(()=>{let e=Object.freeze({boomWidthM','schmidtEngine2.optimize'],
     ['p',',p=(()=>{let{assessField:t}',',m=(()=>{let{coverage:e,long','{buildWarnings:(f,sc)=>schmidtEngine2.diagnostics.buildWarnings(f,sc,d.assessField)}'],
     ['m',',m=(()=>{let{coverage:e,long',',h=(()=>{let e=Object.freeze({GEOMETRIA','{withMetrics:(f,sc)=>schmidtEngine2.scenario.withMetrics(f,sc,p.buildWarnings),trackRows:schmidtEngine2.scenario.trackRows}'],
-    ['_',',_=(()=>{let{validateGeom:e}',',v=(()=>{let{buildScenario:e','{buildScenario:(f,q={},o={})=>schmidtEngine2.scenario.buildScenario(f,q,o,{assertParams:g.assertParams,buildWarnings:p.buildWarnings,optimizeDistribution:schmidtEngine2.optimize.optimizeDistribution,engineVersion:`2.0.0`})}'],
+    ['_',',_=(()=>{let{validateGeom:e}',',v=(()=>{let{buildScenario:e','{buildScenario:(f,q={},o={})=>schmidtEngine2.scenario.buildScenario(f,q,o.optimize||o.balanced===false?o:{...o,balanced:true},{assertParams:g.assertParams,buildWarnings:p.buildWarnings,optimizeDistribution:schmidtEngine2.optimize.optimizeDistribution,engineVersion:`2.0.0`})}'],
   ];
   {
     const engineStart=candidate.indexOf('var e={SEGMENT_T_EPS:'),engineEnd=candidate.indexOf(',O=(()=>{',engineStart);
@@ -105,7 +106,7 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
       ['f',',f=(()=>{let{cumulative:r,pointAt:i}=t',',p=(()=>{let{DomainError:e,ERR:t}=i','schmidtEngine2.optimize'],
       ['h',',h=(()=>{let{geomEdges:n',',g=(()=>{let{geomCentroid:n}=a','schmidtEngine2.clip'],
       ['g',',g=(()=>{let{geomCentroid:n}=a',',_=(()=>{let{validateGeom:e}=a','schmidtEngine2.tracks'],
-      ['_',',_=(()=>{let{validateGeom:e}=a',',v=(()=>{let{buildScenario:e}=_','{buildScenario:(f,q={},o={})=>schmidtEngine2.scenario.buildScenario(f,q,o,{assertParams:p.assertParams,buildWarnings:l.buildWarnings,optimizeDistribution:schmidtEngine2.optimize.optimizeDistribution,engineVersion:`2.0.0`})}'],
+      ['_',',_=(()=>{let{validateGeom:e}=a',',v=(()=>{let{buildScenario:e}=_','{buildScenario:(f,q={},o={})=>schmidtEngine2.scenario.buildScenario(f,q,o.optimize||o.balanced===false?o:{...o,balanced:true},{assertParams:p.assertParams,buildWarnings:l.buildWarnings,optimizeDistribution:schmidtEngine2.optimize.optimizeDistribution,engineVersion:`2.0.0`})}'],
     ];
     for(const [v,from,to,value] of WORKER_SWAPS){
       const a=lit.indexOf(from),b=lit.indexOf(to);
@@ -173,8 +174,9 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
   replace('[!T.length,`Dados do lote`,','[T.some(e=>e.level!==`info`)?!1:T.length?null:!0,`Dados do lote`,','auditoria-dados-nivel-real');
   replace('new Blob([`(self.URL || self.webkitURL).revokeObjectURL(self.location.href);`,H]',
     'new Blob([`(self.URL || self.webkitURL).revokeObjectURL(self.location.href);`,document.getElementById(`schmidt-engine`)?.textContent||``,`;`,H]','worker-usa-o-mesmo-motor-da-pagina');
-  // 2.4: com a folha mais baixa o mapa do celular tem ~300 px; a escala longa (110 px) cobria o primeiro tiro.
-  replace('ne=F((d.H<300?56:110)/d.s)','ne=F((d.H<420?56:110)/d.s)','escala-curta-no-mapa-do-celular');
+  // 2.4/2.5: a escala longa (alvo 110 px, arredondada até ~220 px) cobria o primeiro tiro e o crédito do satélite;
+  // agora sempre curta (régua de 56 a 140 px).
+  replace('ne=F((d.H<300?56:110)/d.s)','ne=F(56/d.s)','escala-curta-no-mapa-do-celular');
   // 2.3: "limite 376 m" pedia interpretação; "além de 376 m" cabe no cartão e diz o que conta.
   replace('`Descoberto`,`${J(c.haBlind,+(c.haBlind<10))} ha`,l?`${c.pct} · Diagnóstico`:`limite ${J(c.limitM,0)} m`','`Descoberto`,`${J(c.haBlind,+(c.haBlind<10))} ha`,l?`${c.pct} · Diagnóstico`:`além de ${J(c.limitM,0)} m`','cartao-descoberto-legivel');
   if(includeBlocks){const blocks=await applySchmidtBlocks(candidate);candidate=blocks.html;changes.push(...blocks.changes);}

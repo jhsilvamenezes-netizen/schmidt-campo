@@ -14,6 +14,8 @@ export function installSchmidtRefinements(document) {
        (o seletor já mostra "Bananal"/"BD3"; o rótulo segue para leitor de tela). */
     @media (max-width:599px){
       .mobile-context label{font-size:0;gap:0;line-height:0}
+      /* subtítulo da marca com 9 px: ilegível ao sol; o logotipo basta no celular */
+      .brand-subtitle{display:none}
       /* Moldura da folha mais enxuta (abas 61→50, linha Ampliar 53→46, etapas 61→52, sem os títulos das etapas,
          que repetem a etapa marcada): cabe mapa maior e as distâncias do Plano seguem visíveis sem rolar (regra aprovada). */
       .sheet:not([data-state=collapsed]) .v08-dock{height:50px}
@@ -32,5 +34,15 @@ export function installSchmidtRefinements(document) {
     }
   `;
   document.head.append(style);
+  // 2.5: o botão de ferramentas do mapa era o caractere "☷", que alguns Android desenham como quadrado vazio.
+  // Vira um ícone desenhado (mesmo traço dos ícones das abas); o nome acessível continua o mesmo.
+  const tools = document.getElementById('geo-tools-toggle');
+  if (tools && tools.textContent.trim() === '☷') {
+    const NS = 'http://www.w3.org/2000/svg', svg = document.createElementNS(NS, 'svg');
+    for (const [k, v] of Object.entries({ viewBox: '0 0 24 24', width: '22', height: '22', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round', 'aria-hidden': 'true' })) svg.setAttribute(k, v);
+    for (const d of ['M4 7h10', 'M18 7h2', 'M4 17h2', 'M10 17h10']) { const path = document.createElementNS(NS, 'path'); path.setAttribute('d', d); svg.append(path); }
+    for (const [cx, cy] of [[16, 7], [8, 17]]) { const c = document.createElementNS(NS, 'circle'); c.setAttribute('cx', String(cx)); c.setAttribute('cy', String(cy)); c.setAttribute('r', '2'); svg.append(c); }
+    tools.replaceChildren(svg);
+  }
   return true;
 }

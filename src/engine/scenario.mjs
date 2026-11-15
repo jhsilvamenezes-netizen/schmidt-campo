@@ -56,6 +56,9 @@ function validated(field, given, assertParams) {
  * muitos candidatos e medem a cobertura por conta própria (preparação de bloco): mesmos números de planCore,
  * mesma validação do cenário completo. Devolve { params, ...planCore }.
  */
+/** Ganho mínimo de p95 (fração) para o plano equilibrado substituir o plano regular. */
+export const BALANCED_MIN_GAIN = 0.02;
+
 export function planScenario(field, given = {}, legacy) {
   const params = validated(field, given, legacy.assertParams);
   return { params, ...planCore(field, params) };
@@ -65,11 +68,22 @@ export function buildScenario(field, given = {}, opts = {}, legacy) {
   const params = validated(field, given, legacy.assertParams);
   const core = planCore(field, params, opts);
   let samples = core.samples, optimization = null;
-  if (opts.optimize && core.units.length) {
+  // 2.5 · plano equilibrado (opts.balanced): mesma busca do "Buscar distribuição melhor", mas só desloca os pontos
+  // dentro de cada tiro (pontos por tiro e total iguais) e nenhum passo pode aumentar o pior vazio. Medido nos 51 lotes:
+  // busca enxuta (2 rodadas, 7 posições por tiro); com o ganho mínimo de 2%: 31 dos 51 lotes mudam (p95 −11% na
+  // mediana, até −32%), pior vazio nunca maior, equipe idêntica;
+  // ≤ 13 ms no computador (≈ +40 ms ao trocar de lote num celular lento).
+  const balanced = !opts.optimize && opts.balanced && /** @type {string|undefined} */ (params.optimizer?.mode) !== 'regularidade';
+  if ((opts.optimize || balanced) && core.units.length) {
+    const optParams = balanced ? { ...params, optimizer: { ...params.optimizer, mode: 'qualidade_espacial', allowCountMoves: false, keepWorstGap: true, maxIterations: 2, phaseSteps: 7 } } : params;
     const r = legacy.optimizeDistribution({ geom: field.geom, units: core.units, counts: core.counts, policy: params.edgePolicy,
-      marginM: params.edgeMarginM, params, signal: opts.signal });
-    samples = sampleUnits(core.units, r.counts, params.edgePolicy, params.edgeMarginM, r.shifts);
-    optimization = r.report ?? null;
+      marginM: params.edgeMarginM, params: optParams, signal: opts.signal });
+    // Equilibrado só troca o plano regular se o ganho valer a pena (p95 ≥ 2% menor); ganho menor só tira os pontos
+    // da posição simétrica sem benefício para quem caminha.
+    const b0 = r.report?.baseline?.p95M, b1 = r.report?.optimized?.p95M;
+    const worth = !balanced || (r.report?.accepted && b0 > 0 && b1 !== null && (b0 - b1) / b0 >= BALANCED_MIN_GAIN);
+    samples = worth ? sampleUnits(core.units, r.counts, params.edgePolicy, params.edgeMarginM, r.shifts) : core.samples;
+    optimization = r.report ? { ...r.report, ...(balanced ? { mode: 'equilibrado', accepted: !!worth, minGain: BALANCED_MIN_GAIN } : {}) } : null;
   }
   return withMetrics(field, {
     engineVersion: legacy.engineVersion ?? ENGINE_VERSION, generatedAt: new Date().toISOString(),

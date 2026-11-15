@@ -39,7 +39,7 @@ export function installSchmidtSatelliteMap({document}) {
   #satellite-options{margin:8px 0;padding:8px;border:1px solid var(--sx-line);border-radius:9px;background:var(--sx-surface);color:var(--sx-brand);flex-shrink:0}
   #satellite-options summary{min-height:44px;align-content:center;cursor:pointer;font-size:13px;font-weight:700}
   #satellite-options label{display:grid;gap:6px;font-size:13px}#satellite-options select{width:100%;min-height:44px;font:inherit;padding:8px;border:1px solid var(--sx-line-strong);border-radius:8px;background:var(--sx-surface);color:var(--sx-brand)}
-  #satellite-status{font-size:12px;margin:6px 0}#satellite-status:empty{display:none}.satellite-credit{display:block;position:absolute;right:4px;bottom:4px;max-width:calc(100% - 95px);padding:2px 4px;background:#12392ee8;color:white;font-size:11px;line-height:1.25;border-radius:4px;pointer-events:none}.satellite-credit[hidden]{display:none}
+  #satellite-status{font-size:12px;margin:6px 0}#satellite-status:empty{display:none}.satellite-credit{display:block;position:absolute;right:4px;bottom:4px;max-width:calc(100% - 170px);padding:2px 4px;background:#12392ee8;color:white;font-size:11px;line-height:1.25;border-radius:4px;pointer-events:none}.satellite-credit[hidden]{display:none}
   .schmidt-satellite-image{pointer-events:none}
   #block-overview.satellite-on .bm-field,#map.satellite-on .m-field{fill:#fff!important;fill-opacity:.025!important;stroke:white!important;filter:drop-shadow(0 1px 1px #12392e)}
   #block-overview.satellite-on .bm-track,#map.satellite-on .m-unit{stroke:#6fe7ff!important;filter:drop-shadow(0 1px 1px #12392e)}

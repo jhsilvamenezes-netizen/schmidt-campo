@@ -36,7 +36,7 @@ try {
   await p.waitForFunction(() => document.documentElement.dataset.ready === '1');
   const keys = Object.keys(fields).sort();
   const page = await p.evaluate(ks => { const M = SCHMIDT.modulos; return { version: M.__m_engine_index.ENGINE_VERSION,
-    out: Object.fromEntries(ks.map(k => [k, JSON.stringify(M.__m_engine_scenario.buildScenario(SCHMIDT.app.fields[k], M.__m_engine_index.DEFAULT_PARAMS))])) }; }, keys);
+    out: Object.fromEntries(ks.map(k => [k, JSON.stringify(M.__m_engine_scenario.buildScenario(SCHMIDT.app.fields[k], M.__m_engine_index.DEFAULT_PARAMS, { balanced: false }))])) }; }, keys);
   report.versions.push(page.version);
   for (const k of keys) {
     const a = norm(JSON.parse(page.out[k])), b = norm(old.index.buildScenario(fields[k], old.index.DEFAULT_PARAMS));
@@ -50,7 +50,13 @@ try {
     report.modes.push(r.mode);
     const sc = JSON.parse(r.sc); report.versions.push(sc.engineVersion);
     try { assert.deepStrictEqual(norm(sc), norm(old.index.buildScenario(fields[k], old.index.DEFAULT_PARAMS, { optimize: true }))); report.workerOptimize++; } catch { report.failures.push(`worker otimização ${k}`); }
-    try { assert.deepStrictEqual(norm(JSON.parse(r.rec)), norm(old.recommend.recommendPlan(fields[k], {}, {}))); report.workerRecommend++; } catch (e) { report.failures.push(`worker recomendação ${k}: ${String(e.message).slice(0, 200)}`); }
+    // 2.5: os candidatos agora são planos equilibrados (melhor cobertura), então as métricas e a lista de alternativas
+    // podem mudar; a ESCOLHA (opção e parâmetros) tem de ser a mesma do motor 0.5.1.
+    try {
+      const a = JSON.parse(r.rec), o = old.recommend.recommendPlan(fields[k], {}, {});
+      const id = x => (typeof x.chosen === 'object' && x.chosen ? x.chosen.id : x.chosen), pick = x => norm(x.alternatives.find(y => y.id === id(x))?.params ?? null);
+      assert.equal(id(a), id(o)); assert.deepStrictEqual(pick(a), pick(o)); report.workerRecommend++;
+    } catch (e) { report.failures.push(`worker recomendação ${k}: ${String(e.message).slice(0, 200)}`); }
   }
   assert.deepEqual(errors, []);
 } finally {
