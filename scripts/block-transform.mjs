@@ -22,7 +22,7 @@ replace('function validateSchmidtRestore(backup, sanitizeParams) {',
   "function validateSchmidtRestore(backup, sanitizeParams) {\n  validateSchmidtBlocks(backup.dados?.['monitoramento.v03'], sanitizeParams);", 'validar-blocos-no-backup');
 replace('installSchmidtOperationalPlan({document,schmidt:SCHMIDT,events:A,measurements:N});',
   `installSchmidtOperationalPlan({document,schmidt:SCHMIDT,events:A,measurements:N});
-installSchmidtBlockPlanning({document,schmidt:SCHMIDT,engine:D,metrics:s,store:K,events:A});`, 'instalar-planejamento-bloco');
+installSchmidtBlockPlanning({document,schmidt:SCHMIDT,engine:{...D,planScenario:(f,q)=>schmidtEngine2.scenario.planScenario(f,q,{assertParams:g.assertParams})},metrics:s,store:K,events:A});`, 'instalar-planejamento-bloco');
 // Histórico legado não recebe revisões do bloco sob a identidade individual.
 // Parâmetros, ajustes e coletas do bloco são preservados no registro e backup.
 replace('J=(await initialiseSchmidtCorrections(q,z),', 'J=(installSchmidtBlockHistoryIsolation(q),await initialiseSchmidtCorrections(q,z),', 'isolar-historico-individual');

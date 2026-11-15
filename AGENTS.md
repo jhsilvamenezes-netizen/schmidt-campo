@@ -170,6 +170,13 @@ lembrando que já chegou a hora de reestruturar o motor que está desatualizado 
 Escopo: integrar #21; entregar comparação de bloco (F4/U4) e publicar com CI verde; reescrever o
 motor por etapas com comparação diferencial contra o atual e GEOS/PROJ antes de trocar. Sem APK.
 
+### Autorização de 15/11/2026 — executar melhorias sem pedir permissão
+
+O proprietário respondeu: **"Pode fazer as devidas melhorias, estou de acordo e não precisa pedir
+permissão, execute"**, pedindo exame e planejamento antes, código e motor muito melhorados, e textos
+organizados com sequência lógica. Plano: `docs/PLANO_EVOLUCAO_MOTOR.md`. Cada unidade continua com teste,
+medida antes/depois, PR, CI verde e conferência do link publicado. Sem APK.
+
 ## Fluxo
 - Trabalhar somente em branch de desenvolvimento e PR.
 - Criar mudanças pequenas com testes, relatório de impacto e meios de reproduzir.

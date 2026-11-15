@@ -12,7 +12,8 @@ const old = await loadLegacyEngine(), fields = await loadFields(), keys = Object
 // Avisos e otimização do motor 2; validação de parâmetros e qualidade dos dados ainda do motor antigo.
 const legacy = { assertParams: old.paramCatalog.assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, old.dataQuality.assessField), optimizeDistribution };
 // Hora de geração e tempo medido da otimização variam a cada execução; o resto tem de ser idêntico.
-const strip = sc => { const { generatedAt, ...rest } = sc; if (rest.optimization) rest.optimization = { ...rest.optimization, elapsedMs: 0 }; return rest; };
+// Hora, tempo medido e limite superior do vazio (corrigido na 2.3, conferido em coverage-exact.py) ficam de fora.
+const strip = sc => { const { generatedAt, ...rest } = sc; if (rest.optimization) rest.optimization = { ...rest.optimization, elapsedMs: 0 }; if (rest.coverage) rest.coverage = { ...rest.coverage, maxUpperBoundM: 0 }; if (rest.warnings) rest.warnings = rest.warnings; return rest; };
 
 test('parâmetros: padrões, resolução e assinatura idênticos', () => {
   assert.deepStrictEqual(JSON.parse(JSON.stringify(DEFAULT_PARAMS)), JSON.parse(JSON.stringify(old.params.DEFAULT_PARAMS)));

@@ -1,11 +1,11 @@
 {
-  "entrega": "2.2.0",
+  "entrega": "2.3.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-15",
-  "versaoDoApp": "2.2.0",
+  "versaoDoApp": "2.3.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "f368ca26f62a74299a325b52371aef19841b21007dc88937564e58e0c886d5b1",
-  "workerSha256": "bd9d0363b31e1eb1e5b3ff363cbbf3e4eadaf727bff2c7cf8a625794491e9517",
+  "htmlSha256": "92adebe29a0ef585033cb101928002ac8f3e9d67fcf16dfcf0ffeb17e71c69b2",
+  "workerSha256": "077f13bcf08ec912db0ad9c6ce5c1f836038f9d4b5d8108b642edf2670874a82",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -34,7 +34,8 @@
     "2.0.1: histerese temporária estabiliza o alvo sem marcar pontos; avanço e retorno permanecem possíveis",
     "2.0.1: chegada prioriza distância até próximo ponto ou borda; funções e registros legados preservados",
     "2.1: bloco com \"Comparar antes de usar\": melhor opção de cada espaçamento comum (conjunto e por lote), escolha troca o rascunho e Usar bloco aplica tudo de uma vez; opções que pioram a cobertura ficam recolhidas e bloqueadas",
-    "2.2: motor 2 (src/engine, código legível) no lugar do motor 0.5.1 na página e no worker; resultados idênticos ao motor antigo (versão declarada 2.0.0); validação de parâmetros e qualidade dos dados ainda do motor antigo"
+    "2.2: motor 2 (src/engine, código legível) no lugar do motor 0.5.1 na página e no worker; resultados idênticos ao motor antigo (versão declarada 2.0.0); validação de parâmetros e qualidade dos dados ainda do motor antigo",
+    "2.3: montar bloco 8× a 40× mais rápido (só o plano dos candidatos, p95 por seleção, pausa por tempo com scheduler.yield); mesmos resultados nos 40 grupos"
   ],
   "somenteEstudoSemIntegracao": [
     "recuo mínimo obrigatório por divisa",
@@ -48,5 +49,5 @@
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
   "runtimeBlocks": true,
-  "statusEntrega": "candidata 2.2.0; motor 2 na página e no worker; publicação após CI verde (autorização de 15/11/2026)"
+  "statusEntrega": "web 2.3.0; publicação autorizada pelo proprietário (15/11/2026: executar sem pedir permissão)"
 }

@@ -41,12 +41,28 @@ class DomainError extends Error {
  * @param legacy { assertParams, buildWarnings, optimizeDistribution, engineVersion? } — validação detalhada vem do
  *   motor 0.5.1 até a reescrita; engineVersion é a versão declarada no app (o padrão mantém a do motor antigo).
  */
-export function buildScenario(field, given = {}, opts = {}, legacy) {
+/** Parâmetros resolvidos e validados + lote válido (mesmas recusas e mensagens do cenário completo). */
+function validated(field, given, assertParams) {
   const params = resolveParams(given);
-  legacy.assertParams(params);
+  assertParams(params);
   const problems = validateGeom(field?.geom);
   if (problems.length) throw new DomainError('GEOMETRIA_INVALIDA', `Geometria inválida para ${field?.code ?? '?'}: ${problems.join('; ')}`, { field: 'geom', value: problems });
   if (!(field.areaOfficialHa > 0)) throw new DomainError('AREA_AUSENTE', `Área oficial ausente para ${field.code}`, { field: 'areaOfficialHa', value: field.areaOfficialHa });
+  return params;
+}
+
+/**
+ * Só o plano (tiros, trechos, pontos), sem cobertura, entre tiros, caminhada e avisos. Para buscas que testam
+ * muitos candidatos e medem a cobertura por conta própria (preparação de bloco): mesmos números de planCore,
+ * mesma validação do cenário completo. Devolve { params, ...planCore }.
+ */
+export function planScenario(field, given = {}, legacy) {
+  const params = validated(field, given, legacy.assertParams);
+  return { params, ...planCore(field, params) };
+}
+
+export function buildScenario(field, given = {}, opts = {}, legacy) {
+  const params = validated(field, given, legacy.assertParams);
   const core = planCore(field, params, opts);
   let samples = core.samples, optimization = null;
   if (opts.optimize && core.units.length) {
