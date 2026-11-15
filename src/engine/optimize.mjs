@@ -39,8 +39,11 @@ export function optimizeDistribution({ geom, units, counts: initialCounts, polic
     }
     return pts;
   };
-  let evaluations = 0;
-  const score = (counts, shifts) => { evaluations++; const r = quickP95(grid, pointsOf(counts, shifts)); return (r.p95 ?? Infinity) + OPT_MEAN_TIEBREAK * (r.mean ?? 0); };
+  let evaluations = 0, worstCap = Infinity;
+  // 2.5 · keepWorstGap: tentativa que aumenta o pior vazio (na grade de busca) é descartada. Desligado = motor 0.5.1.
+  const score = (counts, shifts) => { evaluations++; const r = quickP95(grid, pointsOf(counts, shifts));
+    if (opt.keepWorstGap && (r.max ?? Infinity) > worstCap + OPT_LIMIT_EPS) return Infinity;
+    return (r.p95 ?? Infinity) + OPT_MEAN_TIEBREAK * (r.mean ?? 0); };
   const shiftRange = (unit, n) => {
     if (!n) return [0, 0];
     const base = positions(unit.len, n, policy, marginM);
@@ -51,7 +54,9 @@ export function optimizeDistribution({ geom, units, counts: initialCounts, polic
   const maxGap = baseGaps.max === null ? null : baseGaps.max * (1 + opt.maxGapIncreaseFrac);
   const maxCv = baseGaps.cv === null ? null : baseGaps.cv + opt.maxCvIncrease;
   const emptyBefore = units.filter(u => !(original.get(u.id) > 0)).length;
-  let counts = new Map(original), shifts = new Map(units.map(u => [u.id, 0])), best = score(counts, shifts);
+  let counts = new Map(original), shifts = new Map(units.map(u => [u.id, 0]));
+  if (opt.keepWorstGap) worstCap = quickP95(grid, pointsOf(counts, shifts)).max ?? Infinity;
+  let best = score(counts, shifts);
   const moves = [];
 
   // Fase: para cada trecho, testa as posições e fica com a melhor que melhora a nota.
@@ -106,7 +111,9 @@ export function optimizeDistribution({ geom, units, counts: initialCounts, polic
   const before = coverage(geom, pointsOf(original, new Map()), params.coverage), after = coverage(geom, pointsOf(counts, shifts), params.coverage);
   const gaps = gapStats(units, counts, policy, marginM), emptyAfter = units.filter(u => !(counts.get(u.id) > 0)).length;
   const constraintsOk = (maxGap === null || gaps.max === null || gaps.max <= maxGap + OPT_LIMIT_EPS)
-    && (maxCv === null || gaps.cv === null || gaps.cv <= maxCv + OPT_LIMIT_EPS) && emptyAfter <= emptyBefore;
+    && (maxCv === null || gaps.cv === null || gaps.cv <= maxCv + OPT_LIMIT_EPS) && emptyAfter <= emptyBefore
+    // keepWorstGap: o pior vazio na grade fina (a que o app mostra) também não pode aumentar.
+    && (!opt.keepWorstGap || (after.max !== null && before.max !== null && after.max <= before.max + OPT_IMPROVE_EPS_M));
   const accepted = !signal?.cancelled && constraintsOk && after.p95 !== null && before.p95 !== null && after.p95 < before.p95 - OPT_IMPROVE_EPS_M;
   const summary = (c, g, empty) => ({ p95M: c.p95, maxM: c.max, meanM: c.mean, uncertaintyP95M: c.uncertaintyP95M, maxGapM: g.max, medianGapM: g.median, cvGaps: g.cv, emptyUnits: empty });
   return {

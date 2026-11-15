@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "2.4.0: celular primeiro",
+  "task": "2.5.0: motor equilibrado",
   "owner": "Claude",
   "status": "pronto_para_revisao",
-  "nextAction": "PR da 2.4.0; CI verde; merge; conferir Pages e hash = VERSAO.json; depois Unidade D",
+  "nextAction": "PR da 2.5.0; CI verde; merge; Pages e hash = VERSAO.json",
   "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -11,24 +11,24 @@
   "scope": "Direcionamento exclusivo no link móvel, sem coleta/marcação pela equipe. APK adiado.",
   "tests": [
     {
-      "command": "bateria local 2.4.0 (CI blocos-candidata + validacao + sessões + upgrade + android)",
+      "command": "bateria local 2.5.0 (CI blocos-candidata + validacao + sessões + upgrade + android + guardas visuais)",
       "result": "passou",
-      "evidence": "31/31; validate-runtime-blocks na ordem do CI"
+      "evidence": "todas; adjust-compare 51/51 depois de a prévia usar o mesmo equilíbrio"
     },
     {
-      "command": "browser.mjs e operational-plan-browser.mjs (guardas visuais com áreas aprovadas da 2.4)",
+      "command": "balanced-plan-browser.mjs",
       "result": "passou",
-      "evidence": "sem diferença fora das áreas aprovadas; só ruído local de 1/255"
+      "evidence": "31 de 51 lotes com p95 menor (mediana −11,3%, até −32,3%); pior vazio nunca maior; equipe igual nos 51"
     },
     {
-      "command": "engine-swap-browser.mjs (motor numa cópia só)",
+      "command": "engine-swap-browser.mjs",
       "result": "passou",
-      "evidence": "página 51/51; worker otimização 9/9 e recomendação 9/9"
+      "evidence": "plano cru e recomendação idênticos ao motor 0.5.1"
     },
     {
-      "command": "night-theme-browser.mjs",
+      "command": "engine-properties.test.mjs (6 propriedades)",
       "result": "passou",
-      "evidence": "contraste 0 falhas"
+      "evidence": "inclui plano equilibrado em lotes aleatórios"
     }
   ],
   "blockers": [
@@ -49,14 +49,19 @@
     "15/11: 2.1.0 publicada (PR #22, main cd25d4b). Motor 2 em src/engine, ainda não usado pelo app; troca exige paramCatalog+dataQuality reescritos e substituição na página e no worker.",
     "2.2.0: motor 2 na página e no worker (build troca 11 módulos em cada); oráculo dos testes = index.html de cd25d4b.",
     "15/11: revisão de tela (10 itens) e corte de texto autorizados pelo proprietário; guardas visuais aceitam só regiões declaradas da 2.3",
-    "15/11: proprietário aprovou o layout de celular da 2.4 (\"pode fazer\"), pediu menos texto e foco no uso no celular; APK depois"
+    "15/11: proprietário aprovou o layout de celular da 2.4 (\"pode fazer\"), pediu menos texto e foco no uso no celular; APK depois",
+    "15/11: proprietário pediu foco no motor (inteligência) e visual; equilíbrio só no plano em uso de lote individual; recomendação e bloco sem mudança"
   ],
   "snapshot": {
-    "at": "2026-11-15T08:55:59.494Z",
+    "at": "2026-11-15T10:08:14.242Z",
     "branch": "claude/motor-evolucao",
-    "codeCommit": "89abe0cfc71ed277b024578300e5ab0229c86c23",
+    "codeCommit": "e27a4c09105bdfd9345ecb6931ac046263541b78",
     "changedTrackedFiles": [
-      "audit/direction-measures-evidence.json"
+      "VERSAO.json",
+      "audit/direction-measures-evidence.json",
+      "index.html",
+      "src/ui/adjust-compare.mjs",
+      "sw.js"
     ],
     "untrackedCount": 0
   },

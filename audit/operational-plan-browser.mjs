@@ -135,19 +135,19 @@ try {
   const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(`http://127.0.0.1:${server.address().port}/${name}`);
   await page.waitForFunction(()=>window.SCHMIDT?.app?.sc);await page.evaluate(()=>document.fonts.ready);await page.waitForTimeout(600);
   const box=await page.locator('#param-stage-inicio').evaluate(e=>{const r=e.getBoundingClientRect(),p=e.closest('#panel-plano').getBoundingClientRect();return {top:Math.floor(r.top)*2,left:Math.floor(p.left)*2,right:Math.ceil(p.right)*2};});
-  // 15/11/2026 (2.3, autorizado pelo proprietário): coluna de Tiros com textos repetidos retirados, selo de dados e cartão "Descoberto · além de N m"; 2.4: sem a faixa "Simulação" e cartão do lote enxuto.
-  const extra=await page.evaluate(()=>[...['panel-tiros','v08-quality','geo-status','lote-resumo'].map(id=>document.getElementById(id)),[...document.querySelectorAll('.goal')].find(e=>e.textContent.includes('Descoberto'))].filter(e=>e&&e.getBoundingClientRect().width).map(e=>{const r=e.getBoundingClientRect();return {left:Math.floor(r.left)*2,right:Math.ceil(r.right)*2,top:Math.floor(r.top)*2,bottom:Math.ceil(r.bottom)*2};}));
+  // 15/11/2026 (2.3, autorizado pelo proprietário): coluna de Tiros com textos repetidos retirados, selo de dados e cartão "Descoberto · além de N m"; 2.4: sem a faixa "Simulação" e cartão do lote enxuto; 2.5: escala curta.
+  const extra=await page.evaluate(()=>[...['panel-tiros','v08-quality','geo-status','lote-resumo'].map(id=>document.getElementById(id)),document.querySelector('#map .m-scale'),document.querySelector('#map .m-scale-bg'),[...document.querySelectorAll('.goal')].find(e=>e.textContent.includes('Descoberto'))].filter(e=>e&&e.getBoundingClientRect().width).map(e=>{const r=e.getBoundingClientRect();return {left:(Math.floor(r.left)-4)*2,right:(Math.ceil(r.right)+4)*2,top:(Math.floor(r.top)-4)*2,bottom:(Math.ceil(r.bottom)+4)*2};}));
   desktop.push({box,extra,png:PNG.sync.read(await page.screenshot({path:out+'1280-'+name.replace('.html','')+'-protected.png'}))});await ctx.close();
  }
  assert.deepEqual(desktop[0].box,desktop[1].box);const a=desktop[0].png,b=desktop[1].png,box=desktop[0].box;
- assert.equal(a.width,b.width);assert.equal(a.height,b.height);let changed=0,maxDelta=0;
+ assert.equal(a.width,b.width);assert.equal(a.height,b.height);let changed=0,maxDelta=0;const bb={l:1e9,r:-1,t:1e9,b:-1};
  for(let y=0;y<a.height;y++)for(let x=0;x<a.width;x++){
   if(y>=box.top&&x>=box.left&&x<box.right)continue;
   if([...desktop[0].extra,...desktop[1].extra].some(r=>x>=r.left&&x<r.right&&y>=r.top&&y<r.bottom))continue;
   const i=(y*a.width+x)*4;let delta=0;for(let c=0;c<4;c++)delta=Math.max(delta,Math.abs(a.data[i+c]-b.data[i+c]));
-  if(delta)changed++;maxDelta=Math.max(maxDelta,delta);
+  if(delta){changed++;bb.l=Math.min(bb.l,x);bb.r=Math.max(bb.r,x);bb.t=Math.min(bb.t,y);bb.b=Math.max(bb.b,y);}maxDelta=Math.max(maxDelta,delta);
  }
- assert.ok(changed<=20&&maxDelta<=1,`Desktop fora do Plano: ${changed} pixels, delta ${maxDelta}`);
+ assert.ok(changed<=20&&maxDelta<=1,`Desktop fora do Plano: ${changed} pixels, delta ${maxDelta}; região ${JSON.stringify(bb)} (px ×2)`);
  report.desktopProtected={width:1280,height:1024,scale:2,differingPixels:changed,maxDelta};
  assert.deepEqual(errors,[]);
  assert.equal(createHash('sha256').update(await readFile(root+'index.html')).digest('hex'),report.candidateSha256,'Candidata mudou durante o teste');

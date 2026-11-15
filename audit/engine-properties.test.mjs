@@ -96,3 +96,22 @@ test('recorte: cada trecho tem o meio dentro do lote e a soma não passa do comp
     for (const tr of t.tracks) { const L = Math.hypot(tr.line[1][0] - tr.line[0][0], tr.line[1][1] - tr.line[0][1]); assert.ok((byTrack.get(tr.id) || 0) <= L + 1e-6); }
   }), settings);
 });
+
+// 2.5 · plano equilibrado: busca só dentro de cada tiro e com o pior vazio travado.
+// Em qualquer lote: mesmos pontos por trecho, p95 e pior vazio nunca maiores que os do plano cru.
+import { optimizeDistribution } from '../src/engine/optimize.mjs';
+import { sampleUnits } from '../src/engine/sampling.mjs';
+test('plano equilibrado: mesma equipe, p95 e pior vazio nunca piores', () => {
+  fc.assert(fc.property(arbField, arbParams, (f, p) => {
+    const a = plan(f, p); if (!a || !a.units.length || !a.samples.length) return true;
+    const q = { ...p, optimizer: { ...p.optimizer, mode: 'qualidade_espacial', allowCountMoves: false, keepWorstGap: true, maxIterations: 2, phaseSteps: 7 } };
+    const r = optimizeDistribution({ geom: f.geom, units: a.units, counts: a.counts, policy: p.edgePolicy, marginM: p.edgeMarginM, params: q });
+    for (const u of a.units) assert.equal(r.counts.get(u.id) || 0, a.counts.get(u.id) || 0, 'pontos por trecho iguais');
+    const s = sampleUnits(a.units, r.counts, p.edgePolicy, p.edgeMarginM, r.shifts);
+    assert.equal(s.length, a.samples.length);
+    const c0 = coverage(f.geom, a.samples, p.coverage), c1 = coverage(f.geom, s, p.coverage);
+    assert.ok(c1.p95 <= c0.p95 + 1e-6, `p95 piorou ${c0.p95} → ${c1.p95}`);
+    assert.ok(c1.max <= c0.max + 1e-3, `pior vazio piorou ${c0.max} → ${c1.max}`);
+    for (const q of s) assert.ok(pointInGeom(q.x, q.y, f.geom), 'ponto fora do lote');
+  }), { ...settings, numRuns: Math.min(RUNS, 150) });
+});

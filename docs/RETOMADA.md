@@ -2,23 +2,23 @@
 
 Gerado por scripts/checkpoint.mjs; registro não executa nem certifica testes.
 
-- Tarefa: 2.4.0: celular primeiro
+- Tarefa: 2.5.0: motor equilibrado
 - Responsável: Claude
 - Estado: pronto_para_revisao
 - Branch: claude/motor-evolucao
-- Commit de código observado: 89abe0cfc71ed277b024578300e5ab0229c86c23
-- Registro UTC: 2026-11-15T08:55:59.494Z
+- Commit de código observado: e27a4c09105bdfd9345ecb6931ac046263541b78
+- Registro UTC: 2026-11-15T10:08:14.242Z
 
 ## Próxima ação
 
-PR da 2.4.0; CI verde; merge; conferir Pages e hash = VERSAO.json; depois Unidade D
+PR da 2.5.0; CI verde; merge; Pages e hash = VERSAO.json
 
 ## Testes declarados pela sessão
 
-- passou: bateria local 2.4.0 (CI blocos-candidata + validacao + sessões + upgrade + android)
-- passou: browser.mjs e operational-plan-browser.mjs (guardas visuais com áreas aprovadas da 2.4)
-- passou: engine-swap-browser.mjs (motor numa cópia só)
-- passou: night-theme-browser.mjs
+- passou: bateria local 2.5.0 (CI blocos-candidata + validacao + sessões + upgrade + android + guardas visuais)
+- passou: balanced-plan-browser.mjs
+- passou: engine-swap-browser.mjs
+- passou: engine-properties.test.mjs (6 propriedades)
 
 ## Recuperação
 

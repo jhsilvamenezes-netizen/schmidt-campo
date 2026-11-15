@@ -36,7 +36,7 @@ try {
   await p.waitForFunction(() => document.documentElement.dataset.ready === '1');
   const keys = Object.keys(fields).sort();
   const page = await p.evaluate(ks => { const M = SCHMIDT.modulos; return { version: M.__m_engine_index.ENGINE_VERSION,
-    out: Object.fromEntries(ks.map(k => [k, JSON.stringify(M.__m_engine_scenario.buildScenario(SCHMIDT.app.fields[k], M.__m_engine_index.DEFAULT_PARAMS))])) }; }, keys);
+    out: Object.fromEntries(ks.map(k => [k, JSON.stringify(M.__m_engine_scenario.buildScenario(SCHMIDT.app.fields[k], M.__m_engine_index.DEFAULT_PARAMS, { balanced: false }))])) }; }, keys);
   report.versions.push(page.version);
   for (const k of keys) {
     const a = norm(JSON.parse(page.out[k])), b = norm(old.index.buildScenario(fields[k], old.index.DEFAULT_PARAMS));

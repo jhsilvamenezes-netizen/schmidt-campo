@@ -171,10 +171,15 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
   // 2.3: Auditoria › "Dados do lote" marcava "!" (problema) até para notas só informativas (B gerado pelo rumo,
   // área publicada × KML, KML já corrigido). Agora "!" só com alerta ou erro; só notas → "i"; nada → "✓".
   replace('[!T.length,`Dados do lote`,','[T.some(e=>e.level!==`info`)?!1:T.length?null:!0,`Dados do lote`,','auditoria-dados-nivel-real');
+  // 2.5: só o PLANO EM USO de lote individual é equilibrado (pontos deslizam no próprio tiro quando a cobertura melhora
+  // ≥ 2%). Recomendação, "Comparar antes de aplicar" e bloco ativo (referência comum) seguem o cálculo de antes.
+  replace('let c=e(n,r,X.imported?{importedLines:X.imported.lines,importedKind:Y(`importKind`).value}:{});',
+    'let c=e(n,r,{...(X.imported?{importedLines:X.imported.lines,importedKind:Y(`importKind`).value}:{}),balanced:!SCHMIDT.blocks?.controller?.active});','plano-em-uso-equilibrado');
   replace('new Blob([`(self.URL || self.webkitURL).revokeObjectURL(self.location.href);`,H]',
     'new Blob([`(self.URL || self.webkitURL).revokeObjectURL(self.location.href);`,document.getElementById(`schmidt-engine`)?.textContent||``,`;`,H]','worker-usa-o-mesmo-motor-da-pagina');
-  // 2.4: com a folha mais baixa o mapa do celular tem ~300 px; a escala longa (110 px) cobria o primeiro tiro.
-  replace('ne=F((d.H<300?56:110)/d.s)','ne=F((d.H<420?56:110)/d.s)','escala-curta-no-mapa-do-celular');
+  // 2.4/2.5: a escala longa (alvo 110 px, arredondada até ~220 px) cobria o primeiro tiro e o crédito do satélite;
+  // agora sempre curta (régua de 56 a 140 px).
+  replace('ne=F((d.H<300?56:110)/d.s)','ne=F(56/d.s)','escala-curta-no-mapa-do-celular');
   // 2.3: "limite 376 m" pedia interpretação; "além de 376 m" cabe no cartão e diz o que conta.
   replace('`Descoberto`,`${J(c.haBlind,+(c.haBlind<10))} ha`,l?`${c.pct} · Diagnóstico`:`limite ${J(c.limitM,0)} m`','`Descoberto`,`${J(c.haBlind,+(c.haBlind<10))} ha`,l?`${c.pct} · Diagnóstico`:`além de ${J(c.limitM,0)} m`','cartao-descoberto-legivel');
   if(includeBlocks){const blocks=await applySchmidtBlocks(candidate);candidate=blocks.html;changes.push(...blocks.changes);}

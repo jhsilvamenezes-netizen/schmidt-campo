@@ -5,7 +5,7 @@ export function installSchmidtLotMap({ document, events }) {
   const map = document.getElementById('map');
   if (!map || !events?.on) return false;
   const style = document.createElement('style');
-  style.textContent = '#map .m-gap.schmidt-hidden-label{display:none}';
+  style.textContent = '#map .m-gap.schmidt-hidden-label,#map .m-area-ha.schmidt-hidden-label{display:none}';
   document.head.append(style);
 
   // 2.0: a altura do mapa só é recalculada no evento "resize". Ao entrar ou sair do monitor depois de usar as
@@ -65,7 +65,31 @@ export function installSchmidtLotMap({ document, events }) {
     }
     return hidden;
   }
-  const refine = () => { map.dataset.entryMoved = String(placeEntryLabels()); map.dataset.gapHidden = String(hideCoveredDistances()); };
+  // 2.5: rótulo "19,8 ha" (camada Área de cada ponto) ficava sempre logo abaixo do ponto, por cima de outro ponto,
+  // de outro rótulo ou cortado na borda do mapa. Testa posições em volta do ponto (abaixo, acima, direita, esquerda)
+  // e fica com a primeira livre; se nenhuma couber inteira, o rótulo some (o valor segue no toque do ponto e no Diagnóstico).
+  const AREA_SPOTS = [[0, 0, 'middle'], [0, -46, 'middle'], [30, -21, 'start'], [-30, -21, 'end']];
+  function placeAreaLabels() {
+    const labels = [...map.querySelectorAll('.m-area-ha')];
+    if (!labels.length) return 0;
+    const bounds = map.getBoundingClientRect(), points = pointBoxes(), placed = [];
+    let hidden = 0;
+    for (const label of labels) {
+      label.classList.remove('schmidt-hidden-label');
+      const x0 = Number(label.dataset.sxX ?? label.getAttribute('x')), y0 = Number(label.dataset.sxY ?? label.getAttribute('y'));
+      label.dataset.sxX = String(x0); label.dataset.sxY = String(y0);
+      let ok = false;
+      for (const [dx, dy, anchor] of AREA_SPOTS) {
+        label.setAttribute('x', String(x0 + dx)); label.setAttribute('y', String(y0 + dy)); label.style.textAnchor = anchor;
+        const box = label.getBoundingClientRect();
+        const inside = box.left >= bounds.left + 2 && box.right <= bounds.right - 2 && box.top >= bounds.top + 2 && box.bottom <= bounds.bottom - 2;
+        if (inside && !points.some(q => overlaps(box, q)) && !placed.some(q => overlaps(box, q))) { placed.push(box); ok = true; break; }
+      }
+      if (!ok) { label.setAttribute('x', String(x0)); label.setAttribute('y', String(y0)); label.style.textAnchor = 'middle'; label.classList.add('schmidt-hidden-label'); hidden++; }
+    }
+    return hidden;
+  }
+  const refine = () => { map.dataset.entryMoved = String(placeEntryLabels()); map.dataset.gapHidden = String(hideCoveredDistances()); map.dataset.areaHidden = String(placeAreaLabels()); };
   events.on('mapa:desenhado', refine);
   refine();
   return true;

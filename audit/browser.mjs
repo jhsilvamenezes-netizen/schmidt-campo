@@ -133,7 +133,9 @@ try {
             // 15/11/2026 (2.4, aprovado pelo proprietário: "pode fazer", foco no celular): no celular mudaram a barra
             // Fazenda/Lote (sem rótulo visível), o mapa (sem a faixa "Simulação", escala curta) e a folha (mais baixa,
             // moldura enxuta, textos cortados). Fica protegido o cabeçalho (logotipo, Sol, Monitorar).
-            ...(w < 600 ? [box(document.querySelector('.mobile-context')), box(document.querySelector('.map-area')), box(document.getElementById('sheet'))] : [])].filter(Boolean);
+            ...(w < 600 ? [box(document.querySelector('.mobile-context')), box(document.querySelector('.map-area')), box(document.getElementById('sheet')),
+              // 2.5: subtítulo de 9 px da marca fora do celular (só a área da marca; Sol e Monitorar seguem protegidos)
+              box(document.querySelector('.brand-lockup'))] : [])].filter(Boolean);
         }, [state, width]));
         images.push(await page.screenshot({ path: fileURLToPath(new URL(`${width}-${state}-${label}.png`, results)), animations: 'disabled' }));
         await ctx.close();
@@ -175,7 +177,7 @@ try {
       // A camada de baixo mudou: borda arredondada e sombra do aviso (#status) recompõem 1–2/255 (no CI, mais pixels);
       // só a moldura (12 px para dentro, 10 px de sombra) entra; o texto do aviso segue comparado.
       gpsRegions.push(...await page.evaluate(() => {
-        const out = [document.getElementById('geo-status'), document.querySelector('#map .m-scale'), document.getElementById('map-direction-state')].map(e => e?.getBoundingClientRect())
+        const out = [document.getElementById('geo-status'), document.querySelector('#map .m-scale'), document.getElementById('map-direction-state'), document.querySelector('.brand-lockup'), document.getElementById('geo-tools-toggle')].map(e => e?.getBoundingClientRect())
           .filter(r => r && r.width).map(r => ({ left: Math.floor(r.left) - 2, right: Math.ceil(r.right) + 2, top: Math.floor(r.top) - 2, bottom: Math.ceil(r.bottom) + 2 }));
         const t = document.getElementById('status')?.getBoundingClientRect();
         if (t && t.width) { const L = Math.floor(t.left) - 10, R = Math.ceil(t.right) + 10, T = Math.floor(t.top) - 10, B = Math.ceil(t.bottom) + 10;

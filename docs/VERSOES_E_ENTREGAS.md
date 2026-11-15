@@ -201,3 +201,8 @@ Relatório: [ENTREGA_2_3.md](ENTREGA_2_3.md).
 
 Mapa ao planejar 19% → 26% da tela (lote 40% maior), menos texto em todas as telas, mapa sem redesenhos
 repetidos e motor numa cópia só (278 KB comprimido). Relatório: [ENTREGA_2_4.md](ENTREGA_2_4.md).
+
+## 2.5.0 — motor equilibrado
+
+Plano padrão equilibrado: 31 de 51 lotes com cobertura melhor (p95 −11% na mediana, até −32%), com a mesma equipe
+e sem aumentar o pior vazio. Rótulos de área sem sobreposição e escala curta. Relatório: [ENTREGA_2_5.md](ENTREGA_2_5.md).

@@ -82,7 +82,9 @@ export function installSchmidtAdjustCompare({ document, schmidt, events, measure
     const current = schmidtAlternativeSummary(sc, field.geom, measurements);
     const rows = alts.map(alt => {
       let s;
-      try { s = alt.current ? current : schmidtAlternativeSummary(engine().buildScenario(field, { ...sc.params, ...alt.override }), field.geom, measurements); }
+      // 2.5: a prévia é calculada do mesmo jeito que o plano em uso (equilibrado fora do modo bloco), para "Usar" dar
+      // exatamente o que a linha mostra.
+      try { s = alt.current ? current : schmidtAlternativeSummary(engine().buildScenario(field, { ...sc.params, ...alt.override }, { balanced: sc.optimization?.mode === 'equilibrado' }), field.geom, measurements); }
       catch { return null; } // combinação que o motor recusa não vira opção
       return { alt, s };
     }).filter(Boolean);
