@@ -1,11 +1,11 @@
 {
-  "entrega": "2.0.1",
+  "entrega": "2.1.0",
   "nome": "SCHMIDT Campo",
-  "data": "2026-11-14",
-  "versaoDoApp": "2.0.1",
+  "data": "2026-11-15",
+  "versaoDoApp": "2.1.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "93ccce3825a4d8071256317f11efe1efa20e7ee7d71b07af0b10c14eb13070d0",
-  "workerSha256": "2ba18745be85902ba054f34f9674589f43763624d9cac38a483ba8f4ff9bfe4e",
+  "htmlSha256": "4fc0c117637c0d14e8a4166345dd7551d62de6eb6bfef5d0f7cc9f7e8c91b3a0",
+  "workerSha256": "e6cc23b84bc34c443cd8f4e19499054c3597d4838b55bf73b3c3e856af4745d1",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -32,7 +32,8 @@
     "2.0: no monitor, \"Ligar GPS\" é a ação principal; \"Ponto coletado\" continua disponível sem destaque",
     "2.0.1: posição GPS vencida não exibe seta, distância dinâmica nem posição atual no mapa; retoma ao receber posição válida",
     "2.0.1: histerese temporária estabiliza o alvo sem marcar pontos; avanço e retorno permanecem possíveis",
-    "2.0.1: chegada prioriza distância até próximo ponto ou borda; funções e registros legados preservados"
+    "2.0.1: chegada prioriza distância até próximo ponto ou borda; funções e registros legados preservados",
+    "2.1: bloco com \"Comparar antes de usar\": melhor opção de cada espaçamento comum (conjunto e por lote), escolha troca o rascunho e Usar bloco aplica tudo de uma vez; opções que pioram a cobertura ficam recolhidas e bloqueadas"
   ],
   "somenteEstudoSemIntegracao": [
     "recuo mínimo obrigatório por divisa",
@@ -46,5 +47,5 @@
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
   "runtimeBlocks": true,
-  "statusEntrega": "candidata interna de reescrita espacial; 2.0.1 publicada permanece como referência"
+  "statusEntrega": "web 2.1.0; publicação autorizada pelo proprietário em 15/11/2026"
 }

@@ -1,4 +1,5 @@
 import { createSchmidtBlockMap } from './block-map.mjs';
+import { schmidtBlockCompareElement } from './block-compare.mjs';
 import { schmidtReferenceBlocks, prepareSchmidtBlock, createSchmidtBlockController, schmidtCommonBlockFields, schmidtBlockScenarios, schmidtBlockBorderDistance, selectSchmidtSavedBlock, schmidtBlockInputSignature, createSchmidtBlockScenarioReader } from '../application/block-planning.mjs';
 
 export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics, store, events }) {
@@ -59,7 +60,7 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
     @media(max-width:599px){body.mode-monitor #block-active{display:none}} /* no guia, as abas já mostram o bloco */
     #block-active[hidden],#block-planning [hidden]{display:none!important}
   `; document.head.append(style);
-  let draft = null, draftInputSignature = null, abort = null, busy = false;
+  let draft = null, draftInputSignature = null, abort = null, busy = false, draftAlternatives = null, draftBase = null;
   const inputSignature=members=>schmidtBlockInputSignature({fields:app.fields,members,parametersFor:schmidt.parametrosDo,editsFor:f=>app.saved.editsByField?.[`${f.farm}|${f.code}`]});
   const disabledBefore = new Map();
   const stopGPS = () => {
@@ -126,6 +127,13 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
     });
     const note = make('p', 'Cada lote mantém a quantidade mínima de pontos. Confira as passagens entre os lotes.');
     details.append(summary, distances, border, members, note);
+    // 2.1: alternativas já calculadas pela preparação, só no rascunho (antes de usar o bloco).
+    if (!live && draftAlternatives && record === draft) details.append(schmidtBlockCompareElement({ document, alternatives: draftAlternatives,
+      currentSpacingM: record.common.spacingM, open: !!draft.bcOpen, onChoose: alt => {
+        draft = { ...(alt.record ?? draftBase), id: draftBase.id, catalogId: draftBase.catalogId, bcOpen: true };
+        draw(draft); setState();
+        status.textContent = `Opção de ${alt.summary.spacingM.toLocaleString('pt-BR',{maximumFractionDigits:2})} m entre tiros escolhida. Toque em Usar bloco para começar.`;
+      } }));
     if (record.assessment.coverageTradeoff) details.append(make('p', `Esta grade altera a cobertura: pior relação amostrada ${(record.assessment.worstRatio * 100 - 100).toFixed(1)}% acima do individual. Confira antes de usar.`));
     blockMap.update(record,app.fields,scenarios,live,app.field?`${app.field.farm}|${app.field.code}`:null);
   };
@@ -161,7 +169,7 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
   groupSelect.onchange = () => { blockMap.clear(); draft = null; details.replaceChildren(); status.textContent = ''; setState(); previewGroup(); };
   prepare.onclick = async () => {
     schmidt.flushBlockParameters();
-    draft=null;draftInputSignature=null;
+    draft=null;draftInputSignature=null;draftAlternatives=null;draftBase=null;
     if(document.querySelector('#panel-plano [aria-invalid="true"]')){setState();fail(Error('Revise os parâmetros destacados antes de preparar o bloco.'));return;}
     busy = true; prepare.disabled = true; cancel.hidden = false; apply.hidden = true;
     abort = new AbortController();
@@ -176,7 +184,10 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
         signal: abort.signal, yieldTask: () => new Promise(resolve => setTimeout(resolve, 0)) });
       if (abort.signal.aborted) return;
       if(!existing&&signature!==inputSignature(group.members))throw Error('Os parâmetros mudaram. Prepare o bloco novamente.');
-      draft = {...candidate,id:selection.id,catalogId:selection.catalogId};
+      const { alternatives, ...plain } = candidate;
+      draftAlternatives = alternatives?.length > 1 ? alternatives : null;
+      draft = {...plain,id:selection.id,catalogId:selection.catalogId};
+      draftBase = draft;
       draftInputSignature=existing?null:signature;
       draw(draft); status.textContent = existing ? 'Bloco salvo. Continue de onde parou.' : 'Bloco pronto. Toque em Usar bloco para começar. As coletas individuais ficam guardadas.';
     } catch (e) { draft = null; fail(e); }
@@ -190,7 +201,7 @@ export function installSchmidtBlockPlanning({ document, schmidt, engine, metrics
         draft=null;blockMap.clear();details.replaceChildren();setState();throw Error('Os parâmetros mudaram. Prepare o bloco novamente.');
       }
       if(schmidt.storageAccess&&!schmidt.storageAccess.canWrite()){blockMap.showAll();throw Error(schmidt.storageAccess.message());}
-      controller.enter(draft);draft=null;draftInputSignature=null;setState();blockMap.showAll();
+      const { bcOpen, ...chosen } = draft; controller.enter(chosen);draft=null;draftAlternatives=null;draftBase=null;draftInputSignature=null;setState();blockMap.showAll();
     }catch(e){fail(e);}
   };
   badge.onclick = () => { document.querySelector('[data-v08-view="plano"]')?.click(); schmidt.fluxo.go('plano'); panel.scrollIntoView({ block: 'nearest' }); };

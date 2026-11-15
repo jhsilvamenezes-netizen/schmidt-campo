@@ -163,6 +163,13 @@ O proprietário respondeu: **"Pode sim, aí agora unifique e faça as últimas m
 entregar o link da 2.0"**. Escopo: publicar a 1.37.0 (PR #16) e, com CI verde, a 2.0.0 web
 (planejamento e direcionamento pelo link). Não inclui APK, coleta, marcação nem controle de execução.
 
+### Autorização de 15/11/2026 — #21, modo bloco e reestruturação do motor
+
+O proprietário respondeu: **"Pode juntar o #21 e seguir com o modo bloco e tudo que precisar,
+lembrando que já chegou a hora de reestruturar o motor que está desatualizado ou refazer mesmo"**.
+Escopo: integrar #21; entregar comparação de bloco (F4/U4) e publicar com CI verde; reescrever o
+motor por etapas com comparação diferencial contra o atual e GEOS/PROJ antes de trocar. Sem APK.
+
 ## Fluxo
 - Trabalhar somente em branch de desenvolvimento e PR.
 - Criar mudanças pequenas com testes, relatório de impacto e meios de reproduzir.
