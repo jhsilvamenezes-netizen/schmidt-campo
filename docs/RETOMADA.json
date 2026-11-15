@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "2.2.0 — motor 2 no app",
+  "task": "2.3.0: motor conferido, revisão de tela, tema Noite e menos texto",
   "owner": "Claude",
   "status": "pronto_para_revisao",
-  "nextAction": "CI do PR e publicação; depois reescrever paramCatalog/dataQuality/recomendação e remover o motor antigo do artefato",
+  "nextAction": "PR da 2.3.0; CI verde; merge; conferir Pages e hash do index.html = VERSAO.json",
   "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -11,9 +11,29 @@
   "scope": "Direcionamento exclusivo no link móvel, sem coleta/marcação pela equipe. APK adiado.",
   "tests": [
     {
-      "command": "bateria completa 2.2.0 (CI + sessões + upgrade 2.1.0→2.2.0)",
+      "command": "bateria local 2.3.0 (CI blocos-candidata + corrections-browser + operational-plan-browser + browser.mjs)",
       "result": "passou",
-      "evidence": "27/27; engine-swap-browser: página 51/51, worker otimização e recomendação 9/9 idênticas"
+      "evidence": "29/29; browser.mjs com ruído local de 1/255 já conhecido (passa no CI)"
+    },
+    {
+      "command": "npm --prefix audit run test:types (TypeScript 7.0.2 estrito em src/engine)",
+      "result": "passou",
+      "evidence": "0 erros"
+    },
+    {
+      "command": "node --test engine-properties.test.mjs (fast-check 4.10.2, 5 × 300)",
+      "result": "passou",
+      "evidence": "300/300 planos gerados"
+    },
+    {
+      "command": "night-theme-browser.mjs (axe 4.14.0)",
+      "result": "passou",
+      "evidence": "contraste 0 falhas em Normal, Sol e Noite, 390 e 1440"
+    },
+    {
+      "command": "coverage-exact.py (Shapely/GEOS)",
+      "result": "passou",
+      "evidence": "0 violações do limite superior em 153 planos"
     }
   ],
   "blockers": [
@@ -32,16 +52,14 @@
     "Fonte completa ainda não recuperada; reescrita não deve renomear todo o motor nem declarar substituição completa prematuramente.",
     "2.1.0: comparação de bloco usa as opções já calculadas pela preparação; lista não gravada; Usar bloco atômico.",
     "15/11: 2.1.0 publicada (PR #22, main cd25d4b). Motor 2 em src/engine, ainda não usado pelo app; troca exige paramCatalog+dataQuality reescritos e substituição na página e no worker.",
-    "2.2.0: motor 2 na página e no worker (build troca 11 módulos em cada); oráculo dos testes = index.html de cd25d4b."
+    "2.2.0: motor 2 na página e no worker (build troca 11 módulos em cada); oráculo dos testes = index.html de cd25d4b.",
+    "15/11: revisão de tela (10 itens) e corte de texto autorizados pelo proprietário; guardas visuais aceitam só regiões declaradas da 2.3"
   ],
   "snapshot": {
-    "at": "2026-11-15T05:30:44.969Z",
-    "branch": "claude/motor-2",
-    "codeCommit": "2bb36e83da111b56d6ac8dacd378d41e9df85bac",
-    "changedTrackedFiles": [
-      "audit/legacy-engine.mjs",
-      "docs/MOTOR_2_NO_APP_2_2.md"
-    ],
+    "at": "2026-11-15T07:32:32.701Z",
+    "branch": "claude/motor-evolucao",
+    "codeCommit": "3608fa4fc0115ce55a3212aaba11b0d9538de1e3",
+    "changedTrackedFiles": [],
     "untrackedCount": 0
   },
   "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",
