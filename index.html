@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/><meta name="schmidt-web" content="1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#17594a"><link rel="apple-touch-icon" href="icone-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="SCHMIDT"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <!-- 1.8: só código e imagens embutidos; nenhuma conexão com a internet (app offline) -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-iZwh6f8/cLh+5C69sNOJpOylDwT3qbhl1w4PgFnZ+LY=' 'sha256-nlOInwPA+qtMgTeB7trdkUAHuaLxZUfQy56laxM5i8s=' 'sha256-NVqkuWANoDOmSJXJG0zwfexIHzTpz44QZtuPs+aUCwc='; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob: 'self'; connect-src 'self' blob: data: https://services.arcgisonline.com; font-src data:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-iZwh6f8/cLh+5C69sNOJpOylDwT3qbhl1w4PgFnZ+LY=' 'sha256-Gh23wh7bZOGrv9XlkyykQkuUe8vsM97C6Vq1QqRMgnI=' 'sha256-NVqkuWANoDOmSJXJG0zwfexIHzTpz44QZtuPs+aUCwc='; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob: 'self'; connect-src 'self' blob: data: https://services.arcgisonline.com; font-src data:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#123b33" name="theme-color"/>
 <title>SCHMIDT Campo · Planejamento de amostragem</title><meta property="og:type" content="website"><meta property="og:title" content="SCHMIDT Campo"><meta property="og:description" content="Planejamento de tiros e pontos de amostragem por lote, no celular e offline."><meta property="og:image" content="https://jhsilvamenezes-netizen.github.io/schmidt-campo/icone-512.png"><meta property="og:url" content="https://jhsilvamenezes-netizen.github.io/schmidt-campo/">
@@ -3465,7 +3465,9 @@ function installSchmidtAdjustCompare({ document, schmidt, events, measurements }
     const current = schmidtAlternativeSummary(sc, field.geom, measurements);
     const rows = alts.map(alt => {
       let s;
-      try { s = alt.current ? current : schmidtAlternativeSummary(engine().buildScenario(field, { ...sc.params, ...alt.override }), field.geom, measurements); }
+      // 2.5: a prévia é calculada do mesmo jeito que o plano em uso (equilibrado fora do modo bloco), para "Usar" dar
+      // exatamente o que a linha mostra.
+      try { s = alt.current ? current : schmidtAlternativeSummary(engine().buildScenario(field, { ...sc.params, ...alt.override }, { balanced: sc.optimization?.mode === 'equilibrado' }), field.geom, measurements); }
       catch { return null; } // combinação que o motor recusa não vira opção
       return { alt, s };
     }).filter(Boolean);
