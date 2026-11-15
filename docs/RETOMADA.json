@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "R2.4 + Unidade D: motor 2 completo, sem motor 0.5.1 no arquivo",
+  "task": "R1 contrato + R3 prévias da 3.0",
   "owner": "Claude",
-  "status": "pronto_para_revisao",
-  "nextAction": "R1 contrato; R3 prévias de tela para aprovação do proprietário",
+  "status": "bloqueado",
+  "nextAction": "Aguardando aprovação das prévias (docs/previas-3-0) pelo proprietário; depois R4 tela nova",
   "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -54,13 +54,11 @@
     "15/11: APK só quando o proprietário pedir (não propor nem citar como próximo passo); foco em correções e melhorias do link"
   ],
   "snapshot": {
-    "at": "2026-11-15T16:17:54.968Z",
+    "at": "2026-11-15T16:50:00.706Z",
     "branch": "claude/motor-evolucao",
-    "codeCommit": "ec270b405725f9415a3d4a1aa12c4d66d1de8c33",
-    "changedTrackedFiles": [
-      "audit/parameter-constraints.test.mjs"
-    ],
-    "untrackedCount": 0
+    "codeCommit": "bb6b0659c6ebc1a5b0b440c00d80bfbc1a312a43",
+    "changedTrackedFiles": [],
+    "untrackedCount": 4
   },
   "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",
   "developmentBranch": "codex/reescrita-motor-etapa-1"

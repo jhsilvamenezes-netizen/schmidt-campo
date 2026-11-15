@@ -2,16 +2,16 @@
 
 Gerado por scripts/checkpoint.mjs; registro não executa nem certifica testes.
 
-- Tarefa: R2.4 + Unidade D: motor 2 completo, sem motor 0.5.1 no arquivo
+- Tarefa: R1 contrato + R3 prévias da 3.0
 - Responsável: Claude
-- Estado: pronto_para_revisao
+- Estado: bloqueado
 - Branch: claude/motor-evolucao
-- Commit de código observado: ec270b405725f9415a3d4a1aa12c4d66d1de8c33
-- Registro UTC: 2026-11-15T16:17:54.968Z
+- Commit de código observado: bb6b0659c6ebc1a5b0b440c00d80bfbc1a312a43
+- Registro UTC: 2026-11-15T16:50:00.706Z
 
 ## Próxima ação
 
-R1 contrato; R3 prévias de tela para aprovação do proprietário
+Aguardando aprovação das prévias (docs/previas-3-0) pelo proprietário; depois R4 tela nova
 
 ## Testes declarados pela sessão
 
@@ -22,6 +22,6 @@ R1 contrato; R3 prévias de tela para aprovação do proprietário
 
 ## Recuperação
 
-Leia RETOMADA.json para detalhes, bloqueios e decisões. O commit acima antecede o commit deste checkpoint. Arquivos alterados listados não foram publicados por este comando. Arquivos não rastreados: 0.
+Leia RETOMADA.json para detalhes, bloqueios e decisões. O commit acima antecede o commit deste checkpoint. Arquivos alterados listados não foram publicados por este comando. Arquivos não rastreados: 4.
 
 Somente commit enviado ao GitHub fica disponível para outra sessão. Conferir branch/PR e diff, não apenas este registro. Não existe troca automática de IA.
