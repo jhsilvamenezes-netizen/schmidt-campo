@@ -5,9 +5,12 @@ import assert from 'node:assert/strict';
 import { loadLegacyEngine, loadFields } from './legacy-engine.mjs';
 import { buildScenario, trackRows } from '../src/engine/scenario.mjs';
 import { DEFAULT_PARAMS, resolveParams, paramsSignature } from '../src/engine/params.mjs';
+import { buildWarnings } from '../src/engine/diagnostics.mjs';
+import { optimizeDistribution } from '../src/engine/optimize.mjs';
 
 const old = await loadLegacyEngine(), fields = await loadFields(), keys = Object.keys(fields).sort();
-const legacy = { assertParams: old.paramCatalog.assertParams, buildWarnings: old.diagnostics.buildWarnings, optimizeDistribution: old.optimize.optimizeDistribution };
+// Avisos e otimização do motor 2; validação de parâmetros e qualidade dos dados ainda do motor antigo.
+const legacy = { assertParams: old.paramCatalog.assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, old.dataQuality.assessField), optimizeDistribution };
 // Hora de geração e tempo medido da otimização variam a cada execução; o resto tem de ser idêntico.
 const strip = sc => { const { generatedAt, ...rest } = sc; if (rest.optimization) rest.optimization = { ...rest.optimization, elapsedMs: 0 }; return rest; };
 
@@ -21,7 +24,9 @@ test('parâmetros: padrões, resolução e assinatura idênticos', () => {
 test('cenário inteiro = motor antigo: 51 lotes × variações, com e sem otimização, e erros', () => {
   const P0 = old.index.DEFAULT_PARAMS;
   const variants = [{}, { totalPoints: 40 }, { pointMode: 'por_tiro', pointsPerTrack: 3 }, { pointMode: 'espacamento', targetSpacingM: 250, maxAcceptableGapM: 300 },
-    { edgePolicy: 'margens_iguais', maxAcceptableGapM: 200 }, { trackSpacingM: 437.77 }, { trackMode: 'quantidade', trackCount: 3 }, { minPieceM: 500 }];
+    { edgePolicy: 'margens_iguais', maxAcceptableGapM: 200 }, { trackSpacingM: 437.77 }, { trackMode: 'quantidade', trackCount: 3 }, { minPieceM: 500 },
+    { bearingDeg: 40 }, { selectionMode: 'quantidade', selectionCount: 2 }, { totalPoints: 1, minPieceM: 0 }, { pointMode: 'por_tiro', pointsPerTrack: 1, minPieceM: 0 }];
+  const codes = new Set();
   let n = 0;
   for (const k of keys) for (const v of variants) {
     const params = { ...P0, ...v };
@@ -31,6 +36,7 @@ test('cenário inteiro = motor antigo: 51 lotes × variações, com e sem otimiz
     if (ea || eb) { assert.equal(eb?.message, ea?.message, `${k} erro`); assert.equal(eb?.code, ea?.code); continue; }
     assert.deepStrictEqual(strip(b), strip(a), `${k} ${JSON.stringify(v)}`);
     assert.deepStrictEqual(trackRows(b), a.trackRows);
+    for (const w of b.warnings) codes.add(w.code);
     n++;
   }
   // Otimização (mais lenta): uma amostra de lotes.
@@ -47,5 +53,6 @@ test('cenário inteiro = motor antigo: 51 lotes × variações, com e sem otimiz
     try { buildScenario(field, params, {}, legacy); } catch (e) { eb = e; }
     assert.ok(ea && eb, 'os dois recusam'); assert.equal(eb.message, ea.message);
   }
-  console.log(`# cenários completos idênticos: ${n}`);
+  console.log(`# cenários completos idênticos: ${n}; tipos de aviso exercitados: ${[...codes].sort().join(', ')}`);
+  for (const c of ['abaixo_minimo', 'conflito_tiros_pontos', 'intervalo_acima_alvo', 'trechos_curtos', 'rumo_alterado', 'malha_teorica', 'nao_e_rastro', 'tiros_inativos']) assert.ok(codes.has(c), `aviso ${c} não exercitado`);
 });

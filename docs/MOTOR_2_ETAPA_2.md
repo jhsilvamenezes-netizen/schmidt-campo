@@ -92,8 +92,17 @@ de parâmetros, os avisos (diagnostics) e a otimização. Depois vem a troca no 
 - `audit/engine-optimize-diff.test.mjs`: **265 otimizações idênticas** (175 aceitas), em três
   modos e variações, direto e dentro do cenário completo.
 
+## Etapa 7: avisos
+
+- `src/engine/diagnostics.mjs`: avisos do plano na mesma ordem e com os mesmos textos.
+  A checagem de qualidade dos dados do lote (`assessField`) ainda é injetada do motor antigo.
+- O teste do cenário completo passa a usar avisos e otimização do motor 2: **630 cenários
+  idênticos**, com **17 tipos de aviso** exercitados (inclui conflito, abaixo do mínimo, rumo
+  alterado, trechos curtos, tiros inativos e intervalo acima do alvo).
+
 ### Próximo
 
-1. Reescrever `paramCatalog` (validação e textos) e `diagnostics` (avisos), com o mesmo teste.
+1. Reescrever `paramCatalog` (validação e textos) e `dataQuality` (qualidade dos dados), com o
+   mesmo teste.
 2. Trocar o motor no app: página **e** worker (que tem cópia própria do motor), com a conferência
    GEOS/PROJ, os 51 lotes e os 40 grupos no navegador.
