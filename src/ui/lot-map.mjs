@@ -18,7 +18,14 @@ export function installSchmidtLotMap({ document, events }) {
       const now = body.classList.contains('mode-monitor');
       if (now === monitor) return;
       monitor = now;
-      view.requestAnimationFrame(() => view.dispatchEvent(new view.Event('resize')));
+      view.requestAnimationFrame(() => {
+        // 2.3: ao SAIR do monitor no celular, o app mantinha a aba (ex.: Planejar) marcada mas não reabria o
+        // painel: o mapa ficava com a altura da vista Mapa e o lote atrás do painel (faixa do topo vazia, já na 1.37).
+        // Reaplicar a aba ativa é o mesmo que a pessoa tocar nela de novo.
+        const active = !now && view.innerWidth < 1000 && document.querySelector('[data-v08-view][aria-pressed="true"]');
+        if (active && active.dataset.v08View !== 'mapa') active.click();
+        view.dispatchEvent(new view.Event('resize'));
+      });
     }).observe(body, { attributes: true, attributeFilter: ['class'] });
   }
 

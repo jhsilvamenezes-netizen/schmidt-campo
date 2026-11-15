@@ -169,7 +169,16 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
   const scripts=[...candidate.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].filter(m=>!m[1].includes('application/json'));
   const hashes=scripts.map(m=>`'sha256-${createHash('sha256').update(m[2]).digest('base64')}'`).join(' ');
   candidate=candidate.replace(/script-src [^;]+;/,`script-src ${hashes};`);
-  const presentation = value => value.replace("connect-src 'self' blob: data: https://services.arcgisonline.com;", "connect-src 'self' blob: data:;").replace(/<script type="module" crossorigin>[\s\S]*?<\/script>/,'<script type="module" crossorigin></script>').replace(/script-src [^;]+;/,'script-src HASHES;');
+  // 2.3: cabeçalho público declarado (título sem versão antiga e prévia de compartilhamento para o WhatsApp).
+  // Única mudança permitida fora do módulo; a conferência de apresentação abaixo a aplica também ao original.
+  const HEAD_FROM='<title>SCHMIDT · Planejamento de amostragem v1.31.0</title>';
+  const HEAD_TO='<title>SCHMIDT Campo · Planejamento de amostragem</title>'
+    +'<meta property="og:type" content="website"><meta property="og:title" content="SCHMIDT Campo">'
+    +'<meta property="og:description" content="Planejamento de tiros e pontos de amostragem por lote, no celular e offline.">'
+    +'<meta property="og:image" content="https://jhsilvamenezes-netizen.github.io/schmidt-campo/icone-512.png">'
+    +'<meta property="og:url" content="https://jhsilvamenezes-netizen.github.io/schmidt-campo/">';
+  replace(HEAD_FROM,HEAD_TO,'cabecalho-publico-titulo-e-previa');
+  const presentation = value => value.replace(HEAD_FROM,HEAD_TO).replace("connect-src 'self' blob: data: https://services.arcgisonline.com;", "connect-src 'self' blob: data:;").replace(/<script type="module" crossorigin>[\s\S]*?<\/script>/,'<script type="module" crossorigin></script>').replace(/script-src [^;]+;/,'script-src HASHES;');
   if(presentation(candidate)!==presentation(original))throw new Error('Apresentação/dados fora do módulo foram alterados');
   if(!candidate.includes(`function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`))throw new Error('Tratamento visual original não preservado');
   const workerTemplate=await readFile(root+'src/platform/service-worker.js','utf8');
