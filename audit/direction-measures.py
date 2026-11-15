@@ -237,7 +237,11 @@ report['projecao'] = {
     'leitura': 'Distâncias do app são de grade UTM. No terreno diferem pelo fator de escala; ver efeitoEm438m.',
 }
 report['status'] = 'ok' if not any(v['failures'] for v in c.values()) else 'divergencias'
-out = ROOT / 'audit/direction-measures-evidence.json'
+# CI: DIRECTION_EVIDENCE_OUT aponta para audit/results (ignorado), pois o navegador do CI difere do local;
+# a evidência versionada é a registrada na entrega. A saída com erro (exit 1) vale nos dois casos.
+import os
+out = Path(os.environ['DIRECTION_EVIDENCE_OUT']).resolve() if os.environ.get('DIRECTION_EVIDENCE_OUT') else ROOT / 'audit/direction-measures-evidence.json'
+out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(json.dumps(report, ensure_ascii=False, indent=1) + '\n')
 print(json.dumps({k: v for k, v in report.items() if k in ('status', 'checks', 'failures', 'projecao')}, ensure_ascii=False, indent=1))
 sys.exit(0 if report['status'] == 'ok' else 1)
