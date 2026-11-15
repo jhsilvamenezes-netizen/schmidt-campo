@@ -126,7 +126,7 @@ try {
         regions23.push(...await page.evaluate(([st, w]) => {
           const box = e => { if (!e) return null; const r = e.getBoundingClientRect(); return r.width ? { left: Math.floor(r.left), right: Math.ceil(r.right), top: Math.floor(r.top), bottom: Math.ceil(r.bottom) } : null; };
           // O selo divide a linha com o resumo (#field-readout): mudar o texto do selo muda a largura do resumo.
-          return [box(document.getElementById('v08-quality')), box(document.getElementById('field-readout')), ...(st === 'tiros' || st === 'auditoria' ? [box(document.getElementById('sheet-body'))] : []),
+          return [box(document.getElementById('v08-quality')), box(document.getElementById('field-readout')), ...(st === 'tiros' || st === 'auditoria' ? [box(document.getElementById('sheet'))] : []),
             ...(w >= 600 ? [box(document.querySelector('.map-area'))] : [])].filter(Boolean);
         }, [state, width]));
         images.push(await page.screenshot({ path: fileURLToPath(new URL(`${width}-${state}-${label}.png`, results)), animations: 'disabled' }));
