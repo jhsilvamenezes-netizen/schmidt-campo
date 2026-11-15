@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/><meta name="schmidt-web" content="1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#17594a"><link rel="apple-touch-icon" href="icone-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="SCHMIDT"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <!-- 1.8: só código e imagens embutidos; nenhuma conexão com a internet (app offline) -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-hBYnhI3c/YbSUcrv/+Qgt+9m5ayQC1uiBSsU0E94ccY=' 'sha256-NVqkuWANoDOmSJXJG0zwfexIHzTpz44QZtuPs+aUCwc='; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob: 'self'; connect-src 'self' blob: data: https://services.arcgisonline.com; font-src data:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-fpq+usYVaIAAQSsHPxMI2OQltDoS7hA5VfEPnZUn+p8=' 'sha256-NVqkuWANoDOmSJXJG0zwfexIHzTpz44QZtuPs+aUCwc='; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob: 'self'; connect-src 'self' blob: data: https://services.arcgisonline.com; font-src data:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#123b33" name="theme-color"/>
 <title>SCHMIDT · Planejamento de amostragem v1.31.0</title>
@@ -76,13 +76,7 @@ function schmidtReferenceBlocks(fields) {
 }
 
 function schmidtBlockBorderDistance(geom, samples) {
-  let minimum=Infinity;
-  for (const p of samples) for (const poly of geom) for (const ring of poly) for (let i=0;i<ring.length;i++) {
-    const a=ring[i],b=ring[(i+1)%ring.length],dx=b[0]-a[0],dy=b[1]-a[1],len=dx*dx+dy*dy;
-    const t=len?Math.max(0,Math.min(1,((p.x-a[0])*dx+(p.y-a[1])*dy)/len)):0;
-    minimum=Math.min(minimum,Math.hypot(p.x-a[0]-t*dx,p.y-a[1]-t*dy));
-  }
-  return Number.isFinite(minimum)?minimum:null;
+  return schmidtBoundaryMinimum(geom, samples);
 }
 
 function schmidtCommonBlockFields(fields, members, common) {
@@ -356,20 +350,8 @@ function createSchmidtBlockController({ app, save, refresh, stopGPS = () => {} }
 
 // Menor segmento geométrico até uma borda, incluindo furos do polígono.
 function schmidtMapClosestBorder(point, geom) {
-  let best = { metres: Infinity, xy: null };
-  for (const poly of geom) {
-    for (const ring of poly) {
-      for (let i = 0; i < ring.length; i++) {
-        const a = ring[i], b = ring[(i + 1) % ring.length];
-        const dx = b[0] - a[0], dy = b[1] - a[1], len = dx * dx + dy * dy;
-        const t = len ? Math.max(0, Math.min(1, ((point[0] - a[0]) * dx + (point[1] - a[1]) * dy) / len)) : 0;
-        const xy = [a[0] + t * dx, a[1] + t * dy];
-        const metres = Math.hypot(point[0] - xy[0], point[1] - xy[1]);
-        if (metres < best.metres) best = { metres, xy };
-      }
-    }
-  }
-  return best;
+  const result = createSchmidtBoundaryIndex(geom, {indexed:false}).nearest(point);
+  return result ? {metres:result.metres,xy:result.xy} : {metres:Infinity,xy:null};
 }
 
 // 1.32: aparência do mapa do bloco. Só tokens do aplicativo (o tema Sol vale aqui), letra de 12 px ou mais
@@ -968,6 +950,74 @@ function installSchmidtBlockPlanning({ document, schmidt, engine, metrics, store
   schmidt.blocks = { groups, controller, prepare: group => prepareSchmidtBlock({ group, fields:app.fields, parametersFor:schmidt.parametrosDo,
     editsFor:f=>app.saved.editsByField?.[`${f.farm}|${f.code}`], engine, metrics,
     yieldTask: () => new Promise(resolve=>setTimeout(resolve,0)) }) };
+}
+
+// src/engine/boundary.mjs
+// Motor espacial novo: coordenadas cartesianas em metros; nenhuma dependência DOM/estado.
+// Snapshot privado da geometria: editar a entrada depois não invalida consultas em andamento.
+// BVH exata para consultas em lote. Empates preservam a primeira aresta da entrada.
+function createSchmidtBoundaryIndex(geometry, { indexed = true } = {}) {
+  const segments = [];
+  for (const [polygon, rings] of geometry.entries()) for (const [ring, vertices] of rings.entries()) {
+    for (let edge = 0; edge < vertices.length; edge++) {
+      const a = vertices[edge], b = vertices[(edge + 1) % vertices.length];
+      if (![a[0], a[1], b[0], b[1]].every(Number.isFinite)) throw new TypeError('Coordenada de borda inválida');
+      segments.push({ ax:a[0], ay:a[1], bx:b[0], by:b[1], polygon, ring, edge, order:segments.length });
+    }
+  }
+  const bounds = items => {
+    let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+    for(const s of items){x0=Math.min(x0,s.ax,s.bx);y0=Math.min(y0,s.ay,s.by);x1=Math.max(x1,s.ax,s.bx);y1=Math.max(y1,s.ay,s.by)}
+    return {x0,y0,x1,y1};
+  };
+  const build = items => {
+    const node=bounds(items);
+    if(items.length<=8){node.items=items;return node}
+    const x=node.x1-node.x0>=node.y1-node.y0;
+    items.sort((a,b)=>(x?(a.ax+a.bx)-(b.ax+b.bx):(a.ay+a.by)-(b.ay+b.by))||a.order-b.order);
+    const half=Math.floor(items.length/2);
+    node.left=build(items.slice(0,half));node.right=build(items.slice(half));return node;
+  };
+  const tree=indexed&&segments.length>16?build([...segments]):null;
+  const nearest = (point, stats) => {
+    const [x,y]=point;
+    if(!Number.isFinite(x)||!Number.isFinite(y))throw new TypeError('Ponto de consulta inválido');
+    let best=null;
+    const visit=s=>{
+      if(stats)stats.segmentTests=(stats.segmentTests||0)+1;
+      const dx=s.bx-s.ax,dy=s.by-s.ay,len=dx*dx+dy*dy;
+      const t=len?Math.max(0,Math.min(1,((x-s.ax)*dx+(y-s.ay)*dy)/len)):0;
+      const xy=[s.ax+t*dx,s.ay+t*dy],metres=Math.hypot(x-xy[0],y-xy[1]);
+      if(!best||metres<best.metres||(metres===best.metres&&s.order<best.order))
+        best={metres,xy,polygon:s.polygon,ring:s.ring,edge:s.edge,t,order:s.order};
+    };
+    const lower=n=>Math.hypot(Math.max(n.x0-x,0,x-n.x1),Math.max(n.y0-y,0,y-n.y1));
+    const search=n=>{
+      // Folga só na poda numérica, nunca na escolha/ordenação do resultado.
+      const epsilon=32*Number.EPSILON*Math.max(1,Math.abs(x),Math.abs(y),Math.abs(n.x0),Math.abs(n.y0),Math.abs(n.x1),Math.abs(n.y1));
+      if(best&&lower(n)>best.metres+epsilon)return;
+      if(n.items){for(const s of n.items)visit(s);return}
+      const leftFirst=lower(n.left)<=lower(n.right);
+      search(leftFirst?n.left:n.right);search(leftFirst?n.right:n.left);
+    };
+    if(tree)search(tree);else for(const s of segments)visit(s);
+    if(!best)return null;
+    const {order,...result}=best;return result;
+  };
+  return Object.freeze({segmentCount:segments.length,nearest});
+}
+
+function schmidtBoundaryMinimum(geometry, samples) {
+  if(!samples?.length)return null;
+  // Caminho escalar sem alocar resultados por ponto. O índice preparado é opt-in:
+  // construir a BVH por chamada foi mais lento na base atual (benchmark documentado).
+  let minimum=Infinity;
+  for(const p of samples)for(const poly of geometry)for(const ring of poly)for(let i=0;i<ring.length;i++){
+    const a=ring[i],b=ring[(i+1)%ring.length],dx=b[0]-a[0],dy=b[1]-a[1],len=dx*dx+dy*dy;
+    const t=len?Math.max(0,Math.min(1,((p.x-a[0])*dx+(p.y-a[1])*dy)/len)):0;
+    minimum=Math.min(minimum,Math.hypot(p.x-a[0]-t*dx,p.y-a[1]-t*dy));
+  }
+  return Number.isFinite(minimum)?minimum:null;
 }
 
 // src/persistence/backup-service.mjs
@@ -1949,16 +1999,7 @@ function schmidtTrackAlternatives(params, { span = 2 } = {}) {
 
 // Menor distância de um ponto à divisa (contorno externo e furos), em metros de grade.
 function schmidtMinBorderDistance(geom, samples) {
-  let best = Infinity;
-  for (const p of samples || []) for (const poly of geom || []) for (const ring of poly) {
-    const n = ring.length;
-    for (let i = 0; i < n; i++) {
-      const a = ring[i], b = ring[(i + 1) % n], dx = b[0] - a[0], dy = b[1] - a[1], len = dx * dx + dy * dy;
-      const t = len ? Math.max(0, Math.min(1, ((p.x - a[0]) * dx + (p.y - a[1]) * dy) / len)) : 0;
-      best = Math.min(best, Math.hypot(p.x - a[0] - t * dx, p.y - a[1] - t * dy));
-    }
-  }
-  return Number.isFinite(best) ? best : null;
+  return schmidtBoundaryMinimum(geom || [], samples || []);
 }
 
 // Resumo de um cenário com as MESMAS funções do cartão "Plano em uso" (measurements = módulo de medidas do app).

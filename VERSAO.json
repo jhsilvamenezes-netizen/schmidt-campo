@@ -4,8 +4,8 @@
   "data": "2026-11-14",
   "versaoDoApp": "2.0.1",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "e81dc12929510186b39089efc3bda7493d7d98d237cd1d488985439e6b907848",
-  "workerSha256": "2d559c4db68b92123f1645df482a916220d8f4632a466d47a3395bf2965438b7",
+  "htmlSha256": "93ccce3825a4d8071256317f11efe1efa20e7ee7d71b07af0b10c14eb13070d0",
+  "workerSha256": "2ba18745be85902ba054f34f9674589f43763624d9cac38a483ba8f4ff9bfe4e",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -46,5 +46,5 @@
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
   "runtimeBlocks": true,
-  "statusEntrega": "web 2.0.1 publicada e conferida após CI do PR #19; APK não distribuído"
+  "statusEntrega": "candidata interna de reescrita espacial; 2.0.1 publicada permanece como referência"
 }

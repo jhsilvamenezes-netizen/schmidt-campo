@@ -1,0 +1,49 @@
+{
+  "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
+  "appVersion": "2.0.1",
+  "engineVersion": "0.5.1-sim",
+  "htmlSha256": "e81dc12929510186b39089efc3bda7493d7d98d237cd1d488985439e6b907848",
+  "browser": "141.0.7390.37",
+  "physicalDevice": false,
+  "observed": {
+    "exportedModules": 47,
+    "engineModules": 29,
+    "uiModules": 17,
+    "fields": 51,
+    "groups": 40,
+    "defaultMapSvgDescendants": 124,
+    "workerAPIAvailable": true,
+    "runtimeErrors": []
+  },
+  "staticFindings": [
+    {
+      "file": "scripts/build-preserved.mjs",
+      "finding": "Build integra fontes novas ao HTML imutável do baseline por substituições únicas verificadas; motor completo ainda não é fonte independente."
+    },
+    {
+      "file": "src/ui/adjust-compare.mjs",
+      "finding": "Alternativas são calculadas sincronicamente ao abrir; guard explícito exclui bloco. Ganho potencial a medir, sem travamento comprovado neste inventário."
+    },
+    {
+      "file": "src/application/block-planning.mjs",
+      "finding": "Busca limitada de espaçamento/fase e quantidade; cobertura compara grade alvo de 1500 células. Não é busca global exata."
+    },
+    {
+      "file": "src/ui/block-map.mjs",
+      "finding": "paint recria descendentes SVG e calcula limites a partir dos vértices em cada desenho. Custo deve ser medido antes de trocar renderer."
+    },
+    {
+      "file": "src/ui/lot-map.mjs",
+      "finding": "Ajustes de rótulos consultam caixas DOM após desenho; possível custo de layout, ainda não perfilado nesta etapa."
+    },
+    {
+      "file": "src/application/adjust-alternatives.mjs; src/application/block-planning.mjs; src/ui/block-map.mjs",
+      "finding": "Cálculo ponto/divisa repetido em três lugares; oportunidade de contrato único com paridade."
+    }
+  ],
+  "limits": [
+    "Inventário executado em navegador local sem GPS real, sem novos benchmarks ou certificação espacial.",
+    "Versão declarada não prova idade de dependências ou insegurança.",
+    "Resultados de cobertura são amostrados; precisão numérica não homologa origem dos limites."
+  ]
+}
