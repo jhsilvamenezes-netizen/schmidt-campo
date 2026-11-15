@@ -50,13 +50,7 @@ try {
     report.modes.push(r.mode);
     const sc = JSON.parse(r.sc); report.versions.push(sc.engineVersion);
     try { assert.deepStrictEqual(norm(sc), norm(old.index.buildScenario(fields[k], old.index.DEFAULT_PARAMS, { optimize: true }))); report.workerOptimize++; } catch { report.failures.push(`worker otimização ${k}`); }
-    // 2.5: os candidatos agora são planos equilibrados (melhor cobertura), então as métricas e a lista de alternativas
-    // podem mudar; a ESCOLHA (opção e parâmetros) tem de ser a mesma do motor 0.5.1.
-    try {
-      const a = JSON.parse(r.rec), o = old.recommend.recommendPlan(fields[k], {}, {});
-      const id = x => (typeof x.chosen === 'object' && x.chosen ? x.chosen.id : x.chosen), pick = x => norm(x.alternatives.find(y => y.id === id(x))?.params ?? null);
-      assert.equal(id(a), id(o)); assert.deepStrictEqual(pick(a), pick(o)); report.workerRecommend++;
-    } catch (e) { report.failures.push(`worker recomendação ${k}: ${String(e.message).slice(0, 200)}`); }
+    try { assert.deepStrictEqual(norm(JSON.parse(r.rec)), norm(old.recommend.recommendPlan(fields[k], {}, {}))); report.workerRecommend++; } catch (e) { report.failures.push(`worker recomendação ${k}: ${String(e.message).slice(0, 200)}`); }
   }
   assert.deepEqual(errors, []);
 } finally {

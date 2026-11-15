@@ -24,7 +24,7 @@ escolhe a posição que deixa o lote mais coberto. A troca segue quatro regras:
 | Ganho de cobertura (p95) nesses lotes | 11% na mediana, até 32% (RC7: 450 → 305 m) |
 | Lotes com pior vazio maior | 0 |
 | Lotes com equipe diferente | 0 |
-| Escolha da recomendação | igual nos 51 |
+| Recomendação, "Comparar antes de aplicar" e modo bloco | sem mudança (usam o cálculo de antes) |
 | Tempo extra ao trocar de lote (celular lento) | cerca de 40 ms |
 
 ![RC7 antes e depois](motor-2-5-equilibrado-RC7.png)
@@ -45,4 +45,9 @@ O botão "Buscar distribuição melhor" continua disponível. Ele ainda pode pas
   conferidos; ao menos 30 lotes com ganho.
 - `engine-properties.test.mjs`: nova propriedade em lotes aleatórios (mesma equipe, p95 e pior vazio nunca piores,
   pontos dentro do lote).
-- `engine-swap-browser.mjs`: o plano cru continua idêntico ao do motor 0.5.1; a recomendação faz a mesma escolha.
+- `engine-swap-browser.mjs`: o plano cru e a recomendação continuam idênticos aos do motor 0.5.1.
+
+## 5. Onde vale
+
+Só o plano em uso de lote individual é equilibrado. A recomendação continua escolhendo a configuração (espaçamento e
+número de tiros) como antes. O modo bloco mantém a referência comum entre lotes, sem equilíbrio.

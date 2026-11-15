@@ -1,4 +1,4 @@
-// 2.5 · plano equilibrado nos 51 lotes reais, dentro do app (página e worker).
+// 2.5 · plano equilibrado nos 51 lotes reais, dentro do app (plano em uso de lote individual).
 // Garantias: plano em uso é o equilibrado; mesmo total e mesmos pontos por tiro do plano cru; p95 e pior vazio nunca
 // maiores; pontos dentro do lote; ao menos 30 lotes com p95 menor. Não grava nada.
 import { chromium } from 'playwright';
@@ -22,7 +22,7 @@ try {
     const S = SCHMIDT.modulos.__m_engine_scenario, P = SCHMIDT.modulos.__m_engine_index.DEFAULT_PARAMS, out = [];
     const perTrack = sc => JSON.stringify([...sc.samples.reduce((m, s) => m.set(s.trackId, (m.get(s.trackId) || 0) + 1), new Map())].sort());
     for (const [key, f] of Object.entries(SCHMIDT.app.fields)) {
-      const raw = S.buildScenario(f, P, { balanced: false }), eq = S.buildScenario(f, P);
+      const raw = S.buildScenario(f, P, { balanced: false }), eq = S.buildScenario(f, P, { balanced: true });
       const inside = eq.samples.every(s => schmidtEngine2.geometry.pointInGeom(s.x, s.y, f.geom));
       out.push({ key, mode: eq.optimization?.mode, n: [raw.samples.length, eq.samples.length], team: perTrack(raw) === perTrack(eq),
         p95: [raw.coverage.p95, eq.coverage.p95], max: [raw.coverage.max, eq.coverage.max], inside });
