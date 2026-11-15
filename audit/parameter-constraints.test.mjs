@@ -18,8 +18,9 @@ test('catálogo e defaults preservam a referência estudada, com identidade da v
     const a=html.indexOf(start);assert.ok(a>=0&&a===html.lastIndexOf(start),'Início de módulo único');
     const b=html.indexOf(end,a);assert.ok(b>a,'Fim de módulo encontrado');return html.slice(a,b);
   };
-  const catalog=html=>extract(html,'g=(()=>{let{DomainError:e,ERR:t}=h','})(),_=(()=>{let');
-  const defaults=html=>extract(html,'l=(()=>{let e=Object.freeze({boomWidthM:','})(),u=(()=>{let e=new Map').replace(/APP_VERSION:`[^`]+`/,'APP_VERSION:IDENTITY');
+  // Fim do catálogo: a declaração do módulo seguinte (_), qualquer que seja seu conteúdo (desde a 2.2.0 é o motor 2).
+  const catalog=html=>extract(html,'g=(()=>{let{DomainError:e,ERR:t}=h','})(),_=');
+  const defaults=html=>extract(html,'l=(()=>{let e=Object.freeze({boomWidthM:','})(),u=(()=>{let e=new Map').replace(/APP_VERSION:`[^`]+`/,'APP_VERSION:IDENTITY').replace(/ENGINE_VERSION:`[^`]+`/,'ENGINE_VERSION:IDENTITY');
   assert.equal(catalog(current),catalog(reference.toString()));
   assert.equal(defaults(current),defaults(reference.toString()));
 });
