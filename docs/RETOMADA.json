@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "2.4.0: celular primeiro",
+  "task": "2.4.0 publicada (PR #26, main 69b8469)",
   "owner": "Claude",
-  "status": "pronto_para_revisao",
-  "nextAction": "PR da 2.4.0; CI verde; merge; conferir Pages e hash = VERSAO.json; depois Unidade D",
+  "status": "pronto_para_iniciar",
+  "nextAction": "Aguardar avaliação do proprietário no celular; depois Unidade D (motor antigo fora do arquivo) e APK",
   "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -52,12 +52,10 @@
     "15/11: proprietário aprovou o layout de celular da 2.4 (\"pode fazer\"), pediu menos texto e foco no uso no celular; APK depois"
   ],
   "snapshot": {
-    "at": "2026-11-15T08:55:59.494Z",
+    "at": "2026-11-15T09:14:01.831Z",
     "branch": "claude/motor-evolucao",
-    "codeCommit": "89abe0cfc71ed277b024578300e5ab0229c86c23",
-    "changedTrackedFiles": [
-      "audit/direction-measures-evidence.json"
-    ],
+    "codeCommit": "69b8469102c1435508cd820725b444123675877a",
+    "changedTrackedFiles": [],
     "untrackedCount": 0
   },
   "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",

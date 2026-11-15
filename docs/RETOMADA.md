@@ -2,16 +2,16 @@
 
 Gerado por scripts/checkpoint.mjs; registro não executa nem certifica testes.
 
-- Tarefa: 2.4.0: celular primeiro
+- Tarefa: 2.4.0 publicada (PR #26, main 69b8469)
 - Responsável: Claude
-- Estado: pronto_para_revisao
+- Estado: pronto_para_iniciar
 - Branch: claude/motor-evolucao
-- Commit de código observado: 89abe0cfc71ed277b024578300e5ab0229c86c23
-- Registro UTC: 2026-11-15T08:55:59.494Z
+- Commit de código observado: 69b8469102c1435508cd820725b444123675877a
+- Registro UTC: 2026-11-15T09:14:01.831Z
 
 ## Próxima ação
 
-PR da 2.4.0; CI verde; merge; conferir Pages e hash = VERSAO.json; depois Unidade D
+Aguardar avaliação do proprietário no celular; depois Unidade D (motor antigo fora do arquivo) e APK
 
 ## Testes declarados pela sessão
 
