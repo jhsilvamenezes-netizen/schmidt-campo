@@ -84,6 +84,7 @@ function comparePNG(a, b, label, approvedRegion = null, extraRegions = []) {
   assert.equal(first.width, second.width);
   assert.equal(first.height, second.height);
   let pixels = 0, maxChannelDelta = 0, approvedPixels = 0;
+  const box = { left: Infinity, right: -1, top: Infinity, bottom: -1 };
   for (let i = 0; i < first.data.length; i += 4) {
     let different = false;
     const x = (i / 4) % first.width, y = Math.floor(i / 4 / first.width);
@@ -93,11 +94,12 @@ function comparePNG(a, b, label, approvedRegion = null, extraRegions = []) {
       if (!approved) maxChannelDelta = Math.max(maxChannelDelta, delta);
       different ||= delta > 0;
     }
-    if (different) { if (approved) approvedPixels++; else pixels++; }
+    if (different) { if (approved) approvedPixels++; else { pixels++; box.left = Math.min(box.left, x); box.right = Math.max(box.right, x); box.top = Math.min(box.top, y); box.bottom = Math.max(box.bottom, y); } }
   }
   // Apenas ruído mínimo: no máximo 20 pixels com delta de 1/255 por canal.
   // Diferenças maiores falham e exigem inspeção manual; nenhum elemento mascarado.
-  assert.ok(pixels <= 20 && maxChannelDelta <= 1, `${label}: ${pixels} pixels, delta ${maxChannelDelta}`);
+  // Em falha, diz onde estão os pixels diferentes e quais áreas estavam aprovadas (diagnóstico sem as imagens do CI).
+  assert.ok(pixels <= 20 && maxChannelDelta <= 1, `${label}: ${pixels} pixels, delta ${maxChannelDelta}; diferenças em ${JSON.stringify(box)}; aprovadas ${JSON.stringify(extraRegions)}`);
   return { identical: pixels === 0 && approvedPixels === 0, differingPixelsOutsideApproval: pixels, differingPixels: pixels, maxChannelDelta, approvedPixels, approvedRegion };
 }
 try {
