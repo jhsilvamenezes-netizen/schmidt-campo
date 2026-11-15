@@ -64,7 +64,7 @@ try {
     assert.match(await p.textContent('[data-err]'), /mínimo/);
     await p.fill('[name="trackSpacingM"]', '300'); await p.dispatchEvent('[name="trackSpacingM"]', 'change');
     assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3'].trackSpacingM), 300);
-    await p.click('[data-set="pointMode"][data-v="por_tiro"]'); assert.ok(await p.locator('[name="pointsPerTrack"]').count());
+    await p.click('[data-set="pointMode"][data-v="por_tiro"]'); await p.waitForSelector('[name="pointsPerTrack"]', { timeout: 5000 });
     await p.click('[data-act="restore"]'); await p.keyboard.press('Escape');
     assert.match(await p.textContent('.card'), /Hectares/);
     // gestos: duplo toque amplia (aparece "enquadrar"), enquadrar volta; tocar num ponto mostra o balão
@@ -92,7 +92,7 @@ try {
     await p.goto(url); await ready(p);
     await p.click('button.lot'); await p.click('[data-lot="Bananal|BD3"]');
     await p.click('[data-tab="plano"]'); await p.fill('#ha', '15'); await p.dispatchEvent('#ha', 'change');
-    await p.waitForTimeout(4500); // versão guardada quando o plano para de mudar
+    await p.waitForTimeout(6500); // versão guardada 4 s depois de o plano parar de mudar (folga para CI lento)
     await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="versoes"]'); await p.waitForSelector('.sheet .li');
     assert.match(await p.textContent('.sheet'), /1 ponto a cada 15 ha/); await p.keyboard.press('Escape');
     await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="dados"]');
