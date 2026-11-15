@@ -79,7 +79,7 @@ async function backup(page) {
   return downloadJson(await pending);
 }
 const digest = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
-function comparePNG(a, b, label, approvedRegion = null) {
+function comparePNG(a, b, label, approvedRegion = null, extraRegions = []) {
   const first = PNG.sync.read(a), second = PNG.sync.read(b);
   assert.equal(first.width, second.width);
   assert.equal(first.height, second.height);
@@ -87,7 +87,7 @@ function comparePNG(a, b, label, approvedRegion = null) {
   for (let i = 0; i < first.data.length; i += 4) {
     let different = false;
     const x = (i / 4) % first.width, y = Math.floor(i / 4 / first.width);
-    const approved = approvedRegion && x >= approvedRegion.left && x < approvedRegion.right && y >= approvedRegion.top && y < approvedRegion.bottom;
+    const approved = [approvedRegion, ...extraRegions].some(r => r && x >= r.left && x < r.right && y >= r.top && y < r.bottom);
     for (let c = 0; c < 4; c++) {
       const delta = Math.abs(first.data[i+c] - second.data[i+c]);
       if (!approved) maxChannelDelta = Math.max(maxChannelDelta, delta);
@@ -104,7 +104,7 @@ try {
   const reference = await serve(true), candidate = await serve(false);
   for (const [width, height] of (functionalOnly ? [] : [[360,800],[390,844],[412,915],[768,1024]])) {
     for (const state of ['mapa','plano','tiros','monitoramento','auditoria']) {
-      const images = [], regions = [];
+      const images = [], regions = [], regions23 = [];
       // 2x evita rasterização dependente da altura fracionária da camada de
       // rolagem e das bordas arredondadas em tablet no Chromium 141.
       // Referência e candidata usam a mesma escala;
@@ -120,6 +120,14 @@ try {
           // a barra das etapas, logo acima da etapa, entra na região aprovada do Plano.
           const r=e.getBoundingClientRect(),pane=e.closest('#panel-plano').getBoundingClientRect(),bar=e.closest('#panel-plano').querySelector('.param-sections')?.getBoundingClientRect();return {left:Math.floor(pane.left),right:Math.ceil(pane.right),top:Math.floor(Math.min(r.top,bar?.top??r.top)),bottom:Math.ceil(r.bottom)};
         }));
+        // 15/11/2026: o proprietário autorizou a revisão de tela e o corte de texto da 2.3 ("pode fazer tudo").
+        // Regiões aprovadas, medidas na original e na candidata: selo de dados (nível igual ao do motor), conteúdo
+        // de Tiros e Auditoria (textos repetidos retirados) e, no tablet, a área do mapa (legenda passou a aparecer).
+        regions23.push(...await page.evaluate(([st, w]) => {
+          const box = e => { if (!e) return null; const r = e.getBoundingClientRect(); return r.width ? { left: Math.floor(r.left), right: Math.ceil(r.right), top: Math.floor(r.top), bottom: Math.ceil(r.bottom) } : null; };
+          return [box(document.getElementById('v08-quality')), ...(st === 'tiros' || st === 'auditoria' ? [box(document.getElementById('sheet-body'))] : []),
+            ...(w >= 600 ? [box(document.querySelector('.map-area'))] : [])].filter(Boolean);
+        }, [state, width]));
         images.push(await page.screenshot({ path: fileURLToPath(new URL(`${width}-${state}-${label}.png`, results)), animations: 'disabled' }));
         await ctx.close();
       }
@@ -129,7 +137,7 @@ try {
         assert.equal(regions[0].left, regions[1].left); assert.equal(regions[0].right, regions[1].right);
         approvedRegion=Object.fromEntries(Object.entries({...regions[0],bottom:Math.max(regions[0].bottom,regions[1].bottom)}).map(([key,value])=>[key,value*scale]));
       }
-      const comparison = comparePNG(images[0], images[1], `${width}/${state}`, approvedRegion);
+      const comparison = comparePNG(images[0], images[1], `${width}/${state}`, approvedRegion, regions23.map(r => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, v * scale]))));
       report.visual.push({ width, height, state, deviceScaleFactor:scale, ...comparison, sha256: createHash('sha256').update(images[0]).digest('hex') });
       console.log(`Visual ${state === 'plano' ? 'fora do Plano aprovado' : 'preservado'}: ${width}x${height} ${state} (${comparison.differingPixels} pixels fora do escopo; ${comparison.approvedPixels} aprovados)`);
     }

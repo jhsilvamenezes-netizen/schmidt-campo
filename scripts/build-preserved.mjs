@@ -167,8 +167,8 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
   // 2.3: Auditoria › "Dados do lote" marcava "!" (problema) até para notas só informativas (B gerado pelo rumo,
   // área publicada × KML, KML já corrigido). Agora "!" só com alerta ou erro; só notas → "i"; nada → "✓".
   replace('[!T.length,`Dados do lote`,','[T.some(e=>e.level!==`info`)?!1:T.length?null:!0,`Dados do lote`,','auditoria-dados-nivel-real');
-  // 2.3: cartão "Descoberto · limite 376 m" pedia interpretação; agora diz o que mede.
-  replace('`Descoberto`,`${J(c.haBlind,+(c.haBlind<10))} ha`,l?`${c.pct} · Diagnóstico`:`limite ${J(c.limitM,0)} m`','`Área descoberta`,`${J(c.haBlind,+(c.haBlind<10))} ha`,l?`${c.pct} · Diagnóstico`:`a mais de ${J(c.limitM,0)} m de um ponto`','cartao-descoberto-legivel');
+  // 2.3: "limite 376 m" pedia interpretação; "além de 376 m" cabe no cartão e diz o que conta.
+  replace('`Descoberto`,`${J(c.haBlind,+(c.haBlind<10))} ha`,l?`${c.pct} · Diagnóstico`:`limite ${J(c.limitM,0)} m`','`Descoberto`,`${J(c.haBlind,+(c.haBlind<10))} ha`,l?`${c.pct} · Diagnóstico`:`além de ${J(c.limitM,0)} m`','cartao-descoberto-legivel');
   if(includeBlocks){const blocks=await applySchmidtBlocks(candidate);candidate=blocks.html;changes.push(...blocks.changes);}
   // Recalcula só os hashes CSP dos scripts; nenhuma política é afrouxada.
   const scripts=[...candidate.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].filter(m=>!m[1].includes('application/json'));

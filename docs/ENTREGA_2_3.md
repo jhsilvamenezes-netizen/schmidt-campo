@@ -27,7 +27,7 @@ real (inclusive na divisa), grade da barra e recorte dos tiros.
 | 5 | Auditoria marcava "!" em notas informativas | "!" só com alerta ou erro do motor; selo "Dados" conta igual |
 | 6 | Caixas de seleção pequenas | não é defeito (rótulo de 44 px quando visível) |
 | 7 | Tablet sem legenda do mapa | legenda visível de 600 a 999 px |
-| 8 | "Descoberto · limite 376 m" | "Área descoberta · a mais de 376 m de um ponto" |
+| 8 | "Descoberto · limite 376 m" | "Descoberto · além de 376 m" (cabe no cartão) |
 | 9 | Sem tema escuro | tema Noite opcional: botão Sol alterna Normal → Sol → Noite |
 | 10 | "Trocar lote" no desktop | mantido: atalho que leva ao seletor |
 

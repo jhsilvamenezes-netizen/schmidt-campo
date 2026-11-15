@@ -135,12 +135,15 @@ try {
   const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(`http://127.0.0.1:${server.address().port}/${name}`);
   await page.waitForFunction(()=>window.SCHMIDT?.app?.sc);await page.evaluate(()=>document.fonts.ready);await page.waitForTimeout(600);
   const box=await page.locator('#param-stage-inicio').evaluate(e=>{const r=e.getBoundingClientRect(),p=e.closest('#panel-plano').getBoundingClientRect();return {top:Math.floor(r.top)*2,left:Math.floor(p.left)*2,right:Math.ceil(p.right)*2};});
-  desktop.push({box,png:PNG.sync.read(await page.screenshot({path:out+'1280-'+name.replace('.html','')+'-protected.png'}))});await ctx.close();
+  // 15/11/2026 (2.3, autorizado pelo proprietário): coluna de Tiros com textos repetidos retirados, selo de dados e cartão "Descoberto · além de N m".
+  const extra=await page.evaluate(()=>[...['panel-tiros','v08-quality'].map(id=>document.getElementById(id)),[...document.querySelectorAll('.goal')].find(e=>e.textContent.includes('Descoberto'))].filter(e=>e&&e.getBoundingClientRect().width).map(e=>{const r=e.getBoundingClientRect();return {left:Math.floor(r.left)*2,right:Math.ceil(r.right)*2,top:Math.floor(r.top)*2,bottom:Math.ceil(r.bottom)*2};}));
+  desktop.push({box,extra,png:PNG.sync.read(await page.screenshot({path:out+'1280-'+name.replace('.html','')+'-protected.png'}))});await ctx.close();
  }
  assert.deepEqual(desktop[0].box,desktop[1].box);const a=desktop[0].png,b=desktop[1].png,box=desktop[0].box;
  assert.equal(a.width,b.width);assert.equal(a.height,b.height);let changed=0,maxDelta=0;
  for(let y=0;y<a.height;y++)for(let x=0;x<a.width;x++){
   if(y>=box.top&&x>=box.left&&x<box.right)continue;
+  if([...desktop[0].extra,...desktop[1].extra].some(r=>x>=r.left&&x<r.right&&y>=r.top&&y<r.bottom))continue;
   const i=(y*a.width+x)*4;let delta=0;for(let c=0;c<4;c++)delta=Math.max(delta,Math.abs(a.data[i+c]-b.data[i+c]));
   if(delta)changed++;maxDelta=Math.max(maxDelta,delta);
  }
