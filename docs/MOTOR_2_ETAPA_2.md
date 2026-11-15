@@ -41,3 +41,19 @@ completo (amostragem, alocação, cobertura, rota) também for reescrito e bater
 
 Reescrever amostragem e alocação de pontos e `buildScenario`, com o mesmo teste diferencial do
 cenário inteiro. Depois, trocar o motor no build e repetir a conferência GEOS/PROJ.
+
+## Etapa 3 (mesma data): amostragem, alocação e núcleo do plano
+
+- `src/engine/sampling.mjs`: posições pelas três regras de borda, intervalo, raio de
+  cobertura ao longo, deslocamento e numeração.
+- `src/engine/allocation.mjs`: mínimo por área; repartição gulosa (maior raio, depois
+  trecho mais longo, depois id menor); por tiro e por intervalo desejado.
+- `src/engine/plan.mjs`: `planCore`, de tiros a pontos (sem métricas, cobertura e rota).
+- `audit/engine-plan-diff.test.mjs`:
+  - funções isoladas em 3.000 casos aleatórios × 3 regras;
+  - `planCore` = `buildScenario` antigo campo a campo em **1.122 cenários, 29.542 pontos**
+    (51 lotes × 22 variações de modo de pontos, borda, trecho mínimo, seleção, espaçamento e rumo);
+  - mutações de desempate e de posição detectadas.
+
+Falta reescrever, para trocar o motor no app: validação e resolução de parâmetros, métricas e
+cobertura (`metrics`/`evaluate`), otimização e rota.
