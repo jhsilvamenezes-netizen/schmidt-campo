@@ -10,7 +10,7 @@ import { bundleEngine, ENGINE_MODULES } from './bundle-engine.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const baseline = JSON.parse(await readFile(root+'audit/baseline.json'));
-const preservedSourceFiles = ['src/engine/boundary.mjs','src/persistence/backup-service.mjs','src/persistence/backup-format.mjs',
+const preservedSourceFiles = ['src/platform/calculation-client.mjs','src/engine/boundary.mjs','src/persistence/backup-service.mjs','src/persistence/backup-format.mjs',
   'src/gps/fix-policy.mjs','src/platform/browser-backup-adapters.mjs','src/platform/browser-session-lock.mjs','src/platform/browser-write-barrier.mjs','src/platform/legacy-integration.mjs',
   'src/application/operational-summary.mjs','src/ui/plan-presentation.mjs','src/ui/operational-plan.mjs','src/ui/refinements.mjs','src/ui/lot-map.mjs','src/platform/bounded-response.mjs','src/ui/satellite-map.mjs',
   'src/application/adjust-alternatives.mjs','src/ui/adjust-compare.mjs','src/gps/guide-next.mjs','src/ui/monitor-direction.mjs'];
@@ -52,6 +52,12 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
   // async já é usado pelo baseline. Evita exigir suporte novo a top-level await
   // dos WebViews Android: o await de recuperação fica dentro desta função.
   replace('<script type="module" crossorigin>','<script type="module" crossorigin>\n(async()=>{\n'+blocks.join('\n')+'\n','fontes-legíveis');
+  const clientStart=original.indexOf('G=(()=>{let{buildScenario:e}=_,t=null,n=!1,r=0;');
+  const clientEnd=original.indexOf('K=(()=>{let e=`monitoramento.v03`',clientStart);
+  if(clientStart<0||clientEnd<=clientStart)throw new Error('Cliente de cálculo legado não encontrado');
+  replace(original.slice(clientStart,clientEnd),
+    'G=createSchmidtCalculationClient({createWorker:()=>new W(),buildScenario:_.buildScenario}),',
+    'calculos-isolados-por-tarefa');
   // Motor 2 no lugar do motor 0.5.1 DA PÁGINA. Cada módulo antigo (do seu início até o início do seguinte) vira
   // o namespace equivalente; validação de parâmetros (g) e qualidade dos dados (d) seguem do antigo, injetadas.
   // Marcadores únicos e ordem conferidos: qualquer mudança no artefato base interrompe o build.

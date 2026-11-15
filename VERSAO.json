@@ -4,8 +4,8 @@
   "data": "2026-11-15",
   "versaoDoApp": "2.2.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "f368ca26f62a74299a325b52371aef19841b21007dc88937564e58e0c886d5b1",
-  "workerSha256": "bd9d0363b31e1eb1e5b3ff363cbbf3e4eadaf727bff2c7cf8a625794491e9517",
+  "htmlSha256": "bcf757c72b1e73c6380a82c5ed03c647b088c58874391b2ad93c999e927b6658",
+  "workerSha256": "968f5b30c3eadd9d0b2add10974fdc0b9ba40873f6cd54cd85265616f4c160d9",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -48,5 +48,5 @@
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
   "runtimeBlocks": true,
-  "statusEntrega": "candidata 2.2.0; motor 2 na página e no worker; publicação após CI verde (autorização de 15/11/2026)"
+  "statusEntrega": "candidata de correções sobre 2.2.0: busca de espaçamento e isolamento de cálculos; ainda não publicada"
 }

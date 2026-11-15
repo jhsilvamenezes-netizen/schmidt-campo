@@ -1,19 +1,34 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "2.2.0 — motor 2 no app",
-  "owner": "Claude",
+  "task": "Revisão da 2.2.0 e correções complementares de busca e cancelamento",
+  "owner": "Codex",
   "status": "pronto_para_revisao",
-  "nextAction": "CI do PR e publicação; depois reescrever paramCatalog/dataQuality/recomendação e remover o motor antigo do artefato",
-  "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
-  "publishedVersion": "2.0.1",
+  "nextAction": "Ler REVISAO_ATUAL_2_2.md e conferir CI da candidata. Motor 2 e comparação de bloco já publicados: não reescrever a partir da 2.0.1. Ainda não localizamos no GitHub a limpeza de textos/inventário mostrado na sessão do Claude. Depois desta revisão, concluir módulos legados restantes e avaliar textos por aba.",
+  "baseMain": "725b1dc216290016df895504803d95eeccd81a84",
+  "publishedVersion": "2.2.0",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
-  "latestDeliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",
+  "latestDeliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/23",
   "scope": "Direcionamento exclusivo no link móvel, sem coleta/marcação pela equipe. APK adiado.",
   "tests": [
     {
-      "command": "bateria completa 2.2.0 (CI + sessões + upgrade 2.1.0→2.2.0)",
+      "command": "npm --prefix audit test && npm --prefix audit run test:blocks",
       "result": "passou",
-      "evidence": "27/27; engine-swap-browser: página 51/51, worker otimização e recomendação 9/9 idênticas"
+      "evidence": "Contratos e bateria diferencial do motor 2, mais buscas de espaçamento e ciclo de vida de workers."
+    },
+    {
+      "command": "node audit/engine-swap-browser.mjs",
+      "result": "passou",
+      "evidence": "51 lotes; 9 otimizações e 9 recomendações reais no worker; mesmas saídas do oráculo."
+    },
+    {
+      "command": "node audit/calculation-concurrency-browser.mjs",
+      "result": "passou",
+      "evidence": "Falha reproduzida na 2.2.0; candidata mantém segunda tarefa ativa ao cancelar primeira."
+    },
+    {
+      "command": "node audit/direction-measures-probe.mjs && python audit/direction-measures.py",
+      "result": "passou",
+      "evidence": "GEOS/PROJ nos 51 lotes e 40 grupos, hash da candidata final conferido."
     }
   ],
   "blockers": [
@@ -21,29 +36,30 @@
     "Fonte geradora original completa ainda não recuperada; preservar integração e extrair por trecho com paridade."
   ],
   "decisions": [
-    "Direcionamento pelo link móvel, sem coleta pela equipe; APK adiado.",
-    "Método linear sem anéis, barra 36,48 m, P6 atual, 51 lotes e 40 grupos.",
-    "2.0.0 publicada no PR #17. #18 é revisão, sem correções de runtime.",
-    "2.0.1 publicada no PR #19 após autorização; mesma URL, sem APK.",
-    "F1/F2 publicados na 2.0.1; F3 texto de chegada corrigido, separação do legado pendente; F4 pendente.",
-    "E1/E2 e parte de E3/E4 entregues; E5/E6 gerais e piloto físico não concluídos.",
-    "Conferir GitHub e diff; uma sessão não recebe automaticamente o chat da outra.",
-    "Pedido posterior autoriza reescrita estruturada do motor; primeira unidade espacial integrada só na candidata.",
-    "Fonte completa ainda não recuperada; reescrita não deve renomear todo o motor nem declarar substituição completa prematuramente.",
-    "2.1.0: comparação de bloco usa as opções já calculadas pela preparação; lista não gravada; Usar bloco atômico.",
-    "15/11: 2.1.0 publicada (PR #22, main cd25d4b). Motor 2 em src/engine, ainda não usado pelo app; troca exige paramCatalog+dataQuality reescritos e substituição na página e no worker.",
-    "2.2.0: motor 2 na página e no worker (build troca 11 módulos em cada); oráculo dos testes = index.html de cd25d4b."
+    "Web móvel para direcionamento; APK adiado; preservar dados e legado de coleta.",
+    "Método linear, sem novos anéis; barra 36,48 m; P6 preservado.",
+    "PRs 21, 22 e 23 integrados; site 2.2.0 conferido por hash; motor 2.0.0 ativo na página e worker.",
+    "F4 entregue na 2.1.0: comparação e aplicação de alternativas em bloco; não tratar como ausente.",
+    "Candidata desta revisão corrige só busca de espaçamento e isolamento de tarefas; sem mudança de telas ou armazenamento.",
+    "Inventário de textos e dez itens da imagem não encontrados nas branches remotas consultadas; claude/pos-2-2 contém apenas checkpoint.",
+    "Outra IA só retoma arquivos enviados ao GitHub; conferir branch, SHA e PR antes de editar."
   ],
   "snapshot": {
-    "at": "2026-11-15T05:30:44.969Z",
-    "branch": "claude/motor-2",
-    "codeCommit": "2bb36e83da111b56d6ac8dacd378d41e9df85bac",
+    "at": "2026-11-15T06:49:19.172Z",
+    "branch": "codex/correcao-motor-2-2",
+    "codeCommit": "725b1dc216290016df895504803d95eeccd81a84",
     "changedTrackedFiles": [
-      "audit/legacy-engine.mjs",
-      "docs/MOTOR_2_NO_APP_2_2.md"
+      ".github/workflows/blocos-candidata.yml",
+      "VERSAO.json",
+      "audit/direction-measures-evidence.json",
+      "audit/package.json",
+      "index.html",
+      "scripts/build-preserved.mjs",
+      "src/engine/allocation.mjs",
+      "sw.js"
     ],
-    "untrackedCount": 0
+    "untrackedCount": 8
   },
-  "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",
-  "developmentBranch": "codex/reescrita-motor-etapa-1"
+  "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/23",
+  "developmentBranch": "codex/correcao-motor-2-2"
 }
