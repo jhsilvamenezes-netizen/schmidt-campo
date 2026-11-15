@@ -2,16 +2,16 @@
 
 Gerado por scripts/checkpoint.mjs; registro não executa nem certifica testes.
 
-- Tarefa: 2.5.0 publicada (PR #27, main 0b2006a)
+- Tarefa: 2.5.0 publicada; foco no link
 - Responsável: Claude
 - Estado: pronto_para_iniciar
 - Branch: claude/motor-evolucao
-- Commit de código observado: 0b2006a6c1d2c4b1803b6fae96f60a13a61980b5
-- Registro UTC: 2026-11-15T10:26:01.063Z
+- Commit de código observado: 8895d735589efff3243339a8fed07b32e87a25f4
+- Registro UTC: 2026-11-15T13:38:43.287Z
 
 ## Próxima ação
 
-Aguardar avaliação do proprietário; depois tela reconstruída a partir de src (2.6), Unidade D e APK
+Correções e melhorias do link: tela a partir de src (sem remendos), motor antigo fora do arquivo, tipografia e números. APK só se o proprietário pedir.
 
 ## Testes declarados pela sessão
 

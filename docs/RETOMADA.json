@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "2.5.0 publicada (PR #27, main 0b2006a)",
+  "task": "2.5.0 publicada; foco no link",
   "owner": "Claude",
   "status": "pronto_para_iniciar",
-  "nextAction": "Aguardar avaliação do proprietário; depois tela reconstruída a partir de src (2.6), Unidade D e APK",
+  "nextAction": "Correções e melhorias do link: tela a partir de src (sem remendos), motor antigo fora do arquivo, tipografia e números. APK só se o proprietário pedir.",
   "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -50,13 +50,16 @@
     "2.2.0: motor 2 na página e no worker (build troca 11 módulos em cada); oráculo dos testes = index.html de cd25d4b.",
     "15/11: revisão de tela (10 itens) e corte de texto autorizados pelo proprietário; guardas visuais aceitam só regiões declaradas da 2.3",
     "15/11: proprietário aprovou o layout de celular da 2.4 (\"pode fazer\"), pediu menos texto e foco no uso no celular; APK depois",
-    "15/11: proprietário pediu foco no motor (inteligência) e visual; equilíbrio só no plano em uso de lote individual; recomendação e bloco sem mudança"
+    "15/11: proprietário pediu foco no motor (inteligência) e visual; equilíbrio só no plano em uso de lote individual; recomendação e bloco sem mudança",
+    "15/11: APK só quando o proprietário pedir (não propor nem citar como próximo passo); foco em correções e melhorias do link"
   ],
   "snapshot": {
-    "at": "2026-11-15T10:26:01.063Z",
+    "at": "2026-11-15T13:38:43.287Z",
     "branch": "claude/motor-evolucao",
-    "codeCommit": "0b2006a6c1d2c4b1803b6fae96f60a13a61980b5",
-    "changedTrackedFiles": [],
+    "codeCommit": "8895d735589efff3243339a8fed07b32e87a25f4",
+    "changedTrackedFiles": [
+      "AGENTS.md"
+    ],
     "untrackedCount": 0
   },
   "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",
