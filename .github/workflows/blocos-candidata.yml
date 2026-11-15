@@ -76,7 +76,11 @@ jobs:
           node satellite-browser.mjs
       - name: Pacote revisado sem anexos ou estados de teste
         id: package
-        run: python scripts/package-block-candidate.py
+        run: |
+          # Devolve a 3.0 à raiz (a 2.5 foi montada só para os testes da tela antiga) e confere que é a versão gravada.
+          node scripts/build-3.mjs --root
+          git diff --exit-code -- index.html sw.js
+          python scripts/package-block-candidate.py
       - uses: actions/upload-artifact@v4
         with:
           name: SCHMIDT-Campo-blocos-revisada
