@@ -38,7 +38,7 @@ class DomainError extends Error {
 }
 
 /**
- * @param legacy { assertParams, buildWarnings, optimizeDistribution, engineVersion? } — validação detalhada vem do
+ * @param legacy assertParams, buildWarnings, optimizeDistribution e engineVersion (opcional) — validação detalhada vem do
  *   motor 0.5.1 até a reescrita; engineVersion é a versão declarada no app (o padrão mantém a do motor antigo).
  */
 /** Parâmetros resolvidos e validados + lote válido (mesmas recusas e mensagens do cenário completo). */

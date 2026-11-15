@@ -8,7 +8,7 @@ import { sampleUnits } from './sampling.mjs';
 /**
  * @param field  lote ({geom, bearing, bearingGridCorrection, referenceA, areaOfficialHa, …})
  * @param params parâmetros resolvidos
- * @param opts   { importedLines, importedKind } para trajetos importados
+ * @param opts   opcional: importedLines e importedKind (trajetos importados)
  */
 export function planCore(field, params, opts = {}) {
   let generated;
