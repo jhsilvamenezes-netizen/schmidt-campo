@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/><meta name="schmidt-web" content="1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#17594a"><link rel="apple-touch-icon" href="icone-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="SCHMIDT"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <!-- 1.8: só código e imagens embutidos; nenhuma conexão com a internet (app offline) -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-NsQbtnK2t66ONvLCIemPm19UWSNHsMc5T35zF31n0Wo=' 'sha256-Gh23wh7bZOGrv9XlkyykQkuUe8vsM97C6Vq1QqRMgnI=' 'sha256-NVqkuWANoDOmSJXJG0zwfexIHzTpz44QZtuPs+aUCwc='; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob: 'self'; connect-src 'self' blob: data: https://services.arcgisonline.com; font-src data:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-JmndJN8JJBxdQu1I6aPEaVbzRCYJQcQmdMGmDg8xqhI=' 'sha256-Gh23wh7bZOGrv9XlkyykQkuUe8vsM97C6Vq1QqRMgnI=' 'sha256-NVqkuWANoDOmSJXJG0zwfexIHzTpz44QZtuPs+aUCwc='; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob: 'self'; connect-src 'self' blob: data: https://services.arcgisonline.com; font-src data:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#123b33" name="theme-color"/>
 <title>SCHMIDT Campo · Planejamento de amostragem</title><meta property="og:type" content="website"><meta property="og:title" content="SCHMIDT Campo"><meta property="og:description" content="Planejamento de tiros e pontos de amostragem por lote, no celular e offline."><meta property="og:image" content="https://jhsilvamenezes-netizen.github.io/schmidt-campo/icone-512.png"><meta property="og:url" content="https://jhsilvamenezes-netizen.github.io/schmidt-campo/">
@@ -2174,8 +2174,12 @@ function buildScenario(field, given = {}, opts = {}, legacy) {
     // Equilibrado só troca o plano regular se o ganho valer a pena (p95 ≥ 2% menor); ganho menor só tira os pontos
     // da posição simétrica sem benefício para quem caminha.
     const b0 = r.report?.baseline?.p95M, b1 = r.report?.optimized?.p95M;
-    const worth = !balanced || (r.report?.accepted && b0 > 0 && b1 !== null && (b0 - b1) / b0 >= BALANCED_MIN_GAIN);
-    samples = worth ? sampleUnits(core.units, r.counts, params.edgePolicy, params.edgeMarginM, r.shifts) : core.samples;
+    let worth = !balanced || (r.report?.accepted && b0 > 0 && b1 !== null && (b0 - b1) / b0 >= BALANCED_MIN_GAIN);
+    const moved = worth ? sampleUnits(core.units, r.counts, params.edgePolicy, params.edgeMarginM, r.shifts) : core.samples;
+    // R2.1: garantia por valor EXATO (Voronoi recortado), não pela grade: o pior vazio do plano equilibrado não pode
+    // passar o do plano regular. Nos 51 lotes nunca passa; a conferência transforma o "medido" em garantia.
+    if (balanced && worth && exactCoverage(field.geom, moved).worstGapM > exactCoverage(field.geom, core.samples).worstGapM + 1e-6) worth = false;
+    samples = worth ? moved : core.samples;
     optimization = r.report ? { ...r.report, ...(balanced ? { mode: 'equilibrado', accepted: !!worth, minGain: BALANCED_MIN_GAIN } : {}) } : null;
   }
   return withMetrics(field, {

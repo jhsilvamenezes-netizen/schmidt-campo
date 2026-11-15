@@ -3,6 +3,7 @@
 // até serem reescritos; o restante é do motor 2. Teste: cenário inteiro idêntico ao do motor antigo.
 import { validateGeom } from './geometry.mjs';
 import { internalGap, sampleUnits } from './sampling.mjs';
+import { exactCoverage } from './voronoi.mjs';
 import { coverage, longitudinal, route, summarize, transverse } from './metrics.mjs';
 import { ENGINE_VERSION, paramsSignature, resolveParams } from './params.mjs';
 import { planCore } from './plan.mjs';
@@ -81,8 +82,12 @@ export function buildScenario(field, given = {}, opts = {}, legacy) {
     // Equilibrado só troca o plano regular se o ganho valer a pena (p95 ≥ 2% menor); ganho menor só tira os pontos
     // da posição simétrica sem benefício para quem caminha.
     const b0 = r.report?.baseline?.p95M, b1 = r.report?.optimized?.p95M;
-    const worth = !balanced || (r.report?.accepted && b0 > 0 && b1 !== null && (b0 - b1) / b0 >= BALANCED_MIN_GAIN);
-    samples = worth ? sampleUnits(core.units, r.counts, params.edgePolicy, params.edgeMarginM, r.shifts) : core.samples;
+    let worth = !balanced || (r.report?.accepted && b0 > 0 && b1 !== null && (b0 - b1) / b0 >= BALANCED_MIN_GAIN);
+    const moved = worth ? sampleUnits(core.units, r.counts, params.edgePolicy, params.edgeMarginM, r.shifts) : core.samples;
+    // R2.1: garantia por valor EXATO (Voronoi recortado), não pela grade: o pior vazio do plano equilibrado não pode
+    // passar o do plano regular. Nos 51 lotes nunca passa; a conferência transforma o "medido" em garantia.
+    if (balanced && worth && exactCoverage(field.geom, moved).worstGapM > exactCoverage(field.geom, core.samples).worstGapM + 1e-6) worth = false;
+    samples = worth ? moved : core.samples;
     optimization = r.report ? { ...r.report, ...(balanced ? { mode: 'equilibrado', accepted: !!worth, minGain: BALANCED_MIN_GAIN } : {}) } : null;
   }
   return withMetrics(field, {

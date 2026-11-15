@@ -52,3 +52,20 @@ A propriedade com lotes aleatórios (fast-check, 300 casos, incluindo pontos col
 nenhuma distância real passa do pior vazio exato, e o exato fica entre o máximo e o limite superior da grade.
 Achado durante a validação: com pontos quase colineares, o Delaunay descarta um ponto. A autoverificação pega e
 corrige.
+
+### R2.3 · Otimização: estudo crítico (15/11/2026)
+
+Nos 51 lotes reais, todas as estratégias mantêm os pontos por tiro e só mudam a posição ao longo do tiro.
+Ganho medido em relação ao plano regular:
+
+| Estratégia | Pior vazio (exato) | p95 | Tempo por lote | Decisão |
+|---|---|---|---|---|
+| **2.5 atual**: p95 com pior vazio travado (busca em 7 posições, 2 rodadas) | igual | **−6,4%**, nunca pior | ~5 ms | **Mantida** |
+| Min-max exato (menor pior vazio) | −2,5% | pior em 11 lotes | 59 ms | Descartada |
+| Áreas iguais por ponto | pior em 30 lotes | pior em 18 lotes | 89 ms | Descartada |
+| Combinação pior vazio + áreas | igual | pior em 15 lotes | 88 ms | Descartada |
+| p95 com busca contínua (varredura + seção áurea) e pior vazio exato travado | igual | −4,1% | 90 ms | Descartada: ganha menos e é 18× mais lenta |
+
+Conclusão: a estratégia da 2.5 já está perto do melhor possível com essas regras. O que entrou é a garantia exata:
+o plano equilibrado só é usado se o **pior vazio exato** (Voronoi) não passar o do plano regular. Antes isso era
+conferido na grade. O resultado continua o mesmo (31 lotes, −11,3% na mediana), agora provado.
