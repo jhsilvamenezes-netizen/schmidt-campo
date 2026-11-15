@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "2.2.0 — motor 2 no app",
+  "task": "Motor 2 publicado (2.2.0)",
   "owner": "Claude",
-  "status": "pronto_para_revisao",
-  "nextAction": "CI do PR e publicação; depois reescrever paramCatalog/dataQuality/recomendação e remover o motor antigo do artefato",
+  "status": "pronto_para_iniciar",
+  "nextAction": "Reescrever paramCatalog, dataQuality, recomendação, rota/edição/exportação no motor 2 e então remover o motor 0.5.1 do artefato (index.html menor); depois ganhos de desempenho medidos (índice espacial na cobertura) e piloto em celular real",
   "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -32,16 +32,14 @@
     "Fonte completa ainda não recuperada; reescrita não deve renomear todo o motor nem declarar substituição completa prematuramente.",
     "2.1.0: comparação de bloco usa as opções já calculadas pela preparação; lista não gravada; Usar bloco atômico.",
     "15/11: 2.1.0 publicada (PR #22, main cd25d4b). Motor 2 em src/engine, ainda não usado pelo app; troca exige paramCatalog+dataQuality reescritos e substituição na página e no worker.",
-    "2.2.0: motor 2 na página e no worker (build troca 11 módulos em cada); oráculo dos testes = index.html de cd25d4b."
+    "2.2.0: motor 2 na página e no worker (build troca 11 módulos em cada); oráculo dos testes = index.html de cd25d4b.",
+    "2.2.0 publicada em 15/11/2026 (PR #23, main 725b1dc, Pages ok, htmlSha256 f368ca26…). App calcula com o motor 2 na página e no worker."
   ],
   "snapshot": {
-    "at": "2026-11-15T05:30:44.969Z",
-    "branch": "claude/motor-2",
-    "codeCommit": "2bb36e83da111b56d6ac8dacd378d41e9df85bac",
-    "changedTrackedFiles": [
-      "audit/legacy-engine.mjs",
-      "docs/MOTOR_2_NO_APP_2_2.md"
-    ],
+    "at": "2026-11-15T05:57:10.079Z",
+    "branch": "claude/pos-2-2",
+    "codeCommit": "725b1dc216290016df895504803d95eeccd81a84",
+    "changedTrackedFiles": [],
     "untrackedCount": 0
   },
   "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",

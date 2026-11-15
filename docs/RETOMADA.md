@@ -2,16 +2,16 @@
 
 Gerado por scripts/checkpoint.mjs; registro não executa nem certifica testes.
 
-- Tarefa: 2.2.0 — motor 2 no app
+- Tarefa: Motor 2 publicado (2.2.0)
 - Responsável: Claude
-- Estado: pronto_para_revisao
-- Branch: claude/motor-2
-- Commit de código observado: 2bb36e83da111b56d6ac8dacd378d41e9df85bac
-- Registro UTC: 2026-11-15T05:30:44.969Z
+- Estado: pronto_para_iniciar
+- Branch: claude/pos-2-2
+- Commit de código observado: 725b1dc216290016df895504803d95eeccd81a84
+- Registro UTC: 2026-11-15T05:57:10.079Z
 
 ## Próxima ação
 
-CI do PR e publicação; depois reescrever paramCatalog/dataQuality/recomendação e remover o motor antigo do artefato
+Reescrever paramCatalog, dataQuality, recomendação, rota/edição/exportação no motor 2 e então remover o motor 0.5.1 do artefato (index.html menor); depois ganhos de desempenho medidos (índice espacial na cobertura) e piloto em celular real
 
 ## Testes declarados pela sessão
 
