@@ -84,3 +84,28 @@ test('cores do mapa: contraste ≥ 3:1 com o lote e pontos distintos dos tiros t
     for (const M of [DEU, PRO]) assert.ok(dist(sim(v('pt'), M), sim(v('tr'), M)) > 0.08, 'ponto × tiro distinguíveis');
   }
 });
+
+test('Monitorar: estados da guia nos 51 lotes (sem GPS, chegada, a caminho, GPS antigo, fora da linha)', async () => {
+  const { routeFor, guideModel, fixToPos } = await import('../src/app3/monitor.mjs');
+  const { localToLonLat } = await import('../src/engine/projection.mjs');
+  let n = 0;
+  for (const k of keys) {
+    const f = fields[k], sc = P.planInUse(f, P.recommend(f, {}, 5, false).chosen.params, null);
+    const t = sc.selected.find(tr => sc.units.some(u => u.trackId === tr.id)); if (!t) continue;
+    const route = routeFor(sc, f, t.id, false); if (route.points.length < 2 || route.points[0].partIndex !== route.points[1].partIndex) continue;
+    const [p1, p2] = route.points, now = 1e12, at = (x, y, acc = 4, age = 0) => ({ x, y, accuracyM: acc, at: now - age });
+    assert.equal(guideModel(route, sc, f, null, now, {}).state, 'wait');
+    assert.equal(guideModel(route, sc, f, at(p1.x, p1.y), now, {}).state, 'arrived', k);
+    const mid = guideModel(route, sc, f, at((p1.x + p2.x) / 2, (p1.y + p2.y) / 2), now, {});
+    assert.equal(mid.state, 'go', k); assert.match(mid.title, /Ponto 2/); assert.ok(Number.isFinite(mid.azimuth));
+    assert.equal(guideModel(route, sc, f, at(p1.x, p1.y, 4, 60000), now, {}).state, 'stale', k);
+    const off = guideModel(route, sc, f, at(p1.x + 300, p1.y + 300), now, {});
+    if (off.state === 'go') assert.ok(off.warn.length >= 1, `${k} fora da linha avisa`);
+    // fix do GPS: válido vira posição local; repetido ou antigo é recusado
+    const [lon, lat] = localToLonLat(p1.x, p1.y, f.centroidUTM), pos = { timestamp: now - 1000, coords: { longitude: lon, latitude: lat, accuracy: 5 } };
+    const local = fixToPos(pos, f, 0, now); assert.ok(Math.hypot(local.x - p1.x, local.y - p1.y) < 0.01, k);
+    assert.equal(fixToPos(pos, f, now - 1000, now), null); assert.equal(fixToPos({ ...pos, timestamp: now - 60000 }, f, 0, now), null);
+    n++;
+  }
+  assert.ok(n >= 40, `lotes testados: ${n}`);
+});

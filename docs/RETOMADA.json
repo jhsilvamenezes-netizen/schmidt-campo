@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "R4.2 plano completo na 3.0",
+  "task": "R4.3 Monitorar na 3.0",
   "owner": "Claude",
   "status": "em_andamento",
-  "nextAction": "R4.3 Monitorar (guia por GPS)",
+  "nextAction": "R4.4 arquivos, cópia de segurança, versões, safra, todos os lotes, bloco, sem internet",
   "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -54,20 +54,23 @@
     "15/11: APK só quando o proprietário pedir (não propor nem citar como próximo passo); foco em correções e melhorias do link"
   ],
   "snapshot": {
-    "at": "2026-11-15T23:11:21.182Z",
+    "at": "2026-11-15T23:16:16.392Z",
     "branch": "claude/motor-evolucao",
-    "codeCommit": "2398d79d42bc58a107b644f210d140f4dd3a3596",
+    "codeCommit": "08a08fcabd113dfd962f1d061a755f75d6209fee",
     "changedTrackedFiles": [
+      "VERSAO.json",
       "audit/app3-browser.mjs",
       "audit/app3-planner.test.mjs",
+      "index.html",
       "scripts/build-3.mjs",
       "src/app3/main.mjs",
       "src/app3/map.mjs",
-      "src/app3/planner.mjs",
-      "src/app3/shell.html",
-      "src/app3/styles.css"
+      "src/app3/styles.css",
+      "src/app3/views.mjs",
+      "src/gps/guide-next.mjs",
+      "sw.js"
     ],
-    "untrackedCount": 2
+    "untrackedCount": 1
   },
   "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",
   "developmentBranch": "codex/reescrita-motor-etapa-1"

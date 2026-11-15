@@ -97,3 +97,9 @@ nav button.on{color:var(--br)}nav button.on .ic{background:var(--br2);border-rad
 .seg.s3{grid-template-columns:repeat(3,1fr)}.seg.s3 button{padding:10px 4px;font-size:12px}
 .err{color:var(--er);min-height:18px;font-size:12px}
 .adv .two{grid-template-columns:1fr}
+.map-svg .acc{fill:var(--tr);fill-opacity:.15;stroke:var(--tr);stroke-width:1}.map-svg .me{fill:var(--tr);stroke:var(--sf);stroke-width:3}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chipb{min-width:56px;padding:8px 10px;border-radius:12px;border:1px solid var(--ln);font:700 14px system-ui}.chipb small{display:block;font:400 12px system-ui;color:var(--mu)}
+.chipb.on{background:var(--br);color:var(--on-br);border-color:var(--br)}.chipb.on small{color:inherit}
+.guide{align-items:center;text-align:center}.guide .ck{text-align:left;align-self:stretch}.guide .big{font-size:28px}.guide .dir{font:600 20px system-ui}
+.guide.arrived{background:var(--oks)}.guide.arrived .big{color:var(--ok)}
+.arrow{width:132px;height:132px}.arrow path{fill:var(--br)}.arrow text{font:700 12px system-ui;fill:var(--mu);text-anchor:middle}

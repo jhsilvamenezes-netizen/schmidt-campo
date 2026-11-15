@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/><meta name="schmidt-web" content="1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#17594a"><link rel="apple-touch-icon" href="icone-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="SCHMIDT"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <!-- 1.8: só código e imagens embutidos; nenhuma conexão com a internet (app offline) -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-FACahXEPASZCr+rECiIbiEKO32uu9qsyE8tv8ITGQUQ=' 'sha256-NVqkuWANoDOmSJXJG0zwfexIHzTpz44QZtuPs+aUCwc='; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob: 'self'; connect-src 'self' blob: data: https://services.arcgisonline.com; font-src data:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-73SxIFqUUnfXC9KoPn6fQy4TSqAaHYJ5GSxBXpFhk6g=' 'sha256-NVqkuWANoDOmSJXJG0zwfexIHzTpz44QZtuPs+aUCwc='; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob: 'self'; connect-src 'self' blob: data: https://services.arcgisonline.com; font-src data:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#123b33" name="theme-color"/>
 <title>SCHMIDT Campo · Planejamento de amostragem</title><meta property="og:type" content="website"><meta property="og:title" content="SCHMIDT Campo"><meta property="og:description" content="Planejamento de tiros e pontos de amostragem por lote, no celular e offline."><meta property="og:image" content="https://jhsilvamenezes-netizen.github.io/schmidt-campo/icone-512.png"><meta property="og:url" content="https://jhsilvamenezes-netizen.github.io/schmidt-campo/">
@@ -5633,7 +5633,8 @@ function installSchmidtAdjustCompare({ document, schmidt, events, measurements }
 
 // Projeção de um ponto numa polilinha: distância lateral e posição ao longo (s, metros desde o início).
 function schmidtProjectOnLine(line, xy) {
-  let best = null, acc = 0;
+  /** @type {any} */ let best = null;
+  let acc = 0;
   for (let i = 1; i < line.length; i++) {
     const a = line[i - 1], b = line[i], dx = b[0] - a[0], dy = b[1] - a[1], len2 = dx * dx + dy * dy, len = Math.sqrt(len2);
     const t = len2 ? Math.max(0, Math.min(1, ((xy[0] - a[0]) * dx + (xy[1] - a[1]) * dy) / len2)) : 0;
@@ -5663,7 +5664,7 @@ function schmidtGuideNextPoint(route, pos, collected, params, state) {
     return legacy;
   }
   if (!Number.isFinite(pos?.x) || !Number.isFinite(pos?.y)) return legacy;
-  let here = null;
+  /** @type {any} */ let here = null;
   (route.parts || []).forEach((part, index) => {
     if (!Array.isArray(part?.line) || part.line.length < 2) return;
     const p = schmidtProjectOnLine(part.line, [pos.x, pos.y]);

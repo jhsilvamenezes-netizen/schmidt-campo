@@ -5,9 +5,9 @@ const NICE = [50, 100, 200, 250, 500, 1000, 2000, 2500, 5000];
 
 /** Marcação SVG do lote ajustada a w × h px (margem `pad`). `small` = pontos menores (mapa do Plano). */
 /** @param {any} field @param {any} sc @param {number} w @param {number} h
- * @param {{pad?:number, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null}} [opts] */
+ * @param {{pad?:number, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null, pos?:{x:number,y:number,accuracyM:number}|null}} [opts] */
 export function mapMarkup(field, sc, w, h, opts = {}) {
-  const { pad = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null } = opts;
+  const { pad = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null } = opts;
   const pts = field.geom.flat(2), xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
   const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
   const k = Math.min((w - 2 * pad) / (x1 - x0 || 1), (h - 2 * pad) / (y1 - y0 || 1));
@@ -30,6 +30,10 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
       const [x, y] = XY(p.x, p.y);
       s += `<g class="pt${p.offTrack ? ' off' : ''}${p.id === selected ? ' sel' : ''}" data-pt="${p.id}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}"/><text x="${x.toFixed(1)}" y="${(y + fs * 0.36).toFixed(1)}" class="${small ? 'sm' : ''}">${p.number ?? ''}</text></g>`;
     }
+  }
+  if (pos) {
+    const [px, py] = XY(pos.x, pos.y), acc = Math.max(6, pos.accuracyM * k * view.k);
+    s += `<circle class="acc" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="${acc.toFixed(1)}"/><circle class="me" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="7"/>`;
   }
   const kk = k * view.k, target = (w * 0.3) / kk, len = NICE.reduce((b, v) => (Math.abs(v - target) < Math.abs(b - target) ? v : b), NICE[0]), L = len * kk;
   s += `<g class="scale" transform="translate(14 ${h - 14})"><path d="M0 -6V0H${L.toFixed(1)}V-6"/><text x="0" y="-10">${num(len)} m</text></g>`;

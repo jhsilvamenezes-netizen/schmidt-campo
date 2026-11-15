@@ -7,30 +7,39 @@ import { bundleEngine, ENGINE_MODULES } from './bundle-engine.mjs';
 import { ICONS } from '../src/app3/views.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-export const APP_MODULES = ['format', 'store', 'plan-file', 'planner', 'map', 'views', 'advanced', 'gestures', 'main'];
+/** Módulos da tela, caminho relativo a src/ (ordem: dependências primeiro). Motor: src/engine via schmidtEngine2. */
+export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', 'app3/store', 'app3/plan-file', 'app3/planner', 'app3/map', 'app3/views',
+  'app3/advanced', 'app3/gestures', 'app3/monitor', 'app3/main'];
 export const APP_VERSION = '3.0.0-dev';
+const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
-/** Cada módulo da tela no seu escopo; importações do motor viram o namespace schmidtEngine2. */
+/** Cada módulo no seu escopo; importações do motor viram o namespace schmidtEngine2. */
 async function bundleApp() {
   const parts = [];
-  for (const name of APP_MODULES) {
-    let src = await readFile(`${root}src/app3/${name}.mjs`, 'utf8');
-    const binds = [];
+  for (const id of APP_MODULES) {
+    let src = await readFile(`${root}src/${id}.mjs`, 'utf8');
+    const dir = id.split('/')[0], binds = [];
     for (const line of src.match(/^import[^\n]*\n/gm) || []) {
-      const m = /^import \{([^}]+)\} from '(\.\.\/engine|\.)\/([\w-]+)\.mjs';\s*$/.exec(line) || /^import \* as (\w+) from '(\.\.\/engine|\.)\/([\w-]+)\.mjs';\s*$/.exec(line);
-      if (!m) throw Error(`Importação fora do contrato em ${name}: ${line.trim()}`);
-      const from = m[2] === '.' ? `__app_${m[3].replace(/-/g, '_')}` : `schmidtEngine2.${m[3]}`;
-      if (m[2] === '.' && APP_MODULES.indexOf(m[3]) >= APP_MODULES.indexOf(name)) throw Error(`Ordem: ${name} importa ${m[3]}`);
-      if (m[2] !== '.' && !ENGINE_MODULES.includes(m[3])) throw Error(`Módulo do motor inexistente: ${m[3]}`);
-      binds.push(line.includes('* as') ? `const ${m[1]} = ${from};` : `const { ${m[1].split(',').map(x => x.trim()).filter(Boolean).map(x => x.replace(/^(\w+) as (\w+)$/, '$1: $2')).join(', ')} } = ${from};`);
+      const m = /^import (?:\{([^}]+)\}|\* as (\w+)) from '(\.\.?)\/([\w-]+)(?:\/([\w-]+))?\.mjs';\s*$/.exec(line);
+      if (!m) throw Error(`Importação fora do contrato em ${id}: ${line.trim()}`);
+      const target = m[3] === '.' ? `${dir}/${m[4]}` : `${m[4]}/${m[5]}`;
+      let from;
+      if (target.startsWith('engine/')) {
+        if (!ENGINE_MODULES.includes(target.slice(7))) throw Error(`Módulo do motor inexistente: ${target}`);
+        from = `schmidtEngine2.${target.slice(7)}`;
+      } else {
+        if (!(APP_MODULES.indexOf(target) >= 0 && APP_MODULES.indexOf(target) < APP_MODULES.indexOf(id))) throw Error(`Ordem ou módulo ausente: ${id} importa ${target}`);
+        from = ident(target);
+      }
+      binds.push(m[2] ? `const ${m[2]} = ${from};` : `const { ${m[1].split(',').map(x => x.trim()).filter(Boolean).map(x => x.replace(/^(\w+) as (\w+)$/, '$1: $2')).join(', ')} } = ${from};`);
     }
     src = src.replace(/^import[^\n]*\n/gm, '');
     const exported = [...src.matchAll(/^export (?:async )?(?:function|const|class) ([A-Za-z_$][\w$]*)/gm)].map(m => m[1]);
     const reexp = [...src.matchAll(/^export \{([^}]+)\};?\s*$/gm)].flatMap(m => m[1].split(',').map(x => x.trim()));
     src = src.replace(/^export \{[^}]+\};?\s*$/gm, '').replace(/^export /gm, '');
-    parts.push(`// src/app3/${name}.mjs\nconst __app_${name.replace(/-/g, '_')}=(()=>{\n${binds.join('\n')}\n${src}\nreturn Object.freeze({${[...exported, ...reexp].join(',')}});\n})();`);
+    parts.push(`// src/${id}.mjs\nconst ${ident(id)}=(()=>{\n${binds.join('\n')}\n${src}\nreturn Object.freeze({${[...exported, ...reexp].join(',')}});\n})();`);
   }
-  return `(()=>{\n'use strict';\n${parts.join('\n')}\n__app_main.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,appVersion:'${APP_VERSION}'});\n})();`;
+  return `(()=>{\n'use strict';\n${parts.join('\n')}\n${ident('app3/main')}.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,appVersion:'${APP_VERSION}'});\n})();`;
 }
 
 const sha = t => `'sha256-${createHash('sha256').update(t).digest('base64')}'`;

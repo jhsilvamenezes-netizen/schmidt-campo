@@ -7,6 +7,7 @@ import { esc, num } from './format.mjs';
 import { buildPlanFile, parsePlanFile } from './plan-file.mjs';
 import { advancedForm, applyField } from './advanced.mjs';
 import { attachGestures } from './gestures.mjs';
+import { routeFor, fixToPos, guideModel } from './monitor.mjs';
 import { buildRoute } from '../engine/guidance.mjs';
 import { toCSV, toGeoJSON, toGPX, toKML } from '../engine/exporters.mjs';
 import { explainScenario } from '../engine/explain.mjs';
@@ -29,6 +30,8 @@ export function startApp({ document, window, fields, appVersion }) {
   const recents = () => { try { return JSON.parse(window.localStorage.getItem(RECENT_KEY) || '[]').filter(k => fields[k]); } catch { return []; } };
   const pushRecent = k => { try { window.localStorage.setItem(RECENT_KEY, JSON.stringify([k, ...recents().filter(x => x !== k)].slice(0, 4))); } catch { /* sem armazenamento: só não lembra */ } };
   let view = { k: 1, x: 0, y: 0 };
+  /** Guia: tiro, sentido, GPS ligado, última posição, memória da sessão, trava de tela. */
+  /** @type {any} */ const mon = { trackId: null, flipped: false, active: false, watchId: null, pos: null, session: {}, wake: null, arrivedId: null, ticker: 0 };
   /** @type {string|null} */ let selectedPt = null;
   /** @type {any} */ let cur = null;
 
@@ -68,7 +71,7 @@ export function startApp({ document, window, fields, appVersion }) {
     for (const el of document.querySelectorAll('[data-map]')) {
       const r = el.getBoundingClientRect();
       if (r.width < 10 || r.height < 10) continue;
-      el.innerHTML = mapMarkup(cur.field, cur.sc, Math.round(r.width), Math.round(r.height), { small: el.dataset.map === 'small', pad: el.dataset.map === 'small' ? 22 : 30, view, selected: selectedPt })
+      el.innerHTML = mapMarkup(cur.field, cur.sc, Math.round(r.width), Math.round(r.height), { small: el.dataset.map !== 'full', pad: el.dataset.map !== 'full' ? 22 : 30, view, selected: el.dataset.map === 'guide' ? (mon.active ? monitorData().target : null) : selectedPt, pos: el.dataset.map === 'guide' ? mon.pos : null })
         + (view.k > 1.01 ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : '') + balloon();
       if (!el.dataset.g) {
         el.dataset.g = '1';
@@ -83,6 +86,38 @@ export function startApp({ document, window, fields, appVersion }) {
     const parts = [i.prevM != null && `anterior ${num(i.prevM)} m`, i.nextM != null && `próximo ${num(i.nextM)} m`].filter(Boolean).join(' · ');
     return `<div class="bal" role="status"><b>Ponto ${num(i.number)} · ${esc(i.trackId)}</b>${parts ? `<span>${parts} (andando)</span>` : ''}<span>borda a ${num(i.edgeM)} m</span></div>`;
   }
+  function monitorData() {
+    const sc = cur.sc, tasks = new Map();
+    (cur.split?.pessoas || []).forEach((p, i) => p.tarefas.forEach(t => tasks.set(t.id, `Pessoa ${i + 1}`)));
+    const tracks = sc.selected.filter(t => sc.units.some(u => u.trackId === t.id)).map(t => ({ id: t.id, person: tasks.get(t.id) }));
+    if (!tracks.some(t => t.id === mon.trackId)) mon.trackId = tracks[0]?.id ?? null;
+    const route = mon.trackId ? routeFor(sc, cur.field, mon.trackId, mon.flipped) : null;
+    const model = route && mon.active ? guideModel(route, sc, cur.field, mon.pos, Date.now(), mon.session) : null;
+    if (model?.state === 'arrived' && model.next?.id !== mon.arrivedId) { mon.arrivedId = model.next.id; try { window.navigator.vibrate?.([200, 80, 200]); } catch { /* sem vibração */ } }
+    return { tracks, trackId: mon.trackId, flipped: mon.flipped, active: mon.active, model, steps: route?.instructions || [], target: model?.next?.id ?? null };
+  }
+  async function keepAwake(on) {
+    try {
+      if (on && !mon.wake && window.navigator.wakeLock) mon.wake = await window.navigator.wakeLock.request('screen');
+      else if (!on && mon.wake) { await mon.wake.release(); mon.wake = null; }
+    } catch { mon.wake = null; /* aparelho sem permissão: a guia funciona igual */ }
+  }
+  function gpsStart() {
+    const geo = window.navigator.geolocation;
+    if (!geo) { toast('Este aparelho não oferece GPS ao navegador.'); return; }
+    mon.active = true; mon.pos = null; mon.session = {}; mon.arrivedId = null;
+    mon.watchId = geo.watchPosition(position => {
+      const pos = fixToPos(position, cur.field, mon.pos?.at ?? 0, Date.now());
+      if (pos) { mon.pos = pos; if (ui.view === 'monitorar') render(); }
+    }, err => { toast(err.code === 1 ? 'Permita a localização para usar a guia.' : 'GPS indisponível agora.'); }, { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
+    keepAwake(true); clearInterval(mon.ticker); mon.ticker = setInterval(() => { if (mon.active && ui.view === 'monitorar') render(); }, 5000);
+    render();
+  }
+  function gpsStop() {
+    if (mon.watchId !== null) window.navigator.geolocation?.clearWatch(mon.watchId);
+    mon.watchId = null; mon.active = false; clearInterval(mon.ticker); keepAwake(false); render();
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && mon.active) keepAwake(true); });
   function render() {
     const c = compute(), main = $('#view');
     $('#lot-name').textContent = c.field.code;
@@ -92,7 +127,7 @@ export function startApp({ document, window, fields, appVersion }) {
     if (ui.view === 'mapa') main.innerHTML = V.mapaView(c);
     else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint, people: people(), rows: c.sc.trackRows });
     else if (ui.view === 'enviar') main.innerHTML = V.enviarView(c);
-    else main.innerHTML = '<div class="scroll"><section class="card"><h2 class="big md">Guia por GPS</h2><p class="mu">Chega na próxima etapa da 3.0. Até lá, use a guia da versão 2.5.</p></section></div>';
+    else main.innerHTML = V.monitorView(monitorData());
     requestAnimationFrame(drawMaps);
   }
 
@@ -133,6 +168,9 @@ export function startApp({ document, window, fields, appVersion }) {
   const reopenAdvanced = () => { if (host.querySelector('[data-adv]')) SHEETS.ajustes(); };
   const ACTIONS = {
     fit: () => { view = { k: 1, x: 0, y: 0 }; drawMaps(); },
+    'gps-start': () => gpsStart(),
+    'gps-stop': () => gpsStop(),
+    flip: () => { mon.flipped = !mon.flipped; mon.session = {}; render(); },
     optimize() {
       const r = P.optimizeEdits(cur.field, cur.params);
       if (!r.edits) { toast('Nenhuma distribuição melhor sem piorar a regularidade.'); return; }
@@ -164,7 +202,8 @@ export function startApp({ document, window, fields, appVersion }) {
     if (t.dataset.tab) { ui.view = t.dataset.tab; render(); return; }
     if (t.dataset.go) { ui.view = t.dataset.go; render(); return; }
     if (t.dataset.open) { SHEETS[t.dataset.open]?.(); return; }
-    if (t.dataset.lot) { ui.key = t.dataset.lot; pushRecent(ui.key); view = { k: 1, x: 0, y: 0 }; selectedPt = null; store.update({ fieldKey: ui.key }); closeSheet(); render(); return; }
+    if (t.dataset.track) { mon.trackId = t.dataset.track; mon.session = {}; mon.arrivedId = null; render(); return; }
+    if (t.dataset.lot) { if (mon.active) gpsStop(); mon.trackId = null; ui.key = t.dataset.lot; pushRecent(ui.key); view = { k: 1, x: 0, y: 0 }; selectedPt = null; store.update({ fieldKey: ui.key }); closeSheet(); render(); return; }
     if (t.hasAttribute('data-toast')) { const a = toastAction; $('#toast').innerHTML = ''; toastAction = null; a?.run(); return; }
     if (t.dataset.set) { advancedChange(t.dataset.set, t.dataset.v); return; }
     if (t.dataset.act) { ACTIONS[t.dataset.act]?.(); return; }

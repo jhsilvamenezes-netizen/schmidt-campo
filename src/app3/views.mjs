@@ -64,3 +64,15 @@ ${findings.length ? findings.map(x => `<p class="ck ${x.level === 'info' ? 'info
 }
 
 export const calculoBody = steps => steps.map(s => `<details class="ex"><summary>${esc(s.etapa)}</summary>${s.texto.map(t => `<p>${esc(t)}</p>`).join('')}</details>`).join('');
+
+/** Guia por GPS: escolha do tiro, seta, distância e avisos. Sem marcação de coleta. */
+export function monitorView({ tracks, trackId, flipped, active, model, steps }) {
+  const pick = `<div class="chips" role="group" aria-label="Tiro">${tracks.map(t => `<button class="chipb${t.id === trackId ? ' on' : ''}" data-track="${esc(t.id)}" aria-pressed="${t.id === trackId}">${esc(t.id)}${t.person ? `<small>${esc(t.person)}</small>` : ''}</button>`).join('')}</div>`;
+  const head = `<section class="card">${pick}<div class="row-sb"><p class="mu">Sentido: ${flipped ? 'invertido' : 'do plano'}</p><button class="link" data-act="flip">Inverter</button></div></section>`;
+  if (!active) return `<div class="map sm" data-map="guide"></div><div class="scroll">${head}<button class="btn p" data-act="gps-start">Iniciar guia</button>
+<details class="ex card"><summary>Roteiro sem GPS</summary>${steps.map(t => `<p>${esc(t)}</p>`).join('')}</details></div>`;
+  const cur = tracks.find(t => t.id === trackId), m = model, arrow = Number.isFinite(m.azimuth) ? `<svg class="arrow" viewBox="-50 -60 100 110" aria-hidden="true"><g transform="rotate(${m.azimuth.toFixed(0)})"><path d="M0 -40L22 22L0 10L-22 22Z"/></g><text x="0" y="-48">N</text></svg>` : '';
+  return `<div class="map sm" data-map="guide"></div><div class="scroll"><div class="row-sb"><p><b>${esc(trackId)}</b>${cur?.person ? ` · ${esc(cur.person)}` : ''} · ${flipped ? 'sentido invertido' : 'sentido do plano'}</p><button class="link" data-act="gps-stop">Parar</button></div>
+<section class="card guide ${m.state}" aria-live="polite"><p class="mu">${esc(m.title)}</p>${arrow}${m.big ? `<p class="big">${esc(m.big)}</p>` : ''}${m.dir ? `<p class="dir">${esc(m.dir)}</p>` : ''}
+${m.info ? `<p class="mu">${esc(m.info)}</p>` : ''}${(m.warn || []).map(w => `<p class="ck alerta">${esc(w)}</p>`).join('')}</section></div>`;
+}

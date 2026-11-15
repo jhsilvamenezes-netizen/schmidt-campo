@@ -6,6 +6,10 @@ import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { build3 } from '../scripts/build-3.mjs';
+import { loadFields } from './legacy-engine.mjs';
+import * as P from '../src/app3/planner.mjs';
+import { routeFor } from '../src/app3/monitor.mjs';
+import { localToLonLat } from '../src/engine/projection.mjs';
 
 await build3();
 const dir = fileURLToPath(new URL('../build/3/', import.meta.url));
@@ -78,6 +82,30 @@ try {
     const [csv] = await Promise.all([p.waitForEvent('download'), p.click('[data-act="csv"]')]);
     assert.match(csv.suggestedFilename(), /\.csv$/);
     assert.deepStrictEqual(errors, [], `${colorScheme}: erros no console`);
+    await ctx.close();
+  }
+  // R4.3 · Monitorar com GPS simulado: no ponto 1 do T1 → "Chegou"; 150 m antes → seta e distância
+  {
+    const fields = await loadFields(), f = fields['Bananal|BD3'], rec = P.recommend(f, {}, 5, false), sc = P.planInUse(f, rec.chosen.params, null);
+    const route = routeFor(sc, f, 'T1', false), p1 = route.points[0], [lon, lat] = localToLonLat(p1.x, p1.y, f.centroidUTM);
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'pt-BR', permissions: ['geolocation'], geolocation: { longitude: lon, latitude: lat, accuracy: 4 } });
+    await ctx.addInitScript(() => { window.__vib = 0; navigator.vibrate = () => { window.__vib++; return true; }; });
+    const p = await ctx.newPage(), errors = [];
+    p.on('pageerror', e => errors.push(e.message));
+    await p.goto(url); await ready(p);
+    await p.click('button.lot'); await p.click('[data-lot="Bananal|BD3"]'); await p.click('[data-tab="monitorar"]');
+    assert.ok(await p.locator('[data-track]').count() === 5);
+    await p.click('[data-act="gps-start"]');
+    await p.waitForSelector('.guide.arrived', { timeout: 10000 });
+    assert.match(await p.textContent('.guide'), /Chegou ao ponto 1 de 4/);
+    assert.ok(await p.evaluate(() => window.__vib) >= 1, 'vibrou ao chegar');
+    const second = route.points[1], [lon2, lat2] = localToLonLat((p1.x + second.x) / 2, (p1.y + second.y) / 2, f.centroidUTM);
+    await ctx.setGeolocation({ longitude: lon2, latitude: lat2, accuracy: 4 });
+    await p.waitForSelector('.guide.go', { timeout: 10000 });
+    assert.match(await p.textContent('.guide'), /Próximo: Ponto 2 de 4.*\d+ m.*para o/s);
+    await p.waitForSelector('.map-svg .me');
+    await p.click('[data-act="gps-stop"]'); assert.ok(await p.locator('[data-act="gps-start"]').count());
+    assert.deepStrictEqual(errors, []);
     await ctx.close();
   }
   console.log('3.0 no navegador: claro e escuro, sem erro, sem rolagem lateral, regras de palavras e arquivos ok');
