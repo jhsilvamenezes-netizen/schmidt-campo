@@ -8,16 +8,25 @@ import { buildPlanFile, parsePlanFile } from './plan-file.mjs';
 import { advancedForm, applyField } from './advanced.mjs';
 import { attachGestures } from './gestures.mjs';
 import { routeFor, fixToPos, guideModel } from './monitor.mjs';
+import { createVersions } from './versions.mjs';
+import { makeBackup, readBackup, ITEM_LABELS } from './backup.mjs';
+import { createSchmidtBackupService } from '../persistence/backup-service.mjs';
+import { createSchmidtJournal, createSchmidtImageRepository } from '../platform/browser-backup-adapters.mjs';
 import { buildRoute } from '../engine/guidance.mjs';
 import { toCSV, toGeoJSON, toGPX, toKML } from '../engine/exporters.mjs';
 import { explainScenario } from '../engine/explain.mjs';
 import { assessField } from '../engine/dataQuality.mjs';
 
-export function startApp({ document, window, fields, appVersion }) {
+/** @param {{document:any, window:any, fields:any, appVersion:string, safra?:any}} opts */
+export function startApp({ document, window, fields, appVersion, safra = null }) {
   const $ = s => document.querySelector(s), store = createStore(window.localStorage);
   const keys = Object.keys(fields).sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true }));
   const ui = { view: 'mapa', key: fields[store.get().fieldKey] ? store.get().fieldKey : keys[0] };
   const recCache = new Map();
+  const versions = createVersions(window.indexedDB);
+  const backupService = window.indexedDB ? createSchmidtBackupService({ storage: window.localStorage, images: createSchmidtImageRepository(window.indexedDB), history: versions.history, journal: createSchmidtJournal(window.indexedDB) }) : null;
+  let versionTimer = 0;
+  /** @type {any} */ let pendingRestore = null;
   let toastTimer = 0;
   /** @type {any} */ let toastAction = null;
   /** Aviso curto; com `action`, mostra um botão (ex.: Desfazer) durante 6 s. */
@@ -37,8 +46,8 @@ export function startApp({ document, window, fields, appVersion }) {
 
   const saved = () => store.get();
   const people = () => Math.max(1, Math.min(60, Math.round(saved().quickMonitors ?? 5)));
-  function recFor(field, base) {
-    const id = `${ui.key}|${JSON.stringify(base)}|${people()}|${!!saved().fitTeam}`;
+  function recFor(field, base, key = ui.key) {
+    const id = `${key}|${JSON.stringify(base)}|${people()}|${!!saved().fitTeam}`;
     if (!recCache.has(id)) recCache.set(id, P.recommend(field, base, people(), saved().fitTeam));
     return recCache.get(id);
   }
@@ -63,7 +72,7 @@ export function startApp({ document, window, fields, appVersion }) {
       store.update({ paramsByField: { ...(cur.paramsByField || {}), [key]: p }, editsByField: editsBy, fieldKey: key });
     };
     write(params, edits);
-    render();
+    render(); scheduleVersion();
     toast(msg, { label: 'Desfazer', run: () => { write(before.params, before.edits ?? null); ui.key = key; render(); toast('Desfeito'); } });
   }
 
@@ -79,6 +88,15 @@ export function startApp({ document, window, fields, appVersion }) {
           onTap: target => { const g = target.closest?.('[data-pt]'); selectedPt = g ? g.dataset.pt : null; drawMaps(); } });
       }
     }
+  }
+  /** Guarda uma versão do plano quando ele para de mudar (4 s), como na 2.x. */
+  function scheduleVersion() {
+    clearTimeout(versionTimer);
+    versionTimer = setTimeout(() => {
+      const st = saved(), key = ui.key, sc = cur.sc;
+      versions.save(key, { params: st.paramsByField?.[key] ?? null, edits: st.editsByField?.[key] ?? null },
+        [`${sc.selected.length} tiros`, `${sc.samples.length} pontos`, `95% < ${num(sc.coverage.p95 ?? 0)} m`, `1 ponto a cada ${sc.params.haPerPoint} ha`].join(' · '));
+    }, 4000);
   }
   function balloon() {
     const i = /** @type {any} */ (selectedPt && P.pointInfo(cur.field, cur.sc, selectedPt));
@@ -148,14 +166,43 @@ export function startApp({ document, window, fields, appVersion }) {
   }
   const lotPicker = () => `<input class="search" type="search" placeholder="Buscar lote ou fazenda" aria-label="Buscar lote ou fazenda" data-search><div data-lots>${lotList()}</div>`;
   const SHEETS = {
-    menu: () => openSheet('Mais', V.menuBody([['dados', 'Dados do lote'], ['calculo', 'Como foi calculado'], ['abrir', 'Abrir plano recebido']])),
+    menu: () => openSheet('Mais', V.menuBody([['todos', 'Todos os lotes'], ['dados', 'Dados do lote'], ['calculo', 'Como foi calculado'], ['versoes', 'Versões anteriores'],
+      ['copia', 'Cópia de segurança'], ['abrir', 'Abrir plano recebido']])),
+    todos: () => { openSheet('Todos os lotes', '<p class="mu">Calculando…</p>'); setTimeout(() => { if (host.innerHTML) openSheet('Todos os lotes', V.allLotsBody(allLots())); }, 30); },
+    versoes: async () => { openSheet(`Versões · ${cur.field.code}`, '<p class="mu">…</p>'); const rows = await versions.list(ui.key); openSheet(`Versões · ${cur.field.code}`, V.versionsBody(rows)); },
+    copia: () => openSheet('Cópia de segurança', V.backupBody('', lastBackup())),
     lote: () => openSheet('Escolher lote', lotPicker()),
-    dados: () => openSheet(`Dados · ${cur.field.code}`, V.dadosBody(cur.field, assessField(cur.field))),
+    dados: () => openSheet(`Dados · ${cur.field.code}`, V.dadosBody(cur.field, assessField(cur.field), safra?.data?.[ui.key], safra?.source)),
     calculo: () => openSheet('Como foi calculado', V.calculoBody(explainScenario(cur.sc, cur.field))),
     ajustes: () => openSheet('Ajustes avançados', advancedForm(cur.params, cur.sc, saved().fitTeam)),
     abrir: () => { closeSheet(); $('#plan-input').click(); },
   };
 
+  /** Plano salvo (ou recomendado) de cada lote, para a visão geral. */
+  function allLots() {
+    const st = saved();
+    return keys.map(k => {
+      const f = fields[k], params = st.paramsByField?.[k] ?? { ...recFor(f, {}, k).chosen.params };
+      try { const sc = P.planInUse(f, params, st.editsByField?.[k]); return { key: k, code: f.code, farm: f.farm, pontos: sc.samples.length, tiros: sc.selected.length, p95: sc.coverage.p95, alerts: sc.warnings.filter(w => w.level !== 'info').length }; }
+      catch { return { key: k, code: f.code, farm: f.farm, pontos: 0, tiros: 0, p95: null, alerts: 1 }; }
+    });
+  }
+  const LAST_BACKUP = 'schmidt3.ultimaCopia';
+  const lastBackup = () => { try { const t = window.localStorage.getItem(LAST_BACKUP); return t ? new Date(+t).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : ''; } catch { return ''; } };
+  const stamp = () => { const d = new Date(), z = v => String(v).padStart(2, '0'); return `${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}`; };
+  const toBase64 = blob => new Promise((ok, ko) => { const r = new window.FileReader(); r.onload = () => ok(String(r.result).split(',')[1] || ''); r.onerror = () => ko(r.error); r.readAsDataURL(blob); });
+  const fromBase64 = (b, type) => { const s = window.atob(b), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return new Blob([u], { type: type || 'image/png' }); };
+  async function doBackup() {
+    if (!backupService) throw Error('este navegador não guarda dados locais');
+    return makeBackup({ service: backupService, subtle: window.crypto.subtle, encodeBlob: toBase64, version: appVersion, engine: P.ENGINE_LABEL });
+  }
+  function printFichas() {
+    const people = new Map(); (cur.split?.pessoas || []).forEach((p, i) => p.tarefas.forEach(t => people.set(t.id, `Pessoa ${i + 1}`)));
+    const mapFor = id => mapMarkup(cur.field, { ...cur.sc, samples: cur.sc.samples.filter(s => s.trackId === id) }, 700, 240, { pad: 16 });
+    let box = $('#print'); if (!box) { box = document.createElement('div'); box.id = 'print'; document.body.append(box); }
+    box.innerHTML = V.fichasMarkup(cur.field, routes(), people, mapFor);
+    window.print();
+  }
   // ---------- ações de envio ----------
   const status = msg => { const s = $('#status'); if (s) s.textContent = msg; };
   function download(text, name, type) {
@@ -168,6 +215,22 @@ export function startApp({ document, window, fields, appVersion }) {
   const reopenAdvanced = () => { if (host.querySelector('[data-adv]')) SHEETS.ajustes(); };
   const ACTIONS = {
     fit: () => { view = { k: 1, x: 0, y: 0 }; drawMaps(); },
+    fichas: () => printFichas(),
+    async backup() {
+      try { const b = await doBackup(); download(JSON.stringify(b), `schmidt_copia_${stamp()}.json`, 'application/json'); try { window.localStorage.setItem(LAST_BACKUP, String(Date.now())); } catch { /* só não lembra */ } toast('Cópia de segurança baixada.'); }
+      catch (e) { toast(`Cópia não feita: ${/** @type {Error} */ (e).message}.`); }
+    },
+    'restore-pick': () => $('#backup-input').click(),
+    async 'restore-go'() {
+      if (!pendingRestore) return;
+      try { const before = await doBackup(); download(JSON.stringify(before), `schmidt_antes_de_restaurar_${stamp()}.json`, 'application/json'); } catch { /* sem cópia anterior possível: segue com o diário de restauração */ }
+      try {
+        const b = pendingRestore;
+        if (!backupService) return;
+        await backupService.restore({ data: b.dados, images: b.imagens.map(i => ({ key: i.chave, rec: { blob: fromBase64(i.base64, i.tipo), name: i.nome, world: i.world, width: i.largura, height: i.altura, crs: i.crs } })), history: b.historico || [], legacy: !!b.legado });
+        toast('Restaurado. Abrindo de novo…'); setTimeout(() => window.location.reload(), 600);
+      } catch (e) { toast(`Falha ao restaurar: ${/** @type {Error} */ (e).message}.`); }
+    },
     'gps-start': () => gpsStart(),
     'gps-stop': () => gpsStop(),
     flip: () => { mon.flipped = !mon.flipped; mon.session = {}; render(); },
@@ -202,6 +265,7 @@ export function startApp({ document, window, fields, appVersion }) {
     if (t.dataset.tab) { ui.view = t.dataset.tab; render(); return; }
     if (t.dataset.go) { ui.view = t.dataset.go; render(); return; }
     if (t.dataset.open) { SHEETS[t.dataset.open]?.(); return; }
+    if (t.dataset.ver) { versions.list(ui.key).then(rows => { const r = rows.find(x => String(x.id) === t.dataset.ver); if (r?.estado?.params) { closeSheet(); setParams(r.estado.params, 'Versão anterior em uso', r.estado.edits ?? null); } }); return; }
     if (t.dataset.track) { mon.trackId = t.dataset.track; mon.session = {}; mon.arrivedId = null; render(); return; }
     if (t.dataset.lot) { if (mon.active) gpsStop(); mon.trackId = null; ui.key = t.dataset.lot; pushRecent(ui.key); view = { k: 1, x: 0, y: 0 }; selectedPt = null; store.update({ fieldKey: ui.key }); closeSheet(); render(); return; }
     if (t.hasAttribute('data-toast')) { const a = toastAction; $('#toast').innerHTML = ''; toastAction = null; a?.run(); return; }
@@ -226,6 +290,9 @@ export function startApp({ document, window, fields, appVersion }) {
       store.update({ quickMonitors: v }); render();
     } else if (t.form?.hasAttribute('data-adv')) {
       advancedChange(t.name, t.type === 'checkbox' ? t.checked : t.value);
+    } else if (t.id === 'backup-input' && t.files?.[0]) {
+      t.files[0].text().then(text => readBackup(text, window.crypto.subtle)).then(({ backup, items }) => { pendingRestore = backup; openSheet('Restaurar cópia', V.backupBody(V.restoreConfirm(items, ITEM_LABELS), lastBackup())); })
+        .catch(err => toast(`Cópia recusada: ${err.message}.`)).finally(() => { t.value = ''; });
     } else if (t.id === 'plan-input' && t.files?.[0]) {
       t.files[0].text().then(text => {
         const p = parsePlanFile(text, fields), st = saved();
@@ -248,6 +315,7 @@ export function startApp({ document, window, fields, appVersion }) {
   $('#sol').addEventListener('click', () => { const on = !saved().sunMode; store.update({ sunMode: on }); document.documentElement.classList.toggle('sun', on); });
   document.documentElement.classList.toggle('sun', !!saved().sunMode);
   new window.ResizeObserver(() => cur && drawMaps()).observe($('#view'));
+  backupService?.recover().catch(() => toast('Restauração anterior incompleta: faça uma nova cópia.'));
   pushRecent(ui.key);
   render();
   document.documentElement.dataset.ready = '1';

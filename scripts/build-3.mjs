@@ -9,7 +9,8 @@ import { ICONS } from '../src/app3/views.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
 /** Módulos da tela, caminho relativo a src/ (ordem: dependências primeiro). Motor: src/engine via schmidtEngine2. */
 export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', 'app3/store', 'app3/plan-file', 'app3/planner', 'app3/map', 'app3/views',
-  'app3/advanced', 'app3/gestures', 'app3/monitor', 'app3/main'];
+  'app3/advanced', 'app3/gestures', 'app3/monitor', 'persistence/backup-service', 'persistence/backup-format', 'platform/browser-backup-adapters',
+  'app3/versions', 'app3/backup', 'app3/main'];
 export const APP_VERSION = '3.0.0-dev';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
@@ -39,7 +40,7 @@ async function bundleApp() {
     src = src.replace(/^export \{[^}]+\};?\s*$/gm, '').replace(/^export /gm, '');
     parts.push(`// src/${id}.mjs\nconst ${ident(id)}=(()=>{\n${binds.join('\n')}\n${src}\nreturn Object.freeze({${[...exported, ...reexp].join(',')}});\n})();`);
   }
-  return `(()=>{\n'use strict';\n${parts.join('\n')}\n${ident('app3/main')}.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,appVersion:'${APP_VERSION}'});\n})();`;
+  return `(()=>{\n'use strict';\n${parts.join('\n')}\n${ident('app3/main')}.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),appVersion:'${APP_VERSION}'});\n})();`;
 }
 
 const sha = t => `'sha256-${createHash('sha256').update(t).digest('base64')}'`;
@@ -48,13 +49,15 @@ export async function build3() {
   const current = await readFile(root + 'index.html', 'utf8');
   const fields = /<script id="fields-data" type="application\/json">([\s\S]*?)<\/script>/.exec(current)?.[1];
   if (!fields) throw Error('Dados dos lotes não encontrados');
+  const safra = /<script id="safra-dados" type="application\/json">([\s\S]*?)<\/script>/.exec(current)?.[1];
+  if (!safra) throw Error('Dados da safra não encontrados');
   const [engine, app, css, shell] = [await bundleEngine(), await bundleApp(), await readFile(root + 'src/app3/styles.css', 'utf8'), await readFile(root + 'src/app3/shell.html', 'utf8')];
-  for (const [n, t] of [['motor', engine], ['tela', app], ['dados', fields]]) if (/<\/script/i.test(t)) throw Error(`${n} contém </script>`);
+  for (const [n, t] of [['motor', engine], ['tela', app], ['dados', fields], ['safra', safra]]) if (/<\/script/i.test(t)) throw Error(`${n} contém </script>`);
   const nav = [['mapa', 'Mapa'], ['plano', 'Plano'], ['enviar', 'Enviar'], ['monitorar', 'Monitorar']]
     .map(([k, l]) => `<button data-tab="${k}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>${l}</button>`).join('');
   const csp = `default-src 'self'; script-src ${sha(engine)} ${sha(app)}; style-src ${sha(css)}; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'`;
   const html = shell.replace('__CSP__', csp).replace('__CSS__', () => css).replace('__ICON_SOL__', ICONS.sol).replace('__ICON_MAIS__', ICONS.mais)
-    .replace('__NAV__', nav).replace('__FIELDS__', () => fields).replace('__ENGINE__', () => engine).replace('__APP__', () => app);
+    .replace('__NAV__', nav).replace('__FIELDS__', () => fields).replace('__SAFRA__', () => safra).replace('__ENGINE__', () => engine).replace('__APP__', () => app);
   if (/__[A-Z_]+__/.test(html)) throw Error('Marcador do modelo sem valor');
   if (/\sstyle=/.test(html.replace(/<script[\s\S]*?<\/script>/g, ''))) throw Error('Estilo inline no HTML (CSP)');
   await mkdir(root + 'build/3', { recursive: true });

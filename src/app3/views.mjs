@@ -46,8 +46,8 @@ export function enviarView({ list, split }) {
 ${list.map(c => `<p class="ck ${c.level}">${esc(c.text)}</p>`).join('')}</section>
 ${split ? `<section class="card list"><h2 class="h">Equipe</h2>${split.pessoas.map((p, i) => `<div class="li"><span class="id">${esc(p.tarefas.map(t => t.id).join('+'))}</span><span class="x">Pessoa ${i + 1} <small>· ${esc(p.tarefas.map(t => `${t.entra ? `entra a ${t.entra} · ` : ''}pontos\u00a0${t.de ?? "—"}–${t.ate ?? "—"}`).join(" · "))}</small></span><span class="r">${km(p.m)} km</span></div>`).join('')}</section>` : ''}
 <button class="btn p" data-act="share">Enviar plano aos monitores</button>
-<div class="two"><button class="btn" data-act="gpx">GPX dos tiros</button><button class="btn" data-act="copy">Copiar resumo</button></div>
-<p class="center"><button class="link" data-act="csv">CSV</button> · <button class="link" data-act="geojson">GeoJSON</button> · <button class="link" data-act="kml">KML</button></p>
+<div class="two"><button class="btn" data-act="fichas">Fichas de campo</button><button class="btn" data-act="copy">Copiar resumo</button></div>
+<p class="center"><button class="link" data-act="gpx">GPX</button> · <button class="link" data-act="kml">KML</button> · <button class="link" data-act="csv">CSV</button> · <button class="link" data-act="geojson">GeoJSON</button></p>
 <p class="status" role="status" id="status"></p></div>`;
 }
 
@@ -55,12 +55,17 @@ export const sheet = (title, body) => `<div class="ov" data-close><section class
 
 export const menuBody = items => items.map(([id, label]) => `<button class="lnk" data-open="${id}">${esc(label)}</button>`).join('');
 
-export function dadosBody(field, findings) {
-  const rows = [['Fazenda', field.farm], ['Lote', field.code], ['Área publicada', `${num(field.areaOfficialHa, 2)} ha`],
-    ['Desenho (KML)', field.areaKMLHa ? `${num(field.areaKMLHa, 2)} ha` : '—'], ['Rumo da planilha', Number.isFinite(field.bearing) ? `${num(field.bearing, 1)}°` : '—']];
+const dateBR = d => (d ? d.split('-').reverse().join('/') : '—');
+export function dadosBody(field, findings, safra, source) {
+  const c = safra?.cadastro || {}, st = safra?.stand || {}, rain = safra?.chuva || [], mm = rain.reduce((a, r) => a + (r.mm || 0), 0);
+  const rows = [['Área publicada', `${num(field.areaOfficialHa, 2)} ha`], ['Desenho (KML)', field.areaKMLHa ? `${num(field.areaKMLHa, 2)} ha` : '—'],
+    ['Rumo da planilha', Number.isFinite(field.bearing) ? `${num(field.bearing, 1)}°` : '—']];
+  if (safra) rows.push(['Cultivar', c.variety || '—'], ['Sistema', c.system || '—'], ['Plantio', c.sowingStart ? `${dateBR(c.sowingStart)}${c.sowingEnd && c.sowingEnd !== c.sowingStart ? ` a ${dateBR(c.sowingEnd)}` : ''}` : '—'],
+    ['Sementes/ha', c.seedsHa ? num(c.seedsHa) : '—'], ['Germinação', c.germinationFraction ? `${num(c.germinationFraction * 100)}%` : '—'],
+    ['Stand', st.plantsHa ? `${num(st.plantsHa)} pl/ha (meta ${num(st.goalPlantsHa)})` : 'não medido'], ['Chuva registrada', rain.length ? `${num(mm, 1)} mm em ${rain.length} registros` : '—']);
   return `<dl class="dl">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
 ${findings.length ? findings.map(x => `<p class="ck ${x.level === 'info' ? 'info' : x.level}">${esc(x.message)}</p>`).join('') : '<p class="ck ok">Sem alertas nos dados do lote.</p>'}
-<p class="mu">Limites do KML 2024/25, não homologados.</p>`;
+<p class="mu">Limites do KML 2024/25, não homologados.${source ? ` Safra: ${esc(source.filename)} (${dateBR(source.asOf)}).` : ''}</p>`;
 }
 
 export const calculoBody = steps => steps.map(s => `<details class="ex"><summary>${esc(s.etapa)}</summary>${s.texto.map(t => `<p>${esc(t)}</p>`).join('')}</details>`).join('');
@@ -75,4 +80,25 @@ export function monitorView({ tracks, trackId, flipped, active, model, steps }) 
   return `<div class="map sm" data-map="guide"></div><div class="scroll"><div class="row-sb"><p><b>${esc(trackId)}</b>${cur?.person ? ` · ${esc(cur.person)}` : ''} · ${flipped ? 'sentido invertido' : 'sentido do plano'}</p><button class="link" data-act="gps-stop">Parar</button></div>
 <section class="card guide ${m.state}" aria-live="polite"><p class="mu">${esc(m.title)}</p>${arrow}${m.big ? `<p class="big">${esc(m.big)}</p>` : ''}${m.dir ? `<p class="dir">${esc(m.dir)}</p>` : ''}
 ${m.info ? `<p class="mu">${esc(m.info)}</p>` : ''}${(m.warn || []).map(w => `<p class="ck alerta">${esc(w)}</p>`).join('')}</section></div>`;
+}
+
+/** Versões anteriores do lote (mais recente primeiro). */
+export const versionsBody = rows => (rows.length ? rows.map((r, i) => `<div class="li"><span class="x">${new Date(r.em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}<br><small>${esc(r.resumo || '')}</small></span>${i === 0 ? '<span class="tag">atual</span>' : `<button class="use" data-ver="${r.id}">Usar</button>`}</div>`).join('')
+  : '<p class="mu">Nenhuma versão guardada ainda neste aparelho. Elas são guardadas sozinhas quando o plano para de mudar.</p>');
+
+export const backupBody = (info, last) => `<p class="mu">Tudo deste aparelho num arquivo: planos, ajustes, versões e imagens.${last ? ` Última cópia: ${esc(last)}.` : ''}</p>
+<button class="btn p" data-act="backup">Fazer cópia de segurança</button><button class="btn" data-act="restore-pick">Restaurar de um arquivo</button>${info || ''}`;
+
+export const restoreConfirm = (items, labels) => `<div class="card"><p><b>Esta cópia traz:</b></p>${Object.entries(items).filter(([, v]) => v).map(([k, v]) => `<p class="ck info">${num(v)} ${esc(labels[k] || k)}</p>`).join('') || '<p class="mu">Nada além das configurações.</p>'}
+<p class="mu">O estado atual deste aparelho é baixado antes, por segurança.</p><button class="btn p" data-act="restore-go">Restaurar agora</button></div>`;
+
+/** Todos os lotes: pontos, tiros e alertas do plano salvo (ou recomendado). */
+export const allLotsBody = rows => `<div class="card list">${rows.map(r => `<button class="li lotrow" data-lot="${esc(r.key)}"><span class="id">${esc(r.code)}</span><span class="x">${num(r.pontos)} pontos · ${num(r.tiros)} tiros<br><small>${esc(r.farm)} · 95% &lt; ${num(r.p95)} m</small></span><span class="r">${r.alerts ? `<span class="chip alerta">${r.alerts}</span>` : '<span class="chip ok">ok</span>'}</span></button>`).join('')}</div>`;
+
+/** Fichas de campo (impressão): uma por tiro, com o roteiro em passos e a tabela de pontos. */
+export function fichasMarkup(field, routes, people, mapFor) {
+  return routes.map(r => `<section class="ficha"><header><h1>${esc(field.code)} · ${esc(field.farm)} — Tiro ${esc(r.trackId)}${people.get(r.trackId) ? ` · ${esc(people.get(r.trackId))}` : ''}</h1>
+<p>${num(r.totalLengthM)} m dentro do lote · ${num(r.nPoints)} pontos · SIMULAÇÃO: pontos planejados</p></header><div class="fmap">${mapFor(r.trackId)}</div>
+<table><thead><tr><th>Ponto</th><th>nº</th><th>Desde a entrada</th><th>Do anterior</th><th>Passos</th></tr></thead><tbody>${r.points.map(p => `<tr><td>${p.seq}</td><td>${p.number}</td><td>${p.fromEntryM == null ? '—' : `${num(p.fromEntryM)} m`}</td><td>${p.deltaM == null ? '—' : `${num(p.deltaM)} m`}</td><td>${p.steps ?? '—'}</td></tr>`).join('')}</tbody></table>
+<ol>${r.instructions.map(t => `<li>${esc(t)}</li>`).join('')}</ol></section>`).join('');
 }

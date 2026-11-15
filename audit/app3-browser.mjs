@@ -84,6 +84,46 @@ try {
     assert.deepStrictEqual(errors, [], `${colorScheme}: erros no console`);
     await ctx.close();
   }
+  // R4.4 · cópia de segurança (ida e volta), versões, dados da safra, todos os lotes, fichas de campo
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'pt-BR', acceptDownloads: true });
+    const p = await ctx.newPage(), errors = [];
+    p.on('pageerror', e => errors.push(e.message));
+    await p.goto(url); await ready(p);
+    await p.click('button.lot'); await p.click('[data-lot="Bananal|BD3"]');
+    await p.click('[data-tab="plano"]'); await p.fill('#ha', '15'); await p.dispatchEvent('#ha', 'change');
+    await p.waitForTimeout(4500); // versão guardada quando o plano para de mudar
+    await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="versoes"]'); await p.waitForSelector('.sheet .li');
+    assert.match(await p.textContent('.sheet'), /1 ponto a cada 15 ha/); await p.keyboard.press('Escape');
+    await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="dados"]');
+    assert.match(await p.textContent('.sheet'), /ATAQUE I2X.*73,0 mm/s); await p.keyboard.press('Escape');
+    await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="todos"]'); await p.waitForSelector('.lotrow', { timeout: 20000 });
+    assert.equal(await p.locator('.lotrow').count(), 51); await p.keyboard.press('Escape');
+    // cópia: baixa, muda o plano, restaura e volta ao de 15 ha
+    await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="copia"]');
+    const [dl] = await Promise.all([p.waitForEvent('download'), p.click('[data-act="backup"]')]);
+    const file = await dl.path(), backup = JSON.parse(await readFile(file, 'utf8'));
+    assert.equal(backup.schema, 'schmidt.backup.v2'); assert.ok(backup.historico.length >= 1); assert.equal(backup.dados['monitoramento.v03'].paramsByField['Bananal|BD3'].haPerPoint, 15);
+    await p.keyboard.press('Escape');
+    await p.click('[data-tab="plano"]'); await p.fill('#ha', '30'); await p.dispatchEvent('#ha', 'change');
+    await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="copia"]');
+    await p.setInputFiles('#backup-input', file); await p.waitForSelector('[data-act="restore-go"]');
+    assert.match(await p.textContent('.sheet'), /lotes com parâmetros próprios/);
+    await Promise.all([p.waitForEvent('download'), p.click('[data-act="restore-go"]')]);
+    await p.waitForLoadState('load'); await ready(p);
+    assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3'].haPerPoint), 15);
+    // cópia alterada é recusada pelo hash
+    const bad = { ...backup, dados: { ...backup.dados, extra: 1 } };
+    await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="copia"]');
+    await p.setInputFiles('#backup-input', { name: 'x.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(bad)) });
+    await p.waitForFunction(() => /recusada/.test(document.getElementById('toast').textContent)); await p.keyboard.press('Escape');
+    // fichas de campo: uma por tiro
+    await p.evaluate(() => { window.print = () => { window.__printed = document.querySelectorAll('#print .ficha').length; }; });
+    await p.click('[data-tab="enviar"]'); await p.click('[data-act="fichas"]');
+    assert.ok(await p.evaluate(() => window.__printed) >= 4);
+    assert.deepStrictEqual(errors, []);
+    await ctx.close();
+  }
   // R4.3 · Monitorar com GPS simulado: no ponto 1 do T1 → "Chegou"; 150 m antes → seta e distância
   {
     const fields = await loadFields(), f = fields['Bananal|BD3'], rec = P.recommend(f, {}, 5, false), sc = P.planInUse(f, rec.chosen.params, null);
