@@ -14,7 +14,13 @@ export function installSchmidtRefinements(document) {
        (o seletor já mostra "Bananal"/"BD3"; o rótulo segue para leitor de tela). */
     @media (max-width:599px){
       .mobile-context label{font-size:0;gap:0;line-height:0}
-      .sheet[data-state=half]{height:min(50dvh,460px)}
+      /* Moldura da folha mais enxuta (abas 61→50, linha Ampliar 53→46, etapas 61→52, sem o título "Plano do lote",
+         que repete a etapa marcada): cabe mapa maior e as distâncias do Plano seguem visíveis sem rolar (regra aprovada). */
+      .sheet:not([data-state=collapsed]) .v08-dock{height:50px}
+      .v08-panel-actions{min-height:46px;padding:1px 8px}
+      #panel-plano .param-sections{padding-top:4px;padding-bottom:4px}
+      #param-stage-inicio .stage-intro{display:none}
+      .sheet[data-state=half]{height:min(60dvh,520px)}
       /* mapa compacto (folha aberta): escala sem caixa, para não esconder o primeiro tiro */
       .map-wrap.fx-fit .m-scale-bg{fill-opacity:0;stroke:none}
     }
