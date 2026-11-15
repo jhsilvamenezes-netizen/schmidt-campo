@@ -47,11 +47,6 @@ html = html.replaceAll(p6Flag, 'l.code===`P6`&&l.farm===`Rio de Janeiro`?[]:Arra
 // 2.3: o selo também deixa de contar a sobreposição do KML original (o motor já unificou) e o ponto A fora do
 // polígono: o motor classifica os dois como nota. Rumo divergente continua alerta.
 replace('(e.flags?.length||0)', '((e.code===`P6`&&e.farm===`Rio de Janeiro`?[]:e.flags)?.filter(e=>!/sobrepost|repetid|ponto a da/i.test(e)).length||0)', 'p6-sem-observacao-no-indicador');
-const divergence = 'n>t.bearingDivergenceDeg?';
-if (!html.includes(divergence)) throw Error('Diagnóstico de rumo mudou');
-html = html.replaceAll(divergence, 'n>t.bearingDivergenceDeg&&!(e.code===`P6`&&e.farm===`Rio de Janeiro`)?');
-// O worker replica o diagnóstico usando outro nome para os limiares.
-if (html.split('t>r.bearingDivergenceDeg?').length !== 2) throw Error('Diagnóstico do worker mudou');
-html = html.replaceAll('t>r.bearingDivergenceDeg?', 't>r.bearingDivergenceDeg&&!(e.code===`P6`&&e.farm===`Rio de Janeiro`)?');
+// P6 · Rio de Janeiro sem alerta de rumo divergente: regra agora no motor 2 (src/engine/dataQuality.mjs), na página e no worker.
 return {html,changes};
 }

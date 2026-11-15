@@ -2,6 +2,7 @@
 // Validação detalhada de parâmetros, avisos e otimização ainda vêm do motor 0.5.1 (injetados em `legacy`)
 // até serem reescritos; o restante é do motor 2. Teste: cenário inteiro idêntico ao do motor antigo.
 import { validateGeom } from './geometry.mjs';
+import { DomainError } from './errors.mjs';
 import { internalGap, sampleUnits } from './sampling.mjs';
 import { exactCoverage } from './voronoi.mjs';
 import { coverage, longitudinal, route, summarize, transverse } from './metrics.mjs';
@@ -34,9 +35,6 @@ export function withMetrics(field, sc, buildWarnings) {
   return out;
 }
 
-class DomainError extends Error {
-  constructor(code, message, extra = {}) { super(message); this.name = 'DomainError'; this.code = code; this.field = extra.field ?? null; this.value = extra.value; }
-}
 
 /**
  * @param legacy assertParams, buildWarnings, optimizeDistribution e engineVersion (opcional) — validação detalhada vem do

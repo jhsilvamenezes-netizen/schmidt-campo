@@ -77,3 +77,13 @@ conferido na grade. O resultado continua o mesmo (31 lotes, −11,3% na mediana)
 | G3 · distorção da projeção UTM 23S | Longitudes de −46,10 a −45,93 (cerca de 1° do meridiano central). Fator de escala k entre 0,99973 e 0,99978: distância 0,022–0,027% e área 0,044–0,055% (BD3: 466,79 → 467,03 ha) | Não implementar: irrelevante para o plano |
 | Área publicada × KML | Publicada maior em 0,05–0,67% (mediana 0,66%, quase constante) | Achado de dados, não explicado pela projeção: a área publicada vem de outra base ou de outro cálculo |
 | G2 · contorno inválido | 0 de 51 (Shapely `is_valid`) | Sem reparo automático (mudaria a divisa sem o proprietário saber; regra: não inferir bordas). Arquivo importado com defeito é recusado, com o local do problema |
+
+### R2.4 · Motor completo e fim do motor antigo no arquivo (15/11/2026)
+
+| Item | Resultado |
+|---|---|
+| Módulos reescritos | 15: vocabulário, erros, números, projeção, compensações, guia, explicação, equipe, atalhos, edição, qualidade do cadastro, catálogo de parâmetros, recomendação, arquivos de saída e índice |
+| Prova | `audit/engine-rest-diff.test.mjs`: 14 testes diferenciais contra o motor 0.5.1 nos 51 lotes (CSV, GPX, KML e GeoJSON comparados byte a byte); no CI (`test:blocks`) |
+| Tipos | `tsc` estrito sem erro nos 30 módulos |
+| Empacotador | Cada módulo no seu escopo: nomes internos repetidos não colidem mais (antes só o primeiro nome de cada declaração era conferido) |
+| Arquivo publicado | Página e worker sem nenhum módulo do motor 0.5.1; regra do P6 (rumo aprovado) agora dentro do motor, sem remendo de texto |
