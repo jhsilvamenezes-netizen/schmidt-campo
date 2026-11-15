@@ -86,3 +86,26 @@ export function summaryText(field, sc, people, list, split) {
 }
 
 export { DEFAULT_PARAMS, paramsSignature };
+
+/** Informação de um ponto tocado no mapa: tiro, vizinhos no mesmo trecho (andando) e distância à borda do lote. */
+export function pointInfo(field, sc, id) {
+  const p = sc.samples.find(s => s.id === id);
+  if (!p) return null;
+  const same = sc.samples.filter(s => s.unitId === p.unitId && !s.offTrack && Number.isFinite(s.s)).sort((a, b) => a.s - b.s), i = same.indexOf(p);
+  const prev = i > 0 ? p.s - same[i - 1].s : null, next = i >= 0 && i < same.length - 1 ? same[i + 1].s - p.s : null;
+  let edge = Infinity;
+  for (const pg of field.geom) for (const ring of pg) for (let j = 1; j < ring.length; j++) {
+    const [ax, ay] = ring[j - 1], [bx, by] = ring[j], ex = bx - ax, ey = by - ay, L2 = ex * ex + ey * ey;
+    const t = L2 ? Math.max(0, Math.min(1, ((p.x - ax) * ex + (p.y - ay) * ey) / L2)) : 0;
+    edge = Math.min(edge, Math.hypot(p.x - ax - t * ex, p.y - ay - t * ey));
+  }
+  return { number: p.number, trackId: p.trackId, prevM: prev, nextM: next, edgeM: edge, manual: !!p.manual };
+}
+
+/** "Buscar distribuição melhor" (mesma busca da 2.x): devolve os pontos como ajuste gravável ou null se não melhorou. */
+export function optimizeEdits(field, params) {
+  const sc = buildScenario(field, params, { optimize: true }, deps), o = sc.optimization;
+  if (!o?.accepted) return { edits: null, report: o };
+  const samples = sc.samples.map(s => ({ id: s.id, x: s.x, y: s.y, unitId: s.unitId, s: s.s, manual: false, offTrack: !!s.offTrack }));
+  return { edits: { signature: paramsSignature(sc.params), samples }, report: o };
+}

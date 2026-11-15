@@ -45,6 +45,32 @@ try {
     // menu, cálculo, Esc fecha
     await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="calculo"]');
     assert.ok(await p.locator('details.ex').count() >= 6); await p.keyboard.press('Escape'); assert.equal(await p.locator('.ov').count(), 0);
+    // R4.2 · desfazer: usar outra opção e voltar
+    await p.click('[data-tab="plano"]');
+    const before = await p.evaluate(() => JSON.stringify(JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3']));
+    await p.click('[data-alt="0"]'); await p.click('#toast [data-toast]');
+    assert.equal(await p.evaluate(() => JSON.stringify(JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3'])), before, 'Desfazer volta o plano');
+    // busca de lote e recentes
+    await p.click('button.lot'); await p.fill('[data-search]', 'bd'); assert.ok(await p.locator('[data-lots] .lotb').count() >= 3);
+    await p.fill('[data-search]', 'zzz'); assert.match(await p.textContent('[data-lots]'), /Nenhum lote/);
+    await p.fill('[data-search]', ''); assert.match(await p.textContent('[data-lots]'), /Recentes/); await p.keyboard.press('Escape');
+    // ajustes avançados: valor fora da faixa é recusado; válido recalcula; restaurar volta ao recomendado
+    await p.click('[data-open="ajustes"]');
+    await p.fill('[name="trackSpacingM"]', '5'); await p.dispatchEvent('[name="trackSpacingM"]', 'change');
+    assert.match(await p.textContent('[data-err]'), /mínimo/);
+    await p.fill('[name="trackSpacingM"]', '300'); await p.dispatchEvent('[name="trackSpacingM"]', 'change');
+    assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3'].trackSpacingM), 300);
+    await p.click('[data-set="pointMode"][data-v="por_tiro"]'); assert.ok(await p.locator('[name="pointsPerTrack"]').count());
+    await p.click('[data-act="restore"]'); await p.keyboard.press('Escape');
+    assert.match(await p.textContent('.card'), /Hectares/);
+    // gestos: duplo toque amplia (aparece "enquadrar"), enquadrar volta; tocar num ponto mostra o balão
+    await p.click('[data-tab="mapa"]'); await p.waitForSelector('.map-svg .pt');
+    const box = await p.locator('[data-map="full"]').boundingBox();
+    await p.mouse.dblclick(box.x + box.width / 2, box.y + box.height / 2); await p.waitForSelector('.fit');
+    await p.click('.fit'); await p.waitForFunction(() => !document.querySelector('.fit'));
+    const pt = await p.locator('.map-svg .pt').first().boundingBox();
+    await p.mouse.click(pt.x + pt.width / 2, pt.y + pt.height / 2); await p.waitForSelector('.bal');
+    assert.match(await p.textContent('.bal'), /Ponto \d+ · T\d/);
     // arquivos: plano (sem compartilhamento no navegador de teste → baixa) e CSV
     await p.click('[data-tab="enviar"]');
     const [plan] = await Promise.all([p.waitForEvent('download'), p.click('[data-act="share"]')]);

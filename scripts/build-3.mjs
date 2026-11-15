@@ -7,7 +7,7 @@ import { bundleEngine, ENGINE_MODULES } from './bundle-engine.mjs';
 import { ICONS } from '../src/app3/views.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-export const APP_MODULES = ['format', 'store', 'plan-file', 'planner', 'map', 'views', 'main'];
+export const APP_MODULES = ['format', 'store', 'plan-file', 'planner', 'map', 'views', 'advanced', 'gestures', 'main'];
 export const APP_VERSION = '3.0.0-dev';
 
 /** Cada módulo da tela no seu escopo; importações do motor viram o namespace schmidtEngine2. */

@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "R4.1 tela nova 3.0 (Mapa, Plano, Enviar) gerada só de src",
+  "task": "R4.2 plano completo na 3.0",
   "owner": "Claude",
   "status": "em_andamento",
-  "nextAction": "R4.2 bloco de lotes, ajustes avançados, gestos no mapa; R4.3 Monitorar; R4.4 arquivos e cópia",
+  "nextAction": "R4.3 Monitorar (guia por GPS)",
   "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -54,17 +54,20 @@
     "15/11: APK só quando o proprietário pedir (não propor nem citar como próximo passo); foco em correções e melhorias do link"
   ],
   "snapshot": {
-    "at": "2026-11-15T21:22:56.486Z",
+    "at": "2026-11-15T23:11:21.182Z",
     "branch": "claude/motor-evolucao",
-    "codeCommit": "3924cf7932dd63db7607d45171ee60f51649c458",
+    "codeCommit": "2398d79d42bc58a107b644f210d140f4dd3a3596",
     "changedTrackedFiles": [
-      ".github/workflows/blocos-candidata.yml",
-      ".gitignore",
-      "audit/package.json",
-      "audit/tsconfig.engine.json",
-      "docs/CONTRATO_3_0.md"
+      "audit/app3-browser.mjs",
+      "audit/app3-planner.test.mjs",
+      "scripts/build-3.mjs",
+      "src/app3/main.mjs",
+      "src/app3/map.mjs",
+      "src/app3/planner.mjs",
+      "src/app3/shell.html",
+      "src/app3/styles.css"
     ],
-    "untrackedCount": 14
+    "untrackedCount": 2
   },
   "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",
   "developmentBranch": "codex/reescrita-motor-etapa-1"

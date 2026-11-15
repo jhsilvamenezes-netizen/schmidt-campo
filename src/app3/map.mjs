@@ -4,13 +4,16 @@ import { num } from './format.mjs';
 const NICE = [50, 100, 200, 250, 500, 1000, 2000, 2500, 5000];
 
 /** Marcação SVG do lote ajustada a w × h px (margem `pad`). `small` = pontos menores (mapa do Plano). */
-export function mapMarkup(field, sc, w, h, { pad = 28, small = false } = {}) {
+/** @param {any} field @param {any} sc @param {number} w @param {number} h
+ * @param {{pad?:number, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null}} [opts] */
+export function mapMarkup(field, sc, w, h, opts = {}) {
+  const { pad = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null } = opts;
   const pts = field.geom.flat(2), xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
   const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
   const k = Math.min((w - 2 * pad) / (x1 - x0 || 1), (h - 2 * pad) / (y1 - y0 || 1));
   const ox = (w - k * (x1 - x0)) / 2, oy = (h - k * (y1 - y0)) / 2;
-  const P = ([x, y]) => `${(ox + k * (x - x0)).toFixed(1)},${(h - oy - k * (y - y0)).toFixed(1)}`;
-  const XY = (x, y) => [ox + k * (x - x0), h - oy - k * (y - y0)];
+  const XY = (x, y) => [view.x + view.k * (ox + k * (x - x0)), view.y + view.k * (h - oy - k * (y - y0))];
+  const P = ([x, y]) => XY(x, y).map(v => v.toFixed(1)).join(',');
   const ring = field.geom.map(pg => pg.map(r => `M${r.map(P).join('L')}Z`).join('')).join('');
   const r = small ? 8.5 : 11, fs = small ? 9 : 10;
   let s = `<svg class="map-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Lote ${field.code}: ${sc ? `${sc.samples.length} pontos em ${sc.selected.length} tiros` : 'sem plano'}">`;
@@ -25,10 +28,10 @@ export function mapMarkup(field, sc, w, h, { pad = 28, small = false } = {}) {
     for (const [id, [x, y]] of firstEnd) s += `<text class="tid${small ? ' sm' : ''}" x="${(x - 7).toFixed(1)}" y="${(y + 4).toFixed(1)}">${id}</text>`;
     for (const p of sc.samples) {
       const [x, y] = XY(p.x, p.y);
-      s += `<g class="pt${p.offTrack ? ' off' : ''}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}"/><text x="${x.toFixed(1)}" y="${(y + fs * 0.36).toFixed(1)}" class="${small ? 'sm' : ''}">${p.number ?? ''}</text></g>`;
+      s += `<g class="pt${p.offTrack ? ' off' : ''}${p.id === selected ? ' sel' : ''}" data-pt="${p.id}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}"/><text x="${x.toFixed(1)}" y="${(y + fs * 0.36).toFixed(1)}" class="${small ? 'sm' : ''}">${p.number ?? ''}</text></g>`;
     }
   }
-  const target = (w * 0.3) / k, len = NICE.reduce((b, v) => (Math.abs(v - target) < Math.abs(b - target) ? v : b), NICE[0]), L = len * k;
+  const kk = k * view.k, target = (w * 0.3) / kk, len = NICE.reduce((b, v) => (Math.abs(v - target) < Math.abs(b - target) ? v : b), NICE[0]), L = len * kk;
   s += `<g class="scale" transform="translate(14 ${h - 14})"><path d="M0 -6V0H${L.toFixed(1)}V-6"/><text x="0" y="-10">${num(len)} m</text></g>`;
   s += `<g class="north" transform="translate(${w - 18} 16)"><text x="0" y="8">N</text><path d="M0 14V30M-4 19L0 14L4 19"/></g>`;
   return s + '</svg>';
