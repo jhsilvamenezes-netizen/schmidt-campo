@@ -57,6 +57,7 @@ jobs:
           node engine-swap-browser.mjs
           node night-theme-browser.mjs
           node balanced-plan-browser.mjs
+          node app3-browser.mjs
           node gps-guidance-browser.mjs
           node gps-stability-browser.mjs
           node direction-measures-probe.mjs

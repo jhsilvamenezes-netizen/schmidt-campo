@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "R1 contrato + R3 prévias da 3.0",
+  "task": "R4.1 tela nova 3.0 (Mapa, Plano, Enviar) gerada só de src",
   "owner": "Claude",
-  "status": "bloqueado",
-  "nextAction": "Aguardando aprovação das prévias (docs/previas-3-0) pelo proprietário; depois R4 tela nova",
+  "status": "em_andamento",
+  "nextAction": "R4.2 bloco de lotes, ajustes avançados, gestos no mapa; R4.3 Monitorar; R4.4 arquivos e cópia",
   "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -54,11 +54,17 @@
     "15/11: APK só quando o proprietário pedir (não propor nem citar como próximo passo); foco em correções e melhorias do link"
   ],
   "snapshot": {
-    "at": "2026-11-15T16:50:00.706Z",
+    "at": "2026-11-15T21:22:56.486Z",
     "branch": "claude/motor-evolucao",
-    "codeCommit": "bb6b0659c6ebc1a5b0b440c00d80bfbc1a312a43",
-    "changedTrackedFiles": [],
-    "untrackedCount": 4
+    "codeCommit": "3924cf7932dd63db7607d45171ee60f51649c458",
+    "changedTrackedFiles": [
+      ".github/workflows/blocos-candidata.yml",
+      ".gitignore",
+      "audit/package.json",
+      "audit/tsconfig.engine.json",
+      "docs/CONTRATO_3_0.md"
+    ],
+    "untrackedCount": 14
   },
   "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",
   "developmentBranch": "codex/reescrita-motor-etapa-1"

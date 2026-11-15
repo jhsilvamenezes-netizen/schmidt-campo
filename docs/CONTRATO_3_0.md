@@ -44,3 +44,18 @@ Estado salvo `monitoramento.v03`, versões do plano (IndexedDB), cópia de segur
 - 4 abas: Mapa · Plano · Enviar · Monitorar. As 5 etapas e as abas Tiros, Dados e Auditoria saem.
 - Texto: 5 tamanhos (12, 14, 16, 20, 28) e 3 pesos (400, 600, 700). Cores da marca; tema escuro próprio.
 - Prévias: `docs/previas-3-0/` (claro e escuro). **Aguardando aprovação do proprietário (R3).**
+
+## R4.1 · tela nova funcionando (15/11/2026)
+
+`node scripts/build-3.mjs` gera `build/3/index.html` só de `src/` (motor 2 + `src/app3`). Não vai ao link até a R5.
+
+| Item | Resultado |
+|---|---|
+| Arquivo | 329 KB (2.5: 895 KB); abre em ~0,2 s no teste |
+| Telas | Mapa, Plano, Enviar e Mais (dados do lote, como foi calculado, abrir plano recebido) |
+| Palavras | Mapa 33 · Plano 95 · Enviar 76 (limites no teste: 40 · 110 · 90) |
+| Compatível com a 2.x | Mesmo estado salvo (`monitoramento.v03`), mesmo arquivo de plano (`monitoramento.plano.v1`), mesmos CSV, GeoJSON, GPX e KML |
+| Provas | `audit/app3-planner.test.mjs` (51 lotes; recomendação idêntica ao motor 0.5.1; BD3 com os números da 2.5) e `audit/app3-browser.mjs` (claro e escuro, sem erro nem rolagem lateral), ambos no CI |
+
+Falta (R4.2 a R4.4): bloco de lotes, ajustes avançados completos, gestos no mapa e satélite, ajuste manual de pontos,
+guia por GPS (Monitorar), fichas de campo, cópia de segurança, versões, dados da safra, funcionamento sem internet.
