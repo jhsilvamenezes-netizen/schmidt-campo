@@ -1,11 +1,11 @@
 {
-  "entrega": "2.1.0",
+  "entrega": "2.2.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-15",
-  "versaoDoApp": "2.1.0",
+  "versaoDoApp": "2.2.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "4fc0c117637c0d14e8a4166345dd7551d62de6eb6bfef5d0f7cc9f7e8c91b3a0",
-  "workerSha256": "e6cc23b84bc34c443cd8f4e19499054c3597d4838b55bf73b3c3e856af4745d1",
+  "htmlSha256": "f368ca26f62a74299a325b52371aef19841b21007dc88937564e58e0c886d5b1",
+  "workerSha256": "bd9d0363b31e1eb1e5b3ff363cbbf3e4eadaf727bff2c7cf8a625794491e9517",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "incluidoNoRuntime": [
     "correções de backup, persistência, concorrência e GPS",
@@ -33,7 +33,8 @@
     "2.0.1: posição GPS vencida não exibe seta, distância dinâmica nem posição atual no mapa; retoma ao receber posição válida",
     "2.0.1: histerese temporária estabiliza o alvo sem marcar pontos; avanço e retorno permanecem possíveis",
     "2.0.1: chegada prioriza distância até próximo ponto ou borda; funções e registros legados preservados",
-    "2.1: bloco com \"Comparar antes de usar\": melhor opção de cada espaçamento comum (conjunto e por lote), escolha troca o rascunho e Usar bloco aplica tudo de uma vez; opções que pioram a cobertura ficam recolhidas e bloqueadas"
+    "2.1: bloco com \"Comparar antes de usar\": melhor opção de cada espaçamento comum (conjunto e por lote), escolha troca o rascunho e Usar bloco aplica tudo de uma vez; opções que pioram a cobertura ficam recolhidas e bloqueadas",
+    "2.2: motor 2 (src/engine, código legível) no lugar do motor 0.5.1 na página e no worker; resultados idênticos ao motor antigo (versão declarada 2.0.0); validação de parâmetros e qualidade dos dados ainda do motor antigo"
   ],
   "somenteEstudoSemIntegracao": [
     "recuo mínimo obrigatório por divisa",
@@ -47,5 +48,5 @@
   },
   "registro": "docs/VERSOES_E_ENTREGAS.md",
   "runtimeBlocks": true,
-  "statusEntrega": "web 2.1.0; publicação autorizada pelo proprietário em 15/11/2026"
+  "statusEntrega": "candidata 2.2.0; motor 2 na página e no worker; publicação após CI verde (autorização de 15/11/2026)"
 }

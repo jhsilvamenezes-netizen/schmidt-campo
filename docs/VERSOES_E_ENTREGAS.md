@@ -185,3 +185,8 @@ Testes de regressão e limites: [CORRECOES_2_0_1.md](CORRECOES_2_0_1.md).
 Melhor opção de cada espaçamento comum, com conjunto e detalhe por lote; escolha
 troca o rascunho e "Usar bloco" aplica tudo de uma vez; opções com perda de
 cobertura recolhidas e bloqueadas. Relatório: [BLOCO_COMPARAR_2_1.md](BLOCO_COMPARAR_2_1.md).
+
+## 2.2.0 — motor 2 no aplicativo
+
+Página e worker calculam com o motor reescrito (`src/engine`), com resultados idênticos ao motor
+0.5.1. Relatório: [MOTOR_2_NO_APP_2_2.md](MOTOR_2_NO_APP_2_2.md).

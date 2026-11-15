@@ -13,7 +13,8 @@ const baseline = JSON.parse(read('audit/baseline.json'));
 test('fontes legíveis têm imports ESM resolvidos e carregam sem DOM', async () => {
   for (const path of sourceFiles) {
     const module = await import(new URL('../'+path,import.meta.url));
-    assert.ok(Object.values(module).some(value=>typeof value==='function'),path);
+    // Módulo de lógica exporta função; módulo de dados do motor (ex.: tolerâncias) exporta objeto congelado.
+    assert.ok(Object.values(module).some(value=>typeof value==='function'||(value&&typeof value==='object'&&Object.isFrozen(value))),path);
   }
 });
 
