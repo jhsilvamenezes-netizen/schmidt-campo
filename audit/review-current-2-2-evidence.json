@@ -1,0 +1,83 @@
+{
+  "schema": "schmidt.review-2.2.v1",
+  "baseMain": "725b1dc216290016df895504803d95eeccd81a84",
+  "publicVersionVerified": "2.2.0",
+  "publicHtmlSha256": "f368ca26f62a74299a325b52371aef19841b21007dc88937564e58e0c886d5b1",
+  "candidateHtmlSha256": "bcf757c72b1e73c6380a82c5ed03c647b088c58874391b2ad93c999e927b6658",
+  "testsPassed": {
+    "contracts": 55,
+    "blocks": 84
+  },
+  "engineBrowser": {
+    "pageSame": 51,
+    "workerOptimize": 9,
+    "workerRecommend": 9,
+    "modes": [
+      "web_worker"
+    ],
+    "versions": [
+      "2.0.0"
+    ],
+    "failures": [],
+    "errors": []
+  },
+  "concurrentCancellation": {
+    "before": "segunda tarefa falha por timeout de 4 s",
+    "after": {
+      "first": {
+        "cancelled": true
+      },
+      "second": {
+        "completed": true,
+        "samples": 24
+      },
+      "modes": [
+        "web_worker",
+        "web_worker"
+      ],
+      "errors": []
+    }
+  },
+  "independentSpatial": {
+    "status": "ok",
+    "lots": 51,
+    "blocks": 40,
+    "versions": {
+      "shapely": "2.1.2",
+      "geos": "3.13.1",
+      "pyproj": "3.7.2",
+      "proj": "9.5.1"
+    },
+    "evidence": "direction-measures-evidence.json"
+  },
+  "benchmark": {
+    "runtime": "v24.22.1",
+    "physicalDevice": false,
+    "scope": "Somente countForSpacing; não mede tempo total do plano nem do app",
+    "warmups": 3,
+    "runsPerVariant": 15,
+    "results": {
+      "realLengthsTwoTargets": {
+        "cases": 632,
+        "oldEvaluations": 26984,
+        "newEvaluations": 5592,
+        "legacyMedianMs": 0.18781999999998789,
+        "rewrittenMedianMs": 0.0837500000000091
+      },
+      "syntheticDense": {
+        "cases": 30,
+        "oldEvaluations": 299970,
+        "newEvaluations": 720,
+        "legacyMedianMs": 3.7067420000000197,
+        "rewrittenMedianMs": 0.02342199999998229
+      }
+    }
+  },
+  "physicalDevice": false,
+  "published": false,
+  "limits": [
+    "CI da candidata nova ainda a conferir",
+    "Limpeza geral de textos não encontrada nas branches consultadas",
+    "Restante do motor 2 do Claude preservado; módulos legados remanescentes ainda pendentes"
+  ]
+}

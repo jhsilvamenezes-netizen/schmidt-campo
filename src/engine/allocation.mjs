@@ -64,13 +64,22 @@ export function allocatePerTrack(units, perTrack, policy, margin = 0) {
 /** Menor n que deixa o intervalo (ou, com 1 ponto, o dobro do raio) ≤ alvo. */
 export function countForSpacing(L, target, policy, margin = 0) {
   if (!(target > 0)) throw Error('Intervalo alvo deve ser positivo');
-  let n = 1;
-  while (n < 1e4) {
-    const gap = internalGap(L, n, policy, margin), r = alongCoverageRadius(L, n, policy, margin);
-    if ((gap === null && 2 * r <= target + ALLOC_EPS_M) || (gap !== null && gap <= target + ALLOC_EPS_M)) return n;
-    n++;
+  const firstGap = internalGap(L, 1, policy, margin), firstRadius = alongCoverageRadius(L, 1, policy, margin);
+  if ((firstGap === null && 2 * firstRadius <= target + ALLOC_EPS_M) || (firstGap !== null && firstGap <= target + ALLOC_EPS_M)) return 1;
+  // Para n >= 2, o intervalo é não crescente nas três políticas. A expansão
+  // mantém baixo o custo dos planos pequenos; a busca binária limita o caso denso.
+  // Preserva a desigualdade, as tolerâncias e o teto histórico de 10.000 pontos.
+  let low = 2, high = 2;
+  while (high < 10000 && internalGap(L, high, policy, margin) > target + ALLOC_EPS_M) {
+    low = high + 1;
+    high = Math.min(10000, high * 2);
   }
-  return n;
+  while (low < high) {
+    const middle = (low + high) >> 1;
+    if (internalGap(L, middle, policy, margin) <= target + ALLOC_EPS_M) high = middle;
+    else low = middle + 1;
+  }
+  return low;
 }
 
 /** Pelo intervalo desejado; completa até o mínimo por área; acima do teto = conflito. */
