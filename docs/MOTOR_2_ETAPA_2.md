@@ -85,8 +85,15 @@ de parâmetros, os avisos (diagnostics) e a otimização. Depois vem a troca no 
   antigo em **426 cenários** (51 lotes × 8 variações e otimização em dois modos). As mensagens
   de erro também são idênticas. Só a hora de geração e o tempo medido da otimização são ignorados.
 
+## Etapa 6: otimização
+
+- `src/engine/optimize.mjs`: busca local determinística (fase por trecho e troca de pontos
+  entre trechos sob limites de intervalo e CV), aceita só se melhorar o p95 na grade fina.
+- `audit/engine-optimize-diff.test.mjs`: **265 otimizações idênticas** (175 aceitas), em três
+  modos e variações, direto e dentro do cenário completo.
+
 ### Próximo
 
-1. Reescrever `paramCatalog` (validação), `diagnostics` (avisos) e `optimize`, com o mesmo teste.
+1. Reescrever `paramCatalog` (validação e textos) e `diagnostics` (avisos), com o mesmo teste.
 2. Trocar o motor no app: página **e** worker (que tem cópia própria do motor), com a conferência
    GEOS/PROJ, os 51 lotes e os 40 grupos no navegador.
