@@ -38,7 +38,8 @@ class DomainError extends Error {
 }
 
 /**
- * @param legacy { assertParams, buildWarnings, optimizeDistribution } do motor 0.5.1 (até a reescrita)
+ * @param legacy { assertParams, buildWarnings, optimizeDistribution, engineVersion? } — validação detalhada vem do
+ *   motor 0.5.1 até a reescrita; engineVersion é a versão declarada no app (o padrão mantém a do motor antigo).
  */
 export function buildScenario(field, given = {}, opts = {}, legacy) {
   const params = resolveParams(given);
@@ -55,7 +56,7 @@ export function buildScenario(field, given = {}, opts = {}, legacy) {
     optimization = r.report ?? null;
   }
   return withMetrics(field, {
-    engineVersion: ENGINE_VERSION, generatedAt: new Date().toISOString(),
+    engineVersion: legacy.engineVersion ?? ENGINE_VERSION, generatedAt: new Date().toISOString(),
     status: core.units.some(u => u.kind === 'trajeto_gps_equipe') ? STATUS.TRAJETO_IMPORTADO : STATUS.SIMULADO,
     field: { key: `${field.farm}|${field.code}`, farm: field.farm, code: field.code, areaOfficialHa: field.areaOfficialHa, areaKMLHa: field.areaKMLHa, isSoy: field.isSoy },
     params, signature: paramsSignature(params), bearing: core.bearing, deltaM: core.deltaM, passes: core.passes, anchored: core.anchored,

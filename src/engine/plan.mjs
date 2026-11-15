@@ -1,7 +1,7 @@
 // Motor 2 · núcleo do plano: tiros → trechos dentro do lote → quantos pontos em cada trecho → pontos.
 // Recebe parâmetros JÁ resolvidos e validados (mesmo objeto que o motor 0.5.1 guarda em scenario.params).
 // Não calcula métricas, cobertura nem rota; essas etapas continuam no motor antigo até a próxima reescrita.
-import { buildImportedTracks, buildStraightTracks, clipTracks, selectTracks } from './tracks.mjs';
+import { buildCircularTracks, buildImportedTracks, buildStraightTracks, clipTracks, selectTracks } from './tracks.mjs';
 import { allocateBalanced, allocateBySpacing, allocatePerTrack, minimumPoints } from './allocation.mjs';
 import { sampleUnits } from './sampling.mjs';
 
@@ -16,7 +16,7 @@ export function planCore(field, params, opts = {}) {
     if (!opts.importedLines?.length) throw Error('Nenhum trajeto importado');
     generated = buildImportedTracks(opts.importedLines, opts.importedKind || 'pista_gnss');
   } else if (params.trackMode === 'circular') {
-    throw Error('Anéis: dado legado, calculado pelo motor antigo (o método vigente é linear)');
+    generated = buildCircularTracks(field, params); // dado legado; o método vigente é linear
   } else generated = buildStraightTracks(field, params);
 
   const clip = clipTracks(generated.tracks, field.geom, params.minPieceM);

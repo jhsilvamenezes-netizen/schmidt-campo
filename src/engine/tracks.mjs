@@ -1,9 +1,10 @@
 // Motor 2 · tiros retos (método linear, sem anéis): direção, deslocamentos de lado, seleção e recorte.
-// Reescrita legível do módulo tracks do motor 0.5.1 para tiros RETOS e importados, com o mesmo resultado
-// (teste diferencial nos 51 lotes e em variações de parâmetros). Anéis de dados legados ficam no motor antigo.
+// Reescrita legível do módulo tracks do motor 0.5.1, com o mesmo resultado (teste diferencial nos 51 lotes).
+// Anéis (buildCircularTracks) existem só para abrir dados legados; o método vigente é linear.
 import { TOLERANCES } from './tolerances.mjs';
 import { clipPolylineToGeom } from './clip.mjs';
-import { lengthOf } from './polyline.mjs';
+import { circlePolyline, lengthOf } from './polyline.mjs';
+import { geomCentroid } from './geometry.mjs';
 
 const { SAME_OFFSET_EPS_M } = TOLERANCES;
 
@@ -80,6 +81,24 @@ export function buildStraightTracks(field, params) {
       offsetM, line: [at(lo - 1, offsetM), at(hi + 1, offsetM)] })),
     frame: { u, v }, bearing, deltaM: result.deltaM, passes: result.passes, anchored: result.anchored,
   };
+}
+
+/**
+ * Anéis concêntricos no centroide (DADO LEGADO; o método vigente é linear). Raios (k + ½)·passo até cobrir o
+ * vértice mais distante, no máximo 200 anéis; passo em múltiplos da barra quando alinhado.
+ */
+export function buildCircularTracks(field, params) {
+  const center = geomCentroid(field.geom);
+  let reach = 0;
+  for (const polygon of field.geom) for (const ring of polygon) for (const p of ring) reach = Math.max(reach, Math.hypot(p[0] - center[0], p[1] - center[1]));
+  const boom = params.boomWidthM, passes = params.alignToBoom && boom > 0 ? Math.max(1, Math.floor(params.trackSpacingM / boom)) : 0;
+  const step = passes ? passes * boom : params.trackSpacingM, bearing = params.bearingDeg ?? field.bearing % 180, tracks = [];
+  for (let k = 0; (k + 0.5) * step < reach && tracks.length < 200; k++) {
+    const r = (k + 0.5) * step;
+    tracks.push({ id: `C${k + 1}`, index: k, kind: 'curva_desenhada', role: 'tiro_sugerido', confidence: TRACK_KINDS.curva_desenhada.confidence,
+      source: 'aneis_concentricos_centroide', offsetM: r, radiusM: r, line: circlePolyline(center, r, 8, bearing) });
+  }
+  return { tracks, frame: null, bearing, deltaM: step, passes, anchored: false, center };
 }
 
 /** Trajetos importados (pista GNSS ou trajeto da equipe), com as mesmas validações do motor 0.5.1. */

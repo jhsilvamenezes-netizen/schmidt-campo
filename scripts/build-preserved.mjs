@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { posix } from 'node:path';
 import { applySchmidtBlocks, blockSourceFiles } from './block-transform.mjs';
+import { bundleEngine, ENGINE_MODULES } from './bundle-engine.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const baseline = JSON.parse(await readFile(root+'audit/baseline.json'));
@@ -13,13 +14,13 @@ const preservedSourceFiles = ['src/engine/boundary.mjs','src/persistence/backup-
   'src/gps/fix-policy.mjs','src/platform/browser-backup-adapters.mjs','src/platform/browser-session-lock.mjs','src/platform/browser-write-barrier.mjs','src/platform/legacy-integration.mjs',
   'src/application/operational-summary.mjs','src/ui/plan-presentation.mjs','src/ui/operational-plan.mjs','src/ui/refinements.mjs','src/ui/lot-map.mjs','src/platform/bounded-response.mjs','src/ui/satellite-map.mjs',
   'src/application/adjust-alternatives.mjs','src/ui/adjust-compare.mjs','src/gps/guide-next.mjs','src/ui/monitor-direction.mjs'];
-export const sourceFiles=[...preservedSourceFiles,...blockSourceFiles];
+export const sourceFiles=[...preservedSourceFiles,...blockSourceFiles,...ENGINE_MODULES.map(m=>`src/engine/${m}.mjs`)];
 const sha = text => createHash('sha256').update(text).digest('hex');
 export async function buildCandidate({includeBlocks}={}) {
   if(includeBlocks===undefined)includeBlocks=!!JSON.parse(await readFile(root+'VERSAO.json','utf8')).runtimeBlocks;
   const original = execFileSync('git',['show',`${baseline.commit}:index.html`],{cwd:root,maxBuffer:4*1024*1024}).toString();
   if(sha(original)!==baseline.files['index.html'].sha256) throw new Error('Baseline HTML inesperado');
-  const blocks=[];
+  const blocks=[await bundleEngine()]; // motor 2 primeiro: os módulos abaixo e o motor da página o usam
   const available = new Set();
   for(const file of preservedSourceFiles) {
     const source=await readFile(root+file,'utf8');
@@ -51,6 +52,69 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
   // async já é usado pelo baseline. Evita exigir suporte novo a top-level await
   // dos WebViews Android: o await de recuperação fica dentro desta função.
   replace('<script type="module" crossorigin>','<script type="module" crossorigin>\n(async()=>{\n'+blocks.join('\n')+'\n','fontes-legíveis');
+  // Motor 2 no lugar do motor 0.5.1 DA PÁGINA. Cada módulo antigo (do seu início até o início do seguinte) vira
+  // o namespace equivalente; validação de parâmetros (g) e qualidade dos dados (d) seguem do antigo, injetadas.
+  // Marcadores únicos e ordem conferidos: qualquer mudança no artefato base interrompe o build.
+  const ENGINE_SWAPS=[
+    ['t',',t=(()=>{let{MIN_RING_AREA_M2',',n=(()=>{let{ALONG_S_EPS_M','schmidtEngine2.geometry'],
+    ['n',',n=(()=>{let{ALONG_S_EPS_M',',r=(()=>{let{geomEdges:r','schmidtEngine2.polyline'],
+    ['r',',r=(()=>{let{geomEdges:r',',i=(()=>{let{geomCentroid:i}','schmidtEngine2.clip'],
+    ['i',',i=(()=>{let{geomCentroid:i}',',a=(()=>{let{cumulative:e,pointAt:t}=n','schmidtEngine2.tracks'],
+    ['a',',a=(()=>{let{cumulative:e,pointAt:t}=n',',o=(()=>{let{alongCoverageRadius','schmidtEngine2.sampling'],
+    ['o',',o=(()=>{let{alongCoverageRadius',',s=(()=>{let{geomArea:e,geomBounds:r}','schmidtEngine2.allocation'],
+    ['s',',s=(()=>{let{geomArea:e,geomBounds:r}',',c=(()=>{let{cumulative:t,pointAt:r}=n','schmidtEngine2.metrics'],
+    ['c',',c=(()=>{let{cumulative:t,pointAt:r}=n',',l=(()=>{let e=Object.freeze({boomWidthM','schmidtEngine2.optimize'],
+    ['p',',p=(()=>{let{assessField:t}',',m=(()=>{let{coverage:e,long','{buildWarnings:(f,sc)=>schmidtEngine2.diagnostics.buildWarnings(f,sc,d.assessField)}'],
+    ['m',',m=(()=>{let{coverage:e,long',',h=(()=>{let e=Object.freeze({GEOMETRIA','{withMetrics:(f,sc)=>schmidtEngine2.scenario.withMetrics(f,sc,p.buildWarnings),trackRows:schmidtEngine2.scenario.trackRows}'],
+    ['_',',_=(()=>{let{validateGeom:e}',',v=(()=>{let{buildScenario:e','{buildScenario:(f,q={},o={})=>schmidtEngine2.scenario.buildScenario(f,q,o,{assertParams:g.assertParams,buildWarnings:p.buildWarnings,optimizeDistribution:schmidtEngine2.optimize.optimizeDistribution,engineVersion:`2.0.0`})}'],
+  ];
+  {
+    const engineStart=candidate.indexOf('var e={SEGMENT_T_EPS:'),engineEnd=candidate.indexOf(',O=(()=>{',engineStart);
+    if(engineStart<0||engineEnd<0)throw new Error('Motor da página não encontrado');
+    let engine=candidate.slice(engineStart,engineEnd);
+    for(const [v,from,to,value] of ENGINE_SWAPS){
+      const a=engine.indexOf(from),b=engine.indexOf(to);
+      if(a<0||b<0||engine.indexOf(from,a+1)>=0||engine.indexOf(to,b+1)>=0||b<=a)throw new Error(`Troca do motor: marcador ausente, repetido ou fora de ordem (${v})`);
+      engine=engine.slice(0,a)+`,${v}=${value}`+engine.slice(b);
+    }
+    if(engine.split('ENGINE_VERSION:`0.5.1-sim`').length!==2)throw new Error('Versão do motor não encontrada');
+    engine=engine.replace('ENGINE_VERSION:`0.5.1-sim`','ENGINE_VERSION:`2.0.0`');
+    candidate=candidate.slice(0,engineStart)+engine+candidate.slice(engineEnd);changes.push('motor-2-na-pagina');
+  }
+  // Motor 2 também no WORKER (recomendação e otimização em segundo plano), que guarda o motor como texto
+  // entre aspas simples. O pacote entra escapado no início da função do worker; as trocas usam as letras do worker.
+  {
+    const head="H='(function(){let e={SEGMENT_T_EPS:";
+    const at=candidate.indexOf(head);
+    if(at<0||candidate.indexOf(head,at+1)>=0)throw new Error('Worker: início não único');
+    let end=at+3;
+    for(;;){const q=candidate.indexOf("'",end);let k=q-1,bs=0;while(candidate[k]==='\\'){bs++;k--;}if(bs%2===0){end=q;break;}end=q+1;}
+    let lit=candidate.slice(at+3,end);
+    const WORKER_SWAPS=[
+      ['t',',t=(()=>{let{ALONG_S_EPS_M',',n=(()=>{let{cumulative:e,pointAt:n}=t','schmidtEngine2.polyline'],
+      ['n',',n=(()=>{let{cumulative:e,pointAt:n}=t',',r=(()=>{let{alongCoverageRadius','schmidtEngine2.sampling'],
+      ['r',',r=(()=>{let{alongCoverageRadius',',i=(()=>{let e=Object.freeze({GEOMETRIA','schmidtEngine2.allocation'],
+      ['a',',a=(()=>{let{MIN_RING_AREA_M2',',o=(()=>{let e=','schmidtEngine2.geometry'],
+      ['l',',l=(()=>{let{assessField:t}=s',',u=(()=>{let{geomArea:e,geomBounds:n}=a','{buildWarnings:(f,sc)=>schmidtEngine2.diagnostics.buildWarnings(f,sc,s.assessField)}'],
+      ['u',',u=(()=>{let{geomArea:e,geomBounds:n}=a',',d=(()=>{let{coverage:e,long','schmidtEngine2.metrics'],
+      ['d',',d=(()=>{let{coverage:e,long',',f=(()=>{let{cumulative:r,pointAt:i}=t','{withMetrics:(f,sc)=>schmidtEngine2.scenario.withMetrics(f,sc,l.buildWarnings),trackRows:schmidtEngine2.scenario.trackRows}'],
+      ['f',',f=(()=>{let{cumulative:r,pointAt:i}=t',',p=(()=>{let{DomainError:e,ERR:t}=i','schmidtEngine2.optimize'],
+      ['h',',h=(()=>{let{geomEdges:n',',g=(()=>{let{geomCentroid:n}=a','schmidtEngine2.clip'],
+      ['g',',g=(()=>{let{geomCentroid:n}=a',',_=(()=>{let{validateGeom:e}=a','schmidtEngine2.tracks'],
+      ['_',',_=(()=>{let{validateGeom:e}=a',',v=(()=>{let{buildScenario:e}=_','{buildScenario:(f,q={},o={})=>schmidtEngine2.scenario.buildScenario(f,q,o,{assertParams:p.assertParams,buildWarnings:l.buildWarnings,optimizeDistribution:schmidtEngine2.optimize.optimizeDistribution,engineVersion:`2.0.0`})}'],
+    ];
+    for(const [v,from,to,value] of WORKER_SWAPS){
+      const a=lit.indexOf(from),b=lit.indexOf(to);
+      if(a<0||b<0||lit.indexOf(from,a+1)>=0||lit.indexOf(to,b+1)>=0||b<=a)throw new Error(`Troca do motor no worker: marcador ausente, repetido ou fora de ordem (${v})`);
+      lit=lit.slice(0,a)+`,${v}=${value}`+lit.slice(b);
+    }
+    if(lit.split('ENGINE_VERSION:`0.5.1-sim`').length!==2)throw new Error('Worker: versão do motor não encontrada');
+    lit=lit.replace('ENGINE_VERSION:`0.5.1-sim`','ENGINE_VERSION:`2.0.0`');
+    const bundle=(await bundleEngine()).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
+    if(!lit.startsWith('(function(){let e='))throw new Error('Worker: forma inesperada');
+    lit='(function(){'+bundle+'let e='+lit.slice('(function(){let e='.length);
+    candidate=candidate.slice(0,at+3)+lit+candidate.slice(end);changes.push('motor-2-no-worker');
+  }
   replace('__m_ui_lotes:ne,__m_main:J};</script>', '__m_ui_lotes:ne,__m_main:J};\ninstallSchmidtRefinements(document);\ninstallSchmidtLotMap({document,events:A});\ninstallSchmidtSatelliteMap({document});\ninstallSchmidtOperationalPlan({document,schmidt:SCHMIDT,events:A,measurements:N});\ninstallSchmidtAdjustCompare({document,schmidt:SCHMIDT,events:A,measurements:N});\ninstallSchmidtMonitorDirection({document});\n})();</script>', 'escopo-assíncrono-e-plano-aprovado');
   // 2.0 (E4): sem marcação de coleta, o guia orienta ao próximo ponto à frente (src/gps/guide-next.mjs).
   replace('l=e.points.find(e=>!n.has(e.id)),u=Number.isFinite(t.accuracyM)','l=schmidtGuideNextPoint(e,t,n,a,t.guideState),u=Number.isFinite(t.accuracyM)','guia-sem-marcacao-orienta-ao-ponto-a-frente');

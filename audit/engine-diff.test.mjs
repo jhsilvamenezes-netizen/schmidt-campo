@@ -98,5 +98,9 @@ test('tiros e recorte: 51 lotes × variações de espaçamento, barra, fase, rum
   for (const bad of [[{ id: 'x/y', line: [[0, 0], [1, 1]] }], [{ id: 'A', line: [[0, 0]] }], [{ id: 'A', line: [[0, 0], [1, 1]] }, { id: 'A', line: [[0, 0], [1, 1]] }]])
     assert.throws(() => T.buildImportedTracks(bad, 'pista_gnss'), err => { assert.throws(() => t.buildImportedTracks(bad, 'pista_gnss'), { message: err.message }); return true; });
   same(T.trackFrame(84.6, -0.2), t.trackFrame(84.6, -0.2));
+  for (const k of keys.slice(0, 20)) for (const v of [{}, { trackSpacingM: 120, alignToBoom: false }, { bearingDeg: 33 }])
+    same(T.buildCircularTracks(fields[k], { ...P0, trackMode: 'circular', ...v }), t.buildCircularTracks(fields[k], { ...P0, trackMode: 'circular', ...v }), `${k} anéis`);
+  assert.equal(G.DEGREE_LIKE_EXTENT, old.geometry.DEGREE_LIKE_EXTENT);
+  for (const [name, mod] of [['geometry', G], ['polyline', L], ['tracks', T]]) assert.deepEqual(Object.keys(old[name]).filter(k => !(k in mod)), [], `interface ${name}`);
   console.log(`# casos comparados: ${cases}`);
 });

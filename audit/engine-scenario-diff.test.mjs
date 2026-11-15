@@ -25,7 +25,7 @@ test('cenário inteiro = motor antigo: 51 lotes × variações, com e sem otimiz
   const P0 = old.index.DEFAULT_PARAMS;
   const variants = [{}, { totalPoints: 40 }, { pointMode: 'por_tiro', pointsPerTrack: 3 }, { pointMode: 'espacamento', targetSpacingM: 250, maxAcceptableGapM: 300 },
     { edgePolicy: 'margens_iguais', maxAcceptableGapM: 200 }, { trackSpacingM: 437.77 }, { trackMode: 'quantidade', trackCount: 3 }, { minPieceM: 500 },
-    { bearingDeg: 40 }, { selectionMode: 'quantidade', selectionCount: 2 }, { totalPoints: 1, minPieceM: 0 }, { pointMode: 'por_tiro', pointsPerTrack: 1, minPieceM: 0 }];
+    { bearingDeg: 40 }, { trackMode: 'circular', trackSpacingM: 200 }, { selectionMode: 'quantidade', selectionCount: 2 }, { totalPoints: 1, minPieceM: 0 }, { pointMode: 'por_tiro', pointsPerTrack: 1, minPieceM: 0 }];
   const codes = new Set();
   let n = 0;
   for (const k of keys) for (const v of variants) {

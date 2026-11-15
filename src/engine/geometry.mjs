@@ -5,6 +5,9 @@ import { TOLERANCES } from './tolerances.mjs';
 
 const { MIN_RING_AREA_M2, PARALLEL_DET_EPS, SEGMENT_T_EPS } = TOLERANCES;
 
+/** Extensão (m) abaixo da qual coordenadas dentro de ±180/±90 parecem graus, não metros. */
+export const DEGREE_LIKE_EXTENT = 1;
+
 /** Arestas de um anel; o último vértice repetido (anel fechado) não gera aresta nula. */
 export function ringEdges(ring) {
   const closed = ring.length > 1 && ring[0][0] === ring.at(-1)[0] && ring[0][1] === ring.at(-1)[1];
@@ -119,7 +122,7 @@ export function validateGeom(geom) {
   if (all.length) {
     const xs = all.map(v => v[0]), ys = all.map(v => v[1]);
     const extent = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
-    if (extent < 1 && xs.every(x => Math.abs(x) <= 180) && ys.every(y => Math.abs(y) <= 90))
+    if (extent < DEGREE_LIKE_EXTENT && xs.every(x => Math.abs(x) <= 180) && ys.every(y => Math.abs(y) <= 90))
       problems.push('Coordenadas parecem graus (lon/lat); projete para metros antes de medir distâncias');
   }
   return problems;
