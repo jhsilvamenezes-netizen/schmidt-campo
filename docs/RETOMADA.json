@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "2.5.0: motor equilibrado",
+  "task": "2.5.0 publicada (PR #27, main 0b2006a)",
   "owner": "Claude",
-  "status": "pronto_para_revisao",
-  "nextAction": "PR da 2.5.0; CI verde; merge; Pages e hash = VERSAO.json",
+  "status": "pronto_para_iniciar",
+  "nextAction": "Aguardar avaliação do proprietário; depois tela reconstruída a partir de src (2.6), Unidade D e APK",
   "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -53,16 +53,10 @@
     "15/11: proprietário pediu foco no motor (inteligência) e visual; equilíbrio só no plano em uso de lote individual; recomendação e bloco sem mudança"
   ],
   "snapshot": {
-    "at": "2026-11-15T10:08:14.242Z",
+    "at": "2026-11-15T10:26:01.063Z",
     "branch": "claude/motor-evolucao",
-    "codeCommit": "e27a4c09105bdfd9345ecb6931ac046263541b78",
-    "changedTrackedFiles": [
-      "VERSAO.json",
-      "audit/direction-measures-evidence.json",
-      "index.html",
-      "src/ui/adjust-compare.mjs",
-      "sw.js"
-    ],
+    "codeCommit": "0b2006a6c1d2c4b1803b6fae96f60a13a61980b5",
+    "changedTrackedFiles": [],
     "untrackedCount": 0
   },
   "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",
