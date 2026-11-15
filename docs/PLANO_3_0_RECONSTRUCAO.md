@@ -69,3 +69,11 @@ Ganho medido em relação ao plano regular:
 Conclusão: a estratégia da 2.5 já está perto do melhor possível com essas regras. O que entrou é a garantia exata:
 o plano equilibrado só é usado se o **pior vazio exato** (Voronoi) não passar o do plano regular. Antes isso era
 conferido na grade. O resultado continua o mesmo (31 lotes, −11,3% na mediana), agora provado.
+
+### R2.2 · Contorno e projeção: estudo crítico (15/11/2026)
+
+| Item | Medido nos 51 lotes | Decisão |
+|---|---|---|
+| G3 · distorção da projeção UTM 23S | Longitudes de −46,10 a −45,93 (cerca de 1° do meridiano central). Fator de escala k entre 0,99973 e 0,99978: distância 0,022–0,027% e área 0,044–0,055% (BD3: 466,79 → 467,03 ha) | Não implementar: irrelevante para o plano |
+| Área publicada × KML | Publicada maior em 0,05–0,67% (mediana 0,66%, quase constante) | Achado de dados, não explicado pela projeção: a área publicada vem de outra base ou de outro cálculo |
+| G2 · contorno inválido | 0 de 51 (Shapely `is_valid`) | Sem reparo automático (mudaria a divisa sem o proprietário saber; regra: não inferir bordas). Arquivo importado com defeito é recusado, com o local do problema |
