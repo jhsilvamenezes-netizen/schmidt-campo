@@ -2,16 +2,16 @@
 
 Gerado por scripts/checkpoint.mjs; registro não executa nem certifica testes.
 
-- Tarefa: 2.3.0: motor conferido, revisão de tela, tema Noite e menos texto
+- Tarefa: 2.3.0 publicada (PR #25, main 854a6c7)
 - Responsável: Claude
-- Estado: pronto_para_revisao
+- Estado: pronto_para_iniciar
 - Branch: claude/motor-evolucao
-- Commit de código observado: 3608fa4fc0115ce55a3212aaba11b0d9538de1e3
-- Registro UTC: 2026-11-15T07:32:32.701Z
+- Commit de código observado: 854a6c7d87cf8b50f7d1b3c72e40d90b9730c64e
+- Registro UTC: 2026-11-15T07:49:56.525Z
 
 ## Próxima ação
 
-PR da 2.3.0; CI verde; merge; conferir Pages e hash do index.html = VERSAO.json
+Unidade D: reescrever no motor 2 paramCatalog, dataQuality, recommend, route e exportadores; tirar o motor antigo do artefato
 
 ## Testes declarados pela sessão
 

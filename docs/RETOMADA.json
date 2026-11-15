@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "2.3.0: motor conferido, revisão de tela, tema Noite e menos texto",
+  "task": "2.3.0 publicada (PR #25, main 854a6c7)",
   "owner": "Claude",
-  "status": "pronto_para_revisao",
-  "nextAction": "PR da 2.3.0; CI verde; merge; conferir Pages e hash do index.html = VERSAO.json",
+  "status": "pronto_para_iniciar",
+  "nextAction": "Unidade D: reescrever no motor 2 paramCatalog, dataQuality, recommend, route e exportadores; tirar o motor antigo do artefato",
   "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -56,9 +56,9 @@
     "15/11: revisão de tela (10 itens) e corte de texto autorizados pelo proprietário; guardas visuais aceitam só regiões declaradas da 2.3"
   ],
   "snapshot": {
-    "at": "2026-11-15T07:32:32.701Z",
+    "at": "2026-11-15T07:49:56.525Z",
     "branch": "claude/motor-evolucao",
-    "codeCommit": "3608fa4fc0115ce55a3212aaba11b0d9538de1e3",
+    "codeCommit": "854a6c7d87cf8b50f7d1b3c72e40d90b9730c64e",
     "changedTrackedFiles": [],
     "untrackedCount": 0
   },
