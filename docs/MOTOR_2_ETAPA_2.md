@@ -57,3 +57,19 @@ cenário inteiro. Depois, trocar o motor no build e repetir a conferência GEOS/
 
 Falta reescrever, para trocar o motor no app: validação e resolução de parâmetros, métricas e
 cobertura (`metrics`/`evaluate`), otimização e rota.
+
+## Etapa 4: métricas e cobertura
+
+- `src/engine/metrics.mjs`:
+  - intervalos por trecho e por tiro;
+  - grade de cobertura por varredura de linhas;
+  - distância exata ao ponto mais próximo (varredura ordenada por x);
+  - p95 por seleção de Hoare;
+  - cobertura em duas resoluções com limite superior do vazio;
+  - distância entre tiros vizinhos e caminhada.
+- `audit/engine-metrics-diff.test.mjs`: igualdade exata em **459 cenários e 3.028.868 células**
+  (51 lotes × 9 variações, inclusive grades de 400 e 4.000 células alvo) e em funções isoladas.
+  Mutações no posto do p95 e no vai-e-volta da caminhada foram detectadas.
+
+O núcleo do plano e as métricas do cenário já estão reescritos. Faltam a resolução e validação
+de parâmetros, os avisos (diagnostics) e a otimização. Depois vem a troca no app.
