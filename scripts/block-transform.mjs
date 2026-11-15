@@ -44,7 +44,9 @@ html=html.replaceAll('APP_VERSION:`1.31.0`,','APP_VERSION:`'+release.version+'`,
 const p6Flag = 'Array.isArray(l.flags)?l.flags:[]';
 if (html.split(p6Flag).length !== 2) throw Error('Apresentação de flags mudou');
 html = html.replaceAll(p6Flag, 'l.code===`P6`&&l.farm===`Rio de Janeiro`?[]:Array.isArray(l.flags)?l.flags:[]');
-replace('(e.flags?.length||0)', '((e.code===`P6`&&e.farm===`Rio de Janeiro`?[]:e.flags)?.length||0)', 'p6-sem-observacao-no-indicador');
+// 2.3: o selo também deixa de contar a sobreposição do KML original (o motor já unificou) e o ponto A fora do
+// polígono: o motor classifica os dois como nota. Rumo divergente continua alerta.
+replace('(e.flags?.length||0)', '((e.code===`P6`&&e.farm===`Rio de Janeiro`?[]:e.flags)?.filter(e=>!/sobrepost|repetid|ponto a da/i.test(e)).length||0)', 'p6-sem-observacao-no-indicador');
 const divergence = 'n>t.bearingDivergenceDeg?';
 if (!html.includes(divergence)) throw Error('Diagnóstico de rumo mudou');
 html = html.replaceAll(divergence, 'n>t.bearingDivergenceDeg&&!(e.code===`P6`&&e.farm===`Rio de Janeiro`)?');

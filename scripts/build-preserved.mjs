@@ -13,7 +13,7 @@ const baseline = JSON.parse(await readFile(root+'audit/baseline.json'));
 const preservedSourceFiles = ['src/engine/boundary.mjs','src/persistence/backup-service.mjs','src/persistence/backup-format.mjs',
   'src/gps/fix-policy.mjs','src/platform/browser-backup-adapters.mjs','src/platform/browser-session-lock.mjs','src/platform/browser-write-barrier.mjs','src/platform/legacy-integration.mjs',
   'src/application/operational-summary.mjs','src/ui/plan-presentation.mjs','src/ui/operational-plan.mjs','src/ui/refinements.mjs','src/ui/lot-map.mjs','src/platform/bounded-response.mjs','src/ui/satellite-map.mjs',
-  'src/application/adjust-alternatives.mjs','src/ui/adjust-compare.mjs','src/gps/guide-next.mjs','src/ui/monitor-direction.mjs'];
+  'src/application/adjust-alternatives.mjs','src/ui/adjust-compare.mjs','src/gps/guide-next.mjs','src/ui/monitor-direction.mjs','src/ui/night-theme.mjs'];
 export const sourceFiles=[...preservedSourceFiles,...blockSourceFiles,...ENGINE_MODULES.map(m=>`src/engine/${m}.mjs`)];
 const sha = text => createHash('sha256').update(text).digest('hex');
 export async function buildCandidate({includeBlocks}={}) {
@@ -115,7 +115,7 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
     lit='(function(){'+bundle+'let e='+lit.slice('(function(){let e='.length);
     candidate=candidate.slice(0,at+3)+lit+candidate.slice(end);changes.push('motor-2-no-worker');
   }
-  replace('__m_ui_lotes:ne,__m_main:J};</script>', '__m_ui_lotes:ne,__m_main:J};\ninstallSchmidtRefinements(document);\ninstallSchmidtLotMap({document,events:A});\ninstallSchmidtSatelliteMap({document});\ninstallSchmidtOperationalPlan({document,schmidt:SCHMIDT,events:A,measurements:N});\ninstallSchmidtAdjustCompare({document,schmidt:SCHMIDT,events:A,measurements:N});\ninstallSchmidtMonitorDirection({document});\n})();</script>', 'escopo-assíncrono-e-plano-aprovado');
+  replace('__m_ui_lotes:ne,__m_main:J};</script>', '__m_ui_lotes:ne,__m_main:J};\ninstallSchmidtRefinements(document);\ninstallSchmidtLotMap({document,events:A});\ninstallSchmidtSatelliteMap({document});\ninstallSchmidtOperationalPlan({document,schmidt:SCHMIDT,events:A,measurements:N});\ninstallSchmidtAdjustCompare({document,schmidt:SCHMIDT,events:A,measurements:N});\ninstallSchmidtMonitorDirection({document});\ninstallSchmidtNightTheme({document});\n})();</script>', 'escopo-assíncrono-e-plano-aprovado');
   // 2.0 (E4): sem marcação de coleta, o guia orienta ao próximo ponto à frente (src/gps/guide-next.mjs).
   replace('l=e.points.find(e=>!n.has(e.id)),u=Number.isFinite(t.accuracyM)','l=schmidtGuideNextPoint(e,t,n,a,t.guideState),u=Number.isFinite(t.accuracyM)','guia-sem-marcacao-orienta-ao-ponto-a-frente');
   replace('let l=s.points.find(e=>!o.has(e.id)),u=s.points.length,','let l=c&&!c.done?c.next:s.points.find(e=>!o.has(e.id)),u=s.points.length,','monitor-mostra-o-ponto-que-o-guia-escolheu');
@@ -164,6 +164,11 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
   replace('else{if(n?.schema!==t)throw Error(`formato de cópia desconhecido`);','else{delete n.legado;if(n?.schema!==t)throw Error(`formato de cópia desconhecido`);','legado-somente-pelo-decoder');
   replace('Array.isArray(n.imagens)||(n.imagens=[]);','if(!Array.isArray(n.imagens))throw Error(`imagem de fundo em formato inválido`);','importação-sem-normalizar-imagens-inválidas');
   replace('return n.itensReais={...u(r),imagens:n.imagens.length,','validateSchmidtRestore(n);return n.itensReais={...u(r),imagens:n.imagens.length,','validação-completa-antes-da-prévia');
+  // 2.3: Auditoria › "Dados do lote" marcava "!" (problema) até para notas só informativas (B gerado pelo rumo,
+  // área publicada × KML, KML já corrigido). Agora "!" só com alerta ou erro; só notas → "i"; nada → "✓".
+  replace('[!T.length,`Dados do lote`,','[T.some(e=>e.level!==`info`)?!1:T.length?null:!0,`Dados do lote`,','auditoria-dados-nivel-real');
+  // 2.3: cartão "Descoberto · limite 376 m" pedia interpretação; agora diz o que mede.
+  replace('`Descoberto`,`${J(c.haBlind,+(c.haBlind<10))} ha`,l?`${c.pct} · Diagnóstico`:`limite ${J(c.limitM,0)} m`','`Área descoberta`,`${J(c.haBlind,+(c.haBlind<10))} ha`,l?`${c.pct} · Diagnóstico`:`a mais de ${J(c.limitM,0)} m de um ponto`','cartao-descoberto-legivel');
   if(includeBlocks){const blocks=await applySchmidtBlocks(candidate);candidate=blocks.html;changes.push(...blocks.changes);}
   // Recalcula só os hashes CSP dos scripts; nenhuma política é afrouxada.
   const scripts=[...candidate.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].filter(m=>!m[1].includes('application/json'));
