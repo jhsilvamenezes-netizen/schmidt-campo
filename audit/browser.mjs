@@ -170,11 +170,12 @@ try {
       await page.locator('#mon-pick-gps').click();
       await page.waitForFunction(() => window.auditGPSCalls > 0);
       await page.waitForTimeout(500);
-      // 2.4 (aprovado): faixa "Simulação · limites…" fora do mapa e escala curta em mapa baixo; só essas áreas mudam.
+      // 2.4 (aprovado): faixa "Simulação · limites…" fora do mapa e escala curta em mapa baixo; só essas áreas mudam
+      // (inclui o botão "Norte para cima", semitransparente sobre o mapa: no CI recompõe 2/255).
       // A camada de baixo mudou: borda arredondada e sombra do aviso (#status) recompõem 1–2/255 (no CI, mais pixels);
       // só a moldura (12 px para dentro, 10 px de sombra) entra; o texto do aviso segue comparado.
       gpsRegions.push(...await page.evaluate(() => {
-        const out = [document.getElementById('geo-status'), document.querySelector('#map .m-scale')].map(e => e?.getBoundingClientRect())
+        const out = [document.getElementById('geo-status'), document.querySelector('#map .m-scale'), document.getElementById('map-direction-state')].map(e => e?.getBoundingClientRect())
           .filter(r => r && r.width).map(r => ({ left: Math.floor(r.left) - 2, right: Math.ceil(r.right) + 2, top: Math.floor(r.top) - 2, bottom: Math.ceil(r.bottom) + 2 }));
         const t = document.getElementById('status')?.getBoundingClientRect();
         if (t && t.width) { const L = Math.floor(t.left) - 10, R = Math.ceil(t.right) + 10, T = Math.floor(t.top) - 10, B = Math.ceil(t.bottom) + 10;
