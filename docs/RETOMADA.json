@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "2.1.0 — comparar antes de usar no bloco; depois reescrita do motor (U2)",
+  "task": "Motor 2 — reescrita por etapas com oráculo do motor antigo",
   "owner": "Claude",
   "status": "em_andamento",
-  "nextAction": "PR da 2.1.0, CI e publicação; depois U2: reescrever geração de tiros/recorte em src/engine com comparação diferencial nos 51 lotes/40 grupos e GEOS",
+  "nextAction": "Reescrever paramCatalog (validação/textos) e dataQuality; depois trocar o motor no app (página e worker) com GEOS/PROJ, 51 lotes e 40 grupos no navegador; só então publicar",
   "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -11,24 +11,9 @@
   "scope": "Direcionamento exclusivo no link móvel, sem coleta/marcação pela equipe. APK adiado.",
   "tests": [
     {
-      "command": "node audit/block-compare-browser.mjs",
+      "command": "npm --prefix audit run test:blocks (inclui engine-diff, engine-plan-diff, engine-metrics-diff, engine-scenario-diff, engine-optimize-diff)",
       "result": "passou",
-      "evidence": "40 grupos, 517 opções (355 bloqueadas), 7 aplicações = prometido, plano individual intacto"
-    },
-    {
-      "command": "npm --prefix audit test; npm --prefix audit run test:blocks",
-      "result": "passou",
-      "evidence": "2.1.0"
-    },
-    {
-      "command": "adjust-compare, gps-guidance, gps-stability, blocks-runtime, block-map-selection, operational-plan (browser)",
-      "result": "passou",
-      "evidence": "2.1.0"
-    },
-    {
-      "command": "node audit/blocks-ui-browser.mjs",
-      "result": "passou",
-      "evidence": "3 de 4 rodadas; 1 falha isolada sem reprodução (oscilação)"
+      "evidence": "motor 2: 83.931 casos de núcleo; 1.122 planos; 459 coberturas; 630 cenários completos; 265 otimizações — todos idênticos ao motor 0.5.1"
     }
   ],
   "blockers": [
@@ -45,25 +30,15 @@
     "Conferir GitHub e diff; uma sessão não recebe automaticamente o chat da outra.",
     "Pedido posterior autoriza reescrita estruturada do motor; primeira unidade espacial integrada só na candidata.",
     "Fonte completa ainda não recuperada; reescrita não deve renomear todo o motor nem declarar substituição completa prematuramente.",
-    "2.1.0: comparação de bloco usa as opções já calculadas pela preparação; lista não gravada; Usar bloco atômico."
+    "2.1.0: comparação de bloco usa as opções já calculadas pela preparação; lista não gravada; Usar bloco atômico.",
+    "15/11: 2.1.0 publicada (PR #22, main cd25d4b). Motor 2 em src/engine, ainda não usado pelo app; troca exige paramCatalog+dataQuality reescritos e substituição na página e no worker."
   ],
   "snapshot": {
-    "at": "2026-11-15T02:13:40.913Z",
-    "branch": "claude/motor-e-bloco",
-    "codeCommit": "8d82e60fd36edd19f72f750a44c3f142458808a2",
-    "changedTrackedFiles": [
-      ".github/workflows/blocos-candidata.yml",
-      "AGENTS.md",
-      "VERSAO.json",
-      "audit/block-candidate.json",
-      "docs/VERSOES_E_ENTREGAS.md",
-      "index.html",
-      "scripts/block-transform.mjs",
-      "src/application/block-planning.mjs",
-      "src/ui/block-planning.mjs",
-      "sw.js"
-    ],
-    "untrackedCount": 3
+    "at": "2026-11-15T02:54:59.796Z",
+    "branch": "claude/motor-2",
+    "codeCommit": "74491efae7959e4aa39e1a6976dd3baeb91c9bdf",
+    "changedTrackedFiles": [],
+    "untrackedCount": 0
   },
   "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",
   "developmentBranch": "codex/reescrita-motor-etapa-1"
