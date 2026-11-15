@@ -86,3 +86,47 @@ test('explicação: mesmas etapas e textos nos 51 lotes e em 6 variações de pa
   }
   for (const cv of [null, undefined, 0, 0.049, 0.05, 0.149, 0.15, 2]) assert.equal(expl.regularityWord(cv), old.explain.regularityWord(cv));
 });
+
+// ---- equipe, atalhos e edição manual ----
+import { teamPlan } from '../src/engine/team.mjs';
+import * as pre from '../src/engine/presets.mjs';
+import * as edit from '../src/engine/editing.mjs';
+
+test('equipe: mesma divisão nos 51 lotes, 1 a 9 pessoas, em 3 variações', () => {
+  for (const k of keys) for (const P of variants(old.index.DEFAULT_PARAMS).slice(0, 3)) {
+    const sc = build(fields[k], P);
+    for (const n of [1, 2, 3, 4, 5, 7, 9, 0, 'x']) assert.deepStrictEqual(teamPlan(sc, n), old.team.teamPlan(sc, n), `${k} ${n}`);
+  }
+});
+
+test('atalhos: mesmos parâmetros e mesma comparação de divisão nos 51 lotes', () => {
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(pre.PRESETS)), JSON.parse(JSON.stringify(old.presets.PRESETS)));
+  for (const k of keys) { const f = fields[k];
+    for (const id of ['equipe', 'pivo', 'distancia', 'soja']) for (const o of [{}, { monitors: 3, haPerPoint: 10 }, { monitors: 0.2 }])
+      assert.deepStrictEqual(pre.presetParams(id, f, o), old.presets.presetParams(id, f, o));
+    assert.throws(() => pre.presetParams('?', f), /Atalho desconhecido: \?/);
+    for (const m of [3, 5]) assert.deepStrictEqual(pre.compareTeamSplits(f, m, {}, build), old.presets.compareTeamSplits(f, m, {}), `${k} ${m}`);
+  }
+});
+
+test('edição: mover, acrescentar, recalcular e restaurar iguais nos 51 lotes', () => {
+  const metrics = (f, sc) => old.evaluate.withMetrics(f, sc);
+  let n = 0;
+  for (const k of keys) {
+    const f = fields[k], sc = build(f, old.index.DEFAULT_PARAMS), s0 = sc.samples[0], u0 = sc.units[0];
+    if (!s0) continue;
+    const moves = [{ deltaS: 37 }, { deltaS: -1e6 }, { deltaS: 1e6 }, { x: s0.x + 3, y: s0.y - 2 }, { x: s0.x + 60, y: s0.y + 60 }, { x: 1e7, y: 1e7 }];
+    for (const id of [s0.id, sc.samples.at(-1).id, 'nada']) for (const to of moves) for (const o of [{}, { allowOffTrack: true }]) {
+      const a = edit.moveSample(sc, f, id, to, o), b = old.editing.moveSample(sc, f, id, to, o);
+      assert.deepStrictEqual(a, b, `${k} mover ${id} ${JSON.stringify(to)}`); n++;
+      if (a.ok) assert.deepStrictEqual(edit.withSamples(f, sc, a.samples, metrics), old.editing.withSamples(f, sc, b.samples));
+    }
+    for (const at of [{ x: s0.x + 5, y: s0.y + 5 }, { x: 1e7, y: 0 }]) for (const o of [{}, { unitId: u0.id }, { unitId: 'nenhum' }])
+      assert.deepStrictEqual(edit.addSample(sc, f, at, o), old.editing.addSample(sc, f, at, o));
+    const saved = sc.samples.map(s => ({ ...s, s: s.s + 0.5 }));
+    const bad = [null, 3, [...saved, saved[0]], [{ ...saved[0], id: '<x>' }], [{ ...saved[0], x: NaN }], [{ ...saved[0], unitId: '?' }],
+      [{ ...saved[0], unitId: '?', offTrack: true }], [{ ...saved[0], s: '1' }], [{ ...saved[0], extra: true, manual: true, s: -5 }]];
+    for (const v of [saved, ...bad]) assert.deepStrictEqual(edit.restoreSamples(sc, v), old.editing.restoreSamples(sc, v));
+  }
+  assert.ok(n > 1500, `casos: ${n}`);
+});
