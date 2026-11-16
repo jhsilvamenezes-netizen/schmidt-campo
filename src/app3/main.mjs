@@ -135,6 +135,21 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
     return true;
   }
 
+  // largura e altura reais de cada rótulo do mapa, medidas com a fonte deste aparelho (guardadas por texto)
+  const measured = new Map(), mctx = document.createElement('canvas').getContext('2d');
+  /** @param {string} text @param {string} font */
+  const measure = (text, font) => {
+    const key = font + '|' + text;
+    let m = measured.get(key);
+    if (!m) {
+      const fs = parseFloat(font.split(' ')[1]);
+      if (!mctx) return { w: text.length * fs * 0.66, a: fs * 0.95, d: fs * 0.3 };
+      mctx.font = font; const t = mctx.measureText(text);
+      m = { w: t.width, a: t.fontBoundingBoxAscent || fs * 0.95, d: t.fontBoundingBoxDescent || fs * 0.3 };
+      measured.set(key, m);
+    }
+    return m;
+  };
   function drawMaps() {
     if (!cur) return;
     for (const el of document.querySelectorAll('[data-map]')) {
@@ -143,7 +158,7 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
       const W = Math.round(r.width), H = Math.round(r.height), full = el.dataset.map === 'full', guide = el.dataset.map === 'guide';
       const areas = full ? P.pointAreas(cur.field, cur.sc) : null, info = full && selectedPt ? P.pointInfo(cur.field, cur.sc, selectedPt) : null;
       // mapa principal: legenda no alto à esquerda e botões das camadas embaixo à direita ficam fora do desenho
-      const opts = full ? { pad: { t: 112, r: 30, b: 64, l: 40 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
+      const opts = full ? { measure, pad: { t: 112, r: 30, b: 64, l: 40 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
         reserve: [[0, 0, info ? Math.min(W - 40, 330) : Math.min(W * 0.66, 252), 104], [W - 214, H - 60, W, H]] } : { pad: 22 };
       el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view, selected: guide ? (mon.active ? monitorData().target : null) : selectedPt, pos: guide ? mon.pos : null, others: cur.others || [], ...opts })
         + (full ? (info ? balloon() : V.legend(cur.field, P.figures(cur.sc), areas)) + V.mapTools(layers, view.k > 1.01)

@@ -6,22 +6,28 @@
 import { num } from './format.mjs';
 
 const NICE = [50, 100, 200, 250, 500, 1000, 2000, 2500, 5000];
-/** Largura média de um caractere (px) por classe de texto: estimativa conservadora (system-ui, peso 600–700). */
+/** Fonte de cada classe de texto (igual ao styles.css). Medida no próprio aparelho quando há tela (qualquer fonte de
+ * celular); sem tela (Node), estimativa conservadora pela largura média do caractere. */
+export const FONTS = { tid: '600 12px system-ui', med: '700 12px system-ui', ha: '600 12px system-ui', sel: '700 13px system-ui' };
 const CH = { tid: 7.6, med: 7.2, ha: 7.2, sel: 8 };
+/** @typedef {(text:string, font:string) => {w:number, a:number, d:number}} Measure */
+/** @type {Measure} */
+const estimate = (text, font) => { const fs = parseFloat(font.split(' ')[1]), k = Object.keys(FONTS).find(c => FONTS[c] === font) || 'sel'; return { w: text.length * CH[k], a: fs * 0.95, d: fs * 0.3 }; };
 const f1 = v => v.toFixed(1);
 
 /** Espaço ocupado: círculos [x, y, r] e caixas [x0, y0, x1, y1]. */
-function space(w, h) {
+/** @param {number} w @param {number} h @param {Measure} measure */
+function space(w, h, measure) {
   const circles = [], boxes = [];
   const freeBox = ([a, b, c, d], m = 2) => a >= 4 && b >= 4 && c <= w - 4 && d <= h - 4
     && circles.every(([x, y, r]) => Math.hypot(x - Math.max(a, Math.min(x, c)), y - Math.max(b, Math.min(y, d))) > r + m)
     && boxes.every(([e, f, g, k]) => a >= g + m || c <= e - m || b >= k + m || d <= f - m);
   return { circles, boxes, freeBox,
     /** Primeira posição livre entre as candidatas [x, y, âncora]; ocupa e devolve a caixa, ou null. */
-    place(cands, text, cw, hgt = 15) {
-      const wd = text.length * cw;
+    place(cands, text, cls) {
+      const m = measure(text, FONTS[cls]), wd = m.w + 2;
       for (const [x, y, anc] of cands) {
-        const x0 = anc === 'start' ? x : anc === 'end' ? x - wd : x - wd / 2, bx = /** @type {[number, number, number, number]} */ ([x0, y - hgt + 3, x0 + wd, y + 3]);
+        const x0 = anc === 'start' ? x : anc === 'end' ? x - wd : x - wd / 2, bx = /** @type {[number, number, number, number]} */ ([x0, y - m.a - 1, x0 + wd, y + m.d + 1]);
         if (freeBox(bx)) { boxes.push(bx); return { x, y, anc, bx }; }
       }
       return null;
@@ -65,9 +71,9 @@ function cota(cls, a, b) {
 /** Marcação SVG do lote ajustada a w × h px. `small` = mapa do Plano/guia (sem medidas).
  * @param {any} field @param {any} sc @param {number} w @param {number} h
  * @param {{pad?:number|{t:number,r:number,b:number,l:number}, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null,
- *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][]}} [opts] */
+ *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure}} [opts] */
 export function mapMarkup(field, sc, w, h, opts = {}) {
-  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [] } = opts;
+  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate } = opts;
   const pad = typeof pad0 === 'number' ? { t: pad0, r: pad0, b: pad0, l: pad0 } : pad0;
   // Outros lotes (bloco): levados ao referencial do lote atual pela diferença dos centroides UTM.
   const shift = o => [o.field.centroidUTM[0] - field.centroidUTM[0], o.field.centroidUTM[1] - field.centroidUTM[1]];
@@ -79,7 +85,7 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
   const ox = pad.l + (iw - k * (x1 - x0)) / 2, oy = pad.b + (ih - k * (y1 - y0)) / 2;
   const XY = (x, y) => [view.x + view.k * (ox + k * (x - x0)), view.y + view.k * (h - oy - k * (y - y0))];
   const P = ([x, y]) => XY(x, y).map(f1).join(',');
-  const kk = k * view.k, sp = space(w, h);
+  const kk = k * view.k, sp = space(w, h, measure);
   let r = small ? 10 : 12.5;
   const numY = 4.2;
   for (const b of reserve) sp.boxes.push(b);
@@ -120,7 +126,7 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
     }
     let labels = '';
     for (const [id, { lf, rt }] of ends) {
-      const p = sp.place([[lf[0] - 7, lf[1] + 4, 'end'], [rt[0] + 7, rt[1] + 4, 'start'], [lf[0] - 7, lf[1] - 8, 'end'], [lf[0] - 7, lf[1] + 16, 'end'], [rt[0] + 7, rt[1] - 8, 'start']], id, CH.tid, 14);
+      const p = sp.place([[lf[0] - 7, lf[1] + 4, 'end'], [rt[0] + 7, rt[1] + 4, 'start'], [lf[0] - 7, lf[1] - 8, 'end'], [lf[0] - 7, lf[1] + 16, 'end'], [rt[0] + 7, rt[1] - 8, 'start']], id, 'tid');
       if (p) labels += text(`tid${small ? ' sm' : ''}`, p, id);
     }
     if (measures && !small && !areas) labels += medidas(sc, XY, sp, [w / 2, h / 2], r);
@@ -128,7 +134,7 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
       for (const c of areas.cells) {
         const at = scr.get(c.id); if (!at) continue;
         const t = `${num(c.ha, 1)} ha`, d = r + 2, p = sp.place([[at[0], at[1] + r + 14, 'middle'], [at[0], at[1] - r - 5, 'middle'], [at[0] + d, at[1] - d, 'start'], [at[0] - d, at[1] - d, 'end'],
-          [at[0] + d, at[1] + d + 9, 'start'], [at[0] - d, at[1] + d + 9, 'end'], [at[0] + r + 4, at[1] + 4, 'start'], [at[0] - r - 4, at[1] + 4, 'end']], t, CH.ha);
+          [at[0] + d, at[1] + d + 9, 'start'], [at[0] - d, at[1] + d + 9, 'end'], [at[0] + r + 4, at[1] + 4, 'start'], [at[0] - r - 4, at[1] + 4, 'end']], t, 'ha');
         if (p) labels += text('ha', p, t);
       }
     }
@@ -170,7 +176,7 @@ function medidas(sc, XY, sp, center, r0) {
         if (!lineFree(sp, inner, inner2)) continue;
         const mx = (pa[0] + pb[0]) / 2, my = (pa[1] + pb[1]) / 2, ex = (pb[0] - pa[0]) / L, ey = (pb[1] - pa[1]) / L, cands = [];
         for (const off of [8, 20, 32, 44]) for (const sg of [1, -1]) { const dx = -ey * off * sg; cands.push([mx + dx, my + ex * off * sg + 4, anchorFor(dx)]); }
-        const before = sp.boxes.length, p = sp.place(cands, label, CH.med);
+        const before = sp.boxes.length, p = sp.place(cands, label, 'med');
         if (!p) continue;
         sp.boxes.splice(before, 1); sp.line(inner, inner2); sp.boxes.push(p.bx);
         out += cota('cota-t', pa, pb) + text('med-t', p, label);
@@ -192,7 +198,7 @@ function medidas(sc, XY, sp, center, r0) {
     if (ny > 0) { nx = -nx; ny = -ny; } // primeiro acima do tiro
     const t = `${num(b.s - a.s)} m`, c = [];
     for (const off of [12, 20]) c.push([o[0] + nx * off, o[1] + ny * off + 4, 'middle'], [o[0] - nx * off, o[1] - ny * off + 4, 'middle']);
-    const p = sp.place(c, t, CH.med);
+    const p = sp.place(c, t, 'med');
     if (p) marks.push(text('med-p', p, t));
   }
   if (pairs.length && marks.length >= pairs.length / 2) return out + marks.join('');
@@ -210,7 +216,7 @@ function medidas(sc, XY, sp, center, r0) {
       const t = `${num(b.s - a.s)} m entre pontos`, mx = (A[0] + B[0]) / 2, my = (A[1] + B[1]) / 2, c = [];
       for (const d of [14, 26]) c.push([mx + nx * d, my + ny * d + 4, anchorFor(nx * d)]);
       for (const sh of [30, -30, 60, -60]) c.push([mx + nx * 14 + ux * sh, my + ny * 14 + uy * sh + 4, anchorFor(nx * 14)]);
-      const p = sp.place(c, t, CH.med);
+      const p = sp.place(c, t, 'med');
       if (!p) continue;
       sp.line(A, B);
       return out + `<path class="cota-g" d="M${f1(pa[0] + nx * (r0 + 2))},${f1(pa[1] + ny * (r0 + 2))}L${f1(A[0] + nx * 4)},${f1(A[1] + ny * 4)}M${f1(pb[0] + nx * (r0 + 2))},${f1(pb[1] + ny * (r0 + 2))}L${f1(B[0] + nx * 4)},${f1(B[1] + ny * 4)}"/>`
@@ -243,7 +249,7 @@ function tocado(info, XY, sp, r) {
       for (const off of [10, 22, 34]) for (const sg of [1, -1]) { const dx = -uy * off * sg; cands.push([mx + dx, my + ux * off * sg + 4, anchorFor(dx)]); }
     }
     sp.line(a, b, 2);
-    const p = sp.place(cands, label, CH.sel, 16);
+    const p = sp.place(cands, label, 'sel');
     parts.push(`<path class="${cls}" d="M${f1(a[0])},${f1(a[1])}L${f1(b[0])},${f1(b[1])}"/>` + (p ? text('sel-l', p, label) : ''));
   };
   if (info.prev) add([info.prev.x, info.prev.y], `${num(info.prevM)} m`, 'sel-p');
