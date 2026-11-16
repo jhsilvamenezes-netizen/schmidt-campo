@@ -1,23 +1,18 @@
-// 3.0 · ligação da tela: estado, navegação, eventos. Toda conta vem do planner (motor 2).
+// 3.0 · ligação da tela: estado, plano do lote, navegação e eventos. Toda conta vem do planner (motor 2).
+// 3.1 (U02): cada tela no seu arquivo (screen-*.mjs); aqui fica só o que é comum a todas. O plano só é recalculado
+// quando muda o que ele usa (estado gravado, lote ou bloco): trocar de aba não refaz conta.
 import { createStore, safeStorage } from './store.mjs';
-import { mapMarkup } from './map.mjs';
 import * as P from './planner.mjs';
 import * as V from './views.mjs';
 import { esc, num } from './format.mjs';
-import { buildPlanFile, parsePlanFile } from './plan-file.mjs';
-import { advancedForm, applyField } from './advanced.mjs';
-import { attachGestures } from './gestures.mjs';
-import { routeFor, fixToPos, guideModel } from './monitor.mjs';
 import { createVersions } from './versions.mjs';
-import { blocksFor, prepareBlock, storeBlock, blockScenario } from './blocks.mjs';
-import { makeBackup, readBackup, ITEM_LABELS } from './backup.mjs';
-import { createSchmidtBackupService } from '../persistence/backup-service.mjs';
-import { createSchmidtJournal, createSchmidtImageRepository } from '../platform/browser-backup-adapters.mjs';
 import { createSchmidtSessionLock, installSchmidtSessionLifecycle } from '../platform/browser-session-lock.mjs';
-import { buildRoute } from '../engine/guidance.mjs';
-import { toCSV, toGeoJSON, toGPX, toKML } from '../engine/exporters.mjs';
-import { explainScenario } from '../engine/explain.mjs';
-import { assessField } from '../engine/dataQuality.mjs';
+import { installMapa } from './screen-mapa.mjs';
+import { installMonitor } from './screen-monitor.mjs';
+import { installPlano } from './screen-plano.mjs';
+import { installEnviar } from './screen-enviar.mjs';
+import { installMais } from './screen-mais.mjs';
+import { installBloco } from './screen-bloco.mjs';
 
 /** Entra na sessão (trava entre abas da 2.x) e só então lê o estado e desenha. */
 export async function startApp(opts) {
@@ -50,36 +45,17 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
   const keys = Object.keys(fields).sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true }));
   const ui = { view: 'mapa', key: fields[store.get().fieldKey] ? store.get().fieldKey : keys[0] };
   const recCache = new Map();
-  const versions = createVersions(window.indexedDB);
-  const backupService = window.indexedDB && persistent ? createSchmidtBackupService({ storage, images: createSchmidtImageRepository(window.indexedDB), history: versions.history, journal: createSchmidtJournal(window.indexedDB),
-    exclusive: window.navigator.locks ? op => session.exclusive(op) : op => op() }) : null;
-  let versionTimer = 0;
-  const BLOCK_KEY = 'schmidt3.blocoAtivo';
-  /** @type {any} */ let blockUi = { groups: [], prepared: null, busy: false, abort: null };
-  const activeBlockId = () => { try { return storage.getItem(BLOCK_KEY); } catch { return null; } };
-  const activeBlock = () => { const id = activeBlockId(), r = id && saved().planningBlocks?.records?.[id]; return r && r.members.includes(ui.key) ? r : null; };
-  /** @type {any} */ let pendingRestore = null;
-  let toastTimer = 0;
+  let toastTimer = 0, versionTimer = 0;
   /** @type {any} */ let toastAction = null;
+  /** @type {string|null} */ let warnedInvalid = null;
+  /** @type {any} */ let memo = null;
+
   /** Aviso curto; com `action`, mostra um botão (ex.: Desfazer) durante 6 s. */
   const toast = (/** @type {string} */ msg, /** @type {any} */ action = null) => {
     const t = $('#toast'); toastAction = action;
     t.innerHTML = action ? `<span>${esc(msg)}</span><button data-toast>${esc(action.label)}</button>` : esc(msg);
     clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.innerHTML = ''; toastAction = null; }, action ? 6000 : 4000);
   };
-  const RECENT_KEY = 'schmidt3.recentes';
-  const recents = () => { try { return JSON.parse(storage.getItem(RECENT_KEY) || '[]').filter(k => fields[k]); } catch { return []; } };
-  const pushRecent = k => { try { storage.setItem(RECENT_KEY, JSON.stringify([k, ...recents().filter(x => x !== k)].slice(0, 4))); } catch { /* sem armazenamento: só não lembra */ } };
-  let view = { k: 1, x: 0, y: 0 };
-  /** Guia: tiro, sentido, GPS ligado, última posição, memória da sessão, trava de tela. */
-  /** @type {any} */ const mon = { trackId: null, flipped: false, active: false, watchId: null, pos: null, session: {}, wake: null, arrivedId: null, ticker: 0 };
-  /** @type {string|null} */ let selectedPt = null;
-  const LAYERS_KEY = 'schmidt.mapa.v1';
-  let layers = { medidas: true, areas: false };
-  try { const l = JSON.parse(storage.getItem(LAYERS_KEY) || '{}'); layers = { medidas: l.medidas !== false, areas: l.areas === true }; } catch { /* padrão */ }
-  /** @type {any} */ let cur = null;
-  /** @type {string|null} */ let warnedInvalid = null;
-
   const saved = () => store.get();
   const people = () => Math.max(1, Math.min(60, Math.round(saved().quickMonitors ?? 5)));
   function recFor(field, base, key = ui.key) {
@@ -87,20 +63,30 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
     if (!recCache.has(id)) recCache.set(id, P.recommend(field, base, people(), saved().fitTeam));
     return recCache.get(id);
   }
-  /** Plano do lote atual (recomendado na primeira vez, depois o salvo). */
+  const host = $('#sheets');
+  /** Contexto comum: cada tela (screen-*.mjs) lê daqui e registra as suas folhas, ações e eventos. */
+  /** @type {any} */ const app = {
+    document, window, fields, keys, ui, store, storage, persistent, session, safra, appVersion, host, versions: createVersions(window.indexedDB),
+    cur: null, toast, saved, people, recFor, render, setParams,
+    SHEETS: {}, ACTIONS: {}, clicks: [], changes: [], inputs: [], onLotChange: [], onCloseSheet: [],
+    openSheet: (title, body) => { host.innerHTML = V.sheet(title, body); host.querySelector('.close')?.focus(); },
+    closeSheet: () => { host.innerHTML = ''; for (const f of app.onCloseSheet) f(); },
+    clearInvalid: () => { warnedInvalid = null; },
+    download(text, name, type) {
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name;
+      document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    },
+  };
+
+  /** Plano do lote atual (recomendado na primeira vez, depois o salvo). Refeito só quando o estado, o lote ou o bloco mudam. */
   function compute() {
-    const block = activeBlock();
-    if (block) {
-      try {
-        const { field, sc } = blockScenario(fields, block, ui.key);
-        const list = P.checks(sc, people(), P.uncovered(field, sc)), split = P.team(sc, people());
-        const members = block.members.map(k => ({ key: k, code: fields[k].code, on: k === ui.key, pontos: block.state.paramsByField[k].totalPoints }));
-        cur = { field, params: sc.params, base: P.baseOf(sc.params), rec: null, sc, f: P.figures(sc), list, split, inUseIsRec: true,
-          block: { title: block.members.map(k => fields[k].code).join(' + '), members, passes: Math.round(block.common.spacingM / 36.48), spacingM: block.common.spacingM },
-          others: block.members.filter(k => k !== ui.key).map(k => blockScenario(fields, block, k)) };
-        return cur;
-      } catch (e) { try { storage.removeItem(BLOCK_KEY); } catch { /* ignora */ } toast(/** @type {Error} */ (e).message); }
-    }
+    const blockId = app.blockId();
+    if (memo && app.cur && memo.st === saved() && memo.key === ui.key && memo.block === blockId) return app.cur;
+    app.cur = app.computeBlock() || computeLot();
+    memo = { st: saved(), key: ui.key, block: app.blockId() };
+    return app.cur;
+  }
+  function computeLot() {
     const field = fields[ui.key], st = saved();
     let params = st.paramsByField?.[ui.key], edits = st.editsByField?.[ui.key];
     /** @type {string|null} */ let invalid = null;
@@ -114,122 +100,38 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
     const sc = tried?.sc || P.planInUse(field, params || base, edits);
     if (invalid && warnedInvalid !== ui.key) { warnedInvalid = ui.key; setTimeout(() => toast(`O plano gravado de ${field.code} não abre (${invalid}). Mostrando o recomendado.`), 0); }
     const blind = P.uncovered(field, sc), list = P.checks(sc, people(), blind), split = P.team(sc, people());
-    cur = { field, params: params || base, base, rec, sc, f: P.figures(sc), blind, list, split, inUseIsRec: !!rec && P.sameShape(params, rec.chosen.params), block: null, others: [] };
-    return cur;
+    return { field, params: params || base, base, rec, sc, f: P.figures(sc), blind, list, split, inUseIsRec: !!rec && P.sameShape(params, rec.chosen.params), block: null, others: [] };
   }
   /** Troca o plano do lote (com Desfazer). `edits`: undefined = manter, null = apagar, objeto = gravar. */
-  const storeUpdateBlocks = planningBlocks => store.update({ planningBlocks });
   function setParams(params, msg = 'Plano alterado', edits) {
     const st = saved(), key = ui.key, before = { params: st.paramsByField?.[key], edits: st.editsByField?.[key] };
     // C5/C6: só grava o que o motor consegue montar (ex.: teto de 600 pontos) e o que está dentro das faixas
     const check = P.tryPlan(fields[key], params, edits === undefined ? before.edits : edits ?? undefined);
     if (check.error) { toast(`Não aplicado: ${check.error}`); render(); return false; }
     const write = (p, e) => {
-      const cur = saved(), editsBy = { ...(cur.editsByField || {}) };
+      const now = saved(), editsBy = { ...(now.editsByField || {}) };
       if (e === null) delete editsBy[key]; else if (e !== undefined) editsBy[key] = e;
-      return store.update({ paramsByField: { ...(cur.paramsByField || {}), [key]: p }, editsByField: editsBy, fieldKey: key });
+      return store.update({ paramsByField: { ...(now.paramsByField || {}), [key]: p }, editsByField: editsBy, fieldKey: key });
     };
     if (!write(params, edits)) { render(); return false; }
     render(); scheduleVersion();
     toast(msg, { label: 'Desfazer', run: () => { if (write(before.params, before.edits ?? null)) { ui.key = key; render(); toast('Desfeito'); } } });
     return true;
   }
-
-  // largura e altura reais de cada rótulo do mapa, medidas com a fonte deste aparelho (guardadas por texto)
-  const measured = new Map(), mctx = document.createElement('canvas').getContext('2d');
-  /** @param {string} text @param {string} font */
-  const measure = (text, font) => {
-    const key = font + '|' + text;
-    let m = measured.get(key);
-    if (!m) {
-      const fs = parseFloat(font.split(' ')[1]);
-      if (!mctx) return { w: text.length * fs * 0.66, a: fs * 0.95, d: fs * 0.3 };
-      mctx.font = font; const t = mctx.measureText(text);
-      m = { w: t.width, a: t.fontBoundingBoxAscent || fs * 0.95, d: t.fontBoundingBoxDescent || fs * 0.3 };
-      measured.set(key, m);
-    }
-    return m;
-  };
-  function drawMaps() {
-    if (!cur) return;
-    for (const el of document.querySelectorAll('[data-map]')) {
-      const r = el.getBoundingClientRect();
-      if (r.width < 10 || r.height < 10) continue;
-      const W = Math.round(r.width), H = Math.round(r.height), full = el.dataset.map === 'full', guide = el.dataset.map === 'guide';
-      const areas = full ? P.pointAreas(cur.field, cur.sc) : null, info = full && selectedPt ? P.pointInfo(cur.field, cur.sc, selectedPt) : null;
-      // mapa principal: legenda no alto à esquerda e botões das camadas embaixo à direita ficam fora do desenho
-      const opts = full ? { measure, pad: { t: 112, r: 30, b: 64, l: 40 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
-        reserve: [[0, 0, info ? Math.min(W - 40, 330) : Math.min(W * 0.66, 252), 104], [W - 214, H - 60, W, H]] } : { pad: 22 };
-      el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view, selected: guide ? (mon.active ? monitorData().target : null) : selectedPt, pos: guide ? mon.pos : null, others: cur.others || [], ...opts })
-        + (full ? (info ? balloon() : V.legend(cur.field, P.figures(cur.sc), areas)) + V.mapTools(layers, view.k > 1.01)
-          : (view.k > 1.01 ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : '') + balloon());
-      if (!el.dataset.g) {
-        el.dataset.g = '1';
-        attachGestures(el, { getView: () => view, setView: v => { view = v; }, onChange: () => requestAnimationFrame(drawMaps),
-          onTap: target => { const g = target.closest?.('[data-pt]'); selectedPt = g ? g.dataset.pt : null; drawMaps(); } });
-      }
-    }
-  }
-  function toggleLayer(name) {
-    layers = { ...layers, [name]: !layers[name] };
-    try { storage.setItem(LAYERS_KEY, JSON.stringify(layers)); } catch { /* só não lembra */ }
-    drawMaps();
-  }
   /** Guarda uma versão do plano quando ele para de mudar (4 s), como na 2.x. */
   function scheduleVersion() {
     clearTimeout(versionTimer);
     versionTimer = setTimeout(() => {
-      const st = saved(), key = ui.key, sc = cur.sc;
-      versions.save(key, { params: st.paramsByField?.[key] ?? null, edits: st.editsByField?.[key] ?? null },
+      const st = saved(), key = ui.key, sc = app.cur.sc;
+      app.versions.save(key, { params: st.paramsByField?.[key] ?? null, edits: st.editsByField?.[key] ?? null },
         [`${sc.selected.length} tiros`, `${sc.samples.length} pontos`, `95% < ${num(sc.coverage.p95 ?? 0)} m`, `1 ponto a cada ${sc.params.haPerPoint} ha`].join(' · '));
     }, 4000);
   }
-  function balloon() {
-    const i = /** @type {any} */ (selectedPt && P.pointInfo(cur.field, cur.sc, selectedPt));
-    if (!i) return '';
-    const parts = [i.prevM != null && `anterior ${num(i.prevM)} m`, i.nextM != null && `próximo ${num(i.nextM)} m`].filter(Boolean).join(' · ');
-    const ha = P.pointAreas(cur.field, cur.sc)?.cells.find(c => c.id === selectedPt);
-    const across = (i.across || []).map(a => `${esc(a.trackId)} a ${num(a.m)} m`).join(' · ');
-    // cada linha do balão com a marca da linha desenhada no mapa
-    return `<div class="bal" role="status"><b>Ponto ${num(i.number)} · ${esc(i.trackId)}</b>${parts ? `<span><i class="sw p" aria-hidden="true"></i>${parts} (andando)</span>` : ''}${across ? `<span><i class="sw t sel" aria-hidden="true"></i>vizinhos: ${across}</span>` : ''}<span><i class="sw b" aria-hidden="true"></i>borda a ${num(i.edgeM)} m${ha ? ` · área ${num(ha.ha, 1)} ha` : ''}</span></div>`;
-  }
-  function monitorData() {
-    const sc = cur.sc, tasks = new Map();
-    (cur.split?.pessoas || []).forEach((p, i) => p.tarefas.forEach(t => tasks.set(t.id, `Pessoa ${i + 1}`)));
-    const tracks = sc.selected.filter(t => sc.units.some(u => u.trackId === t.id)).map(t => ({ id: t.id, person: tasks.get(t.id) }));
-    if (!tracks.some(t => t.id === mon.trackId)) mon.trackId = tracks[0]?.id ?? null;
-    const route = mon.trackId ? routeFor(sc, cur.field, mon.trackId, mon.flipped) : null;
-    const model = route && mon.active ? guideModel(route, sc, cur.field, mon.pos, Date.now(), mon.session) : null;
-    if (model?.state === 'arrived' && model.next?.id !== mon.arrivedId) { mon.arrivedId = model.next.id; try { window.navigator.vibrate?.([200, 80, 200]); } catch { /* sem vibração */ } }
-    return { tracks, trackId: mon.trackId, flipped: mon.flipped, active: mon.active, model, steps: route?.instructions || [], target: model?.next?.id ?? null };
-  }
-  async function keepAwake(on) {
-    try {
-      if (on && !mon.wake && window.navigator.wakeLock) mon.wake = await window.navigator.wakeLock.request('screen');
-      else if (!on && mon.wake) { await mon.wake.release(); mon.wake = null; }
-    } catch { mon.wake = null; /* aparelho sem permissão: a guia funciona igual */ }
-  }
-  function gpsStart() {
-    const geo = window.navigator.geolocation;
-    if (!geo) { toast('Este aparelho não oferece GPS ao navegador.'); return; }
-    mon.active = true; mon.pos = null; mon.session = {}; mon.arrivedId = null;
-    mon.watchId = geo.watchPosition(position => {
-      const pos = fixToPos(position, cur.field, mon.pos?.at ?? 0, Date.now());
-      if (pos) { mon.pos = pos; if (ui.view === 'monitorar') render(); }
-    }, err => { toast(err.code === 1 ? 'Permita a localização para usar a guia.' : 'GPS indisponível agora.'); }, { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
-    keepAwake(true); clearInterval(mon.ticker); mon.ticker = setInterval(() => { if (mon.active && ui.view === 'monitorar') render(); }, 5000);
-    render();
-  }
-  function gpsStop() {
-    if (mon.watchId !== null) window.navigator.geolocation?.clearWatch(mon.watchId);
-    mon.watchId = null; mon.active = false; clearInterval(mon.ticker); keepAwake(false); render();
-  }
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && mon.active) keepAwake(true); });
   function render() {
     const main = $('#view');
     try { draw(main); } catch (e) {
       // Nunca tela em branco: mostra o problema e uma saída (lote recomendado).
-      cur = null;
+      app.cur = null; memo = null;
       main.innerHTML = `<div class="scroll"><section class="card"><h2 class="big md">Não foi possível montar este plano</h2><p class="mu">${esc(P.friendly(e))}</p>
 <button class="btn p" data-act="reset-lot">Usar o plano recomendado</button><button class="btn" data-open="lote">Escolher outro lote</button></section></div>`;
     }
@@ -243,203 +145,32 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
     if (ui.view === 'mapa') main.innerHTML = V.mapaView(c);
     else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), rows: c.sc.trackRows });
     else if (ui.view === 'enviar') main.innerHTML = V.enviarView(c);
-    else main.innerHTML = V.monitorView(monitorData());
-    requestAnimationFrame(drawMaps);
+    else main.innerHTML = V.monitorView(app.monitorData());
+    requestAnimationFrame(app.drawMaps);
   }
 
-  // ---------- folhas (menu, lote, dados, cálculo, ajustes) ----------
-  const host = $('#sheets');
-  const openSheet = (title, body) => { host.innerHTML = V.sheet(title, body); host.querySelector('.close')?.focus(); };
-  const closeSheet = () => { host.innerHTML = ''; blockUi?.abort?.abort(); };
-  const lotButton = k => `<button class="lotb${k === ui.key ? ' on' : ''}" data-lot="${esc(k)}">${esc(fields[k].code)}<small>${num(fields[k].areaOfficialHa)} ha</small></button>`;
-  function lotList(q = '') {
-    const norm = t => t.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase(), nq = norm(q.trim());
-    const hit = keys.filter(k => !nq || norm(`${fields[k].code} ${fields[k].farm}`).includes(nq));
-    if (!hit.length) return '<p class="mu">Nenhum lote com esse nome.</p>';
-    const farms = new Map();
-    for (const k of hit) { const f = fields[k]; if (!farms.has(f.farm)) farms.set(f.farm, []); farms.get(f.farm).push(k); }
-    const rec = nq ? [] : recents();
-    return (rec.length ? `<h3 class="h">Recentes</h3><div class="lots">${rec.map(lotButton).join('')}</div>` : '')
-      + [...farms].map(([farm, ks]) => `<h3 class="h">${esc(farm)}</h3><div class="lots">${ks.map(lotButton).join('')}</div>`).join('');
-  }
-  const lotPicker = () => `<input class="search" type="search" placeholder="Buscar lote ou fazenda" aria-label="Buscar lote ou fazenda" data-search><div data-lots>${lotList()}</div>`;
-  const SHEETS = {
-    menu: () => openSheet('Mais', V.menuBody([['todos', 'Todos os lotes'], ['dados', 'Dados do lote'], ['calculo', 'Como foi calculado'], ['versoes', 'Versões anteriores'],
-      ['copia', 'Cópia de segurança'], ['abrir', 'Abrir plano recebido']])),
-    todos: () => { openSheet('Todos os lotes', '<p class="mu">Calculando…</p>'); setTimeout(() => { if (host.innerHTML) openSheet('Todos os lotes', V.allLotsBody(allLots())); }, 30); },
-    versoes: async () => { openSheet(`Versões · ${cur.field.code}`, '<p class="mu">…</p>'); const rows = await versions.list(ui.key); openSheet(`Versões · ${cur.field.code}`, V.versionsBody(rows)); },
-    copia: () => openSheet('Cópia de segurança', V.backupBody('', lastBackup())),
-    bloco: () => { blockUi = { groups: blocksFor(fields, ui.key), prepared: null, busy: false, abort: null }; openSheet('Planejar em bloco', V.blockPickBody(blockUi.groups, null, false)); },
-    lote: () => openSheet('Escolher lote', lotPicker()),
-    dados: () => openSheet(`Dados · ${cur.field.code}`, V.dadosBody(cur.field, assessField(cur.field), safra?.data?.[ui.key], safra?.source)),
-    calculo: () => openSheet('Como foi calculado', V.calculoBody(explainScenario(cur.sc, cur.field))),
-    ajustes: () => openSheet('Ajustes avançados', advancedForm(cur.params, cur.sc, saved().fitTeam)),
-    abrir: () => { closeSheet(); $('#plan-input').click(); },
-  };
+  // cada tela registra o que é seu
+  installBloco(app); installMapa(app); installMonitor(app); installPlano(app); installEnviar(app); installMais(app);
 
-  /** Plano salvo (ou recomendado) de cada lote, para a visão geral. */
-  function allLots() {
-    const st = saved();
-    return keys.map(k => {
-      const f = fields[k], params = st.paramsByField?.[k] ?? { ...recFor(f, {}, k).chosen.params };
-      try { const sc = P.planInUse(f, params, st.editsByField?.[k]); return { key: k, code: f.code, farm: f.farm, pontos: sc.samples.length, tiros: sc.selected.length, p95: sc.coverage.p95, alerts: sc.warnings.filter(w => w.level !== 'info').length }; }
-      catch { return { key: k, code: f.code, farm: f.farm, pontos: 0, tiros: 0, p95: null, alerts: 1 }; }
-    });
-  }
-  const LAST_BACKUP = 'schmidt3.ultimaCopia';
-  const lastBackup = () => { try { const t = storage.getItem(LAST_BACKUP); return t ? new Date(+t).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : ''; } catch { return ''; } };
-  const stamp = () => { const d = new Date(), z = v => String(v).padStart(2, '0'); return `${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}`; };
-  const toBase64 = blob => new Promise((ok, ko) => { const r = new window.FileReader(); r.onload = () => ok(String(r.result).split(',')[1] || ''); r.onerror = () => ko(r.error); r.readAsDataURL(blob); });
-  const fromBase64 = (b, type) => { const s = window.atob(b), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return new Blob([u], { type: type || 'image/png' }); };
-  async function doBackup() {
-    if (!backupService) throw Error('este navegador não guarda dados locais');
-    return makeBackup({ service: backupService, subtle: window.crypto.subtle, encodeBlob: toBase64, version: appVersion, engine: P.ENGINE_LABEL });
-  }
-  function printFichas() {
-    const people = new Map(); (cur.split?.pessoas || []).forEach((p, i) => p.tarefas.forEach(t => people.set(t.id, `Pessoa ${i + 1}`)));
-    const mapFor = id => mapMarkup(cur.field, { ...cur.sc, samples: cur.sc.samples.filter(s => s.trackId === id) }, 700, 240, { pad: 16 });
-    let box = $('#print'); if (!box) { box = document.createElement('div'); box.id = 'print'; document.body.append(box); }
-    box.innerHTML = V.fichasMarkup(cur.field, routes(), people, mapFor);
-    window.print();
-  }
-  // ---------- ações de envio ----------
-  const status = msg => { const s = $('#status'); if (s) s.textContent = msg; };
-  function download(text, name, type) {
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name;
-    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-  }
-  const fileBase = () => `${cur.field.farm}_${cur.field.code}_SIMULADO`.replace(/[^\p{L}\p{N}_-]+/gu, '_');
-  const routes = () => cur.sc.selected.filter(t => cur.sc.units.some(u => u.trackId === t.id)).map(t => buildRoute(cur.sc, cur.field, t.id));
-  const summary = () => P.summaryText(cur.field, cur.sc, people(), cur.list, cur.split);
-  const reopenAdvanced = () => { if (host.querySelector('[data-adv]')) SHEETS.ajustes(); };
-  const ACTIONS = {
-    fit: () => { view = { k: 1, x: 0, y: 0 }; drawMaps(); },
-    'layer-medidas': () => toggleLayer('medidas'),
-    'layer-areas': () => toggleLayer('areas'),
-    'reset-lot': () => { const st = saved(), by = { ...(st.paramsByField || {}) }, ed = { ...(st.editsByField || {}) }; delete by[ui.key]; delete ed[ui.key];
-      if (store.update({ paramsByField: by, editsByField: ed })) { warnedInvalid = null; render(); toast('Usando o plano recomendado.'); } },
-    fichas: () => printFichas(),
-    'block-leave': () => { try { storage.removeItem(BLOCK_KEY); } catch { /* ignora */ } render(); toast('De volta ao plano do lote.'); },
-    async backup() {
-      try { const b = await doBackup(); download(JSON.stringify(b), `schmidt_copia_${stamp()}.json`, 'application/json'); try { storage.setItem(LAST_BACKUP, String(Date.now())); } catch { /* só não lembra */ } toast('Cópia de segurança baixada.'); }
-      catch (e) { toast(`Cópia não feita: ${/** @type {Error} */ (e).message}.`); }
-    },
-    'restore-pick': () => $('#backup-input').click(),
-    async 'restore-go'() {
-      if (!pendingRestore) return;
-      try { const before = await doBackup(); download(JSON.stringify(before), `schmidt_antes_de_restaurar_${stamp()}.json`, 'application/json'); } catch { /* sem cópia anterior possível: segue com o diário de restauração */ }
-      try {
-        const b = pendingRestore;
-        if (!backupService) return;
-        await backupService.restore({ data: b.dados, images: b.imagens.map(i => ({ key: i.chave, rec: { blob: fromBase64(i.base64, i.tipo), name: i.nome, world: i.world, width: i.largura, height: i.altura, crs: i.crs } })), history: b.historico || [], legacy: !!b.legado });
-        toast('Restaurado. Abrindo de novo…'); setTimeout(() => window.location.reload(), 600);
-      } catch (e) { toast(`Falha ao restaurar: ${/** @type {Error} */ (e).message}.`); }
-    },
-    'gps-start': () => gpsStart(),
-    'gps-stop': () => gpsStop(),
-    flip: () => { mon.flipped = !mon.flipped; mon.session = {}; render(); },
-    optimize() {
-      const r = P.optimizeEdits(cur.field, cur.params);
-      if (!r.edits) { toast('Nenhuma distribuição melhor sem piorar a regularidade.'); return; }
-      setParams(cur.params, `95% do lote: ${num(r.report.baseline.p95M)} → ${num(r.report.optimized.p95M)} m`, r.edits); setTimeout(reopenAdvanced, 0);
-    },
-    restore() {
-      const base = { haPerPoint: cur.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint }, rec = recFor(cur.field, base);
-      setParams(rec ? { ...base, ...rec.chosen.params } : base, 'Padrões do lote restaurados', null); setTimeout(reopenAdvanced, 0);
-    },
-    csv: () => download(toCSV(cur.sc, cur.field), `${fileBase()}.csv`, 'text/csv'),
-    geojson: () => download(JSON.stringify(toGeoJSON(cur.sc, cur.field)), `${fileBase()}.geojson`, 'application/geo+json'),
-    kml: () => download(toKML(routes(), cur.field, cur.sc), `${fileBase()}.kml`, 'application/vnd.google-earth.kml+xml'),
-    gpx: () => download(toGPX(routes(), cur.field, cur.sc, appVersion), `${fileBase()}.gpx`, 'application/gpx+xml'),
-    async copy() { try { await window.navigator.clipboard.writeText(summary()); status('Resumo copiado.'); } catch { status('Este navegador não deixou copiar.'); } },
-    async share() {
-      const st = saved(), plan = buildPlanFile({ engineVersion: cur.sc.engineVersion, appVersion, fieldKey: ui.key, summary: cur.f, params: cur.sc.params, edits: st.editsByField?.[ui.key] ?? null });
-      const text = JSON.stringify(plan, null, 1), name = `${fileBase()}.plano.json`, file = typeof File === 'function' ? new File([text], name, { type: 'application/json' }) : null;
-      try {
-        if (file && window.navigator.canShare?.({ files: [file] })) { await window.navigator.share({ title: `Plano ${cur.field.code}`, text: summary(), files: [file] }); return; }
-      } catch (e) { if (/** @type {any} */ (e)?.name === 'AbortError') return; }
-      download(text, name, 'application/json'); status('Arquivo do plano baixado: envie aos monitores.');
-    },
-  };
-
-  // ---------- eventos ----------
+  // ---------- eventos (um ouvinte por tipo; cada tela responde pelos seus botões e campos) ----------
   document.addEventListener('click', e => {
     const t = e.target.closest('button,a,[data-close]');
     if (!t) return;
     if (t.dataset.tab) { ui.view = t.dataset.tab; render(); return; }
     if (t.dataset.go) { ui.view = t.dataset.go; render(); return; }
-    if (t.dataset.open) { SHEETS[t.dataset.open]?.(); return; }
-    if (t.dataset.block) {
-      const g = blockUi.groups[+t.dataset.block], st = saved(), ctl = new AbortController();
-      blockUi = { ...blockUi, busy: true, abort: ctl }; openSheet(`Bloco ${g.title}`, V.blockPickBody([], null, true));
-      const paramsOf = k => st.paramsByField?.[k] ?? { ...recFor(fields[k], {}, k).chosen.params };
-      prepareBlock(fields, g, paramsOf, ctl.signal).then(rec => { blockUi = { ...blockUi, busy: false, prepared: rec }; if (host.innerHTML) openSheet(`Bloco ${g.title}`, V.blockPickBody([], rec, false)); })
-        .catch(err => { blockUi.busy = false; if (host.innerHTML) openSheet(`Bloco ${g.title}`, `<p class="ck alerta">${esc(err.message)}</p>`); });
-      return;
-    }
-    if (t.dataset.blockUse) {
-      const rec = blockUi.prepared, alt = rec?.alternatives?.[+t.dataset.blockUse];
-      if (!alt || alt.summary.coverageTradeoff) return;
-      try {
-        const { store, id } = storeBlock(saved(), fields, alt.record || rec);
-        storage.setItem(BLOCK_KEY, id); /* bloco ativo só nesta 3.0 */
-        storeUpdateBlocks(store); closeSheet(); render(); toast('Bloco em uso. "Sair do bloco" volta ao plano de cada lote.');
-      } catch (e) { toast(/** @type {Error} */ (e).message); }
-      return;
-    }
-    if (t.dataset.ver) { versions.list(ui.key).then(rows => { const r = rows.find(x => String(x.id) === t.dataset.ver); if (r?.estado?.params) { closeSheet(); setParams(r.estado.params, 'Versão anterior em uso', r.estado.edits ?? null); } }); return; }
-    if (t.dataset.track) { mon.trackId = t.dataset.track; mon.session = {}; mon.arrivedId = null; render(); return; }
-    if (t.dataset.lot) { if (mon.active) gpsStop(); mon.trackId = null; ui.key = t.dataset.lot; pushRecent(ui.key); view = { k: 1, x: 0, y: 0 }; selectedPt = null; store.update({ fieldKey: ui.key }); closeSheet(); render(); return; }
+    if (t.dataset.open) { app.SHEETS[t.dataset.open]?.(); return; }
     if (t.hasAttribute('data-toast')) { const a = toastAction; $('#toast').innerHTML = ''; toastAction = null; a?.run(); return; }
-    if (t.dataset.set) { advancedChange(t.dataset.set, t.dataset.v); return; }
-    if (t.dataset.act) { ACTIONS[t.dataset.act]?.(); return; }
-    if (t.dataset.alt) { const a = cur.rec.alternatives.filter(Boolean)[+t.dataset.alt]; if (a) setParams({ ...cur.base, ...a.params }, `Usando ${a.m.tiros} tiros · ${a.m.pontos} pontos`, null); return; }
-    if (t.dataset.use === 'rec') { setParams({ ...cur.base, ...cur.rec.chosen.params }, 'Usando o plano recomendado', null); return; }
-    if (t.dataset.soon) { toast('Bloco de lotes: chega na próxima etapa da 3.0.'); return; }
-    if (t.dataset.inc || t.dataset.dec) { const id = t.dataset.inc || t.dataset.dec, inp = $(`#${id}`); inp.value = String(Number(inp.value || 0) + (t.dataset.inc ? 1 : -1)); inp.dispatchEvent(new Event('change', { bubbles: true })); return; }
-    if (t.hasAttribute('data-close') && (t === e.target || t.classList.contains('close'))) closeSheet();
+    for (const h of app.clicks) if (h(t)) return;
+    if (t.dataset.act) { app.ACTIONS[t.dataset.act]?.(); return; }
+    if (t.hasAttribute('data-close') && (t === e.target || t.classList.contains('close'))) app.closeSheet();
   });
-  document.addEventListener('change', e => {
-    const t = e.target;
-    if (t.id === 'ha') {
-      const v = Math.round(Number(String(t.value).trim().replace(',', '.')) * 10) / 10;
-      if (!(v >= 1 && v <= 1000)) { t.value = String(cur.params.haPerPoint ?? 20).replace('.', ','); toast('Hectares por ponto: de 1 a 1.000.'); return; }
-      const base = { ...cur.base, haPerPoint: v }, rec = recFor(cur.field, base);
-      setParams(cur.inUseIsRec && rec ? { ...base, ...rec.chosen.params } : { ...cur.params, haPerPoint: v }, `1 ponto a cada ${num(v, v % 1 ? 1 : 0)} ha`);
-    } else if (t.id === 'people') {
-      const v = Number(String(t.value).trim().replace(',', '.'));
-      if (!(Number.isInteger(v) && v >= 1 && v <= 60)) { t.value = people(); toast('Pessoas: número inteiro de 1 a 60.'); return; }
-      store.update({ quickMonitors: v }); render();
-    } else if (t.form?.hasAttribute('data-adv')) {
-      advancedChange(t.name, t.type === 'checkbox' ? t.checked : t.value);
-    } else if (t.id === 'backup-input' && t.files?.[0]) {
-      t.files[0].text().then(text => readBackup(text, window.crypto.subtle)).then(({ backup, items }) => { pendingRestore = backup; openSheet('Restaurar cópia', V.backupBody(V.restoreConfirm(items, ITEM_LABELS), lastBackup())); })
-        .catch(err => toast(`Cópia recusada: ${err.message}.`)).finally(() => { t.value = ''; });
-    } else if (t.id === 'plan-input' && t.files?.[0]) {
-      t.files[0].text().then(text => {
-        const p = parsePlanFile(text, fields), st = saved();
-        ui.key = p.fieldKey;
-        store.update({ fieldKey: p.fieldKey, paramsByField: { ...(st.paramsByField || {}), [p.fieldKey]: p.params }, editsByField: Object.fromEntries(Object.entries({ ...(st.editsByField || {}), [p.fieldKey]: p.edits }).filter(([, v]) => v)) });
-        ui.view = 'plano'; render(); toast(`Plano de ${fields[p.fieldKey].code} aberto.`);
-      }).catch(err => { toast(err.message); }).finally(() => { t.value = ''; });
-    }
-  });
-  document.addEventListener('input', e => { if (e.target.hasAttribute?.('data-search')) host.querySelector('[data-lots]').innerHTML = lotList(e.target.value); });
-  function advancedChange(name, raw) {
-    const err = host.querySelector('[data-err]');
-    if (name === 'fitTeam') { store.update({ fitTeam: !!raw }); render(); setTimeout(reopenAdvanced, 0); return; }
-    const r = applyField(cur.params, name, raw);
-    if (r.error) { if (err) err.textContent = r.error; return; }
-    if (JSON.stringify(r.params) === JSON.stringify(cur.params)) return;
-    setParams(r.params, 'Ajuste aplicado'); setTimeout(reopenAdvanced, 0);
-  }
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && host.innerHTML) closeSheet(); });
+  document.addEventListener('change', e => { for (const h of app.changes) if (h(e.target)) return; });
+  document.addEventListener('input', e => { for (const h of app.inputs) if (h(e.target)) return; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && host.innerHTML) app.closeSheet(); });
   $('#sol').addEventListener('click', () => { const on = !saved().sunMode; store.update({ sunMode: on }); document.documentElement.classList.toggle('sun', on); });
   document.documentElement.classList.toggle('sun', !!saved().sunMode);
-  new window.ResizeObserver(() => cur && drawMaps()).observe($('#view'));
-  backupService?.recover().catch(() => toast('Restauração anterior incompleta: faça uma nova cópia.'));
-  pushRecent(ui.key);
+  new window.ResizeObserver(() => app.cur && app.drawMaps()).observe($('#view'));
   render();
   document.documentElement.dataset.ready = '1';
-  return { render, toast, get state() { return { ...ui, cur } } };
+  return { render, toast, get state() { return { ...ui, cur: app.cur }; } };
 }
