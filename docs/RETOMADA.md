@@ -2,16 +2,16 @@
 
 Gerado por scripts/checkpoint.mjs; registro não executa nem certifica testes.
 
-- Tarefa: R4.4 completa na 3.0
+- Tarefa: U01 3.0.1 críticos C1–C6 e N17
 - Responsável: Claude
-- Estado: em_andamento
+- Estado: pronto_para_revisao
 - Branch: claude/motor-evolucao
-- Commit de código observado: 73de56817bbe254f79186fc0758f9ac2eb1a466e
-- Registro UTC: 2026-11-15T23:26:52.913Z
+- Commit de código observado: 22af0eb99407614b07d86bf782d9fc169fd82fcb
+- Registro UTC: 2026-11-16T12:10:13.973Z
 
 ## Próxima ação
 
-R5: index.html = 3.0, versão 3.0.0, migração, bateria, PR, publicar
+PR e publicação da 3.0.1; depois U03 medidas no mapa
 
 ## Testes declarados pela sessão
 

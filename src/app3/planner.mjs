@@ -1,7 +1,7 @@
 // 3.0 · aplicação: monta o plano de um lote com o motor 2, a recomendação, a conferência, a equipe e a área
 // descoberta. Sem DOM: testável no Node com os 51 lotes.
 import { buildScenario, withMetrics } from '../engine/scenario.mjs';
-import { assertParams } from '../engine/paramCatalog.mjs';
+import { assertParams, sanitizeParams } from '../engine/paramCatalog.mjs';
 import { buildWarnings } from '../engine/diagnostics.mjs';
 import { assessField } from '../engine/dataQuality.mjs';
 import { optimizeDistribution } from '../engine/optimize.mjs';
@@ -109,4 +109,18 @@ export function optimizeEdits(field, params) {
   if (!o?.accepted) return { edits: null, report: o };
   const samples = sc.samples.map(s => ({ id: s.id, x: s.x, y: s.y, unitId: s.unitId, s: s.s, manual: false, offTrack: !!s.offTrack }));
   return { edits: { signature: paramsSignature(sc.params), samples }, report: o };
+}
+
+/** Mensagem curta para quem usa, a partir do erro do motor. */
+export function friendly(err) {
+  const m = String(err?.message || err), teto = /Total (\d+) acima do teto configurado \((\d+)\)/.exec(m);
+  if (teto) return `Seriam ${num(+teto[1])} pontos, acima do máximo de ${num(+teto[2])} por lote. Use mais hectares por ponto.`;
+  return m;
+}
+
+/** Confere parâmetros (faixas do catálogo) e monta o plano sem deixar erro escapar: {sc} ou {error}. */
+export function tryPlan(field, params, edits) {
+  const { removed } = sanitizeParams(params || {});
+  if (removed.length) return { error: `valor fora da faixa (${removed[0]})` };
+  try { return { sc: planInUse(field, params, edits) }; } catch (e) { return { error: friendly(e) }; }
 }

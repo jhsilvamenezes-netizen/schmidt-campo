@@ -43,6 +43,13 @@ implementa a próxima tarefa. A revisão não precisa concordar com a proposta:
 divergências viram hipóteses comparáveis e testes, não reescritas por preferência.
 Não ampliar uma alteração de câmera para cálculo de pontos ou redesenho geral.
 
+## Fila atual — 3.1 (16/11/2026)
+
+**Usar [FILA_3_1.md](FILA_3_1.md)** (unidades U00–U20, protocolo de sincronia Claude/ChatGPT, arquivos de cada
+unidade e critério de pronto). Uso principal: celular (99%). A 3.0 publicada perdeu funções da 2.5 (ver
+[evidencias-3-1/](evidencias-3-1/)); nenhuma unidade fica pronta sem igualar ou superar a 2.5 no celular.
+As filas abaixo são históricas.
+
 ## Fila atual — preparação da 2.0
 
 Referência 1.35.1, main `2e4e2be9a44310b847155bdef9d7b78b9865ccd0`.

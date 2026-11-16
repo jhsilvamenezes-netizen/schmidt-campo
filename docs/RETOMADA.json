@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "R4.4 completa na 3.0",
+  "task": "U01 3.0.1 críticos C1–C6 e N17",
   "owner": "Claude",
-  "status": "em_andamento",
-  "nextAction": "R5: index.html = 3.0, versão 3.0.0, migração, bateria, PR, publicar",
+  "status": "pronto_para_revisao",
+  "nextAction": "PR e publicação da 3.0.1; depois U03 medidas no mapa",
   "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -54,22 +54,18 @@
     "15/11: APK só quando o proprietário pedir (não propor nem citar como próximo passo); foco em correções e melhorias do link"
   ],
   "snapshot": {
-    "at": "2026-11-15T23:26:52.913Z",
+    "at": "2026-11-16T12:10:13.973Z",
     "branch": "claude/motor-evolucao",
-    "codeCommit": "73de56817bbe254f79186fc0758f9ac2eb1a466e",
+    "codeCommit": "22af0eb99407614b07d86bf782d9fc169fd82fcb",
     "changedTrackedFiles": [
+      ".github/workflows/blocos-candidata.yml",
       "VERSAO.json",
-      "audit/app3-browser.mjs",
+      "docs/FILA_3_1.md",
       "index.html",
       "scripts/build-3.mjs",
       "src/app3/main.mjs",
-      "src/app3/map.mjs",
       "src/app3/planner.mjs",
       "src/app3/store.mjs",
-      "src/app3/styles.css",
-      "src/app3/views.mjs",
-      "src/application/block-planning.mjs",
-      "src/platform/browser-session-lock.mjs",
       "sw.js"
     ],
     "untrackedCount": 1
