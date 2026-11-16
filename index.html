@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-Ko5GQXaFSgMjY0SyslHey3i/t081aoHL+zzKG6CTevw='; style-src 'sha256-9RjGAg28cZbZmmiRvghM/It7ImnjbtCAbGs3TdX8abw='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-woBCYyoQ5qHbuEGJIy0Rl+yEtdqbBWSe10/Y+sGQ37Q='; style-src 'sha256-9RjGAg28cZbZmmiRvghM/It7ImnjbtCAbGs3TdX8abw='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#17594a" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c1512" media="(prefers-color-scheme: dark)">
 <title>SCHMIDT Campo</title>
 <link rel="icon" href="icone.svg"><link rel="manifest" href="manifest.webmanifest">
@@ -3546,8 +3546,17 @@ const __m_app3_store=(()=>{
 // grava só os campos que usa, preservando os demais (blocos, ajustes manuais, monitor, imagem de fundo...).
 const STATE_KEY = 'monitoramento.v03';
 
-/** `canWrite()`: trava entre abas (outra janela aberta grava; esta só lê). `onBlocked(msg)` avisa a pessoa. */
-function createStore(storage, { canWrite = () => true, onBlocked = () => {} } = {}) {
+/** Armazenamento do navegador; se ele não existir ou estiver bloqueado, um substituto em memória (vale até fechar). */
+function safeStorage(get) {
+  try { const s = get(); s.getItem(STATE_KEY); return { storage: s, persistent: true }; } catch {
+    const m = new Map();
+    return { storage: { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => { m.set(k, String(v)); }, removeItem: k => { m.delete(k); } }, persistent: false };
+  }
+}
+
+/** `canWrite()`: trava entre abas (outra janela aberta grava; esta só lê). `onBlocked()` avisa a pessoa.
+ *  `onFail()`: a gravação falhou (memória cheia ou bloqueada); o estado em memória volta ao que estava gravado. */
+function createStore(storage, { canWrite = () => true, onBlocked = () => {}, onFail = () => {} } = {}) {
   const read = () => { try { const t = storage.getItem(STATE_KEY); const v = t ? JSON.parse(t) : {}; return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; } catch { return {}; } };
   let state = read();
   return {
@@ -3555,13 +3564,13 @@ function createStore(storage, { canWrite = () => true, onBlocked = () => {} } = 
     /** Aplica `patch` sobre o estado mais recente do armazenamento (outra aba pode ter gravado) e grava. */
     update(patch) {
       if (!canWrite()) { onBlocked(); return false; }
-      state = { ...read(), ...patch };
-      try { storage.setItem(STATE_KEY, JSON.stringify(state)); return true; } catch { return false; }
+      const next = { ...read(), ...patch };
+      try { storage.setItem(STATE_KEY, JSON.stringify(next)); state = next; return true; } catch { state = read(); onFail(); return false; }
     },
   };
 }
 
-return Object.freeze({STATE_KEY,createStore});
+return Object.freeze({STATE_KEY,safeStorage,createStore});
 })();
 // src/app3/plan-file.mjs
 const __m_app3_plan_file=(()=>{
@@ -3601,7 +3610,7 @@ return Object.freeze({PLAN_SCHEMA,buildPlanFile,parsePlanFile});
 // src/app3/planner.mjs
 const __m_app3_planner=(()=>{
 const { buildScenario, withMetrics } = schmidtEngine2.scenario;
-const { assertParams } = schmidtEngine2.paramCatalog;
+const { assertParams, sanitizeParams } = schmidtEngine2.paramCatalog;
 const { buildWarnings } = schmidtEngine2.diagnostics;
 const { assessField } = schmidtEngine2.dataQuality;
 const { optimizeDistribution } = schmidtEngine2.optimize;
@@ -3712,7 +3721,21 @@ function optimizeEdits(field, params) {
   return { edits: { signature: paramsSignature(sc.params), samples }, report: o };
 }
 
-return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommend,planInUse,uncovered,checks,figures,team,summaryText,pointInfo,optimizeEdits,DEFAULT_PARAMS,paramsSignature});
+/** Mensagem curta para quem usa, a partir do erro do motor. */
+function friendly(err) {
+  const m = String(err?.message || err), teto = /Total (\d+) acima do teto configurado \((\d+)\)/.exec(m);
+  if (teto) return `Seriam ${num(+teto[1])} pontos, acima do máximo de ${num(+teto[2])} por lote. Use mais hectares por ponto.`;
+  return m;
+}
+
+/** Confere parâmetros (faixas do catálogo) e monta o plano sem deixar erro escapar: {sc} ou {error}. */
+function tryPlan(field, params, edits) {
+  const { removed } = sanitizeParams(params || {});
+  if (removed.length) return { error: `valor fora da faixa (${removed[0]})` };
+  try { return { sc: planInUse(field, params, edits) }; } catch (e) { return { error: friendly(e) }; }
+}
+
+return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommend,planInUse,uncovered,checks,figures,team,summaryText,pointInfo,optimizeEdits,friendly,tryPlan,DEFAULT_PARAMS,paramsSignature});
 })();
 // src/app3/map.mjs
 const __m_app3_map=(()=>{
@@ -5002,7 +5025,7 @@ return Object.freeze({BACKUP_SCHEMA,ITEM_LABELS,countState,sha256Hex,makeBackup,
 })();
 // src/app3/main.mjs
 const __m_app3_main=(()=>{
-const { createStore } = __m_app3_store;
+const { createStore, safeStorage } = __m_app3_store;
 const { mapMarkup } = __m_app3_map;
 const P = __m_app3_planner;
 const V = __m_app3_views;
@@ -5045,18 +5068,22 @@ function registerWorker(window, toast) {
 function runApp({ document, window, fields, appVersion, safra = null, session }) {
   const $ = s => document.querySelector(s);
   let blockedShown = false;
-  const store = createStore(window.localStorage, { canWrite: () => session.canWrite(),
-    onBlocked: () => { if (!blockedShown) { blockedShown = true; toast(session.writeError().userMessage); } } });
+  // C2: sem armazenamento (modo privado restrito) o app abre igual, só não guarda depois de fechar.
+  const { storage, persistent } = safeStorage(() => window.localStorage);
+  const store = createStore(storage, { canWrite: () => session.canWrite(),
+    onBlocked: () => { if (!blockedShown) { blockedShown = true; toast(session.writeError().userMessage); } },
+    // C3: não finge que gravou
+    onFail: () => toast('Não foi possível gravar neste aparelho (memória cheia ou bloqueada). Nada foi alterado.') });
   const keys = Object.keys(fields).sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true }));
   const ui = { view: 'mapa', key: fields[store.get().fieldKey] ? store.get().fieldKey : keys[0] };
   const recCache = new Map();
   const versions = createVersions(window.indexedDB);
-  const backupService = window.indexedDB ? createSchmidtBackupService({ storage: window.localStorage, images: createSchmidtImageRepository(window.indexedDB), history: versions.history, journal: createSchmidtJournal(window.indexedDB),
+  const backupService = window.indexedDB && persistent ? createSchmidtBackupService({ storage, images: createSchmidtImageRepository(window.indexedDB), history: versions.history, journal: createSchmidtJournal(window.indexedDB),
     exclusive: window.navigator.locks ? op => session.exclusive(op) : op => op() }) : null;
   let versionTimer = 0;
   const BLOCK_KEY = 'schmidt3.blocoAtivo';
   /** @type {any} */ let blockUi = { groups: [], prepared: null, busy: false, abort: null };
-  const activeBlockId = () => { try { return window.localStorage.getItem(BLOCK_KEY); } catch { return null; } };
+  const activeBlockId = () => { try { return storage.getItem(BLOCK_KEY); } catch { return null; } };
   const activeBlock = () => { const id = activeBlockId(), r = id && saved().planningBlocks?.records?.[id]; return r && r.members.includes(ui.key) ? r : null; };
   /** @type {any} */ let pendingRestore = null;
   let toastTimer = 0;
@@ -5068,13 +5095,14 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
     clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.innerHTML = ''; toastAction = null; }, action ? 6000 : 4000);
   };
   const RECENT_KEY = 'schmidt3.recentes';
-  const recents = () => { try { return JSON.parse(window.localStorage.getItem(RECENT_KEY) || '[]').filter(k => fields[k]); } catch { return []; } };
-  const pushRecent = k => { try { window.localStorage.setItem(RECENT_KEY, JSON.stringify([k, ...recents().filter(x => x !== k)].slice(0, 4))); } catch { /* sem armazenamento: só não lembra */ } };
+  const recents = () => { try { return JSON.parse(storage.getItem(RECENT_KEY) || '[]').filter(k => fields[k]); } catch { return []; } };
+  const pushRecent = k => { try { storage.setItem(RECENT_KEY, JSON.stringify([k, ...recents().filter(x => x !== k)].slice(0, 4))); } catch { /* sem armazenamento: só não lembra */ } };
   let view = { k: 1, x: 0, y: 0 };
   /** Guia: tiro, sentido, GPS ligado, última posição, memória da sessão, trava de tela. */
   /** @type {any} */ const mon = { trackId: null, flipped: false, active: false, watchId: null, pos: null, session: {}, wake: null, arrivedId: null, ticker: 0 };
   /** @type {string|null} */ let selectedPt = null;
   /** @type {any} */ let cur = null;
+  /** @type {string|null} */ let warnedInvalid = null;
 
   const saved = () => store.get();
   const people = () => Math.max(1, Math.min(60, Math.round(saved().quickMonitors ?? 5)));
@@ -5095,14 +5123,20 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
           block: { title: block.members.map(k => fields[k].code).join(' + '), members, passes: Math.round(block.common.spacingM / 36.48), spacingM: block.common.spacingM },
           others: block.members.filter(k => k !== ui.key).map(k => blockScenario(fields, block, k)) };
         return cur;
-      } catch (e) { try { window.localStorage.removeItem(BLOCK_KEY); } catch { /* ignora */ } toast(/** @type {Error} */ (e).message); }
+      } catch (e) { try { storage.removeItem(BLOCK_KEY); } catch { /* ignora */ } toast(/** @type {Error} */ (e).message); }
     }
     const field = fields[ui.key], st = saved();
-    let params = st.paramsByField?.[ui.key];
+    let params = st.paramsByField?.[ui.key], edits = st.editsByField?.[ui.key];
+    /** @type {string|null} */ let invalid = null;
+    // C1/C4/C6: um plano gravado que não abre (valor fora da faixa, trajeto importado, versão antiga) não derruba o app:
+    // abre com o recomendado e avisa; o gravado só é trocado quando a pessoa mudar algo.
+    let tried = params ? P.tryPlan(field, params, edits) : null;
+    if (tried?.error) { invalid = tried.error; params = undefined; edits = undefined; tried = null; }
     const base = P.baseOf(params);
     const rec = recFor(field, base);
-    if (!params && rec) { params = { ...base, ...rec.chosen.params }; store.update({ paramsByField: { ...(st.paramsByField || {}), [ui.key]: params } }); }
-    const sc = P.planInUse(field, params || base, st.editsByField?.[ui.key]);
+    if (!params && rec) { params = { ...base, ...rec.chosen.params }; if (!invalid) store.update({ paramsByField: { ...(st.paramsByField || {}), [ui.key]: params } }); }
+    const sc = tried?.sc || P.planInUse(field, params || base, edits);
+    if (invalid && warnedInvalid !== ui.key) { warnedInvalid = ui.key; setTimeout(() => toast(`O plano gravado de ${field.code} não abre (${invalid}). Mostrando o recomendado.`), 0); }
     const blind = P.uncovered(field, sc), list = P.checks(sc, people(), blind), split = P.team(sc, people());
     cur = { field, params: params || base, base, rec, sc, f: P.figures(sc), blind, list, split, inUseIsRec: !!rec && P.sameShape(params, rec.chosen.params), block: null, others: [] };
     return cur;
@@ -5111,17 +5145,22 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
   const storeUpdateBlocks = planningBlocks => store.update({ planningBlocks });
   function setParams(params, msg = 'Plano alterado', edits) {
     const st = saved(), key = ui.key, before = { params: st.paramsByField?.[key], edits: st.editsByField?.[key] };
+    // C5/C6: só grava o que o motor consegue montar (ex.: teto de 600 pontos) e o que está dentro das faixas
+    const check = P.tryPlan(fields[key], params, edits === undefined ? before.edits : edits ?? undefined);
+    if (check.error) { toast(`Não aplicado: ${check.error}`); render(); return false; }
     const write = (p, e) => {
       const cur = saved(), editsBy = { ...(cur.editsByField || {}) };
       if (e === null) delete editsBy[key]; else if (e !== undefined) editsBy[key] = e;
-      store.update({ paramsByField: { ...(cur.paramsByField || {}), [key]: p }, editsByField: editsBy, fieldKey: key });
+      return store.update({ paramsByField: { ...(cur.paramsByField || {}), [key]: p }, editsByField: editsBy, fieldKey: key });
     };
-    write(params, edits);
+    if (!write(params, edits)) { render(); return false; }
     render(); scheduleVersion();
-    toast(msg, { label: 'Desfazer', run: () => { write(before.params, before.edits ?? null); ui.key = key; render(); toast('Desfeito'); } });
+    toast(msg, { label: 'Desfazer', run: () => { if (write(before.params, before.edits ?? null)) { ui.key = key; render(); toast('Desfeito'); } } });
+    return true;
   }
 
   function drawMaps() {
+    if (!cur) return;
     for (const el of document.querySelectorAll('[data-map]')) {
       const r = el.getBoundingClientRect();
       if (r.width < 10 || r.height < 10) continue;
@@ -5182,13 +5221,22 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
   }
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && mon.active) keepAwake(true); });
   function render() {
-    const c = compute(), main = $('#view');
+    const main = $('#view');
+    try { draw(main); } catch (e) {
+      // Nunca tela em branco: mostra o problema e uma saída (lote recomendado).
+      cur = null;
+      main.innerHTML = `<div class="scroll"><section class="card"><h2 class="big md">Não foi possível montar este plano</h2><p class="mu">${esc(P.friendly(e))}</p>
+<button class="btn p" data-act="reset-lot">Usar o plano recomendado</button><button class="btn" data-open="lote">Escolher outro lote</button></section></div>`;
+    }
+  }
+  function draw(main) {
+    const c = compute();
     $('#lot-name').textContent = c.field.code;
     $('#lot-farm').textContent = `· ${c.field.farm}`;
     for (const a of document.querySelectorAll('[data-tab]')) { const on = a.dataset.tab === ui.view; a.classList.toggle('on', on); a.setAttribute('aria-current', on ? 'page' : 'false'); }
     main.dataset.view = ui.view;
     if (ui.view === 'mapa') main.innerHTML = V.mapaView(c);
-    else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint, people: people(), rows: c.sc.trackRows });
+    else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), rows: c.sc.trackRows });
     else if (ui.view === 'enviar') main.innerHTML = V.enviarView(c);
     else main.innerHTML = V.monitorView(monitorData());
     requestAnimationFrame(drawMaps);
@@ -5234,7 +5282,7 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
     });
   }
   const LAST_BACKUP = 'schmidt3.ultimaCopia';
-  const lastBackup = () => { try { const t = window.localStorage.getItem(LAST_BACKUP); return t ? new Date(+t).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : ''; } catch { return ''; } };
+  const lastBackup = () => { try { const t = storage.getItem(LAST_BACKUP); return t ? new Date(+t).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : ''; } catch { return ''; } };
   const stamp = () => { const d = new Date(), z = v => String(v).padStart(2, '0'); return `${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}`; };
   const toBase64 = blob => new Promise((ok, ko) => { const r = new window.FileReader(); r.onload = () => ok(String(r.result).split(',')[1] || ''); r.onerror = () => ko(r.error); r.readAsDataURL(blob); });
   const fromBase64 = (b, type) => { const s = window.atob(b), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return new Blob([u], { type: type || 'image/png' }); };
@@ -5261,10 +5309,12 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
   const reopenAdvanced = () => { if (host.querySelector('[data-adv]')) SHEETS.ajustes(); };
   const ACTIONS = {
     fit: () => { view = { k: 1, x: 0, y: 0 }; drawMaps(); },
+    'reset-lot': () => { const st = saved(), by = { ...(st.paramsByField || {}) }, ed = { ...(st.editsByField || {}) }; delete by[ui.key]; delete ed[ui.key];
+      if (store.update({ paramsByField: by, editsByField: ed })) { warnedInvalid = null; render(); toast('Usando o plano recomendado.'); } },
     fichas: () => printFichas(),
-    'block-leave': () => { try { window.localStorage.removeItem(BLOCK_KEY); } catch { /* ignora */ } render(); toast('De volta ao plano do lote.'); },
+    'block-leave': () => { try { storage.removeItem(BLOCK_KEY); } catch { /* ignora */ } render(); toast('De volta ao plano do lote.'); },
     async backup() {
-      try { const b = await doBackup(); download(JSON.stringify(b), `schmidt_copia_${stamp()}.json`, 'application/json'); try { window.localStorage.setItem(LAST_BACKUP, String(Date.now())); } catch { /* só não lembra */ } toast('Cópia de segurança baixada.'); }
+      try { const b = await doBackup(); download(JSON.stringify(b), `schmidt_copia_${stamp()}.json`, 'application/json'); try { storage.setItem(LAST_BACKUP, String(Date.now())); } catch { /* só não lembra */ } toast('Cópia de segurança baixada.'); }
       catch (e) { toast(`Cópia não feita: ${/** @type {Error} */ (e).message}.`); }
     },
     'restore-pick': () => $('#backup-input').click(),
@@ -5325,7 +5375,7 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
       if (!alt || alt.summary.coverageTradeoff) return;
       try {
         const { store, id } = storeBlock(saved(), fields, alt.record || rec);
-        window.localStorage.setItem(BLOCK_KEY, id); /* bloco ativo só nesta 3.0 */
+        storage.setItem(BLOCK_KEY, id); /* bloco ativo só nesta 3.0 */
         storeUpdateBlocks(store); closeSheet(); render(); toast('Bloco em uso. "Sair do bloco" volta ao plano de cada lote.');
       } catch (e) { toast(/** @type {Error} */ (e).message); }
       return;
@@ -5345,13 +5395,13 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
   document.addEventListener('change', e => {
     const t = e.target;
     if (t.id === 'ha') {
-      const v = Math.round(Number(t.value));
-      if (!(v >= 1 && v <= 1000)) { t.value = cur.params.haPerPoint ?? 20; return; }
+      const v = Math.round(Number(String(t.value).trim().replace(',', '.')) * 10) / 10;
+      if (!(v >= 1 && v <= 1000)) { t.value = String(cur.params.haPerPoint ?? 20).replace('.', ','); toast('Hectares por ponto: de 1 a 1.000.'); return; }
       const base = { ...cur.base, haPerPoint: v }, rec = recFor(cur.field, base);
-      setParams(cur.inUseIsRec && rec ? { ...base, ...rec.chosen.params } : { ...cur.params, haPerPoint: v }, `1 ponto a cada ${v} ha`);
+      setParams(cur.inUseIsRec && rec ? { ...base, ...rec.chosen.params } : { ...cur.params, haPerPoint: v }, `1 ponto a cada ${num(v, v % 1 ? 1 : 0)} ha`);
     } else if (t.id === 'people') {
-      const v = Math.round(Number(t.value));
-      if (!(v >= 1 && v <= 60)) { t.value = people(); return; }
+      const v = Number(String(t.value).trim().replace(',', '.'));
+      if (!(Number.isInteger(v) && v >= 1 && v <= 60)) { t.value = people(); toast('Pessoas: número inteiro de 1 a 60.'); return; }
       store.update({ quickMonitors: v }); render();
     } else if (t.form?.hasAttribute('data-adv')) {
       advancedChange(t.name, t.type === 'checkbox' ? t.checked : t.value);
@@ -5389,6 +5439,6 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
 
 return Object.freeze({startApp});
 })();
-__m_app3_main.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),appVersion:'3.0.0'});
+__m_app3_main.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),appVersion:'3.0.1'});
 })();</script>
 </body></html>

@@ -2,16 +2,16 @@
 
 Gerado por scripts/checkpoint.mjs; registro não executa nem certifica testes.
 
-- Tarefa: Plano 3.1 e fila U00–U20 prontos para execução dividida
+- Tarefa: U01 3.0.1 críticos C1–C6 e N17
 - Responsável: Claude
-- Estado: pronto_para_iniciar
+- Estado: pronto_para_revisao
 - Branch: claude/motor-evolucao
-- Commit de código observado: 1509b3e7c2320be5bcd589e079f2aa5cb8e8d0c3
-- Registro UTC: 2026-11-16T09:56:29.642Z
+- Commit de código observado: 22af0eb99407614b07d86bf782d9fc169fd82fcb
+- Registro UTC: 2026-11-16T12:10:13.973Z
 
 ## Próxima ação
 
-U01 críticos (Claude) e U00/U03 (ChatGPT), conforme docs/FILA_3_1.md
+PR e publicação da 3.0.1; depois U03 medidas no mapa
 
 ## Testes declarados pela sessão
 
@@ -22,6 +22,6 @@ U01 críticos (Claude) e U00/U03 (ChatGPT), conforme docs/FILA_3_1.md
 
 ## Recuperação
 
-Leia RETOMADA.json para detalhes, bloqueios e decisões. O commit acima antecede o commit deste checkpoint. Arquivos alterados listados não foram publicados por este comando. Arquivos não rastreados: 4.
+Leia RETOMADA.json para detalhes, bloqueios e decisões. O commit acima antecede o commit deste checkpoint. Arquivos alterados listados não foram publicados por este comando. Arquivos não rastreados: 1.
 
 Somente commit enviado ao GitHub fica disponível para outra sessão. Conferir branch/PR e diff, não apenas este registro. Não existe troca automática de IA.

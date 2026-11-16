@@ -30,7 +30,7 @@ Estado: `livre` · `em andamento · IA · branch` · `pronto para revisão · PR
 | ID | Prioridade | Unidade | Itens | Arquivos principais | Pronto quando | Estado |
 |---|---|---|---|---|---|---|
 | U00 | P0 | Teste de paridade com a 2.5 | K8 | `audit/paridade-2-5.test.mjs` (novo) | Lista dos 186 controles da 2.5 com o equivalente na 3.0 ou "pendente Uxx"; CI falha se faltar sem marcação | livre |
-| U01 | P0 | **3.0.1 — críticos** | C1–C6, N17 | `src/app3/{main,store,planner}.mjs` | O app sempre abre (estado inválido, sem armazenamento, teto de pontos); "não gravou" avisado; testes de cada caso | em andamento · Claude · claude/motor-evolucao |
+| U01 | P0 | **3.0.1 — críticos** | C1–C6, N17 | `src/app3/{main,store,planner}.mjs` | O app sempre abre (estado inválido, sem armazenamento, teto de pontos); "não gravou" avisado; testes de cada caso | pronto para revisão · Claude · 3.0.1 |
 | U02 | P0 | Separar a tela em módulos (destrava trabalho em paralelo) | K1, K2, K4, H3, H4 | `src/app3/` (novos módulos por tela), `scripts/build-3.mjs` | Mesmo comportamento (todos os testes passam); cada tela num arquivo; atualização só do que mudou | livre |
 | U03 | P1 | **Medidas no mapa como na 2.5** (pedido do proprietário) | M5, M6, M11, N15, N16, D2, D8 | `src/app3/map.mjs` | Legenda ligada às cores (entre tiros, entre pontos, ha por ponto); intervalos e área de cada ponto desenhados; toque no ponto desenha as medidas; números ≥ 12 px; 0 colisão nos 51 lotes | livre |
 | U04 | P1 | **Tiros completos** | T1–T3, P11, P12 | `src/app3/views-plano.mjs` (após U02) | Por tiro: vizinhos, régua, borda · intervalos · borda; tocar mostra no mapa; esquema das distâncias | livre |
