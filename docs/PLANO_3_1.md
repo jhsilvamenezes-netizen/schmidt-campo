@@ -81,12 +81,98 @@ F7 comparar espaçamentos lado a lado antes de usar · F8 rumo manual e tiros es
 
 Sem erro de execução: os 51 lotes abriram nas 4 abas sem nenhum erro no console.
 
-## 6. Entregas (reordenadas: primeiro o que regrediu em relação à 2.5)
+## 6. Comparação completa 2.5 × 3.0 (186 controles da 2.5 conferidos um a um)
+
+Situação: **Falta** = não existe na 3.0 · **Parcial** = existe com menos recurso · **Fora** = fora do escopo
+(planejamento e direção, sem coleta).
+
+### 6.1 Mapa
+| # | Função da 2.5 | 3.0 | Correção |
+|---|---|---|---|
+| M1 | Orientação Norte / Talhão (girar para os tiros) | Falta | V1 |
+| M2 | Botões aproximar, afastar e enquadrar | Parcial (só gestos e "enquadrar" depois de ampliar) | Botões sempre visíveis |
+| M3 | Mapa expandido com troca de fazenda e lote; "enquadrar todos os lotes" (visão da fazenda) | Falta | Visão da fazenda com todos os lotes e o estado de cada um |
+| M4 | Camada Cobertura (mapa de calor da distância ao ponto mais perto) | Falta | Camada "Cobertura" |
+| M5 | Camada Distâncias no tiro (intervalos desenhados) | Falta | Camada "Distâncias" |
+| M6 | Camadas: grade em metros, tiros, pontos, identificadores, medidas entre tiros e entre pontos, área de cada ponto, referência A/B, tiros não selecionados, imagem | Falta (tudo fixo) | Painel de camadas |
+| M7 | Satélite opcional (Plano padrão, sem consulta externa até escolher) | Falta | F2, mesma regra |
+| M8 | Imagem de fundo georreferenciada, com força e remoção | Falta | F3 |
+| M9 | Régua para medir distância no mapa | Falta | Régua |
+| M10 | Exportar o mapa em SVG (vetorial) | Falta | Exportar mapa |
+| M11 | Medidas do ponto desenhadas ao tocar (até vizinhos e borda) | Parcial (balão em texto, sem desenho) | Desenhar as medidas no mapa |
+| M12 | Editor de pontos: arrastar no tiro, mover 10 m, ponto extra, remover extra, desfazer e refazer, ponto fora da pista | Falta | F1 completo |
+| M13 | Selo de qualidade dos dados abre os dados do lote | Parcial | Igual, no visual novo |
+
+### 6.2 Plano (Planejar 1–3 da 2.5)
+| # | Função da 2.5 | 3.0 | Correção |
+|---|---|---|---|
+| P1 | Como gerar os tiros: por espaçamento, **por quantidade de tiros** ou **trajetos importados** | Falta (só espaçamento) | Os 3 modos |
+| P2 | Direção dos tiros (rumo manual) e "Rumo da planilha" | Falta | F8 |
+| P3 | Importar trajeto (GeoJSON ou CSV; pista do pulverizador, trajeto da equipe, curva desenhada) | Falta | F4 |
+| P4 | Trecho mínimo com ponto (m) | Falta | Ajuste avançado |
+| P5 | Tiros que recebem pontos: todos, um por pessoa, escolhidos à mão | Falta | F8 |
+| P6 | Distância máxima aceitável entre pontos (alerta) | Falta | Ajuste avançado |
+| P7 | Prioridade da busca (qualidade, regularidade, esforço) e seus limites (% do maior intervalo, p.p. da irregularidade) | Falta | Ajuste avançado |
+| P8 | Parâmetros do guia: passo, raio de chegada, precisão do GPS, aviso de saída da linha | Falta | Ajustes do Monitorar |
+| P9 | **Comparar antes de aplicar · 5 opções de espaçamento** (tiros, pontos, entre tiros, entre pontos, borda, cobertura, caminhada) | Falta | F7 |
+| P10 | Desenho e comparação de planos, "Ver no mapa" de cada opção | Parcial (lista sem prévia no mapa) | Prévia no mapa antes de usar |
+| P11 | Esquema das distâncias (1 ou 2 linhas, 1 ou 3 pontos conforme o plano) | Falta | Esquema no Plano |
+| P12 | Cartão "Entre pontos" diz "Um em cada tiro" quando é o caso | Falta (mostra "—") | Mesmo texto |
+| P13 | Diagnóstico: malha entre tiros × entre pontos × ideal, "malha equilibrada/alongada", área de cada ponto, mancha descoberta no mapa | Falta | F6 + aviso curto no Plano |
+| P14 | Rigor da área descoberta (tolerante, padrão, rigoroso) | Falta | N11 |
+| P15 | Analisar todos os lotes pelo mesmo critério, com plano de ação | Parcial (lista sem critério nem ação) | Visão da fazenda (M3) |
+| P16 | Bloco: escolher qualquer combinação do grupo, ver mapa do grupo, exportar GPX do bloco, comparar opções | Parcial (só o grupo, sem GPX nem mapa do grupo) | Bloco completo |
+| P17 | Indicador de bloco ativo no topo | Falta | Selo "Bloco" no topo |
+
+### 6.3 Tiros (aba da 2.5)
+| # | Função da 2.5 | 3.0 | Correção |
+|---|---|---|---|
+| T1 | Por tiro: borda · intervalos · borda (ex.: 219 · 438 · 438 · 219 m) e vizinhos de cada lado | Parcial (só comprimento e intervalo médio) | Régua do tiro com todas as medidas (V6) |
+| T2 | Escolher os tiros que recebem pontos tocando na lista | Falta | F8 |
+| T3 | Tocar no tiro mostra o tiro no mapa | Falta | Tocar destaca no mapa |
+
+### 6.4 Conferir e arquivos
+| # | Função da 2.5 | 3.0 | Correção |
+|---|---|---|---|
+| A1 | Compartilhar resumo pelo menu do celular (WhatsApp) | Parcial (só copia) | Compartilhar direto |
+| A2 | Baixar dados atuais dos lotes; atualizar dados (`monitoramento.fields.v1`) | Falta | N10 |
+| A3 | Mostrar ou esconder o botão Monitorar | Falta | Ajuste no menu |
+| A4 | Aviso "Atualizar agora" quando há versão nova | Falta | N9 |
+| A5 | Dados do lote: linha do tempo de chuva e plantio, pendências da planilha, cadastro completo | Parcial (só um resumo) | Tela de dados completa |
+
+### 6.5 Monitorar
+| # | Função da 2.5 | 3.0 | Correção |
+|---|---|---|---|
+| G1 | "Onde estou? Mostrar o tiro mais perto" | Falta | Botão no Monitorar |
+| G2 | Voz | Falta | N8 |
+| G3 | Girar o mapa com a bússola | Falta | N7 |
+| G4 | Mapa seguindo você | Falta | Seguir a posição (desliga ao arrastar) |
+| G5 | Nome do monitor (vai na ficha) | Falta | F5 |
+| G6 | Enviar, GPX, KML e ficha **só do meu tiro** | Falta (só de todos) | Por tiro |
+| G7 | Distância até o próximo ponto ou a borda ao chegar; "Depois deste: ponto X a N m" | Parcial | Igual à 2.5 |
+| G8 | Alerta falado e escrito de tiro errado e de "passou do ponto" | Parcial (só escrito) | Com voz |
+| G9 | Marcação de ponto coletado, relatório do piloto, trajeto caminhado | **Fora** (regra: sem coleta) | Não volta |
+
+### 6.6 Telas maiores (tablet e notebook)
+| # | 2.5 | 3.0 | Correção |
+|---|---|---|---|
+| L1 | Tablet e notebook com mapa grande e painel lateral | Regrediu: a 3.0 vira uma coluna de 480 px no meio da tela | Layout com painel lateral a partir de 900 px |
+| L2 | Tablet deitado com mapa e painel lado a lado | Regrediu | Igual |
+
+### 6.7 Resumo
+| Situação | Itens |
+|---|---|
+| Falta | 35 |
+| Parcial | 11 |
+| Regressão de layout | 2 |
+| Fora do escopo (coleta) | 1 |
+
+## 7. Entregas (reordenadas: primeiro o que regrediu em relação à 2.5)
 
 | Etapa | Conteúdo | Prova |
 |---|---|---|
 | 3.1-a | N1–N14 (regressões e desempenho) | Celular lento: trocar lote e aba < 0,2 s; nenhum travamento > 0,1 s na guia; testes de navegador |
 | 3.1-b | A1–A6 (motor assertivo) | Critérios da seção 2 nos 51 lotes |
 | 3.1-c | V1–V10 (visual novo, após aprovação da prévia) | 360/390/412 px; claro, escuro e Sol; 0 colisão de rótulo; contraste AA |
-| 3.1-d | F1–F9 (funções da 2.5) | Teste por função; dados da 2.x compatíveis |
+| 3.1-d | F1–F9 e toda a seção 6 (M, P, T, A, G, L) | Teste por item; nenhuma função da 2.5 sem equivalente (fora G9) |
 | 3.1 | Publicação | CI verde; hash conferido no link |
