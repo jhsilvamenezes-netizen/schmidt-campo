@@ -74,6 +74,9 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
   /** Guia: tiro, sentido, GPS ligado, última posição, memória da sessão, trava de tela. */
   /** @type {any} */ const mon = { trackId: null, flipped: false, active: false, watchId: null, pos: null, session: {}, wake: null, arrivedId: null, ticker: 0 };
   /** @type {string|null} */ let selectedPt = null;
+  const LAYERS_KEY = 'schmidt.mapa.v1';
+  let layers = { medidas: true, areas: false };
+  try { const l = JSON.parse(storage.getItem(LAYERS_KEY) || '{}'); layers = { medidas: l.medidas !== false, areas: l.areas === true }; } catch { /* padrão */ }
   /** @type {any} */ let cur = null;
   /** @type {string|null} */ let warnedInvalid = null;
 
@@ -137,14 +140,25 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
     for (const el of document.querySelectorAll('[data-map]')) {
       const r = el.getBoundingClientRect();
       if (r.width < 10 || r.height < 10) continue;
-      el.innerHTML = mapMarkup(cur.field, cur.sc, Math.round(r.width), Math.round(r.height), { small: el.dataset.map !== 'full', pad: el.dataset.map !== 'full' ? 22 : 30, view, selected: el.dataset.map === 'guide' ? (mon.active ? monitorData().target : null) : selectedPt, pos: el.dataset.map === 'guide' ? mon.pos : null, others: cur.others || [] })
-        + (view.k > 1.01 ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : '') + balloon();
+      const W = Math.round(r.width), H = Math.round(r.height), full = el.dataset.map === 'full', guide = el.dataset.map === 'guide';
+      const areas = full ? P.pointAreas(cur.field, cur.sc) : null, info = full && selectedPt ? P.pointInfo(cur.field, cur.sc, selectedPt) : null;
+      // mapa principal: legenda no alto à esquerda e botões das camadas embaixo à direita ficam fora do desenho
+      const opts = full ? { pad: { t: 112, r: 30, b: 64, l: 40 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
+        reserve: [[0, 0, info ? Math.min(W * 0.72, 280) : Math.min(W * 0.66, 252), info ? 150 : 104], [W - 214, H - 60, W, H]] } : { pad: 22 };
+      el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view, selected: guide ? (mon.active ? monitorData().target : null) : selectedPt, pos: guide ? mon.pos : null, others: cur.others || [], ...opts })
+        + (full ? (info ? balloon() : V.legend(cur.field, P.figures(cur.sc), areas)) + V.mapTools(layers, view.k > 1.01)
+          : (view.k > 1.01 ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : '') + balloon());
       if (!el.dataset.g) {
         el.dataset.g = '1';
         attachGestures(el, { getView: () => view, setView: v => { view = v; }, onChange: () => requestAnimationFrame(drawMaps),
           onTap: target => { const g = target.closest?.('[data-pt]'); selectedPt = g ? g.dataset.pt : null; drawMaps(); } });
       }
     }
+  }
+  function toggleLayer(name) {
+    layers = { ...layers, [name]: !layers[name] };
+    try { storage.setItem(LAYERS_KEY, JSON.stringify(layers)); } catch { /* só não lembra */ }
+    drawMaps();
   }
   /** Guarda uma versão do plano quando ele para de mudar (4 s), como na 2.x. */
   function scheduleVersion() {
@@ -159,7 +173,10 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
     const i = /** @type {any} */ (selectedPt && P.pointInfo(cur.field, cur.sc, selectedPt));
     if (!i) return '';
     const parts = [i.prevM != null && `anterior ${num(i.prevM)} m`, i.nextM != null && `próximo ${num(i.nextM)} m`].filter(Boolean).join(' · ');
-    return `<div class="bal" role="status"><b>Ponto ${num(i.number)} · ${esc(i.trackId)}</b>${parts ? `<span>${parts} (andando)</span>` : ''}<span>borda a ${num(i.edgeM)} m</span></div>`;
+    const ha = P.pointAreas(cur.field, cur.sc)?.cells.find(c => c.id === selectedPt);
+    const across = (i.across || []).map(a => `${esc(a.trackId)} a ${num(a.m)} m`).join(' · ');
+    // cada linha do balão com a marca da linha desenhada no mapa
+    return `<div class="bal" role="status"><b>Ponto ${num(i.number)} · ${esc(i.trackId)}</b>${parts ? `<span><i class="sw p" aria-hidden="true"></i>${parts} (andando)</span>` : ''}${across ? `<span><i class="sw t sel" aria-hidden="true"></i>tiro vizinho: ${across}</span>` : ''}<span><i class="sw b" aria-hidden="true"></i>borda a ${num(i.edgeM)} m</span>${ha ? `<span><i class="sw a" aria-hidden="true"></i>área do ponto ${num(ha.ha, 1)} ha</span>` : ''}</div>`;
   }
   function monitorData() {
     const sc = cur.sc, tasks = new Map();
@@ -282,6 +299,8 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
   const reopenAdvanced = () => { if (host.querySelector('[data-adv]')) SHEETS.ajustes(); };
   const ACTIONS = {
     fit: () => { view = { k: 1, x: 0, y: 0 }; drawMaps(); },
+    'layer-medidas': () => toggleLayer('medidas'),
+    'layer-areas': () => toggleLayer('areas'),
     'reset-lot': () => { const st = saved(), by = { ...(st.paramsByField || {}) }, ed = { ...(st.editsByField || {}) }; delete by[ui.key]; delete ed[ui.key];
       if (store.update({ paramsByField: by, editsByField: ed })) { warnedInvalid = null; render(); toast('Usando o plano recomendado.'); } },
     fichas: () => printFichas(),

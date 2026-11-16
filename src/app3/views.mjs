@@ -23,7 +23,20 @@ export function badge(sc) {
 
 export const mapaView = ({ f, sc }) => `<div class="map" data-map="full"></div>
 <section class="sheet"><div class="grab"></div><div class="row-sb"><p class="big">${num(f.pontos)} pontos <span>· ${num(f.tiros)} tiros</span></p><button class="badge" data-open="dados">${badge(sc)}</button></div>
-${metrics(f)}<button class="btn p" data-go="plano">Ver plano</button></section>`;
+<p class="mu">95% do lote ${esc(f.p95)} · caminhada ${esc(f.caminhada)}</p><button class="btn p" data-go="plano">Ver plano</button></section>`;
+
+/** Legenda do mapa (como na 2.5): cada medida com a marca da sua cor no desenho. */
+export function legend(field, f, areas) {
+  const ha = areas ? (Math.abs(areas.maxHa - areas.minHa) < 0.05 ? `${num(areas.minHa, 1)}` : `${num(areas.minHa, 1)} a ${num(areas.maxHa, 1)}`) : null;
+  return `<div class="leg"><b>${esc(field.code)} · ${num(field.areaOfficialHa, 1)} ha</b>
+<span><i class="sw t" aria-hidden="true"></i>Entre tiros <b>${esc(f.entreTiros)}</b></span>
+<span><i class="sw p" aria-hidden="true"></i>Entre pontos <b>${esc(f.entrePontos.replace('–', ' a '))}</b></span>
+${ha ? `<span><i class="sw a" aria-hidden="true"></i>Cada ponto <b>${ha} ha</b></span>` : ''}</div>`;
+}
+
+/** Botões do mapa: camadas (medidas, área de cada ponto) e enquadrar. */
+export const mapTools = (layers, zoomed) => `<div class="mtools">${zoomed ? '<button class="mt" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : ''}
+<button class="mt" data-act="layer-medidas" aria-pressed="${!!layers.medidas}">Medidas</button><button class="mt" data-act="layer-areas" aria-pressed="${!!layers.areas}" aria-label="Área de cada ponto">Área</button></div>`;
 
 const stepper = (id, label, hint, value) => `<div class="step"><label for="${id}">${label}${hint ? `<small>${hint}</small>` : ''}</label><div class="stp">
 <button data-dec="${id}" aria-label="Diminuir ${label.toLowerCase()}">−</button><input id="${id}" inputmode="numeric" value="${esc(value)}"><button data-inc="${id}" aria-label="Aumentar ${label.toLowerCase()}">+</button></div></div>`;

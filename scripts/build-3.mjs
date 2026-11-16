@@ -11,7 +11,7 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', 'app3/store', 'app3/plan-file', 'app3/planner', 'app3/map', 'app3/views',
   'app3/advanced', 'app3/gestures', 'app3/monitor', 'persistence/backup-service', 'persistence/backup-format', 'platform/browser-backup-adapters', 'platform/browser-session-lock',
   'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/versions', 'app3/backup', 'app3/main'];
-export const APP_VERSION = '3.0.1';
+export const APP_VERSION = '3.0.2';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
 /** Cada módulo no seu escopo; importações do motor viram o namespace schmidtEngine2. */

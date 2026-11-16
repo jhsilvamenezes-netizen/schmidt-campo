@@ -23,9 +23,9 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
 .map-svg{display:block;width:100%;height:100%}
 .map-svg .lot{fill:var(--fd);stroke:var(--fl);stroke-width:2.5;stroke-linejoin:round}
 .map-svg .track{fill:none;stroke:var(--tr);stroke-width:2.5;stroke-dasharray:7 5}
-.map-svg .tid{font:600 12px system-ui;fill:var(--ink);text-anchor:end}.map-svg .tid.sm{font-size:11px}
+.map-svg .tid{font:600 12px system-ui;fill:var(--ink)}.map-svg .tid.sm{font-size:11px}
 .map-svg .pt circle{fill:var(--pt);stroke:var(--sf);stroke-width:2}.map-svg .pt.off circle{stroke:var(--er);stroke-dasharray:3 2}
-.map-svg .pt text{font:700 10px system-ui;fill:#fff;text-anchor:middle}.map-svg .pt text.sm{font-size:9px}
+.map-svg .pt text{font:700 12px system-ui;fill:#fff;text-anchor:middle}
 .map-svg .scale path,.map-svg .north path{fill:none;stroke:var(--ink);stroke-width:2}
 .map-svg .scale text,.map-svg .north text{font:600 12px system-ui;fill:var(--ink)}.map-svg .north text{text-anchor:middle}
 .sheet{background:var(--sf);border-radius:20px 20px 0 0;box-shadow:var(--sh);padding:12px 16px 16px;display:flex;flex-direction:column;gap:12px}
@@ -112,3 +112,19 @@ nav button.on{color:var(--br)}nav button.on .ic{background:var(--br2);border-rad
 .map-svg .lot.other{fill:var(--bg);stroke:var(--mu);stroke-width:1.5;stroke-dasharray:4 3}.map-svg .track.other{stroke:var(--mu);stroke-width:1.5;opacity:.7}
 .map-svg .opt{fill:var(--pt);opacity:.55}.map-svg .oname{font:700 12px system-ui;fill:var(--mu);text-anchor:middle}
 .blk{display:flex;flex-direction:column;gap:6px}
+/* 3.1 · medidas no mapa (U03) */
+.map-svg text{paint-order:stroke;stroke-linejoin:round}
+.map-svg .tid,.map-svg .med-t,.map-svg .med-p,.map-svg .ha,.map-svg .sel-l{stroke:var(--bg);stroke-width:4px}
+.map-svg .pt text{stroke:none}
+.map-svg .med-t{font:700 12px system-ui;fill:var(--tr)}.map-svg .med-p{font:600 12px system-ui;fill:var(--pt)}
+.map-svg .ha{font:600 12px system-ui;fill:var(--ink)}.map-svg .sel-l{font:700 13px system-ui;fill:var(--ink)}
+.map-svg .cota-t{fill:none;stroke:var(--tr);stroke-width:2;stroke-linecap:round}.map-svg .cota-p{fill:none;stroke:var(--pt);stroke-width:2;stroke-linecap:round}.map-svg .cota-g{fill:none;stroke:var(--pt);stroke-width:1;stroke-dasharray:3 3}
+.map-svg .cells path{fill:none;stroke:var(--fl);stroke-width:1;stroke-opacity:.55}
+.map-svg .sel-m path{fill:none;stroke-width:2.5;stroke-linecap:round}.map-svg .sel-p{stroke:var(--pt)}.map-svg .sel-t{stroke:var(--tr)}.map-svg .sel-b{stroke:var(--ink);stroke-dasharray:4 4}
+.leg{position:absolute;left:10px;top:10px;max-width:min(66%,242px);background:var(--sf);box-shadow:var(--sh);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--mu);pointer-events:none}
+.leg b{color:var(--ink);font-weight:700}.leg>b{font:600 14px system-ui}
+.leg span{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.sw{flex:none;display:inline-block;width:14px;height:0;border-top:3px dashed var(--tr)}.sw.p{border-top:3px solid var(--pt)}.sw.t.sel{border-top-style:solid}.sw.b{border-top:2px dashed var(--ink)}.bal span{display:flex;align-items:center;gap:6px}.sw.a{height:10px;border:1px solid var(--fl);border-radius:2px;background:var(--fd)}
+.mtools{position:absolute;right:10px;bottom:10px;display:flex;gap:6px}
+.mt{min-width:44px;height:44px;padding:0 12px;border-radius:12px;background:var(--sf);box-shadow:var(--sh);font:600 14px system-ui;color:var(--ink)}
+.mt[aria-pressed="true"]{background:var(--br);color:var(--on-br)}
