@@ -201,12 +201,21 @@ Situação: **Falta** = não existe na 3.0 · **Parcial** = existe com menos rec
 | D7 | Tablet: linhas esticadas, números longe dos rótulos, mapa pequeno | 768 px | Grade em 2 colunas; mapa ≥ 50% |
 | D8 | Mapa: tiro de 83 m com 1 ponto no canto do BA2 visível como erro | foto | A3 + V4 |
 
+### 7.4 Pontos quentes do código (frequência de mudança × tamanho, 12 meses)
+| # | Ponto quente | Medido | Correção |
+|---|---|---|---|
+| H1 | `scripts/build-preserved.mjs` (monta a 2.5) | 26 mudanças, 255 linhas, o arquivo que mais muda | Congelar: a 2.5 vira só reserva, sem novas mudanças; testes da 2.5 rodam contra a cópia guardada |
+| H2 | Lógica do bloco (`src/application/block-planning.mjs`, 374 linhas sem tipo) acoplada à tela do bloco da 2.5 | Mudam juntos em 5 de 7 mudanças | Reescrever no motor (`src/engine/blocks.mjs`) com tipos e teste diferencial; a 3.0 deixa de depender do código da 2.5 |
+| H3 | `src/app3/main.mjs` | 160 pontos de decisão numa função só; muda junto com estilos, telas e mapa | K1: um módulo por tela + estado central; cada módulo com teste próprio |
+| H4 | `scripts/build-3.mjs` com a lista de módulos escrita à mão | Muda junto com cada módulo novo | Ler as importações e montar a ordem sozinho |
+| H5 | Estilos (`styles.css`) mudam junto com tudo | Acoplado a 4 módulos | Tokens e componentes no sistema de design (D3); telas sem estilo próprio |
+
 ## 8. Entregas (reordenadas: primeiro o que regrediu em relação à 2.5)
 
 | Etapa | Conteúdo | Prova |
 |---|---|---|
 | 3.1-a | **C1–C4 primeiro**, depois N1–N14, K5 e K8 (teste de paridade) | Celular lento: trocar lote e aba < 0,2 s; nenhum travamento > 0,1 s na guia; testes de navegador |
 | 3.1-b | A1–A6 (motor assertivo) | Critérios da seção 2 nos 51 lotes |
-| 3.1-c | V1–V10, D1–D8 e K1–K4, K6–K7 (visual e estrutura, após aprovação da prévia) | 360/390/412 px; claro, escuro e Sol; 0 colisão de rótulo; contraste AA |
+| 3.1-c | V1–V10, D1–D8, K1–K4, K6–K7 e H1–H5 (visual e estrutura, após aprovação da prévia) | 360/390/412 px; claro, escuro e Sol; 0 colisão de rótulo; contraste AA |
 | 3.1-d | F1–F9 e toda a seção 6 (M, P, T, A, G, L) | Teste por item; nenhuma função da 2.5 sem equivalente (fora G9) |
 | 3.1 | Publicação | CI verde; hash conferido no link |
