@@ -58,11 +58,35 @@ F1 ajuste manual de pontos (arrastar no tiro, acrescentar ponto, desfazer) · F2
 F4 trajeto de GPS importado · F5 nomes dos monitores nas fichas e no envio · F6 mancha da área descoberta no mapa ·
 F7 comparar espaçamentos lado a lado antes de usar · F8 rumo manual e tiros escolhidos · F9 tema Noite.
 
-## 5. Entregas
+## 5. Novos achados da revisão (16/11, celular lento simulado: processador 6× mais lento)
+
+| # | Achado | Medido / onde | Correção |
+|---|---|---|---|
+| N1 | Trocar de lote travou mais que na 2.5 | 0,47 s (mediana), até 0,65 s; a 2.5 tinha meta de 0,2 s | Voltar a usar as recomendações prontas da 2.5 (`schmidt-recs`, que a 3.0 deixou de levar) e calcular o resto em segundo plano |
+| N2 | Mudar "ha por ponto" trava a tela | 0,58 s | Cálculo em segundo plano; mostrar o plano anterior até o novo ficar pronto |
+| N3 | "Todos os lotes" congela a tela | 10 s | Usar as recomendações prontas; preencher a lista aos poucos |
+| N4 | Toda troca de aba refaz o plano inteiro | 0,11–0,26 s por aba | Guardar o plano calculado; só recalcular quando lote ou ajuste mudar |
+| N5 | Na guia, cada posição do GPS refaz o plano e redesenha a tela inteira (gasta bateria e volta a rolagem ao topo) | lido no código | Atualizar só seta, distância e posição no mapa |
+| N6 | Botão voltar do Android sai do app com uma janela aberta | testado | Voltar fecha a janela; com nada aberto, volta para a aba anterior |
+| N7 | Guia sem bússola: a seta aponta em relação ao norte, não para onde a pessoa está virada | a 2.5 tinha bússola | Bússola do aparelho, quando houver |
+| N8 | Guia sem aviso por voz | a 2.5 falava "Próximo: ponto X, N metros" | Voz opcional na chegada e no tiro errado |
+| N9 | Sem aviso de nova versão: a atualização só aparece depois de fechar o app duas vezes | testado na migração | Aviso "Nova versão" com botão "Atualizar agora" |
+| N10 | Sem "Atualizar dados dos lotes" (arquivo `monitoramento.fields.v1`) | existia na 2.5 | Voltar no menu Mais |
+| N11 | Sem escolha do rigor da área descoberta (tolerante, padrão, rigoroso) | existia na 2.5 | Voltar nos ajustes |
+| N12 | "−/+" de ha por ponto anda de 1 em 1 (na 2.5 era de 5 em 5) | testado | Passo de 5, com digitação livre |
+| N13 | Sem lote salvo, abre no BA1 (a 2.5 abria no BD3) | lido no código | Abrir no último lote usado; na primeira vez, BD3 |
+| N14 | Acessibilidade: nome falado do botão do lote difere do texto; falta título principal | axe | Ajustar nome e título |
+| N15 | Escala do mapa sobre o lote | 6 lotes a 360 px | Coberto por V4 |
+| N16 | Rótulo de tiro escondido ou sob ponto (foto do BA2) | foto do proprietário | Coberto por V4, com teste de colisão nos 51 lotes |
+
+Sem erro de execução: os 51 lotes abriram nas 4 abas sem nenhum erro no console.
+
+## 6. Entregas (reordenadas: primeiro o que regrediu em relação à 2.5)
 
 | Etapa | Conteúdo | Prova |
 |---|---|---|
-| 3.1-a | A1–A6 (motor assertivo) | 51 lotes: critérios da seção 2; testes diferenciais e de propriedades |
-| 3.1-b | V1–V10 (visual novo) | 360/390/412 px, claro/escuro/Sol; 0 colisão de rótulo nos 51 lotes; contraste AA |
-| 3.1-c | F1–F9 | testes de navegador por função; compatibilidade com os dados da 2.x |
-| 3.1 | publicação | CI verde; hash conferido no link |
+| 3.1-a | N1–N14 (regressões e desempenho) | Celular lento: trocar lote e aba < 0,2 s; nenhum travamento > 0,1 s na guia; testes de navegador |
+| 3.1-b | A1–A6 (motor assertivo) | Critérios da seção 2 nos 51 lotes |
+| 3.1-c | V1–V10 (visual novo, após aprovação da prévia) | 360/390/412 px; claro, escuro e Sol; 0 colisão de rótulo; contraste AA |
+| 3.1-d | F1–F9 (funções da 2.5) | Teste por função; dados da 2.x compatíveis |
+| 3.1 | Publicação | CI verde; hash conferido no link |
