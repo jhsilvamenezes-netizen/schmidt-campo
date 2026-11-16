@@ -134,11 +134,11 @@ Situação: **Falta** = não existe na 3.0 · **Parcial** = existe com menos rec
 ### 6.4 Conferir e arquivos
 | # | Função da 2.5 | 3.0 | Correção |
 |---|---|---|---|
-| A1 | Compartilhar resumo pelo menu do celular (WhatsApp) | Parcial (só copia) | Compartilhar direto |
-| A2 | Baixar dados atuais dos lotes; atualizar dados (`monitoramento.fields.v1`) | Falta | N10 |
-| A3 | Mostrar ou esconder o botão Monitorar | Falta | Ajuste no menu |
-| A4 | Aviso "Atualizar agora" quando há versão nova | Falta | N9 |
-| A5 | Dados do lote: linha do tempo de chuva e plantio, pendências da planilha, cadastro completo | Parcial (só um resumo) | Tela de dados completa |
+| Q1 | Compartilhar resumo pelo menu do celular (WhatsApp) | Parcial (só copia) | Compartilhar direto |
+| Q2 | Baixar dados atuais dos lotes; atualizar dados (`monitoramento.fields.v1`) | Falta | N10 |
+| Q3 | Mostrar ou esconder o botão Monitorar | Falta | Ajuste no menu |
+| Q4 | Aviso "Atualizar agora" quando há versão nova | Falta | N9 |
+| Q5 | Dados do lote: linha do tempo de chuva e plantio, pendências da planilha, cadastro completo | Parcial (só um resumo) | Tela de dados completa |
 
 ### 6.5 Monitorar
 | # | Função da 2.5 | 3.0 | Correção |
@@ -236,12 +236,22 @@ Situação: **Falta** = não existe na 3.0 · **Parcial** = existe com menos rec
 | N20 | Teclado: o foco sai da janela aberta (9 de 15 Tabs) e não volta ao botão ao fechar | Testado | Prender o foco na janela; devolver ao fechar |
 | N21 | Nome da fazenda cortado no topo em 360 px ("Rio de Janeiro") | Testado | V2 (barra com nome em duas linhas) |
 
+### 7.6 Mais achados (16/11)
+| # | Achado | Prova | Correção |
+|---|---|---|---|
+| N22 | **Celular deitado: mapa com 72 px de altura; o lote vira um ponto** | Testado (844×390) | Deitado: mapa à esquerda e painel à direita |
+| N23 | Link compartilhado sem prévia (título, descrição, imagem) e sem ícone para iPhone; a 2.5 tinha | Comparado com a 2.5 | Restaurar no cabeçalho da página |
+| N24 | iPhone com o app instalado: topo embaixo da barra do relógio (falta a margem segura em cima) | Lido no CSS | Margem segura no topo |
+| N25 | Botão Sol não informa se está ligado (leitor de tela) | Lido no código | Estado ligado/desligado no botão |
+
+Verificado sem problema: memória (2 → 4 MB após 102 trocas de lote); 320 px e letra 130% sem corte nem rolagem lateral.
+
 ## 8. Entregas (reordenadas: primeiro o que regrediu em relação à 2.5)
 
 | Etapa | Conteúdo | Prova |
 |---|---|---|
-| 3.1-a | **C1–C6 primeiro**, depois N1–N21, K5 e K8 (teste de paridade) | Celular lento: trocar lote e aba < 0,2 s; nenhum travamento > 0,1 s na guia; testes de navegador |
+| 3.1-a | **C1–C6 primeiro**, depois N1–N25, K5 e K8 (teste de paridade) | Celular lento: trocar lote e aba < 0,2 s; nenhum travamento > 0,1 s na guia; testes de navegador |
 | 3.1-b | A1–A6 (motor assertivo) | Critérios da seção 2 nos 51 lotes |
 | 3.1-c | V1–V10, D1–D8, K1–K4, K6–K7 e H1–H5 (visual e estrutura, após aprovação da prévia) | 360/390/412 px; claro, escuro e Sol; 0 colisão de rótulo; contraste AA |
-| 3.1-d | F1–F9 e toda a seção 6 (M, P, T, A, G, L) | Teste por item; nenhuma função da 2.5 sem equivalente (fora G9) |
+| 3.1-d | F1–F9 e toda a seção 6 (M, P, T, Q, G, L) | Teste por item; nenhuma função da 2.5 sem equivalente (fora G9) |
 | 3.1 | Publicação | CI verde; hash conferido no link |
