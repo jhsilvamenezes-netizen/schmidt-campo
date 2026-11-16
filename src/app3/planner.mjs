@@ -10,6 +10,7 @@ import { coverageGrid, nearestDistances } from '../engine/metrics.mjs';
 import { recommendPlan, SHAPE_KEYS } from '../engine/recommend.mjs';
 import { restoreSamples, withSamples } from '../engine/editing.mjs';
 import { teamPlan } from '../engine/team.mjs';
+import { exactCoverage } from '../engine/voronoi.mjs';
 import { num, range, km, plural } from './format.mjs';
 
 export const ENGINE_LABEL = '2.0.0';
@@ -88,6 +89,21 @@ export function summaryText(field, sc, people, list, split) {
 
 export { DEFAULT_PARAMS, paramsSignature };
 
+const areaCache = new WeakMap();
+/** Área que cada ponto representa (célula de Voronoi exata recortada pelo lote), em ha; guardada por plano. */
+export function pointAreas(field, sc) {
+  if (!sc?.samples.length) return null;
+  let a = areaCache.get(sc);
+  if (!a) {
+    const cov = exactCoverage(field.geom, sc.samples);
+    const cells = cov.cells.map((c, i) => ({ id: sc.samples[i].id, ha: c.areaM2 / 1e4, rings: c.rings }));
+    const has = cells.map(c => c.ha);
+    a = { cells, minHa: Math.min(...has), maxHa: Math.max(...has) };
+    areaCache.set(sc, a);
+  }
+  return a;
+}
+
 /** Informação de um ponto tocado no mapa: tiro, vizinhos no mesmo trecho (andando) e distância à borda do lote. */
 export function pointInfo(field, sc, id) {
   const p = sc.samples.find(s => s.id === id);
@@ -95,12 +111,21 @@ export function pointInfo(field, sc, id) {
   const same = sc.samples.filter(s => s.unitId === p.unitId && !s.offTrack && Number.isFinite(s.s)).sort((a, b) => a.s - b.s), i = same.indexOf(p);
   const prev = i > 0 ? p.s - same[i - 1].s : null, next = i >= 0 && i < same.length - 1 ? same[i + 1].s - p.s : null;
   let edge = Infinity;
+  /** @type {number[]|null} */ let edgeAt = null;
   for (const pg of field.geom) for (const ring of pg) for (let j = 1; j < ring.length; j++) {
     const [ax, ay] = ring[j - 1], [bx, by] = ring[j], ex = bx - ax, ey = by - ay, L2 = ex * ex + ey * ey;
-    const t = L2 ? Math.max(0, Math.min(1, ((p.x - ax) * ex + (p.y - ay) * ey) / L2)) : 0;
-    edge = Math.min(edge, Math.hypot(p.x - ax - t * ex, p.y - ay - t * ey));
+    const t = L2 ? Math.max(0, Math.min(1, ((p.x - ax) * ex + (p.y - ay) * ey) / L2)) : 0, d = Math.hypot(p.x - ax - t * ex, p.y - ay - t * ey);
+    if (d < edge) { edge = d; edgeAt = [ax + t * ex, ay + t * ey]; }
   }
-  return { number: p.number, trackId: p.trackId, prevM: prev, nextM: next, edgeM: edge, manual: !!p.manual };
+  // ponto mais perto em cada tiro vizinho (em linha reta)
+  const order = sc.selected.filter(t => Number.isFinite(t.offsetM)).sort((a, b) => a.offsetM - b.offsetM).map(t => t.id), k = order.indexOf(p.trackId);
+  const across = [order[k - 1], order[k + 1]].filter(Boolean).map(tid => {
+    /** @type {any} */ let best = null;
+    for (const q of sc.samples) if (q.trackId === tid) { const d = Math.hypot(q.x - p.x, q.y - p.y); if (!best || d < best.m) best = { id: q.id, number: q.number, trackId: tid, m: d, x: q.x, y: q.y }; }
+    return best;
+  }).filter(Boolean);
+  return { number: p.number, trackId: p.trackId, prevM: prev, nextM: next, edgeM: edge, manual: !!p.manual, x: p.x, y: p.y,
+    prev: i > 0 ? same[i - 1] : null, next: i >= 0 && i < same.length - 1 ? same[i + 1] : null, edgeAt, across };
 }
 
 /** "Buscar distribuição melhor" (mesma busca da 2.x): devolve os pontos como ajuste gravável ou null se não melhorou. */

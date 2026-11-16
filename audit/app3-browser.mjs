@@ -30,12 +30,16 @@ try {
     assert.equal(await p.textContent('#lot-name'), 'BD3');
     for (const v of Object.keys(LIMITS)) {
       await p.click(`[data-tab="${v}"]`);
-      const m = await p.evaluate(() => ({ words: document.body.innerText.split(/\s+/).filter(w => /\p{L}/u.test(w)).length, h: document.documentElement.scrollWidth > innerWidth }));
+      // palavras da tela; os rótulos desenhados no mapa (T1, 438 m, ha) são dados do desenho e não entram na conta
+      const m = await p.evaluate(() => { const w = t => t.split(/\s+/).filter(x => /\p{L}/u.test(x)).length;
+        return { words: w(document.body.innerText) - [...document.querySelectorAll('.map-svg text')].reduce((n, t) => n + w(t.textContent), 0), h: document.documentElement.scrollWidth > innerWidth }; });
       assert.ok(m.words <= LIMITS[v], `${colorScheme} ${v}: ${m.words} palavras (limite ${LIMITS[v]})`);
       assert.equal(m.h, false, `${colorScheme} ${v}: rolagem lateral`);
     }
     await p.click('[data-tab="mapa"]');
-    assert.match(await p.textContent('.sheet'), /24 pontos.*5 tiros.*438 m.*438–515 m.*< 261 m/s);
+    assert.match(await p.textContent('.sheet'), /24 pontos.*5 tiros.*< 261 m.*12,7 km/s);
+    // legenda do mapa (como na 2.5): medidas com a marca da cor do desenho
+    assert.match((await p.textContent('.leg')).replace(/\s+/g, ' '), /BD3 · 469,9 ha Entre tiros 438 m Entre pontos 438 a 515 m Cada ponto 15,8 a 24,2 ha/);
     await p.waitForFunction(() => document.querySelectorAll('.map-svg .pt').length === 24, null, { timeout: 5000 });
     // regra 20 → 10 ha por ponto: recalcula e grava; recarregar mantém
     await p.click('[data-tab="plano"]'); await p.fill('#ha', '10'); await p.dispatchEvent('#ha', 'change');
@@ -70,8 +74,8 @@ try {
     // gestos: duplo toque amplia (aparece "enquadrar"), enquadrar volta; tocar num ponto mostra o balão
     await p.click('[data-tab="mapa"]'); await p.waitForSelector('.map-svg .pt');
     const box = await p.locator('[data-map="full"]').boundingBox();
-    await p.mouse.dblclick(box.x + box.width / 2, box.y + box.height / 2); await p.waitForSelector('.fit');
-    await p.click('.fit'); await p.waitForFunction(() => !document.querySelector('.fit'));
+    await p.mouse.dblclick(box.x + box.width / 2, box.y + box.height / 2); await p.waitForSelector('[data-map="full"] [data-act="fit"]');
+    await p.click('[data-map="full"] [data-act="fit"]'); await p.waitForFunction(() => !document.querySelector('[data-act="fit"]'));
     const pt = await p.locator('.map-svg .pt').first().boundingBox();
     await p.mouse.click(pt.x + pt.width / 2, pt.y + pt.height / 2); await p.waitForSelector('.bal');
     assert.match(await p.textContent('.bal'), /Ponto \d+ · T\d/);
