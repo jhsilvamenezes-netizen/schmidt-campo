@@ -46,3 +46,9 @@ Cada etapa: código em `src/app3`, teste no Node e no navegador (claro, escuro, 
 - Rótulo "pontos 20–24" quebrava linha: corrigido com espaço inseparável.
 - Botão "Bloco" e aba Monitorar ainda avisam "próxima etapa": somem com os itens 7–10 e 16.
 - Ícone do manifesto e tema da barra do navegador no escuro (`theme-color` por esquema).
+
+## Situação (16/11/2026)
+
+Itens 1 a 21 feitos e **3.0.0 publicada** (PR #28, merge `07c46bb`, Pages concluído com sucesso).
+`index.html` no main = `htmlSha256` do VERSAO.json (`919c4f49…`). Reserva 2.5 em `…/schmidt-campo/legado/`.
+Pendência conhecida: `test:sessions` da tela 2.5 é intermitente desde antes da troca (passa ao repetir).
