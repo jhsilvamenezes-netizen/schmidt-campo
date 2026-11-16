@@ -12,7 +12,7 @@ export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', '
   'app3/advanced', 'app3/gestures', 'app3/monitor', 'persistence/backup-service', 'persistence/backup-format', 'platform/browser-backup-adapters', 'platform/browser-session-lock',
   'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/versions', 'app3/backup',
   'app3/screen-mapa', 'app3/screen-monitor', 'app3/screen-plano', 'app3/screen-enviar', 'app3/screen-mais', 'app3/screen-bloco', 'app3/main'];
-export const APP_VERSION = '3.0.4';
+export const APP_VERSION = '3.0.5';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
 /** Cada módulo no seu escopo; importações do motor viram o namespace schmidtEngine2. */
@@ -41,7 +41,17 @@ async function bundleApp() {
     src = src.replace(/^export \{[^}]+\};?\s*$/gm, '').replace(/^export /gm, '');
     parts.push(`// src/${id}.mjs\nconst ${ident(id)}=(()=>{\n${binds.join('\n')}\n${src}\nreturn Object.freeze({${[...exported, ...reexp].join(',')}});\n})();`);
   }
-  return `(()=>{\n'use strict';\n${parts.join('\n')}\n${ident('app3/main')}.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),appVersion:'${APP_VERSION}'});\n})();`;
+  return `(()=>{\n'use strict';\n${parts.join('\n')}\n${ident('app3/main')}.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),recs:JSON.parse(document.getElementById('recs-data').textContent),appVersion:'${APP_VERSION}'});\n})();`;
+}
+
+/** U05 · recomendação de cada lote para a regra padrão (5 pessoas, sem limitar à equipe), calculada aqui com o mesmo
+ * motor da tela: o celular abre e troca de lote sem refazer essa busca (como os presets embutidos da 2.5). */
+export const RECS_PEOPLE = 5;
+export async function recsData(fields) {
+  const P = await import('../src/app3/planner.mjs');
+  const recs = {};
+  for (const k of Object.keys(fields).sort()) recs[k] = P.recommend(fields[k], {}, RECS_PEOPLE, false);
+  return JSON.stringify({ schema: 'schmidt3.recomendacoes.v1', motor: P.ENGINE_LABEL, pessoas: RECS_PEOPLE, recs });
 }
 
 const sha = t => `'sha256-${createHash('sha256').update(t).digest('base64')}'`;
@@ -54,13 +64,14 @@ export async function build3() {
   if (!fields) throw Error('Dados dos lotes não encontrados');
   const safra = /<script id="safra-dados" type="application\/json">([\s\S]*?)<\/script>/.exec(current)?.[1];
   if (!safra) throw Error('Dados da safra não encontrados');
+  const recs = await recsData(JSON.parse(fields).fields);
   const [engine, app, css, shell] = [await bundleEngine(), await bundleApp(), await readFile(root + 'src/app3/styles.css', 'utf8'), await readFile(root + 'src/app3/shell.html', 'utf8')];
-  for (const [n, t] of [['motor', engine], ['tela', app], ['dados', fields], ['safra', safra]]) if (/<\/script/i.test(t)) throw Error(`${n} contém </script>`);
+  for (const [n, t] of [['motor', engine], ['tela', app], ['dados', fields], ['safra', safra], ['recomendações', recs]]) if (/<\/script/i.test(t)) throw Error(`${n} contém </script>`);
   const nav = [['mapa', 'Mapa'], ['plano', 'Plano'], ['enviar', 'Enviar'], ['monitorar', 'Monitorar']]
     .map(([k, l]) => `<button data-tab="${k}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>${l}</button>`).join('');
   const csp = `default-src 'self'; script-src ${sha(engine)} ${sha(app)}; style-src ${sha(css)}; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'`;
   const html = shell.replace('__CSP__', csp).replace('__CSS__', () => css).replace('__ICON_SOL__', ICONS.sol).replace('__ICON_MAIS__', ICONS.mais)
-    .replace('__NAV__', nav).replace('__FIELDS__', () => fields).replace('__SAFRA__', () => safra).replace('__ENGINE__', () => engine).replace('__APP__', () => app);
+    .replace('__NAV__', nav).replace('__FIELDS__', () => fields).replace('__SAFRA__', () => safra).replace('__RECS__', () => recs).replace('__ENGINE__', () => engine).replace('__APP__', () => app);
   if (/__[A-Z_]+__/.test(html)) throw Error('Marcador do modelo sem valor');
   if (/\sstyle=/.test(html.replace(/<script[\s\S]*?<\/script>/g, ''))) throw Error('Estilo inline no HTML (CSP)');
   await mkdir(root + 'build/3', { recursive: true });

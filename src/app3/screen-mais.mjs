@@ -28,14 +28,33 @@ export function installMais(app) {
       + [...farms].map(([farm, ks]) => `<h3 class="h">${esc(farm)}</h3><div class="lots">${ks.map(lotButton).join('')}</div>`).join('');
   }
   const lotPicker = () => `<input class="search" type="search" placeholder="Buscar lote ou fazenda" aria-label="Buscar lote ou fazenda" data-search><div data-lots>${lotList()}</div>`;
-  /** Plano salvo (ou recomendado) de cada lote, para a visão geral. */
-  function allLots() {
-    const st = app.saved();
-    return keys.map(k => {
-      const f = fields[k], params = st.paramsByField?.[k] ?? { ...app.recFor(f, {}, k).chosen.params };
-      try { const sc = P.planInUse(f, params, st.editsByField?.[k]); return { key: k, code: f.code, farm: f.farm, pontos: sc.samples.length, tiros: sc.selected.length, p95: sc.coverage.p95, alerts: sc.warnings.filter(w => w.level !== 'info').length }; }
-      catch { return { key: k, code: f.code, farm: f.farm, pontos: 0, tiros: 0, p95: null, alerts: 1 }; }
-    });
+  /** Plano salvo (ou recomendado) de um lote, para a visão geral; guardado até o plano do lote mudar. */
+  const rowCache = new Map();
+  function lotRow(k, st) {
+    const f = fields[k], params = st.paramsByField?.[k] ?? { ...app.recFor(f, {}, k).chosen.params }, edits = st.editsByField?.[k];
+    const id = `${k}|${JSON.stringify(params)}|${JSON.stringify(edits ?? null)}`;
+    if (!rowCache.has(id)) {
+      let row;
+      try { const sc = P.planInUse(f, params, edits); row = { key: k, code: f.code, farm: f.farm, pontos: sc.samples.length, tiros: sc.selected.length, p95: sc.coverage.p95, alerts: sc.warnings.filter(w => w.level !== 'info').length }; }
+      catch { row = { key: k, code: f.code, farm: f.farm, pontos: 0, tiros: 0, p95: null, alerts: 1 }; }
+      rowCache.set(id, row);
+    }
+    return rowCache.get(id);
+  }
+  /** U05: a visão geral é montada em partes de ~30 ms, com o progresso na tela: o celular não trava e dá para fechar. */
+  let allRun = 0;
+  function openAll() {
+    const run = ++allRun, st = app.saved(), rows = [];
+    let i = 0;
+    app.openSheet('Todos os lotes', `<p class="mu" data-prog>Calculando… 0 de ${keys.length}</p>`);
+    const step = () => {
+      if (run !== allRun || !app.host.querySelector('[data-prog]')) return;
+      const t0 = performance.now();
+      while (i < keys.length && performance.now() - t0 < 30) rows.push(lotRow(keys[i++], st));
+      if (i < keys.length) { app.host.querySelector('[data-prog]').textContent = `Calculando… ${i} de ${keys.length}`; setTimeout(step, 0); }
+      else app.openSheet('Todos os lotes', V.allLotsBody(rows));
+    };
+    setTimeout(step, 0);
   }
 
   // ---------- cópia de segurança (mesmo formato da 2.x) ----------
@@ -54,7 +73,7 @@ export function installMais(app) {
   Object.assign(app.SHEETS, {
     menu: () => app.openSheet('Mais', V.menuBody([['todos', 'Todos os lotes'], ['dados', 'Dados do lote'], ['calculo', 'Como foi calculado'], ['versoes', 'Versões anteriores'],
       ['copia', 'Cópia de segurança'], ['abrir', 'Abrir plano recebido']])),
-    todos: () => { app.openSheet('Todos os lotes', '<p class="mu">Calculando…</p>'); setTimeout(() => { if (app.host.innerHTML) app.openSheet('Todos os lotes', V.allLotsBody(allLots())); }, 30); },
+    todos: openAll,
     versoes: async () => { app.openSheet(`Versões · ${app.cur.field.code}`, '<p class="mu">…</p>'); const rows = await versions.list(ui.key); app.openSheet(`Versões · ${app.cur.field.code}`, V.versionsBody(rows)); },
     copia: () => app.openSheet('Cópia de segurança', V.backupBody('', lastBackup())),
     lote: () => app.openSheet('Escolher lote', lotPicker()),
