@@ -8,6 +8,11 @@ continua 1.31.0. Não renomear um APK antigo como se fosse uma versão nova.
 O identificador técnico fica em `VERSAO.json`, sem adicionar texto ao painel
 operacional. Toda publicação precisa ser conferida pelo hash do conteúdo servido.
 
+## 3.0.0 (15/11/2026)
+
+Tela nova feita só de `src/` (motor 2 + `src/app3`); a 2.5 fica publicada como reserva em `legado/`.
+Detalhes em `docs/ENTREGA_3_0.md`.
+
 ## Histórico preservado
 
 | Identificação | Conteúdo | Estado |

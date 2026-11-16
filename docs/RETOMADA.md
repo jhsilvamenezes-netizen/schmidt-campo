@@ -2,16 +2,16 @@
 
 Gerado por scripts/checkpoint.mjs; registro não executa nem certifica testes.
 
-- Tarefa: 2.5.0: motor equilibrado
+- Tarefa: R4.4 completa na 3.0
 - Responsável: Claude
-- Estado: pronto_para_revisao
+- Estado: em_andamento
 - Branch: claude/motor-evolucao
-- Commit de código observado: e27a4c09105bdfd9345ecb6931ac046263541b78
-- Registro UTC: 2026-11-15T10:08:14.242Z
+- Commit de código observado: 73de56817bbe254f79186fc0758f9ac2eb1a466e
+- Registro UTC: 2026-11-15T23:26:52.913Z
 
 ## Próxima ação
 
-PR da 2.5.0; CI verde; merge; Pages e hash = VERSAO.json
+R5: index.html = 3.0, versão 3.0.0, migração, bateria, PR, publicar
 
 ## Testes declarados pela sessão
 
@@ -22,6 +22,6 @@ PR da 2.5.0; CI verde; merge; Pages e hash = VERSAO.json
 
 ## Recuperação
 
-Leia RETOMADA.json para detalhes, bloqueios e decisões. O commit acima antecede o commit deste checkpoint. Arquivos alterados listados não foram publicados por este comando. Arquivos não rastreados: 0.
+Leia RETOMADA.json para detalhes, bloqueios e decisões. O commit acima antecede o commit deste checkpoint. Arquivos alterados listados não foram publicados por este comando. Arquivos não rastreados: 1.
 
 Somente commit enviado ao GitHub fica disponível para outra sessão. Conferir branch/PR e diff, não apenas este registro. Não existe troca automática de IA.

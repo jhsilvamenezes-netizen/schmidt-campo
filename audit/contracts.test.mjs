@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { buildCandidate, sourceFiles } from '../scripts/build-preserved.mjs';
+import { build3 } from '../scripts/build-3.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const read = path => readFileSync(root + path);
@@ -37,10 +38,14 @@ test('Capacitor e plugins preservados; alterações do pacote são só de ferram
   assert.equal(candidate.engines.node,'>=22 <25');
 });
 
-test('HTML e worker correspondem ao build determinístico das correções', async () => {
-  const built = await buildCandidate();
-  assert.equal(read('index.html').toString(),built.html);
-  assert.equal(read('sw.js').toString(),built.worker);
+test('HTML e worker correspondem ao build determinístico (3.0 na raiz, 2.5 em legado/)', async () => {
+  const built = await buildCandidate(), b3 = await build3();
+  assert.equal(read('legado/index.html').toString(),built.html);
+  if (!process.env.SCHMIDT_LEGACY_ROOT) {
+    assert.equal(read('index.html').toString(),b3.html);
+    assert.equal(read('sw.js').toString(),b3.worker);
+    assert.match(b3.worker,/\/legado\//);
+  }
 });
 test('CSS/HTML estáticos, dados e scripts auxiliares preservam a referência; Plano muda por adaptador aprovado', () => {
   const original = execFileSync('git',['show',`${baseline.commit}:index.html`],{cwd:root,maxBuffer:4*1024*1024}).toString();
@@ -48,15 +53,16 @@ test('CSS/HTML estáticos, dados e scripts auxiliares preservam a referência; P
   const presentation = text => text.replace(/<script id="schmidt-engine">[\s\S]*?<\/script>/,'').replace("connect-src 'self' blob: data: https://services.arcgisonline.com;", "connect-src 'self' blob: data:;").replace(/<script type="module" crossorigin>[\s\S]*?<\/script>/,'MODULE').replace(/script-src [^;]+;/,'HASHES')
     // 2.3: cabeçalho público declarado no build (título sem versão e prévia de compartilhamento); o resto segue fixo.
     .replace(/<title>SCHMIDT[^<]*<\/title>(<meta property="og:[a-z]+" content="[^"]*">)*/,'HEAD');
-  assert.equal(presentation(read('index.html').toString()),presentation(original));
-  assert.match(read('index.html').toString(),/<meta property="og:image" content="https:\/\/[^"]+icone-512\.png">/);
+  // 3.0: a tela 2.5 (legado/) mantém a apresentação da referência; a 3.0 é feita do zero (sem esta regra).
+  assert.equal(presentation(read('legado/index.html').toString()),presentation(original));
+  assert.match(read('legado/index.html').toString(),/<meta property="og:image" content="https:\/\/[^"]+icone-512\.png">/);
   const worker=read('sw.js').toString();
   assert.ok(worker.includes(createHash('sha256').update(read('index.html')).digest('hex')));
   assert.doesNotMatch(worker,/self\.skipWaiting\s*\(/);
   assert.match(worker,/cache:'reload'/);
 });
-test('CSP contém hashes corretos de todos os scripts executáveis, sem liberar inline', () => {
-  const html=read('index.html').toString();
+for (const page of ['index.html','legado/index.html']) test(`CSP contém hashes corretos de todos os scripts executáveis, sem liberar inline: ${page}`, () => {
+  const html=read(page).toString();
   const policy=html.match(/script-src ([^;]+);/)[1];
   assert.doesNotMatch(policy,/unsafe-inline/);
   for(const m of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)) {
@@ -68,10 +74,12 @@ test('VERSAO identifica os mesmos artefatos e a opção de blocos do build',()=>
   const version=JSON.parse(read('VERSAO.json'));
   assert.equal(version.htmlSha256,createHash('sha256').update(read('index.html')).digest('hex'));
   assert.equal(version.workerSha256,createHash('sha256').update(read('sw.js')).digest('hex'));
-  assert.ok(read('index.html').toString().includes('APP_VERSION:`'+version.versaoDoApp+'`'));
+  assert.equal(version.legadoSha256,createHash('sha256').update(read('legado/index.html')).digest('hex'));
+  assert.ok(read('index.html').toString().includes(`appVersion:'${version.versaoDoApp}'`));
+  assert.ok(read('legado/index.html').toString().includes('APP_VERSION:`'+version.versaoLegado+'`'));
   if(version.runtimeBlocks){
-    assert.equal(version.versaoDoApp,JSON.parse(read('audit/block-candidate.json')).version);
-    assert.ok(read('index.html').toString().includes('installSchmidtBlockPlanning({document,schmidt:SCHMIDT'));
+    assert.equal(version.versaoLegado,JSON.parse(read('audit/block-candidate.json')).version);
+    assert.ok(read('legado/index.html').toString().includes('installSchmidtBlockPlanning({document,schmidt:SCHMIDT'));
   }
 });
 

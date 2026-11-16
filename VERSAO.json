@@ -1,13 +1,26 @@
 {
-  "entrega": "2.5.0",
+  "entrega": "3.0.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-15",
-  "versaoDoApp": "2.5.0",
+  "versaoDoApp": "3.0.0",
+  "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "819d3be16fd1aec921cc4dea2b5cd86609a5c906578ff43bd0042e7162e7c9ad",
-  "workerSha256": "48b63b4011f52f5a7a3bc14d063c08bf98a571724c2cca958f79333b91b560e4",
+  "htmlSha256": "919c4f49d2d1666f28fbf5133bb3be69189e40aa152629516ed38731d7d7cade",
+  "workerSha256": "4f0859e410f86bdb6505d55c0b7019ca119cb5eb818de46ca3e6dc414d66446c",
+  "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
+  "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "3.0: tela nova feita só de src/ (motor 2 + src/app3), sem código da 1.31; 4 abas: Mapa, Plano, Enviar, Monitorar",
+    "3.0: Plano com regra, pessoas, recomendado, outras opções com Desfazer, tiros e ajustes avançados conferidos pelo catálogo",
+    "3.0: mapa com pinça, arraste, duplo toque, enquadrar e toque no ponto (vizinhos e borda)",
+    "3.0: Enviar com conferência, divisão da equipe, arquivo do plano, fichas de campo, resumo, GPX, KML, CSV e GeoJSON",
+    "3.0: Monitorar com seta, distância, entrada do tiro, saída da linha, tiro errado, GPS fraco/antigo, tela acesa e vibração",
+    "3.0: bloco de lotes com o cálculo da 2.x (só opção sem perda de cobertura), cópia de segurança, versões, safra e todos os lotes",
+    "3.0: funciona sem internet (service worker conferido pelo SHA-256) e trava entre abas",
+    "3.0: mesmos dados salvos, arquivo de plano e cópias da 2.x; 2.5 publicada como reserva em legado/"
+  ],
+  "historicoLegado": [
     "correções de backup, persistência, concorrência e GPS",
     "organização aprovada do Plano com distâncias em destaque",
     "referência de barra de 36,48 m",
@@ -47,17 +60,5 @@
     "2.5: rótulos de área por ponto sem sobrepor ponto, outro rótulo ou borda (697 de 730 visíveis, os demais escondidos); escala sempre curta; crédito do satélite fora da escala",
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
-  "somenteEstudoSemIntegracao": [
-    "recuo mínimo obrigatório por divisa",
-    "validação estrita proposta para os 37 parâmetros"
-  ],
-  "android": {
-    "publicado": "1.31.0-11",
-    "buildPreparado": "1.31.3-15-unsigned (sem distribuição)",
-    "distribuicaoNova": "pendente de chave privada estável, backup verificado e migração",
-    "buildAnterior": "1.31.0-12-unsigned (HTML r1, não distribuído)"
-  },
-  "registro": "docs/VERSOES_E_ENTREGAS.md",
-  "runtimeBlocks": true,
-  "statusEntrega": "web 2.3.0; publicação autorizada pelo proprietário (15/11/2026: executar sem pedir permissão)"
+  "runtimeBlocks": true
 }

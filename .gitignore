@@ -7,3 +7,4 @@ audit/reference/
 *.apk
 *.aab
 __pycache__/
+build/

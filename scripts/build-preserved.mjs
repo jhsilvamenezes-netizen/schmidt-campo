@@ -1,7 +1,7 @@
 // Reconstrução parcial e declarada: aplica fontes novas a pontos de integração
 // verificados do artefato imutável. Não assume que o minificado é fonte original.
 import { execFileSync } from 'node:child_process';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { posix } from 'node:path';
@@ -56,34 +56,60 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
   // async já é usado pelo baseline. Evita exigir suporte novo a top-level await
   // dos WebViews Android: o await de recuperação fica dentro desta função.
   replace('<script type="module" crossorigin>','<script id="schmidt-engine">'+engineBundle+'</script><script type="module" crossorigin>\n(async()=>{\n'+blocks.join('\n')+'\n','fontes-legíveis');
-  // Motor 2 no lugar do motor 0.5.1 DA PÁGINA. Cada módulo antigo (do seu início até o início do seguinte) vira
-  // o namespace equivalente; validação de parâmetros (g) e qualidade dos dados (d) seguem do antigo, injetadas.
+  // 3.0 (Unidade D): o motor 0.5.1 SAI INTEIRO da página. Cada módulo antigo (do seu início até o início do seguinte)
+  // vira o namespace do motor 2; funções que no antigo chamavam outros módulos recebem a dependência injetada.
   // Marcadores únicos e ordem conferidos: qualquer mudança no artefato base interrompe o build.
+  const E2='schmidtEngine2';
+  const appVersionOf=text=>{const m=/APP_VERSION:`([^`]+)`/.exec(text);if(!m)throw new Error('APP_VERSION não encontrada');return m[1];};
+  const paramsNs=v=>`{APP_VERSION:\`${v}\`,...${E2}.params,ENGINE_VERSION:\`2.0.0\`}`;
+  const vocabNs=`{...${E2}.vocab,STATUS:${E2}.vocab.STATUS_TEXT,LEVEL:${E2}.diagnostics.LEVEL}`;
   const ENGINE_SWAPS=[
-    ['t',',t=(()=>{let{MIN_RING_AREA_M2',',n=(()=>{let{ALONG_S_EPS_M','schmidtEngine2.geometry'],
-    ['n',',n=(()=>{let{ALONG_S_EPS_M',',r=(()=>{let{geomEdges:r','schmidtEngine2.polyline'],
-    ['r',',r=(()=>{let{geomEdges:r',',i=(()=>{let{geomCentroid:i}','schmidtEngine2.clip'],
-    ['i',',i=(()=>{let{geomCentroid:i}',',a=(()=>{let{cumulative:e,pointAt:t}=n','schmidtEngine2.tracks'],
-    ['a',',a=(()=>{let{cumulative:e,pointAt:t}=n',',o=(()=>{let{alongCoverageRadius','schmidtEngine2.sampling'],
-    ['o',',o=(()=>{let{alongCoverageRadius',',s=(()=>{let{geomArea:e,geomBounds:r}','schmidtEngine2.allocation'],
-    ['s',',s=(()=>{let{geomArea:e,geomBounds:r}',',c=(()=>{let{cumulative:t,pointAt:r}=n','schmidtEngine2.metrics'],
-    ['c',',c=(()=>{let{cumulative:t,pointAt:r}=n',',l=(()=>{let e=Object.freeze({boomWidthM','schmidtEngine2.optimize'],
-    ['p',',p=(()=>{let{assessField:t}',',m=(()=>{let{coverage:e,long','{buildWarnings:(f,sc)=>schmidtEngine2.diagnostics.buildWarnings(f,sc,d.assessField)}'],
-    ['m',',m=(()=>{let{coverage:e,long',',h=(()=>{let e=Object.freeze({GEOMETRIA','{withMetrics:(f,sc)=>schmidtEngine2.scenario.withMetrics(f,sc,p.buildWarnings),trackRows:schmidtEngine2.scenario.trackRows}'],
-    ['_',',_=(()=>{let{validateGeom:e}',',v=(()=>{let{buildScenario:e','{buildScenario:(f,q={},o={})=>schmidtEngine2.scenario.buildScenario(f,q,o,{assertParams:g.assertParams,buildWarnings:p.buildWarnings,optimizeDistribution:schmidtEngine2.optimize.optimizeDistribution,engineVersion:`2.0.0`})}'],
+    ['t',',t=(()=>{let{MIN_RING_AREA_M2',',n=(()=>{let{ALONG_S_EPS_M',`${E2}.geometry`],
+    ['n',',n=(()=>{let{ALONG_S_EPS_M',',r=(()=>{let{geomEdges:r',`${E2}.polyline`],
+    ['r',',r=(()=>{let{geomEdges:r',',i=(()=>{let{geomCentroid:i}',`${E2}.clip`],
+    ['i',',i=(()=>{let{geomCentroid:i}',',a=(()=>{let{cumulative:e,pointAt:t}=n',`${E2}.tracks`],
+    ['a',',a=(()=>{let{cumulative:e,pointAt:t}=n',',o=(()=>{let{alongCoverageRadius',`${E2}.sampling`],
+    ['o',',o=(()=>{let{alongCoverageRadius',',s=(()=>{let{geomArea:e,geomBounds:r}',`${E2}.allocation`],
+    ['s',',s=(()=>{let{geomArea:e,geomBounds:r}',',c=(()=>{let{cumulative:t,pointAt:r}=n',`${E2}.metrics`],
+    ['c',',c=(()=>{let{cumulative:t,pointAt:r}=n',',l=(()=>{let e=Object.freeze({boomWidthM',`${E2}.optimize`],
+    ['l',',l=(()=>{let e=Object.freeze({boomWidthM',',u=(()=>{let e=new Map',null],
+    ['u',',u=(()=>{let e=new Map',',d=(()=>{let{geomArea:n,pointInGeom:r',`${E2}.numero`],
+    ['d',',d=(()=>{let{geomArea:n,pointInGeom:r',',f={STATUS:Object.freeze(',`${E2}.dataQuality`],
+    ['f',',f={STATUS:Object.freeze(',',p=(()=>{let{assessField:t}',vocabNs],
+    ['p',',p=(()=>{let{assessField:t}',',m=(()=>{let{coverage:e,long',`{buildWarnings:(f,sc)=>${E2}.diagnostics.buildWarnings(f,sc,d.assessField)}`],
+    ['m',',m=(()=>{let{coverage:e,long',',h=(()=>{let e=Object.freeze({GEOMETRIA',`{withMetrics:(f,sc)=>${E2}.scenario.withMetrics(f,sc,p.buildWarnings),trackRows:${E2}.scenario.trackRows}`],
+    ['h',',h=(()=>{let e=Object.freeze({GEOMETRIA',',g=(()=>{let{DomainError:e,ERR:t}=h',`${E2}.errors`],
+    ['g',',g=(()=>{let{DomainError:e,ERR:t}=h',',_=(()=>{let{validateGeom:e}',`${E2}.paramCatalog`],
+    ['_',',_=(()=>{let{validateGeom:e}',',v=(()=>{let{buildScenario:e',`{buildScenario:(f,q={},o={})=>${E2}.scenario.buildScenario(f,q,o,{assertParams:g.assertParams,buildWarnings:p.buildWarnings,optimizeDistribution:${E2}.optimize.optimizeDistribution,engineVersion:\`2.0.0\`})}`],
+    ['v',',v=(()=>{let{buildScenario:e',',y=(()=>{let{pointInGeom:e}',`{...${E2}.recommend,recommendPlan:(f,q={},o={})=>${E2}.recommend.recommendPlan(f,q,o,_.buildScenario)}`],
+    ['y',',y=(()=>{let{pointInGeom:e}',',b=(()=>{let{buildScenario:e}=_',`{...${E2}.editing,withSamples:(f,sc,s)=>${E2}.editing.withSamples(f,sc,s,m.withMetrics)}`],
+    ['b',',b=(()=>{let{buildScenario:e}=_',',x=(()=>{let{geomCentroid:e}',`{...${E2}.tradeoffs,effortFrontier:(f,q,k)=>${E2}.tradeoffs.effortFrontier(f,q,k,_.buildScenario)}`],
+    // guia: o próximo ponto vem da política do 2.0 (src/gps/guide-next.mjs), injetada
+    ['x',',x=(()=>{let{geomCentroid:e}',',S=(()=>{let{cumulative:e,pointAt:t}=n',`{...${E2}.guidance,guide:(r,q,c,k)=>${E2}.guidance.guide(r,q,c,k,schmidtGuideNextPoint)}`],
+    ['S',',S=(()=>{let{cumulative:e,pointAt:t}=n',',C=(()=>{let e=1/298.257223563',`${E2}.team`],
+    ['C',',C=(()=>{let e=1/298.257223563',',w=(()=>{let{localToLonLat:e}=C',`${E2}.projection`],
+    ['w',',w=(()=>{let{localToLonLat:e}=C',',T=(()=>{let{internalGap:e}=a',`{...${E2}.exporters,toGPX:(r,f,sc)=>${E2}.exporters.toGPX(r,f,sc,l.APP_VERSION)}`],
+    ['T',',T=(()=>{let{internalGap:e}=a',',E=(()=>{let{minimumPoints:e}=o',`${E2}.explain`],
+    ['E',',E=(()=>{let{minimumPoints:e}=o',',D=(()=>{let{buildScenario:e}=_',`{...${E2}.presets,compareTeamSplits:(f,k,q={})=>${E2}.presets.compareTeamSplits(f,k,q,_.buildScenario)}`],
+    ['D',',D=(()=>{let{buildScenario:e}=_','\u0000FIM','{buildScenario:_.buildScenario,trackRows:m.trackRows,withMetrics:m.withMetrics,moveSample:y.moveSample,addSample:y.addSample,withSamples:y.withSamples,restoreSamples:y.restoreSamples,effortFrontier:b.effortFrontier,regularitySummary:b.regularitySummary,assessField:d.assessField,buildRoute:x.buildRoute,guide:x.guide,toCSV:w.toCSV,toGeoJSON:w.toGeoJSON,toGPX:w.toGPX,toKML:w.toKML,localToLonLat:C.localToLonLat,lonLatToLocal:C.lonLatToLocal,trackKindLabel:i.trackKindLabel,DEFAULT_PARAMS:l.DEFAULT_PARAMS,ENGINE_VERSION:l.ENGINE_VERSION,DomainError:h.DomainError,ERR:h.ERR,ALLOC_STATUS:f.ALLOC_STATUS,EDGE_POLICY:f.EDGE_POLICY,KIND:f.KIND,LEVEL:f.LEVEL,POINT_MODE:f.POINT_MODE,STATUS:f.STATUS,TRACK_MODE:f.TRACK_MODE,explainScenario:T.explainScenario,regularityWord:T.regularityWord,compareTeamSplits:E.compareTeamSplits,pointsPerMonitor:E.pointsPerMonitor,presetParams:E.presetParams,PRESETS:E.PRESETS}'],
   ];
-  {
-    const engineStart=candidate.indexOf('var e={SEGMENT_T_EPS:'),engineEnd=candidate.indexOf(',O=(()=>{',engineStart);
-    if(engineStart<0||engineEnd<0)throw new Error('Motor da página não encontrado');
-    let engine=candidate.slice(engineStart,engineEnd);
-    for(const [v,from,to,value] of ENGINE_SWAPS){
+  const swapEngine=(engine,swaps,where)=>{
+    for(const [v,from,to,value0] of swaps){
       const a=engine.indexOf(from),b=engine.indexOf(to);
-      if(a<0||b<0||engine.indexOf(from,a+1)>=0||engine.indexOf(to,b+1)>=0||b<=a)throw new Error(`Troca do motor: marcador ausente, repetido ou fora de ordem (${v})`);
+      if(a<0||b<0||engine.indexOf(from,a+1)>=0||engine.indexOf(to,b+1)>=0||b<=a)throw new Error(`Troca do motor (${where}): marcador ausente, repetido ou fora de ordem (${v})`);
+      const value=value0??paramsNs(appVersionOf(engine.slice(a,b)));
       engine=engine.slice(0,a)+`,${v}=${value}`+engine.slice(b);
     }
-    if(engine.split('ENGINE_VERSION:`0.5.1-sim`').length!==2)throw new Error('Versão do motor não encontrada');
-    engine=engine.replace('ENGINE_VERSION:`0.5.1-sim`','ENGINE_VERSION:`2.0.0`');
-    candidate=candidate.slice(0,engineStart)+engine+candidate.slice(engineEnd);changes.push('motor-2-na-pagina');
+    return engine;
+  };
+  {
+    const engineStart=candidate.indexOf('var e={SEGMENT_T_EPS:'),engineEnd=candidate.indexOf(',O=(()=>{',engineStart);
+    const firstModule=candidate.indexOf(',t=(()=>{let{MIN_RING_AREA_M2',engineStart);
+    if(engineStart<0||engineEnd<0||firstModule<0||firstModule>engineEnd)throw new Error('Motor da página não encontrado');
+    let engine=swapEngine(candidate.slice(firstModule,engineEnd)+'\u0000FIM',ENGINE_SWAPS,'página');
+    engine=engine.slice(0,-4);
+    if(/SEGMENT_T_EPS:|0\.5\.1-sim/.test(engine))throw new Error('Sobrou motor antigo na página');
+    candidate=candidate.slice(0,engineStart)+`var e=${E2}.tolerances.TOLERANCES`+engine+candidate.slice(engineEnd);changes.push('motor-2-na-pagina');
   }
   // Motor 2 também no WORKER (recomendação e otimização em segundo plano), que guarda o motor como texto
   // entre aspas simples. O pacote entra escapado no início da função do worker; as trocas usam as letras do worker.
@@ -95,31 +121,33 @@ function schmidtReportLegacyStoreFailure(e){${originalFailureBody}}`);
     for(;;){const q=candidate.indexOf("'",end);let k=q-1,bs=0;while(candidate[k]==='\\'){bs++;k--;}if(bs%2===0){end=q;break;}end=q+1;}
     let lit=candidate.slice(at+3,end);
     const WORKER_SWAPS=[
-      ['t',',t=(()=>{let{ALONG_S_EPS_M',',n=(()=>{let{cumulative:e,pointAt:n}=t','schmidtEngine2.polyline'],
-      ['n',',n=(()=>{let{cumulative:e,pointAt:n}=t',',r=(()=>{let{alongCoverageRadius','schmidtEngine2.sampling'],
-      ['r',',r=(()=>{let{alongCoverageRadius',',i=(()=>{let e=Object.freeze({GEOMETRIA','schmidtEngine2.allocation'],
-      ['a',',a=(()=>{let{MIN_RING_AREA_M2',',o=(()=>{let e=','schmidtEngine2.geometry'],
-      ['l',',l=(()=>{let{assessField:t}=s',',u=(()=>{let{geomArea:e,geomBounds:n}=a','{buildWarnings:(f,sc)=>schmidtEngine2.diagnostics.buildWarnings(f,sc,s.assessField)}'],
-      ['u',',u=(()=>{let{geomArea:e,geomBounds:n}=a',',d=(()=>{let{coverage:e,long','schmidtEngine2.metrics'],
-      ['d',',d=(()=>{let{coverage:e,long',',f=(()=>{let{cumulative:r,pointAt:i}=t','{withMetrics:(f,sc)=>schmidtEngine2.scenario.withMetrics(f,sc,l.buildWarnings),trackRows:schmidtEngine2.scenario.trackRows}'],
-      ['f',',f=(()=>{let{cumulative:r,pointAt:i}=t',',p=(()=>{let{DomainError:e,ERR:t}=i','schmidtEngine2.optimize'],
-      ['h',',h=(()=>{let{geomEdges:n',',g=(()=>{let{geomCentroid:n}=a','schmidtEngine2.clip'],
-      ['g',',g=(()=>{let{geomCentroid:n}=a',',_=(()=>{let{validateGeom:e}=a','schmidtEngine2.tracks'],
-      ['_',',_=(()=>{let{validateGeom:e}=a',',v=(()=>{let{buildScenario:e}=_','{buildScenario:(f,q={},o={})=>schmidtEngine2.scenario.buildScenario(f,q,o,{assertParams:p.assertParams,buildWarnings:l.buildWarnings,optimizeDistribution:schmidtEngine2.optimize.optimizeDistribution,engineVersion:`2.0.0`})}'],
+      ['t',',t=(()=>{let{ALONG_S_EPS_M',',n=(()=>{let{cumulative:e,pointAt:n}=t',`${E2}.polyline`],
+      ['n',',n=(()=>{let{cumulative:e,pointAt:n}=t',',r=(()=>{let{alongCoverageRadius',`${E2}.sampling`],
+      ['r',',r=(()=>{let{alongCoverageRadius',',i=(()=>{let e=Object.freeze({GEOMETRIA',`${E2}.allocation`],
+      ['i',',i=(()=>{let e=Object.freeze({GEOMETRIA',',a=(()=>{let{MIN_RING_AREA_M2',`${E2}.errors`],
+      ['a',',a=(()=>{let{MIN_RING_AREA_M2',',o=(()=>{let e=',`${E2}.geometry`],
+      ['o',',o=(()=>{let e=',',s=(()=>{let{geomArea:t,pointInGeom:n',`${E2}.numero`],
+      ['s',',s=(()=>{let{geomArea:t,pointInGeom:n',',l=(()=>{let{assessField:t}=s',`${E2}.dataQuality`],
+      ['l',',l=(()=>{let{assessField:t}=s',',u=(()=>{let{geomArea:e,geomBounds:n}=a',`{buildWarnings:(f,sc)=>${E2}.diagnostics.buildWarnings(f,sc,s.assessField)}`],
+      ['u',',u=(()=>{let{geomArea:e,geomBounds:n}=a',',d=(()=>{let{coverage:e,long',`${E2}.metrics`],
+      ['d',',d=(()=>{let{coverage:e,long',',f=(()=>{let{cumulative:r,pointAt:i}=t',`{withMetrics:(f,sc)=>${E2}.scenario.withMetrics(f,sc,l.buildWarnings),trackRows:${E2}.scenario.trackRows}`],
+      ['f',',f=(()=>{let{cumulative:r,pointAt:i}=t',',p=(()=>{let{DomainError:e,ERR:t}=i',`${E2}.optimize`],
+      ['p',',p=(()=>{let{DomainError:e,ERR:t}=i',',m=(()=>{let e=Object.freeze({boomWidthM',`${E2}.paramCatalog`],
+      ['m',',m=(()=>{let e=Object.freeze({boomWidthM',',h=(()=>{let{geomEdges:n',null],
+      ['h',',h=(()=>{let{geomEdges:n',',g=(()=>{let{geomCentroid:n}=a',`${E2}.clip`],
+      ['g',',g=(()=>{let{geomCentroid:n}=a',',_=(()=>{let{validateGeom:e}=a',`${E2}.tracks`],
+      ['_',',_=(()=>{let{validateGeom:e}=a',',v=(()=>{let{buildScenario:e}=_',`{buildScenario:(f,q={},o={})=>${E2}.scenario.buildScenario(f,q,o,{assertParams:p.assertParams,buildWarnings:l.buildWarnings,optimizeDistribution:${E2}.optimize.optimizeDistribution,engineVersion:\`2.0.0\`})}`],
+      ['v',',v=(()=>{let{buildScenario:e}=_',',{buildScenario:y}=_,{recommendPlan:b}=v',`{...${E2}.recommend,recommendPlan:(f,q={},o={})=>${E2}.recommend.recommendPlan(f,q,o,_.buildScenario)}`],
     ];
-    for(const [v,from,to,value] of WORKER_SWAPS){
-      const a=lit.indexOf(from),b=lit.indexOf(to);
-      if(a<0||b<0||lit.indexOf(from,a+1)>=0||lit.indexOf(to,b+1)>=0||b<=a)throw new Error(`Troca do motor no worker: marcador ausente, repetido ou fora de ordem (${v})`);
-      lit=lit.slice(0,a)+`,${v}=${value}`+lit.slice(b);
-    }
-    if(lit.split('ENGINE_VERSION:`0.5.1-sim`').length!==2)throw new Error('Worker: versão do motor não encontrada');
-    lit=lit.replace('ENGINE_VERSION:`0.5.1-sim`','ENGINE_VERSION:`2.0.0`');
-    if(!lit.startsWith('(function(){let e='))throw new Error('Worker: forma inesperada');
+    if(!lit.startsWith('(function(){let e={SEGMENT_T_EPS:'))throw new Error('Worker: forma inesperada');
+    const wFirst=lit.indexOf(',t=(()=>{let{ALONG_S_EPS_M');
+    lit=`(function(){let e=${E2}.tolerances.TOLERANCES`+swapEngine(lit.slice(wFirst),WORKER_SWAPS,'worker');
+    if(/SEGMENT_T_EPS:|0\.5\.1-sim/.test(lit))throw new Error('Sobrou motor antigo no worker');
     candidate=candidate.slice(0,at+3)+lit+candidate.slice(end);changes.push('motor-2-no-worker');
   }
   replace('__m_ui_lotes:ne,__m_main:J};</script>', '__m_ui_lotes:ne,__m_main:J};\ninstallSchmidtRefinements(document);\ninstallSchmidtLotMap({document,events:A});\ninstallSchmidtSatelliteMap({document});\ninstallSchmidtOperationalPlan({document,schmidt:SCHMIDT,events:A,measurements:N});\ninstallSchmidtAdjustCompare({document,schmidt:SCHMIDT,events:A,measurements:N});\ninstallSchmidtMonitorDirection({document});\ninstallSchmidtNightTheme({document});\ninstallSchmidtTextTrim({document});\n})();</script>', 'escopo-assíncrono-e-plano-aprovado');
   // 2.0 (E4): sem marcação de coleta, o guia orienta ao próximo ponto à frente (src/gps/guide-next.mjs).
-  replace('l=e.points.find(e=>!n.has(e.id)),u=Number.isFinite(t.accuracyM)','l=schmidtGuideNextPoint(e,t,n,a,t.guideState),u=Number.isFinite(t.accuracyM)','guia-sem-marcacao-orienta-ao-ponto-a-frente');
+  // (2.0 E4: o guia usa schmidtGuideNextPoint — agora injetado no módulo de guia do motor 2, ver troca 'x'.)
   replace('let l=s.points.find(e=>!o.has(e.id)),u=s.points.length,','let l=c&&!c.done?c.next:s.points.find(e=>!o.has(e.id)),u=s.points.length,','monitor-mostra-o-ponto-que-o-guia-escolheu');
   // 2.0.1: seleção temporária por sessão/rota; nunca escreve coleta ou progresso.
   replace('c=i(s,{...b.pos,ageMs:Date.now()-b.posAt},o,a)',
@@ -211,11 +239,17 @@ if(process.argv[1]===fileURLToPath(import.meta.url)) {
   if(process.argv.includes('--inspect')) {
     console.log(JSON.stringify({htmlSha256:sha(result.html),changes:result.changes,staticPresentationPreserved:result.staticPresentationPreserved,approvedVisualScope:result.approvedVisualScope,approvedTextScope:result.approvedTextScope,originalFailureHandlerReused:result.originalFailureHandlerReused}));
   } else if(process.argv.includes('--check')) {
-    if(await readFile(root+'index.html','utf8')!==result.html || await readFile(root+'sw.js','utf8')!==result.worker) throw new Error('Artefatos diferentes das fontes de correção');
+    // 3.0: a 2.5 fica guardada em legado/index.html (reserva publicada, sem service worker próprio).
+    if(await readFile(root+'legado/index.html','utf8')!==result.html) throw new Error('Artefatos diferentes das fontes de correção');
     console.log('Build determinístico conferido.');
-  } else {
+  } else if(process.argv.includes('--root')) {
+    // Só no CI: monta a 2.5 na raiz para os testes de navegador da tela 2.5 (não é gravado no Git).
     await writeFile(root+'index.html',result.html);
     await writeFile(root+'sw.js',result.worker);
-    console.log(`Candidata gerada com ${result.changes.length} integrações verificadas.`);
+    console.log('2.5 montada na raiz para os testes da tela antiga.');
+  } else {
+    await mkdir(root+'legado',{recursive:true});
+    await writeFile(root+'legado/index.html',result.html);
+    console.log(`Candidata 2.5 gerada em legado/ com ${result.changes.length} integrações verificadas.`);
   }
 }

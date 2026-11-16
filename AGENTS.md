@@ -1,5 +1,9 @@
 # AGENTS.md — SCHMIDT Campo / Codex
 
+> **15/11/2026 — regra do proprietário:** APK só quando o proprietário pedir. Não propor, planejar, citar como
+> próximo passo nem gastar esforço com APK sem pedido expresso. Foco atual: correções e melhorias no link (página web).
+
+
 ## DIRETRIZ INEGOCIÁVEL DO PROPRIETÁRIO — CONGELAMENTO TOTAL DA INTERFACE (08/11/2026)
 
 **A partir desta data, está PROIBIDA qualquer alteração visual, estética ou estrutural da experiência existente até autorização explícita e posterior do proprietário.** Esta regra prevalece sobre qualquer diretriz genérica de modernização, usabilidade ou redesign neste documento, na Issue #1 e em prompts anteriores.

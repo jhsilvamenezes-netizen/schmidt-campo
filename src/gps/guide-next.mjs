@@ -7,7 +7,8 @@
 
 // Projeção de um ponto numa polilinha: distância lateral e posição ao longo (s, metros desde o início).
 export function schmidtProjectOnLine(line, xy) {
-  let best = null, acc = 0;
+  /** @type {any} */ let best = null;
+  let acc = 0;
   for (let i = 1; i < line.length; i++) {
     const a = line[i - 1], b = line[i], dx = b[0] - a[0], dy = b[1] - a[1], len2 = dx * dx + dy * dy, len = Math.sqrt(len2);
     const t = len2 ? Math.max(0, Math.min(1, ((xy[0] - a[0]) * dx + (xy[1] - a[1]) * dy) / len2)) : 0;
@@ -37,7 +38,7 @@ export function schmidtGuideNextPoint(route, pos, collected, params, state) {
     return legacy;
   }
   if (!Number.isFinite(pos?.x) || !Number.isFinite(pos?.y)) return legacy;
-  let here = null;
+  /** @type {any} */ let here = null;
   (route.parts || []).forEach((part, index) => {
     if (!Array.isArray(part?.line) || part.line.length < 2) return;
     const p = schmidtProjectOnLine(part.line, [pos.x, pos.y]);

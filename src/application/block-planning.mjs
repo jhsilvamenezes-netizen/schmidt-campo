@@ -1,3 +1,4 @@
+// @ts-nocheck — módulo da 2.x, sem anotações de tipo; coberto pelos testes de blocos (audit/block-*.test.mjs).
 import { schmidtBoundaryMinimum } from '../engine/boundary.mjs';
 // Planejamento conjunto usa somente os dados já embarcados no aplicativo.
 // A/B igual identifica referência; não prova passagem entre lotes.

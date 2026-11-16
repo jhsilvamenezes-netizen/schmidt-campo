@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="__CSP__">
+<meta name="theme-color" content="#17594a" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c1512" media="(prefers-color-scheme: dark)">
+<title>SCHMIDT Campo</title>
+<link rel="icon" href="icone.svg"><link rel="manifest" href="manifest.webmanifest">
+<style>__CSS__</style></head>
+<body>
+<a class="skip" href="#view">Ir para o conteúdo</a>
+<header><span class="logo"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#17594a"/><path d="M8 24 13 8M14.5 24 19.5 8M21 24 26 8" stroke="#c9a23b" stroke-width="3.2" stroke-linecap="round"/></svg>SCHMIDT</span>
+<button class="lot" data-open="lote" aria-label="Escolher lote"><span id="lot-name">…</span><small id="lot-farm"></small><small aria-hidden="true">▾</small></button>
+<button class="ib" id="sol" aria-label="Sol: alto contraste"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true">__ICON_SOL__</svg></button>
+<button class="ib" data-open="menu" aria-label="Mais"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true">__ICON_MAIS__</svg></button></header>
+<main id="view" tabindex="-1"></main>
+<nav aria-label="Telas">__NAV__</nav>
+<div id="sheets"></div><p id="toast" role="status" aria-live="polite"></p>
+<input id="plan-input" type="file" accept=".json,application/json" hidden><input id="backup-input" type="file" accept=".json,application/json" hidden>
+<script type="application/json" id="fields-data">__FIELDS__</script>
+<script type="application/json" id="safra-dados">__SAFRA__</script>
+<script id="schmidt-engine">__ENGINE__</script>
+<script>__APP__</script>
+</body></html>

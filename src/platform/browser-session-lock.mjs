@@ -1,3 +1,4 @@
+// @ts-nocheck — módulo da 2.x sem anotações de tipo; coberto por audit/session-lock-browser.mjs.
 // Clientes desta versão mantêm presença compartilhada durante a vida da página.
 // Uma operação destrutiva exige presença exclusiva; não usa prazo/lease renovável.
 export function createSchmidtSessionLock(locks) {

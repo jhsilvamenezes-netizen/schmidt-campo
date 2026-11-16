@@ -38,6 +38,11 @@ jobs:
       - name: Contratos de preservação e segurança
         working-directory: audit
         run: npm test
+      - name: 3.0 conferida e 2.5 montada na raiz para os testes da tela antiga (só no CI)
+        run: |
+          node scripts/build-3.mjs --check
+          node scripts/build-preserved.mjs --check
+          node scripts/build-preserved.mjs --root
       - name: Validação isolada da proposta de parâmetros
         working-directory: audit
         run: npm run test:parameters
