@@ -32,8 +32,8 @@ function registerWorker(window, toast) {
   sw.addEventListener('controllerchange', () => { if (had) toast('Nova versão instalada.', { label: 'Recarregar', run: () => window.location.reload() }); });
 }
 
-/** @param {{document:any, window:any, fields:any, appVersion:string, safra?:any, session:any}} opts */
-function runApp({ document, window, fields, appVersion, safra = null, session }) {
+/** @param {{document:any, window:any, fields:any, appVersion:string, safra?:any, recs?:any, session:any}} opts */
+function runApp({ document, window, fields, appVersion, safra = null, recs = null, session }) {
   const $ = s => document.querySelector(s);
   let blockedShown = false;
   // C2: sem armazenamento (modo privado restrito) o app abre igual, só não guarda depois de fechar.
@@ -45,6 +45,8 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
   const keys = Object.keys(fields).sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true }));
   const ui = { view: 'mapa', key: fields[store.get().fieldKey] ? store.get().fieldKey : keys[0] };
   const recCache = new Map();
+  // U05: recomendações da regra padrão já vêm calculadas no arquivo (mesmo motor; conferidas no teste)
+  if (recs?.motor === P.ENGINE_LABEL) for (const [k, r] of Object.entries(recs.recs || {})) if (fields[k]) recCache.set(`${k}|{}|${recs.pessoas}|false`, r);
   let toastTimer = 0, versionTimer = 0;
   /** @type {any} */ let toastAction = null;
   /** @type {string|null} */ let warnedInvalid = null;

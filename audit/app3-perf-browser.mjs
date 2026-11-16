@@ -1,0 +1,40 @@
+// 3.1 (U05) · celular lento (CPU 6×): trocar de lote e de aba sem espera longa; "Todos os lotes" sem travar a tela
+// (nenhuma tarefa longa > 200 ms enquanto monta); 10 toques seguidos sem erro. Limites folgados para o CI.
+import { chromium } from 'playwright';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { createServer } from 'node:http';
+import { fileURLToPath } from 'node:url';
+import { build3 } from '../scripts/build-3.mjs';
+
+await build3();
+const dir = fileURLToPath(new URL('../build/3/', import.meta.url));
+const server = createServer(async (q, r) => { try { const f = q.url === '/' ? 'index.html' : q.url.slice(1); r.setHeader('Content-Type', f.endsWith('.html') ? 'text/html' : f.endsWith('.js') ? 'text/javascript' : 'application/octet-stream'); r.end(await readFile(dir + f)); } catch { r.statusCode = 404; r.end(); } });
+await new Promise(r => server.listen(0, '127.0.0.1', r));
+const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+try {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' }), p = await ctx.newPage(), errors = [];
+  p.on('pageerror', e => errors.push(e.message));
+  await p.goto(`http://127.0.0.1:${server.address().port}/`); await p.waitForSelector('[data-map="full"] .pt');
+  const cdp = await ctx.newCDPSession(p); await cdp.send('Emulation.setCPUThrottlingRate', { rate: 6 });
+  const timed = sel => p.evaluate(async s => { const t0 = performance.now(); document.querySelector(s).click(); await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0))); return Math.round(performance.now() - t0); }, sel);
+  const lote = [];
+  for (const k of ['Bananal|BD3', 'Bananal|BC2', 'Rio de Janeiro|RB5', 'Bananal|BD5']) { await p.click('button.lot'); await p.waitForSelector(`[data-lot="${k}"]`); lote.push(await timed(`[data-lot="${k}"]`)); }
+  const aba = [];
+  for (const t of ['plano', 'enviar', 'mapa', 'plano', 'mapa']) aba.push(await timed(`[data-tab="${t}"]`));
+  // "Todos os lotes": maior tarefa longa enquanto monta
+  await p.evaluate(() => { window.__long = 0; new PerformanceObserver(l => { for (const e of l.getEntries()) window.__long = Math.max(window.__long, e.duration); }).observe({ type: 'longtask' }); });
+  await p.click('[data-open="menu"]'); const t0 = Date.now(); await p.click('.sheet [data-open="todos"]');
+  await p.waitForSelector('.lotrow', { timeout: 60000 }); const todos = Date.now() - t0, maiorTravada = Math.round(await p.evaluate(() => window.__long));
+  await p.keyboard.press('Escape');
+  // 10 toques seguidos (abas e lote) sem erro e sem tela de recuperação
+  for (let i = 0; i < 10; i++) await p.click(`[data-tab="${['mapa', 'plano', 'enviar', 'monitorar'][i % 4]}"]`);
+  await p.waitForSelector('[data-tab="plano"][aria-current="page"]');
+  assert.equal(await p.locator('[data-act="reset-lot"]').count(), 0);
+  console.log(JSON.stringify({ loteMs: lote, abaMs: aba, todosMs: todos, maiorTravadaMs: maiorTravada }));
+  assert.ok(Math.max(...lote) < 400, `trocar de lote: ${lote} ms`);
+  assert.ok(Math.max(...aba) < 300, `trocar de aba: ${aba} ms`);
+  assert.ok(maiorTravada < 250, `"Todos os lotes" travou ${maiorTravada} ms`);
+  assert.deepStrictEqual(errors, []);
+  console.log('desempenho no celular lento: lote, aba e "Todos os lotes" sem travar');
+} finally { await browser.close(); server.close(); }

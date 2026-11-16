@@ -43,7 +43,7 @@ jobs:
           npm --prefix audit test
           node scripts/build-3.mjs --check
           node scripts/build-preserved.mjs --check
-          (cd audit && node app3-browser.mjs && node app3-robust-browser.mjs && node app3-map-measures-browser.mjs && node migration-browser.mjs)
+          (cd audit && node app3-browser.mjs && node app3-robust-browser.mjs && node app3-map-measures-browser.mjs && node app3-perf-browser.mjs && node migration-browser.mjs)
           # 3.0 conferida acima; a partir daqui a raiz recebe a 2.5 (só no CI) para os testes da tela antiga.
           node scripts/build-preserved.mjs --root
           node scripts/build-block-candidate.mjs

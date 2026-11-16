@@ -109,3 +109,11 @@ test('Monitorar: estados da guia nos 51 lotes (sem GPS, chegada, a caminho, GPS 
   }
   assert.ok(n >= 40, `lotes testados: ${n}`);
 });
+
+test('U05 · recomendações embutidas no arquivo = motor da tela, nos 51 lotes (5 pessoas, sem limitar à equipe)', async () => {
+  const { recsData, RECS_PEOPLE } = await import('../scripts/build-3.mjs');
+  const data = JSON.parse(await recsData(fields));
+  assert.equal(data.motor, P.ENGINE_LABEL);
+  assert.deepStrictEqual(Object.keys(data.recs).sort(), keys);
+  for (const k of keys) assert.deepStrictEqual(data.recs[k], JSON.parse(JSON.stringify(P.recommend(fields[k], {}, RECS_PEOPLE, false))), k);
+});
