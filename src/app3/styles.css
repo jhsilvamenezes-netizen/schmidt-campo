@@ -13,7 +13,7 @@ button{background:none;border:0;cursor:pointer;padding:0}
 .skip{position:absolute;left:-9999px}.skip:focus{left:8px;top:8px;z-index:9;background:var(--sf);padding:8px}
 header{height:56px;flex:none;display:flex;align-items:center;gap:6px;padding:0 8px 0 12px;background:var(--sf);border-bottom:1px solid var(--ln)}
 .logo{display:flex;align-items:center;gap:6px;font:700 14px system-ui;letter-spacing:.08em;color:var(--br)}
-.logo svg{width:24px;height:24px}
+.logo svg{width:32px;height:32px;flex:none}
 .lot{margin:0 auto;display:flex;align-items:baseline;gap:6px;padding:8px 12px;border-radius:12px;background:var(--br2);font:600 16px system-ui;max-width:52vw;overflow:hidden;white-space:nowrap}
 .lot small{font:400 14px system-ui;color:var(--mu);overflow:hidden;text-overflow:ellipsis}
 .ib{width:44px;height:44px;border-radius:12px;display:grid;place-items:center}
