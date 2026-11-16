@@ -167,12 +167,46 @@ Situação: **Falta** = não existe na 3.0 · **Parcial** = existe com menos rec
 | Regressão de layout | 2 |
 | Fora do escopo (coleta) | 1 |
 
-## 7. Entregas (reordenadas: primeiro o que regrediu em relação à 2.5)
+## 7. Auditoria profunda (16/11): código, visual, estrutura, robustez
+
+### 7.1 Críticos (corrigir antes de tudo)
+| # | Achado | Prova | Correção |
+|---|---|---|---|
+| C1 | **App não abre** (tela em branco) se um lote tiver plano salvo com valor fora da faixa: estado antigo, trajeto importado da 2.5 ou arquivo de plano antigo | Testado: `trackSpacingM: 5` no estado → erro e nada na tela | Validar ao abrir; lote com plano inválido abre com o recomendado e aviso "plano antigo ajustado", sem apagar o original |
+| C2 | Navegador sem armazenamento local (modo privado restrito) → app não abre | Testado | Abrir só para consulta, com aviso |
+| C3 | **Armazenamento cheio: não grava, mas mostra "Desfazer" como se tivesse gravado** | Testado | Avisar "não foi possível gravar" e manter o plano anterior |
+| C4 | Plano da 2.5 com trajeto importado (`trackMode: importado`) quebra a 3.0 (mesma causa de C1) | Lido no código | C1 + P1/F4 |
+
+### 7.2 Código e estrutura
+| # | Achado | Correção |
+|---|---|---|
+| K1 | Tela inteira numa função só de 343 linhas (estado, desenho, eventos, GPS, cópia, bloco) | Separar em módulos por tela, com estado central e eventos |
+| K2 | Cada mudança redesenha a tela inteira (perde foco, rolagem e o que está digitado) | Atualizar só o que mudou |
+| K3 | 12 trechos sem tipo (`any`) e 17 linhas acima de 200 colunas | Tipos estritos; linhas curtas |
+| K4 | 7 erros engolidos sem aviso (`catch` vazio) | Registrar e avisar quando afeta a pessoa |
+| K5 | Lembranças fora da cópia de segurança (lotes recentes, bloco ativo, última cópia) | Incluir no estado salvo |
+| K6 | Arquivo sem compactação (464 KB; 144 KB pela rede) com comentários do código | Compactar no build (meta < 200 KB; < 70 KB pela rede) |
+| K7 | Testes da tela só no navegador; a lógica da tela não tem teste de unidade | Testes por módulo e de comportamento |
+| K8 | Publicada sem conferir paridade com a 2.5 (a lista existia em `CONTRATO_3_0.md`, mas não foi verificada) | **Teste de paridade**: cada função da 2.5 com equivalente comprovado; sem isso o CI não passa |
+
+### 7.3 Visual e sistema de design
+| # | Achado | Medido | Correção |
+|---|---|---|---|
+| D1 | Alvos de toque menores que 44 px | 10 (GPX, KML, CSV, GeoJSON, Inverter, Lote/Bloco, selo, botão do lote, Roteiro) | Mínimo 44 px |
+| D2 | Números dos pontos em 9–10 px (a 2.5 tinha regra aprovada de 12 px ou mais no mapa) | todas as telas | ≥ 12 px |
+| D3 | 8 tamanhos de letra (combinado: 5), 8 raios, 7 espaçamentos | medido | Escala única (tokens) conferida no teste |
+| D4 | Botão "Ver plano" repete a aba Plano | — | Retirar; painel deslizante (V3) |
+| D5 | Selo "Sem alertas" parece botão sem ser (23 px de altura) | — | Selo informativo; toque no cartão do lote |
+| D6 | Notebook: coluna de 480 px no centro, mapa em 22% da tela | 1280 px | L1: painel lateral + mapa grande |
+| D7 | Tablet: linhas esticadas, números longe dos rótulos, mapa pequeno | 768 px | Grade em 2 colunas; mapa ≥ 50% |
+| D8 | Mapa: tiro de 83 m com 1 ponto no canto do BA2 visível como erro | foto | A3 + V4 |
+
+## 8. Entregas (reordenadas: primeiro o que regrediu em relação à 2.5)
 
 | Etapa | Conteúdo | Prova |
 |---|---|---|
-| 3.1-a | N1–N14 (regressões e desempenho) | Celular lento: trocar lote e aba < 0,2 s; nenhum travamento > 0,1 s na guia; testes de navegador |
+| 3.1-a | **C1–C4 primeiro**, depois N1–N14, K5 e K8 (teste de paridade) | Celular lento: trocar lote e aba < 0,2 s; nenhum travamento > 0,1 s na guia; testes de navegador |
 | 3.1-b | A1–A6 (motor assertivo) | Critérios da seção 2 nos 51 lotes |
-| 3.1-c | V1–V10 (visual novo, após aprovação da prévia) | 360/390/412 px; claro, escuro e Sol; 0 colisão de rótulo; contraste AA |
+| 3.1-c | V1–V10, D1–D8 e K1–K4, K6–K7 (visual e estrutura, após aprovação da prévia) | 360/390/412 px; claro, escuro e Sol; 0 colisão de rótulo; contraste AA |
 | 3.1-d | F1–F9 e toda a seção 6 (M, P, T, A, G, L) | Teste por item; nenhuma função da 2.5 sem equivalente (fora G9) |
 | 3.1 | Publicação | CI verde; hash conferido no link |
