@@ -124,7 +124,7 @@ nav button.on{color:var(--br)}nav button.on .ic{background:var(--br2);border-rad
 .leg{position:absolute;left:10px;top:10px;max-width:min(66%,242px);background:var(--sf);box-shadow:var(--sh);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--mu);pointer-events:none}
 .leg b{color:var(--ink);font-weight:700}.leg>b{font:600 14px system-ui}
 .leg span{display:flex;align-items:center;gap:6px;white-space:nowrap}
-.sw{flex:none;display:inline-block;width:14px;height:0;border-top:3px dashed var(--tr)}.sw.p{border-top:3px solid var(--pt)}.sw.t.sel{border-top-style:solid}.sw.b{border-top:2px dashed var(--ink)}.bal span{display:flex;align-items:center;gap:6px}.sw.a{height:10px;border:1px solid var(--fl);border-radius:2px;background:var(--fd)}
+.sw{flex:none;display:inline-block;width:14px;height:0;border-top:3px dashed var(--tr)}.sw.p{border-top:3px solid var(--pt)}.sw.t.sel{border-top-style:solid}.sw.b{border-top:2px dashed var(--ink)}.bal span{display:flex;align-items:center;gap:6px;white-space:nowrap}[data-map="full"] .bal{max-width:calc(100% - 50px)}.sw.a{height:10px;border:1px solid var(--fl);border-radius:2px;background:var(--fd)}
 .mtools{position:absolute;right:10px;bottom:10px;display:flex;gap:6px}
 .mt{min-width:44px;height:44px;padding:0 12px;border-radius:12px;background:var(--sf);box-shadow:var(--sh);font:600 14px system-ui;color:var(--ink)}
 .mt[aria-pressed="true"]{background:var(--br);color:var(--on-br)}

@@ -144,7 +144,7 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
       const areas = full ? P.pointAreas(cur.field, cur.sc) : null, info = full && selectedPt ? P.pointInfo(cur.field, cur.sc, selectedPt) : null;
       // mapa principal: legenda no alto à esquerda e botões das camadas embaixo à direita ficam fora do desenho
       const opts = full ? { pad: { t: 112, r: 30, b: 64, l: 40 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
-        reserve: [[0, 0, info ? Math.min(W * 0.72, 280) : Math.min(W * 0.66, 252), info ? 150 : 104], [W - 214, H - 60, W, H]] } : { pad: 22 };
+        reserve: [[0, 0, info ? Math.min(W - 40, 330) : Math.min(W * 0.66, 252), 104], [W - 214, H - 60, W, H]] } : { pad: 22 };
       el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view, selected: guide ? (mon.active ? monitorData().target : null) : selectedPt, pos: guide ? mon.pos : null, others: cur.others || [], ...opts })
         + (full ? (info ? balloon() : V.legend(cur.field, P.figures(cur.sc), areas)) + V.mapTools(layers, view.k > 1.01)
           : (view.k > 1.01 ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : '') + balloon());
@@ -176,7 +176,7 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
     const ha = P.pointAreas(cur.field, cur.sc)?.cells.find(c => c.id === selectedPt);
     const across = (i.across || []).map(a => `${esc(a.trackId)} a ${num(a.m)} m`).join(' · ');
     // cada linha do balão com a marca da linha desenhada no mapa
-    return `<div class="bal" role="status"><b>Ponto ${num(i.number)} · ${esc(i.trackId)}</b>${parts ? `<span><i class="sw p" aria-hidden="true"></i>${parts} (andando)</span>` : ''}${across ? `<span><i class="sw t sel" aria-hidden="true"></i>tiro vizinho: ${across}</span>` : ''}<span><i class="sw b" aria-hidden="true"></i>borda a ${num(i.edgeM)} m</span>${ha ? `<span><i class="sw a" aria-hidden="true"></i>área do ponto ${num(ha.ha, 1)} ha</span>` : ''}</div>`;
+    return `<div class="bal" role="status"><b>Ponto ${num(i.number)} · ${esc(i.trackId)}</b>${parts ? `<span><i class="sw p" aria-hidden="true"></i>${parts} (andando)</span>` : ''}${across ? `<span><i class="sw t sel" aria-hidden="true"></i>vizinhos: ${across}</span>` : ''}<span><i class="sw b" aria-hidden="true"></i>borda a ${num(i.edgeM)} m${ha ? ` · área ${num(ha.ha, 1)} ha` : ''}</span></div>`;
   }
   function monitorData() {
     const sc = cur.sc, tasks = new Map();

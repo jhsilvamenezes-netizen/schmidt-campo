@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-fyqcH6jmrPGXIkxbnM7BFoKC9UENe6o2iI9b0hz4+3U='; style-src 'sha256-29iOLbyaa3Hb7lkNFx3wO/wZtYF6sfQe5Vc1coYHbGw='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-LCGu5PzIJF3W/nG3zBVHyhwaWF4GAdXfZQ7Htb/hMYw='; style-src 'sha256-O9aUlUGfTXhJ3gUSVTbUM2O/ezyg0UBy2fftMW1H17Y='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#17594a" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c1512" media="(prefers-color-scheme: dark)">
 <title>SCHMIDT Campo</title>
 <link rel="icon" href="icone.svg"><link rel="manifest" href="manifest.webmanifest">
@@ -131,7 +131,7 @@ nav button.on{color:var(--br)}nav button.on .ic{background:var(--br2);border-rad
 .leg{position:absolute;left:10px;top:10px;max-width:min(66%,242px);background:var(--sf);box-shadow:var(--sh);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--mu);pointer-events:none}
 .leg b{color:var(--ink);font-weight:700}.leg>b{font:600 14px system-ui}
 .leg span{display:flex;align-items:center;gap:6px;white-space:nowrap}
-.sw{flex:none;display:inline-block;width:14px;height:0;border-top:3px dashed var(--tr)}.sw.p{border-top:3px solid var(--pt)}.sw.t.sel{border-top-style:solid}.sw.b{border-top:2px dashed var(--ink)}.bal span{display:flex;align-items:center;gap:6px}.sw.a{height:10px;border:1px solid var(--fl);border-radius:2px;background:var(--fd)}
+.sw{flex:none;display:inline-block;width:14px;height:0;border-top:3px dashed var(--tr)}.sw.p{border-top:3px solid var(--pt)}.sw.t.sel{border-top-style:solid}.sw.b{border-top:2px dashed var(--ink)}.bal span{display:flex;align-items:center;gap:6px;white-space:nowrap}[data-map="full"] .bal{max-width:calc(100% - 50px)}.sw.a{height:10px;border:1px solid var(--fl);border-radius:2px;background:var(--fd)}
 .mtools{position:absolute;right:10px;bottom:10px;display:flex;gap:6px}
 .mt{min-width:44px;height:44px;padding:0 12px;border-radius:12px;background:var(--sf);box-shadow:var(--sh);font:600 14px system-ui;color:var(--ink)}
 .mt[aria-pressed="true"]{background:var(--br);color:var(--on-br)}
@@ -3736,7 +3736,8 @@ function pointInfo(field, sc, id) {
   if (!p) return null;
   const same = sc.samples.filter(s => s.unitId === p.unitId && !s.offTrack && Number.isFinite(s.s)).sort((a, b) => a.s - b.s), i = same.indexOf(p);
   const prev = i > 0 ? p.s - same[i - 1].s : null, next = i >= 0 && i < same.length - 1 ? same[i + 1].s - p.s : null;
-  let edge = Infinity, edgeAt = null;
+  let edge = Infinity;
+  /** @type {number[]|null} */ let edgeAt = null;
   for (const pg of field.geom) for (const ring of pg) for (let j = 1; j < ring.length; j++) {
     const [ax, ay] = ring[j - 1], [bx, by] = ring[j], ex = bx - ax, ey = by - ay, L2 = ex * ex + ey * ey;
     const t = L2 ? Math.max(0, Math.min(1, ((p.x - ax) * ex + (p.y - ay) * ey) / L2)) : 0, d = Math.hypot(p.x - ax - t * ex, p.y - ay - t * ey);
@@ -3802,7 +3803,7 @@ function space(w, h) {
     place(cands, text, cw, hgt = 15) {
       const wd = text.length * cw;
       for (const [x, y, anc] of cands) {
-        const x0 = anc === 'start' ? x : anc === 'end' ? x - wd : x - wd / 2, bx = [x0, y - hgt + 3, x0 + wd, y + 3];
+        const x0 = anc === 'start' ? x : anc === 'end' ? x - wd : x - wd / 2, bx = /** @type {[number, number, number, number]} */ ([x0, y - hgt + 3, x0 + wd, y + 3]);
         if (freeBox(bx)) { boxes.push(bx); return { x, y, anc, bx }; }
       }
       return null;
@@ -3814,20 +3815,20 @@ function space(w, h) {
 
 /** Comprimentos acumulados e ponto a uma distância ao longo da linha. */
 function along(line) {
-  const cum = [0];
+  /** @type {number[]} */ const cum = [0];
   for (let i = 1; i < line.length; i++) cum.push(cum[i - 1] + Math.hypot(line[i][0] - line[i - 1][0], line[i][1] - line[i - 1][1]));
   const at = d => {
-    const t = Math.max(0, Math.min(cum.at(-1), d));
+    const t = Math.max(0, Math.min(cum[cum.length - 1], d));
     let i = 1;
     while (i < cum.length - 1 && cum[i] < t) i++;
     const seg = cum[i] - cum[i - 1] || 1, u = (t - cum[i - 1]) / seg;
     return [line[i - 1][0] + u * (line[i][0] - line[i - 1][0]), line[i - 1][1] + u * (line[i][1] - line[i - 1][1])];
   };
-  return { len: cum.at(-1), at };
+  return { len: cum[cum.length - 1], at };
 }
 /** Ponto mais perto de p sobre a linha (metros). */
 function nearestOn(line, [px, py]) {
-  let best = null;
+  /** @type {{q:number[], d:number}|null} */ let best = null;
   for (let i = 1; i < line.length; i++) {
     const [ax, ay] = line[i - 1], [bx, by] = line[i], ex = bx - ax, ey = by - ay, L2 = ex * ex + ey * ey;
     const t = L2 ? Math.max(0, Math.min(1, ((px - ax) * ex + (py - ay) * ey) / L2)) : 0, q = [ax + t * ex, ay + t * ey], d = Math.hypot(px - q[0], py - q[1]);
@@ -3942,8 +3943,8 @@ function medidas(sc, XY, sp, center, r0) {
       const g = along(u.line);
       for (const fr of [0.9, 0.1, 0.94, 0.06, 0.8, 0.2, 0.7, 0.3, 0.6, 0.4, 0.5, 1, 0]) {
         const a = g.at(g.len * fr);
-        let q = null;
-        for (const v of ub) { const n = nearestOn(v.line, a); if (n && (!q || n.d < q.d)) q = n; }
+        /** @type {{q:number[], d:number}|null} */ let q = null;
+        for (const v of ub) { const n = nearestOn(v.line, /** @type {[number, number]} */ (a)); if (n && (!q || n.d < q.d)) q = n; }
         if (!q || Math.abs(q.d - dist) > Math.max(2, dist * 0.03)) continue;
         const pa = XY(...a), pb = XY(...q.q), L = Math.hypot(pb[0] - pa[0], pb[1] - pa[1]);
         if (L < 24) continue;
@@ -5425,7 +5426,7 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
       const areas = full ? P.pointAreas(cur.field, cur.sc) : null, info = full && selectedPt ? P.pointInfo(cur.field, cur.sc, selectedPt) : null;
       // mapa principal: legenda no alto à esquerda e botões das camadas embaixo à direita ficam fora do desenho
       const opts = full ? { pad: { t: 112, r: 30, b: 64, l: 40 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
-        reserve: [[0, 0, info ? Math.min(W * 0.72, 280) : Math.min(W * 0.66, 252), info ? 150 : 104], [W - 214, H - 60, W, H]] } : { pad: 22 };
+        reserve: [[0, 0, info ? Math.min(W - 40, 330) : Math.min(W * 0.66, 252), 104], [W - 214, H - 60, W, H]] } : { pad: 22 };
       el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view, selected: guide ? (mon.active ? monitorData().target : null) : selectedPt, pos: guide ? mon.pos : null, others: cur.others || [], ...opts })
         + (full ? (info ? balloon() : V.legend(cur.field, P.figures(cur.sc), areas)) + V.mapTools(layers, view.k > 1.01)
           : (view.k > 1.01 ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : '') + balloon());
@@ -5457,7 +5458,7 @@ function runApp({ document, window, fields, appVersion, safra = null, session })
     const ha = P.pointAreas(cur.field, cur.sc)?.cells.find(c => c.id === selectedPt);
     const across = (i.across || []).map(a => `${esc(a.trackId)} a ${num(a.m)} m`).join(' · ');
     // cada linha do balão com a marca da linha desenhada no mapa
-    return `<div class="bal" role="status"><b>Ponto ${num(i.number)} · ${esc(i.trackId)}</b>${parts ? `<span><i class="sw p" aria-hidden="true"></i>${parts} (andando)</span>` : ''}${across ? `<span><i class="sw t sel" aria-hidden="true"></i>tiro vizinho: ${across}</span>` : ''}<span><i class="sw b" aria-hidden="true"></i>borda a ${num(i.edgeM)} m</span>${ha ? `<span><i class="sw a" aria-hidden="true"></i>área do ponto ${num(ha.ha, 1)} ha</span>` : ''}</div>`;
+    return `<div class="bal" role="status"><b>Ponto ${num(i.number)} · ${esc(i.trackId)}</b>${parts ? `<span><i class="sw p" aria-hidden="true"></i>${parts} (andando)</span>` : ''}${across ? `<span><i class="sw t sel" aria-hidden="true"></i>vizinhos: ${across}</span>` : ''}<span><i class="sw b" aria-hidden="true"></i>borda a ${num(i.edgeM)} m${ha ? ` · área ${num(ha.ha, 1)} ha` : ''}</span></div>`;
   }
   function monitorData() {
     const sc = cur.sc, tasks = new Map();

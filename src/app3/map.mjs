@@ -21,7 +21,7 @@ function space(w, h) {
     place(cands, text, cw, hgt = 15) {
       const wd = text.length * cw;
       for (const [x, y, anc] of cands) {
-        const x0 = anc === 'start' ? x : anc === 'end' ? x - wd : x - wd / 2, bx = [x0, y - hgt + 3, x0 + wd, y + 3];
+        const x0 = anc === 'start' ? x : anc === 'end' ? x - wd : x - wd / 2, bx = /** @type {[number, number, number, number]} */ ([x0, y - hgt + 3, x0 + wd, y + 3]);
         if (freeBox(bx)) { boxes.push(bx); return { x, y, anc, bx }; }
       }
       return null;
@@ -33,20 +33,20 @@ function space(w, h) {
 
 /** Comprimentos acumulados e ponto a uma distância ao longo da linha. */
 function along(line) {
-  const cum = [0];
+  /** @type {number[]} */ const cum = [0];
   for (let i = 1; i < line.length; i++) cum.push(cum[i - 1] + Math.hypot(line[i][0] - line[i - 1][0], line[i][1] - line[i - 1][1]));
   const at = d => {
-    const t = Math.max(0, Math.min(cum.at(-1), d));
+    const t = Math.max(0, Math.min(cum[cum.length - 1], d));
     let i = 1;
     while (i < cum.length - 1 && cum[i] < t) i++;
     const seg = cum[i] - cum[i - 1] || 1, u = (t - cum[i - 1]) / seg;
     return [line[i - 1][0] + u * (line[i][0] - line[i - 1][0]), line[i - 1][1] + u * (line[i][1] - line[i - 1][1])];
   };
-  return { len: cum.at(-1), at };
+  return { len: cum[cum.length - 1], at };
 }
 /** Ponto mais perto de p sobre a linha (metros). */
 function nearestOn(line, [px, py]) {
-  let best = null;
+  /** @type {{q:number[], d:number}|null} */ let best = null;
   for (let i = 1; i < line.length; i++) {
     const [ax, ay] = line[i - 1], [bx, by] = line[i], ex = bx - ax, ey = by - ay, L2 = ex * ex + ey * ey;
     const t = L2 ? Math.max(0, Math.min(1, ((px - ax) * ex + (py - ay) * ey) / L2)) : 0, q = [ax + t * ex, ay + t * ey], d = Math.hypot(px - q[0], py - q[1]);
@@ -161,8 +161,8 @@ function medidas(sc, XY, sp, center, r0) {
       const g = along(u.line);
       for (const fr of [0.9, 0.1, 0.94, 0.06, 0.8, 0.2, 0.7, 0.3, 0.6, 0.4, 0.5, 1, 0]) {
         const a = g.at(g.len * fr);
-        let q = null;
-        for (const v of ub) { const n = nearestOn(v.line, a); if (n && (!q || n.d < q.d)) q = n; }
+        /** @type {{q:number[], d:number}|null} */ let q = null;
+        for (const v of ub) { const n = nearestOn(v.line, /** @type {[number, number]} */ (a)); if (n && (!q || n.d < q.d)) q = n; }
         if (!q || Math.abs(q.d - dist) > Math.max(2, dist * 0.03)) continue;
         const pa = XY(...a), pb = XY(...q.q), L = Math.hypot(pb[0] - pa[0], pb[1] - pa[1]);
         if (L < 24) continue;

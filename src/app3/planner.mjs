@@ -110,7 +110,8 @@ export function pointInfo(field, sc, id) {
   if (!p) return null;
   const same = sc.samples.filter(s => s.unitId === p.unitId && !s.offTrack && Number.isFinite(s.s)).sort((a, b) => a.s - b.s), i = same.indexOf(p);
   const prev = i > 0 ? p.s - same[i - 1].s : null, next = i >= 0 && i < same.length - 1 ? same[i + 1].s - p.s : null;
-  let edge = Infinity, edgeAt = null;
+  let edge = Infinity;
+  /** @type {number[]|null} */ let edgeAt = null;
   for (const pg of field.geom) for (const ring of pg) for (let j = 1; j < ring.length; j++) {
     const [ax, ay] = ring[j - 1], [bx, by] = ring[j], ex = bx - ax, ey = by - ay, L2 = ex * ex + ey * ey;
     const t = L2 ? Math.max(0, Math.min(1, ((p.x - ax) * ex + (p.y - ay) * ey) / L2)) : 0, d = Math.hypot(p.x - ax - t * ex, p.y - ay - t * ey);
