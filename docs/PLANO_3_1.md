@@ -210,11 +210,37 @@ Situação: **Falta** = não existe na 3.0 · **Parcial** = existe com menos rec
 | H4 | `scripts/build-3.mjs` com a lista de módulos escrita à mão | Muda junto com cada módulo novo | Ler as importações e montar a ordem sozinho |
 | H5 | Estilos (`styles.css`) mudam junto com tudo | Acoplado a 4 módulos | Tokens e componentes no sistema de design (D3); telas sem estilo próprio |
 
+### 7.5 Validação literal (16/11): cada promessa testada
+
+**Provado correto (não precisa de correção):**
+| Verificação | Resultado |
+|---|---|
+| Todo ponto dentro do lote e sobre o seu tiro; mínimo respeitado; numeração 1..n sem repetição (51 lotes) | ok |
+| Distância entre tiros em múltiplos exatos da barra de 36,48 m (51 lotes) | ok |
+| Equipe cobre cada tiro uma única vez (51 lotes) | ok |
+| Ordem de caminhada dos pontos em cada tiro (208 tiros, nos dois sentidos) | ok |
+| GPX, KML, GeoJSON e CSV: todos os pontos; coordenadas voltam para dentro do lote; colunas do CSV iguais | ok |
+| Guia no sentido invertido: chegada no 1º ponto (208 tiros) | ok |
+| Arquivo de plano da 3.0 abre na 2.5 | ok |
+| Cópia de segurança 3.0 → 2.5 e 2.5 → 3.0 | ok (as duas mostram o conteúdo antes de restaurar) |
+| 51 lotes × 4 abas sem erro no console | ok |
+
+**Falhas encontradas:**
+| # | Achado | Prova | Correção |
+|---|---|---|---|
+| C5 | **Digitar 1 ha por ponto num lote de 603 ha (BC2) trava o app de vez:** passa do teto de 600 pontos, o plano fica gravado e ao reabrir a tela fica em branco | Testado pela tela, uso comum | Recusar antes de gravar, com aviso "máximo de 600 pontos"; C1 protege a abertura |
+| C6 | Restaurar uma versão anterior aplica os valores sem conferir (mesmo risco do C1) | Lido no código (`main.mjs:329`) | Conferir pelo catálogo antes de usar |
+| N17 | "20,5" ha é recusado em silêncio: o valor volta sem aviso | Testado | Aceitar decimal ou avisar a faixa válida |
+| N18 | 10 toques seguidos no "+" travam 2,4 s no celular lento (cada toque recalcula tudo) | Testado (6× mais lento) | Agrupar toques e calcular uma vez só |
+| N19 | GPS e tela acesa continuam ligados ao sair da aba Monitorar | Lido no código (`main.mjs:308`) | Pausar ao sair; retomar ao voltar |
+| N20 | Teclado: o foco sai da janela aberta (9 de 15 Tabs) e não volta ao botão ao fechar | Testado | Prender o foco na janela; devolver ao fechar |
+| N21 | Nome da fazenda cortado no topo em 360 px ("Rio de Janeiro") | Testado | V2 (barra com nome em duas linhas) |
+
 ## 8. Entregas (reordenadas: primeiro o que regrediu em relação à 2.5)
 
 | Etapa | Conteúdo | Prova |
 |---|---|---|
-| 3.1-a | **C1–C4 primeiro**, depois N1–N14, K5 e K8 (teste de paridade) | Celular lento: trocar lote e aba < 0,2 s; nenhum travamento > 0,1 s na guia; testes de navegador |
+| 3.1-a | **C1–C6 primeiro**, depois N1–N21, K5 e K8 (teste de paridade) | Celular lento: trocar lote e aba < 0,2 s; nenhum travamento > 0,1 s na guia; testes de navegador |
 | 3.1-b | A1–A6 (motor assertivo) | Critérios da seção 2 nos 51 lotes |
 | 3.1-c | V1–V10, D1–D8, K1–K4, K6–K7 e H1–H5 (visual e estrutura, após aprovação da prévia) | 360/390/412 px; claro, escuro e Sol; 0 colisão de rótulo; contraste AA |
 | 3.1-d | F1–F9 e toda a seção 6 (M, P, T, A, G, L) | Teste por item; nenhuma função da 2.5 sem equivalente (fora G9) |
