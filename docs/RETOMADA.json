@@ -1,9 +1,9 @@
 {
   "schema": "schmidt.handoff.v1",
-  "task": "3.0.0 publicada",
+  "task": "Plano 3.1 e fila U00–U20 prontos para execução dividida",
   "owner": "Claude",
-  "status": "pronto_para_revisao",
-  "nextAction": "Proprietário conferir a 3.0 no celular; ajustes conforme o uso",
+  "status": "pronto_para_iniciar",
+  "nextAction": "U01 críticos (Claude) e U00/U03 (ChatGPT), conforme docs/FILA_3_1.md",
   "baseMain": "118e6d63e957f0a34737463b18b4713b7f6edd2a",
   "publishedVersion": "2.0.1",
   "planPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/13",
@@ -54,13 +54,14 @@
     "15/11: APK só quando o proprietário pedir (não propor nem citar como próximo passo); foco em correções e melhorias do link"
   ],
   "snapshot": {
-    "at": "2026-11-16T00:12:45.149Z",
+    "at": "2026-11-16T09:56:29.642Z",
     "branch": "claude/motor-evolucao",
-    "codeCommit": "07c46bbbd42ccafacebf3a237f4dc61a8218a5e1",
+    "codeCommit": "1509b3e7c2320be5bcd589e079f2aa5cb8e8d0c3",
     "changedTrackedFiles": [
-      "docs/PLANO_3_0_EXECUCAO.md"
+      "docs/COORDENACAO.md",
+      "docs/PLANO_3_1.md"
     ],
-    "untrackedCount": 0
+    "untrackedCount": 4
   },
   "deliveryPR": "https://github.com/jhsilvamenezes-netizen/schmidt-campo/pull/19",
   "developmentBranch": "codex/reescrita-motor-etapa-1"

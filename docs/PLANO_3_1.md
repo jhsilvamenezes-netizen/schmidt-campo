@@ -1,5 +1,10 @@
 # Plano 3.1 · tiros e pontos mais assertivos, visual profissional, tudo da 2.5 de volta
 
+> **Uso: 99% celular.** Tablet e notebook só para configurar e ver melhor (prioridade baixa: L1, L2, D6, D7).
+> Execução e divisão entre Claude e ChatGPT: [FILA_3_1.md](FILA_3_1.md). Evidências 2.5 × 3.0: [evidencias-3-1/](evidencias-3-1/).
+> Pedido do proprietário: as **medidas no mapa entre tiros e entre pontos**, que a 2.5 mostrava claramente, voltam
+> como prioridade (unidade U03).
+
 Pedido do proprietário (16/11/2026): corrigir e trazer tudo o que já existia, bem superior; design menos amador;
 mais assertividade em tiros e pontos; nada técnico na tela, só o resultado.
 
