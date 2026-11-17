@@ -1,41 +1,6 @@
 <!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#11251f">
-  <meta name="description" content="Caderno de campo digital: aplicações por fazenda, talhão e ordem de serviço.">
-  <meta name="robots" content="noindex,nofollow">
-  <title>SCHMIDT · Caderno de Campo</title>
-  <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="icon" href="./icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css">
-  <script src="./parser.js" defer></script>
-  <script src="./app.js" defer></script>
-</head>
-<body>
-  <header class="topbar">
-    <div class="shell topbar-inner">
-      <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
-      <div class="brand-copy"><strong>SCHMIDT <span>CAMPO</span></strong><small>CADERNO DE CAMPO DIGITAL</small></div>
-      <div class="topbar-meta"><span class="live-dot"></span><span id="dataStatus">Neste aparelho</span></div>
-    </div>
-  </header>
-  <main class="shell main-shell">
-    <section class="page-title">
-      <div><div class="eyebrow">SAFRA <span id="seasonTag">2026/27</span></div><h1 id="pageTitle">Visão geral</h1><p id="pageDesc">Acompanhe as aplicações por fazenda e talhão.</p></div>
-      <button class="btn btn-primary desktop-add" data-action="new">+ Lançar aplicação</button>
-    </section>
-    <div id="notify" class="toast" role="status" aria-live="polite" hidden></div>
-    <div id="content" aria-live="polite"></div>
-  </main>
-  <nav class="bottom-nav" aria-label="Navegação principal">
-    <button data-tab="painel" class="nav-active"><span class="nav-ico">▦</span><span>Painel</span></button>
-    <button data-tab="fazendas"><span class="nav-ico">▤</span><span>Fazendas</span></button>
-    <button data-tab="lancar" class="nav-add"><span class="nav-ico">＋</span><span>Lançar</span></button>
-    <button data-tab="historico"><span class="nav-ico">◷</span><span>Histórico</span></button>
-    <button data-tab="dados"><span class="nav-ico">☷</span><span>Dados</span></button>
-  </nav>
-  <footer class="shell site-footer">Caderno de campo · Registro local com exportação de segurança · V1.0</footer>
-</body>
-</html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#142a25"><meta name="description" content="Caderno de campo independente para lançamentos, históricos e análises de aplicações agrícolas."><meta name="robots" content="noindex,nofollow"><title>Caderno de Campo | Gestão de Aplicações</title><link rel="icon" href="./icon.svg" type="image/svg+xml"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./styles.css"><script src="./parser.js" defer></script><script src="./core.js" defer></script><script src="./store.js" defer></script><script src="./app.js" defer></script></head>
+<body><a class="skip" href="#main">Pular para o conteúdo</a><header class="topbar"><div class="shell topbar-row"><div class="identity"><div class="brand-symbol" aria-hidden="true"><span></span><span></span><span></span></div><div><div class="brand-name">CADERNO <span>CAMPO</span></div><div class="brand-sub">GESTÃO DE APLICAÇÕES · 2026/27</div></div></div><div class="top-right"><span class="separation">Projeto independente</span><span id="storageState" class="storage-pill"><i></i> Inicializando</span></div></div></header>
+<div class="desktop-shell shell"><aside class="sidebar" aria-label="Navegação lateral"><div class="side-section">ESPAÇO DE TRABALHO</div><nav id="desktopNav" class="desktop-nav"><button data-nav="painel" class="selected"><span class="nav-icon">▦</span>Painel</button><button data-nav="lancar"><span class="nav-icon">＋</span>Lançar aplicação</button><button data-nav="historico"><span class="nav-icon">▤</span>Histórico</button><button data-nav="talhoes"><span class="nav-icon">◫</span>Talhões</button><button data-nav="analises"><span class="nav-icon">▥</span>Análises</button><button data-nav="dados"><span class="nav-icon">☷</span>Dados e backup</button></nav><div class="side-foot"><div class="side-rule"></div><span>REGISTRO DE CAMPO</span><small>Seu histórico fica neste dispositivo. Faça cópias de segurança.</small></div></aside>
+<main id="main" class="main"><div class="page-head"><div><div class="eyebrow" id="eyebrow">SAFRA 2026/27 <span class="eyebrow-dot"></span> RIO DE JANEIRO + BANANAL</div><h1 id="heading">Visão geral</h1><p id="subtitle">Registros, histórico e leitura técnica em um só lugar.</p></div><button class="btn btn-primary head-action" data-action="new"><span>＋</span> Nova aplicação</button></div><div id="alert" class="notice" role="status" aria-live="polite" hidden></div><div id="view" class="view"></div><footer class="page-foot">Caderno Campo · Registro independente · Os indicadores não substituem a conferência técnica da OS.</footer></main></div>
+<nav class="mobile-nav" aria-label="Navegação principal"><button data-nav="painel" class="selected"><span>▦</span>Painel</button><button data-nav="historico"><span>▤</span>Histórico</button><button data-nav="lancar" class="launch-nav"><span>＋</span>Lançar</button><button data-nav="talhoes"><span>◫</span>Talhões</button><button data-nav="analises"><span>▥</span>Análises</button><button data-nav="dados"><span>☷</span>Dados</button></nav></body></html>

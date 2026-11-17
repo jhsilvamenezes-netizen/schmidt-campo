@@ -98,7 +98,7 @@
     }
     return name.trim();
   };
-  function parse(text, catalog=[]) {
+  function parse(text, catalog=[], season='2026/27') {
     if(typeof text!=='string' || !text.trim()) return {error:'Cole um relatório de aplicação.'};
     const raw = text.trim();
     const firstReport = raw.match(/RELAT[OÓ]RIO DE APLICA[CÇ][AÃ]O/gi) || [];
@@ -109,8 +109,14 @@
     const lots = parseLots(lotText);
     const inferred = [...new Set(lots.map(lotFarm).filter(Boolean))];
     const farm=inferred.length===1?inferred[0]:'';
-    const start=isoDate(getField(raw,'Data\\s+de\\s+In[ií]cio'));
-    const end=isoDate(getField(raw,'Data\\s+de\\s+T[eé]rmino'));
+    const startInput=getField(raw,'Data\\s+de\\s+In[ií]cio');
+    const endInput=getField(raw,'Data\\s+de\\s+T[eé]rmino');
+    const years=String(season||'2026/27').match(/(\d{4})\D+(\d{2,4})/);
+    const first=years?+years[1]:2026;
+    const second=years?(+years[2]<100?2000+(+years[2]):+years[2]):first+1;
+    const yearFor=s=>{const m=String(s||'').match(/\d{1,2}\s*\/\s*(\d{1,2})/);return m&&+m[1]<=6?second:first;};
+    const start=isoDate(startInput,String(yearFor(startInput)));
+    const end=isoDate(endInput,String(yearFor(endInput)));
     const type=/APLICA[CÇ][AÃ]O\s+A[EÉ]REA/i.test(raw)?'Aérea':'Terrestre';
     const used=section(raw,/PRODUTOS\s+USADOS\s+NA\s+OS/,/SOBRA\s+DE\s+PRODUTOS|RELATORIO DE APLICACAO/);
     const left=section(raw,/SOBRA\s+DE\s+PRODUTOS\s+DA\s+OS/,/RELATORIO DE APLICACAO/);

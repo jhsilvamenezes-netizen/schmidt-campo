@@ -12,12 +12,13 @@ const lotTests={
  'RA 9 / RB 9':['RA9','RB9']
 };
 for (const [x,expected] of Object.entries(lotTests)) assert.deepEqual(parser.parseLots(x),expected,x);
-const terrestrial=`*RELATÓRIO DE APLICAÇÃO*\n*OS:34*\n*LOTE:BD12345*\n*Data de Inicio:30/10/2026*\n*Data de Termino: 03/11/2026*\n*PRODUTOS USADOS NA OS*\nZapp-------3460KG\nGrasidim full---80L\nAureo------340L\n*SOBRA DE PRODUTOS DA OS*\nZapp-------00\nGrasidim full---00\nAureo------00`;
+const terrestrial=`*RELATÓRIO DE APLICAÇÃO*\n*OS:901*\n*LOTE:BD12345*\n*Data de Inicio:18/09/2026*\n*Data de Termino: 19/09/2026*\n*PRODUTOS USADOS NA OS*\nZapp-------350KG\nProduto B---8L\nAdjuvante C------34L\n*SOBRA DE PRODUTOS DA OS*\nZapp-------00\nProduto B---00\nAdjuvante C------00`;
 const t=parser.parse(terrestrial);
-assert.equal(t.value.farm,'Bananal');assert.equal(t.value.os,'34');assert.equal(t.value.products.length,3);assert.equal(t.value.products[0].used,'3460');assert.equal(t.value.products[0].left,'00');assert.equal(t.value.products[0].dose,null);
-const aerial=`*RELATÓRIO DE APLICAÇÃO*\n*Aplicação aérea*\n*OS:* 52\n*LOTE:* BA1,2,3, BC3,4\n*Data de Inicio:* 13/11\n*Data de Termino:* 13/11\n*Avião:* PR-ORQ\n*Piloto:* Maycon\n*Horimetro Inicial:* 35,3\n*Horimetro Final:* 42,8\n*PRODUTOS USADOS NA OS*\nProfol 516\nAdesil 50\nÁureo 331\nAzimut 840`;
+assert.equal(t.value.farm,'Bananal');assert.equal(t.value.os,'901');assert.equal(t.value.products.length,3);assert.equal(t.value.products[0].used,'350');assert.equal(t.value.products[0].left,'00');assert.equal(t.value.products[0].dose,null);
+const aerial=`*RELATÓRIO DE APLICAÇÃO*\n*Aplicação aérea*\n*OS:* 902\n*LOTE:* BA1,2,3, BC3,4\n*Data de Inicio:* 18/09\n*Data de Termino:* 18/09\n*Avião:* PR-TST\n*Piloto:* Operador Teste\n*Horimetro Inicial:* 10,1\n*Horimetro Final:* 12,4\n*PRODUTOS USADOS NA OS*\nProduto A 51\nProduto B 5\nProduto C 33\nProduto D 84`;
 const a=parser.parse(aerial);
-assert.equal(a.value.farm,'Bananal');assert.equal(a.value.type,'Aérea');assert.equal(a.value.start,'2026-11-13');assert.equal(a.value.equipment.aircraft,'PR-ORQ');assert.equal(a.value.products.length,4);assert.equal(a.value.products[0].usedUnit,'');assert(a.warnings.some(x=>x.includes('unidade')));
+assert.equal(a.value.farm,'Bananal');assert.equal(a.value.type,'Aérea');assert.equal(a.value.start,'2026-09-18');assert.equal(a.value.equipment.aircraft,'PR-TST');assert.equal(a.value.products.length,4);assert.equal(a.value.products[0].usedUnit,'');assert(a.warnings.some(x=>x.includes('unidade')));
 const malformed=parser.parse(terrestrial+'\n'+terrestrial);assert(malformed.error.includes('mais de um'));
 assert.equal(parser.isoDate('29/02/2026'),'');assert.equal(parser.isoDate('29/02/2028'),'2028-02-29');
+assert.equal(parser.parse('*RELATÓRIO DE APLICAÇÃO*\n*OS:* 10\n*LOTE:* BD1\n*Data de Inicio:* 12/01\n*Data de Termino:* 13/01\n*PRODUTOS USADOS NA OS*\nZapp 2 kg',[],'2026/27').value.start,'2027-01-12');
 console.log('OK: formatos de talhão, aplicação terrestre/aérea, unidade não informada, data inválida e múltiplos relatórios');

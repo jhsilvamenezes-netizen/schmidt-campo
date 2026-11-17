@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict');const C=require('../core.js');const P=require('../parser.js');
+const seed={...C.empty(),records:[{id:'a',farm:'Bananal',os:'902',type:'Aérea',start:'2026-09-18',end:'2026-09-18',lots:['BA1','BA2'],complete:true,products:[{name:'Áureo',dose:0.2,used:'20',usedUnit:'L'}]},{id:'b',farm:'Rio de Janeiro',os:'902',type:'Terrestre',start:'2026-09-18',end:'2026-09-18',lots:['P1'],complete:true,products:[{name:'Áureo',dose:null,used:'',usedUnit:''}]}],lots:[{id:'BA1',farm:'Bananal'},{id:'BA2',farm:'Bananal'},{id:'P1',farm:'Rio de Janeiro'}]};
+assert.equal(C.key(seed.records[0])===C.key(seed.records[1]),false,'OS com número igual em fazendas distintas');
+assert.equal(C.analytics(seed).total,2);assert.equal(C.analytics(seed).distinctLots,3);assert.equal(C.analytics(seed).topProducts[0].count,2,'Frequência, não soma de litros');
+assert.equal(C.filter(seed.records,{farm:'Bananal'}).length,1);assert.equal(C.filter(seed.records,{lot:'BA2'}).length,1);
+assert.equal(C.analytics(seed).doseMissing,1);assert.equal(C.analytics(seed).invalidLots.length,0);assert.equal(C.validLot('RA4 5 6'),false);assert.equal(C.validLot('RA9'),true);assert.deepEqual(C.issues(seed,seed.records[0]),[]);
+const imp=C.safeImport(C.empty(),seed);assert.equal(imp.added,2);assert.equal(C.safeImport(imp.data,seed).added,0);
+assert.equal(C.validateRecord(seed.records[0]).length,0);assert(C.validateRecord({...seed.records[0],end:'2026-09-12'}).length>0);
+assert.deepEqual(P.parseLots('RA - RB - RC 7, 8'),['RA7','RA8','RB7','RB8','RC7','RC8']);
+console.log('OK: independência por fazenda, cálculos, importação, duplicidade, validação, rastreabilidade');
