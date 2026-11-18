@@ -25,7 +25,7 @@ test('plano em uso, números e conferência nos 51 lotes', () => {
     assert.ok(blind.limitHa >= 0.5 && blind.haBlind >= 0, k);
     assert.ok(P.sameShape(sc.params, rec.chosen.params), k);
     for (const a of rec.alternatives.filter(Boolean)) assert.ok(!P.sameShape(sc.params, a.params), `${k} ${a.id}`);
-    const team = P.team(sc, 5); assert.equal(team.pessoas.length, Math.min(5, sc.selected.length) || 5, k);
+    const team = P.team(sc, 5); assert.ok(team.pessoas.length >= Math.min(5, sc.selected.length) && team.pessoas.length <= 5, k); // A4: tiro longo pode ser repartido
     assert.match(P.summaryText(f, sc, 5, list, team), /SCHMIDT · Plano/);
   }
 });
@@ -153,4 +153,24 @@ test('U17 · áreas equilibradas nos 51 lotes: variação mediana ≤ 8%, sem pi
   const med = a => [...a].sort((x, y) => x - y)[a.length >> 1];
   assert.ok(med(rows.map(r => r.b1.cv)) <= 0.08, `variação mediana ${med(rows.map(r => r.b1.cv))}`);
   assert.ok(med(rows.map(r => r.b1.cv)) < med(rows.map(r => r.b0.cv)));
+});
+
+test('U17 · A4 equipe: com gente sobrando, o tiro mais longo é repartido e a maior caminhada nunca aumenta', async () => {
+  const { teamPlan } = await import('../src/engine/team.mjs');
+  let caiu = 0;
+  for (const k of keys) {
+    const f = fields[k], sc = P.planInUse(f, P.recommend(f, {}, 5, false).chosen.params, null), t0 = teamPlan(sc, 5), t1 = P.team(sc, 5);
+    assert.ok(t1.maxM <= t0.maxM + 1e-6, `${k}: maior caminhada ${t0.maxM} → ${t1.maxM}`);
+    assert.ok(t1.pessoas.length <= 5, k);
+    // cada ponto do lote continua com exatamente uma pessoa
+    const covered = new Map();
+    for (const p of t1.pessoas) for (const t of p.tarefas) {
+      const nums = sc.samples.filter(s => s.trackId === t.id && Number.isFinite(s.sTrack)).sort((a, b) => a.sTrack - b.sTrack).map(s => s.number);
+      const i = nums.indexOf(t.de), j = nums.indexOf(t.ate);
+      for (const n of (t.parte === 'inteiro' ? nums : nums.slice(Math.min(i, j), Math.max(i, j) + 1))) covered.set(n, (covered.get(n) || 0) + 1);
+    }
+    for (const s of sc.samples.filter(q => Number.isFinite(q.sTrack))) assert.equal(covered.get(s.number), 1, `${k}: ponto ${s.number}`);
+    if (t1.maxM < t0.maxM * 0.99) caiu++;
+  }
+  assert.ok(caiu >= 10, `maior caminhada caiu em ${caiu} lotes`);
 });

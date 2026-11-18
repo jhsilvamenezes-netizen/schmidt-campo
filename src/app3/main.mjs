@@ -156,7 +156,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     if (!params && rec) { params = { ...base, ...rec.chosen.params }; if (!invalid) store.update({ paramsByField: { ...(st.paramsByField || {}), [ui.key]: params } }); }
     const sc = tried?.sc || P.planInUse(field, params || base, edits);
     if (invalid && warnedInvalid !== ui.key) { warnedInvalid = ui.key; setTimeout(() => toast(`O plano gravado de ${field.code} não abre (${invalid}). Mostrando o recomendado.`), 0); }
-    const blind = P.uncovered(field, sc), list = P.checks(sc, people(), blind), split = P.team(sc, people());
+    const blind = P.uncovered(field, sc), split = P.team(sc, people()), list = P.checks(sc, people(), blind, split);
     return { field, params: params || base, base, rec, recPending: rec === null && !!worker, sc, f: P.figures(sc), blind, list, split, inUseIsRec: !!rec && P.sameShape(params, rec.chosen.params), block: null, others: [] };
   }
   /** Troca o plano do lote (com Desfazer). `edits`: undefined = manter, null = apagar, objeto = gravar. */

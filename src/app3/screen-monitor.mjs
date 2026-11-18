@@ -10,7 +10,8 @@ export function installMonitor(app) {
 
   function monitorData() {
     const cur = app.cur, sc = cur.sc, tasks = new Map();
-    (cur.split?.pessoas || []).forEach((p, i) => p.tarefas.forEach(t => tasks.set(t.id, `Pessoa ${i + 1}`)));
+    // tiro repartido (A4): as duas pessoas aparecem, cada uma com os pontos da sua parte
+    (cur.split?.pessoas || []).forEach((p, i) => p.tarefas.forEach(t => tasks.set(t.id, [tasks.get(t.id), t.parte === 'inteiro' ? `Pessoa ${i + 1}` : `Pessoa ${i + 1} (${t.de}–${t.ate})`].filter(Boolean).join(' · '))));
     const tracks = sc.selected.filter(t => sc.units.some(u => u.trackId === t.id)).map(t => ({ id: t.id, person: tasks.get(t.id) }));
     if (!tracks.some(t => t.id === mon.trackId)) mon.trackId = tracks[0]?.id ?? null;
     const route = mon.trackId ? routeFor(sc, cur.field, mon.trackId, mon.flipped) : null;

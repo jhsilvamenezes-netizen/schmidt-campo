@@ -14,7 +14,7 @@ export function installEnviar(app) {
   const routes = () => { const cur = app.cur; return cur.sc.selected.filter(t => cur.sc.units.some(u => u.trackId === t.id)).map(t => buildRoute(cur.sc, cur.field, t.id)); };
   const summary = () => P.summaryText(app.cur.field, app.cur.sc, app.people(), app.cur.list, app.cur.split);
   function printFichas() {
-    const cur = app.cur, people = new Map(); (cur.split?.pessoas || []).forEach((p, i) => p.tarefas.forEach(t => people.set(t.id, `Pessoa ${i + 1}`)));
+    const cur = app.cur, people = new Map(); (cur.split?.pessoas || []).forEach((p, i) => p.tarefas.forEach(t => people.set(t.id, [people.get(t.id), t.parte === 'inteiro' ? `Pessoa ${i + 1}` : `Pessoa ${i + 1} (pontos ${t.de}–${t.ate})`].filter(Boolean).join(' · '))));
     const mapFor = id => mapMarkup(cur.field, { ...cur.sc, samples: cur.sc.samples.filter(s => s.trackId === id) }, 700, 240, { pad: 16 });
     let box = document.querySelector('#print'); if (!box) { box = document.createElement('div'); box.id = 'print'; document.body.append(box); }
     box.innerHTML = V.fichasMarkup(cur.field, routes(), people, mapFor);

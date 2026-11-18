@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-KMuFxh4YIOzJaum1wfXXPMWRUUrSZ8gHnLkWMey/BEo='; style-src 'sha256-nWDvQroOc/V7pyVcVVT4yOQSwi2pM0pnAhpmiqkJGdY='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-zCJFWZSwwYeUvGoMMISYUs9gN74PnHWgBO+YkqoeDh0='; style-src 'sha256-nWDvQroOc/V7pyVcVVT4yOQSwi2pM0pnAhpmiqkJGdY='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#17594a" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c1512" media="(prefers-color-scheme: dark)">
 <title>SCHMIDT Campo</title>
 <link rel="icon" href="marca.svg"><link rel="apple-touch-icon" href="marca-180.png"><link rel="manifest" href="app.webmanifest">
@@ -3640,6 +3640,8 @@ const { coverageGrid, nearestDistances } = schmidtEngine2.metrics;
 const { recommendPlan, SHAPE_KEYS, metricsOf } = schmidtEngine2.recommend;
 const { restoreSamples, withSamples } = schmidtEngine2.editing;
 const { teamPlan } = schmidtEngine2.team;
+const { cumulative, pointAt } = schmidtEngine2.polyline;
+const { azimuth, cardinal } = schmidtEngine2.guidance;
 const { exactCoverage } = schmidtEngine2.voronoi;
 const { num, range, km, plural } = __m_app3_format;
 // 3.0 · aplicação: monta o plano de um lote com o motor 2, a recomendação, a conferência, a equipe e a área
@@ -3748,13 +3750,16 @@ function uncovered(field, sc, k = 0.85) {
 }
 
 /** Conferência antes de enviar: [{level: ok|alerta|erro, text}]. */
-function checks(sc, people, blind) {
+/** @param {any} [split] */
+function checks(sc, people, blind, split = null) {
   const out = [], extra = sc.samples.length - sc.minPoints;
   out.push(extra < 0 ? { level: 'erro', text: `Faltam ${plural(-extra, 'ponto', 'pontos')} para o mínimo` } : { level: 'ok', text: `${num(sc.samples.length)} pontos (mínimo ${num(sc.minPoints)})` });
   const empty = sc.trackRows.filter(r => r.empty);
   out.push(empty.length ? { level: 'erro', text: `${empty.map(r => r.trackId).join(', ')} sem ponto` } : { level: 'ok', text: 'Todos os tiros com ponto' });
   const tiros = sc.selected.length;
-  out.push(tiros > people ? { level: 'alerta', text: `${plural(tiros, 'tiro', 'tiros')} para ${plural(people, 'pessoa', 'pessoas')}` } : { level: 'ok', text: tiros === people ? '1 tiro por pessoa' : `1 tiro por pessoa · sobra ${plural(people - tiros, 'pessoa', 'pessoas')}` });
+  const rep = split?.repartidos || 0, sobra = people - tiros - rep;
+  out.push(tiros > people ? { level: 'alerta', text: `${plural(tiros, 'tiro', 'tiros')} para ${plural(people, 'pessoa', 'pessoas')}` }
+    : { level: 'ok', text: [tiros === people ? '1 tiro por pessoa' : '1 tiro por pessoa', rep ? `${plural(rep, 'tiro longo repartido', 'tiros longos repartidos')} entre duas pessoas` : '', sobra > 0 ? `sobra ${plural(sobra, 'pessoa', 'pessoas')}` : ''].filter(Boolean).join(' · ') });
   if (blind) out.push(blind.haBlind > blind.limitHa ? { level: 'alerta', text: `${num(blind.haBlind, 1)} ha a mais de ${num(blind.limitM)} m de um ponto` } : { level: 'ok', text: 'Sem área descoberta' });
   const errors = sc.warnings.filter(w => w.level === 'erro').length, alerts = sc.warnings.filter(w => w.level === 'alerta').length;
   if (errors || alerts) out.push({ level: errors ? 'erro' : 'alerta', text: [errors && plural(errors, 'erro', 'erros'), alerts && plural(alerts, 'alerta', 'alertas')].filter(Boolean).join(' e ') + ' nos dados' });
@@ -3769,13 +3774,54 @@ function figures(sc) {
     caminhada: `${km(sc.route.totalEstimatedM)} km` };
 }
 
-const team = (sc, people) => teamPlan(sc, people);
+/** Divisão da equipe (motor 2). U17/A4: se sobra gente, o tiro de maior caminhada é repartido entre duas pessoas,
+ *  uma entrando por cada ponta, no ponto que deixa a maior das duas caminhadas menor — até não sobrar ninguém ou não
+ *  haver mais ganho. Cada parte diz por onde entrar e de que ponto a que ponto andar. */
+function team(sc, people) {
+  const t = teamPlan(sc, people);
+  if (!t || !t.sobra) return t;
+  let spare = t.sobra;
+  const pessoas = t.pessoas.map(p => ({ ...p, tarefas: p.tarefas.map(x => ({ ...x })) }));
+  const geo = new Map();
+  for (const tr of sc.selected) {
+    const units = sc.units.filter(u => u.trackId === tr.id);
+    if (!units.length || units.some(u => u.wraps)) continue;
+    const pts = sc.samples.filter(s => s.trackId === tr.id && Number.isFinite(s.sTrack)).sort((x, y) => x.sTrack - y.sTrack);
+    const a = Math.min(...units.map(u => u.s0Track)), b = Math.max(...units.map(u => u.s0Track + u.len));
+    let side = { a: '', b: '' };
+    if (Array.isArray(tr.line) && tr.line.length >= 2) {
+      const cum = cumulative(tr.line), pa = pointAt(tr.line, a, cum), pb = pointAt(tr.line, b, cum);
+      side = { a: cardinal(azimuth(pa[0] - pb[0], pa[1] - pb[1])), b: cardinal(azimuth(pb[0] - pa[0], pb[1] - pa[1])) };
+    }
+    geo.set(tr.id, { a, b, pts, side });
+  }
+  while (spare > 0) {
+    const i = pessoas.reduce((bi, p, j) => (p.tarefas.length === 1 && p.tarefas[0].parte === 'inteiro' && p.m > (pessoas[bi]?.m ?? -1) ? j : bi), -1);
+    if (i < 0) break;
+    const task = pessoas[i].tarefas[0], g = geo.get(task.id);
+    if (!g || g.pts.length < 2) break;
+    const { a, b, pts, side } = g;
+    /** @type {any} */ let best = null;
+    for (let c = 1; c < pts.length; c++) {
+      const lastA = pts[c - 1].sTrack, firstB = pts[c].sTrack;
+      const mA = lastA - a + Math.min(b - lastA, lastA - a), mB = b - firstB + Math.min(firstB - a, b - firstB);
+      if (!best || Math.max(mA, mB) < best.max) best = { c, mA, mB, max: Math.max(mA, mB) };
+    }
+    if (!best || best.max >= pessoas[i].m - 1) break;
+    const partA = { id: task.id, parte: 'A', m: best.mA, entra: side.a, de: pts[0].number, ate: pts[best.c - 1].number, n: best.c };
+    const partB = { id: task.id, parte: 'B', m: best.mB, entra: side.b, de: pts.at(-1).number, ate: pts[best.c].number, n: pts.length - best.c };
+    pessoas.splice(i, 1, { m: best.mA, tarefas: [partA] }, { m: best.mB, tarefas: [partB] });
+    spare--;
+  }
+  const ms = pessoas.map(p => p.m);
+  return { ...t, pessoas, maxM: Math.max(...ms), minM: Math.min(...ms), sobra: spare, repartidos: t.sobra - spare };
+}
 
 /** Resumo em texto para colar no WhatsApp. */
 function summaryText(field, sc, people, list, split) {
   const f = figures(sc), lines = [`*SCHMIDT · Plano* · ${field.farm} / ${field.code} (${num(field.areaOfficialHa, 2)} ha)`,
     `${f.pontos} pontos · ${f.tiros} tiros · ${people} pessoas`, `Entre tiros ${f.entreTiros} · entre pontos ${f.entrePontos} · 95% do lote ${f.p95}`, ''];
-  if (split) split.pessoas.forEach((p, i) => lines.push(`- Pessoa ${i + 1} (${km(p.m)} km): ${p.tarefas.map(t => `${t.id}, entra a ${t.entra || '—'}, pontos ${t.de ?? '—'}–${t.ate ?? '—'}`).join('; ')}`));
+  if (split) split.pessoas.forEach((p, i) => lines.push(`- Pessoa ${i + 1} (${km(p.m)} km): ${p.tarefas.map(t => `${t.id}${t.parte && t.parte !== 'inteiro' ? ' (parte)' : ''}, entra a ${t.entra || '—'}, pontos ${t.de ?? '—'}–${t.ate ?? '—'}`).join('; ')}`));
   lines.push('', ...list.map(c => `[${c.level === 'ok' ? 'ok' : c.level.toUpperCase()}] ${c.text}`), '', 'Simulação: pontos planejados, não coletados.');
   return lines.join('\n');
 }
@@ -4177,7 +4223,7 @@ function enviarView({ list, split }) {
   const ok = list.filter(c => c.level === 'ok').length, all = ok === list.length;
   return `<div class="scroll"><section class="card"><div class="row-sb"><h2 class="big md">${all ? 'Pronto para enviar' : 'Conferir antes de enviar'}</h2>${chip(all ? 'ok' : 'alerta', `${ok} de ${list.length}`)}</div>
 ${list.map(c => `<p class="ck ${c.level}">${esc(c.text)}</p>`).join('')}</section>
-${split ? `<section class="card list"><h2 class="h">Equipe</h2>${split.pessoas.map((p, i) => `<div class="li"><span class="id">${esc(p.tarefas.map(t => t.id).join('+'))}</span><span class="x">Pessoa ${i + 1} <small>· ${esc(p.tarefas.map(t => `${t.entra ? `entra a ${t.entra} · ` : ''}pontos\u00a0${t.de ?? "—"}–${t.ate ?? "—"}`).join(" · "))}</small></span><span class="r">${km(p.m)} km</span></div>`).join('')}</section>` : ''}
+${split ? `<section class="card list"><h2 class="h">Equipe</h2>${split.pessoas.map((p, i) => `<div class="li"><span class="id">${esc(p.tarefas.map(t => t.id + (t.parte && t.parte !== 'inteiro' ? '½' : '')).join('+'))}</span><span class="x">Pessoa ${i + 1} <small>· ${esc(p.tarefas.map(t => `${t.entra ? `entra a ${t.entra} · ` : ''}pontos\u00a0${t.de ?? "—"}\u2060–\u2060${t.ate ?? "—"}`).join(" · "))}</small></span><span class="r">${km(p.m)} km</span></div>`).join('')}</section>` : ''}
 <button class="btn p" data-act="share">Enviar plano aos monitores</button>
 <div class="two"><button class="btn" data-act="fichas">Fichas de campo</button><button class="btn" data-act="copy">Copiar resumo</button></div>
 <p class="center"><button class="link" data-act="gpx">GPX</button> · <button class="link" data-act="kml">KML</button> · <button class="link" data-act="csv">CSV</button> · <button class="link" data-act="geojson">GeoJSON</button></p>
@@ -5495,7 +5541,8 @@ function installMonitor(app) {
 
   function monitorData() {
     const cur = app.cur, sc = cur.sc, tasks = new Map();
-    (cur.split?.pessoas || []).forEach((p, i) => p.tarefas.forEach(t => tasks.set(t.id, `Pessoa ${i + 1}`)));
+    // tiro repartido (A4): as duas pessoas aparecem, cada uma com os pontos da sua parte
+    (cur.split?.pessoas || []).forEach((p, i) => p.tarefas.forEach(t => tasks.set(t.id, [tasks.get(t.id), t.parte === 'inteiro' ? `Pessoa ${i + 1}` : `Pessoa ${i + 1} (${t.de}–${t.ate})`].filter(Boolean).join(' · '))));
     const tracks = sc.selected.filter(t => sc.units.some(u => u.trackId === t.id)).map(t => ({ id: t.id, person: tasks.get(t.id) }));
     if (!tracks.some(t => t.id === mon.trackId)) mon.trackId = tracks[0]?.id ?? null;
     const route = mon.trackId ? routeFor(sc, cur.field, mon.trackId, mon.flipped) : null;
@@ -5683,7 +5730,7 @@ function installEnviar(app) {
   const routes = () => { const cur = app.cur; return cur.sc.selected.filter(t => cur.sc.units.some(u => u.trackId === t.id)).map(t => buildRoute(cur.sc, cur.field, t.id)); };
   const summary = () => P.summaryText(app.cur.field, app.cur.sc, app.people(), app.cur.list, app.cur.split);
   function printFichas() {
-    const cur = app.cur, people = new Map(); (cur.split?.pessoas || []).forEach((p, i) => p.tarefas.forEach(t => people.set(t.id, `Pessoa ${i + 1}`)));
+    const cur = app.cur, people = new Map(); (cur.split?.pessoas || []).forEach((p, i) => p.tarefas.forEach(t => people.set(t.id, [people.get(t.id), t.parte === 'inteiro' ? `Pessoa ${i + 1}` : `Pessoa ${i + 1} (pontos ${t.de}–${t.ate})`].filter(Boolean).join(' · '))));
     const mapFor = id => mapMarkup(cur.field, { ...cur.sc, samples: cur.sc.samples.filter(s => s.trackId === id) }, 700, 240, { pad: 16 });
     let box = document.querySelector('#print'); if (!box) { box = document.createElement('div'); box.id = 'print'; document.body.append(box); }
     box.innerHTML = V.fichasMarkup(cur.field, routes(), people, mapFor);
@@ -5867,7 +5914,7 @@ function installBloco(app) {
     if (!block) return null;
     try {
       const { field, sc } = blockScenario(fields, block, ui.key);
-      const list = P.checks(sc, app.people(), P.uncovered(field, sc)), split = P.team(sc, app.people());
+      const split = P.team(sc, app.people()), list = P.checks(sc, app.people(), P.uncovered(field, sc), split);
       const members = block.members.map(k => ({ key: k, code: fields[k].code, on: k === ui.key, pontos: block.state.paramsByField[k].totalPoints }));
       return { field, params: sc.params, base: P.baseOf(sc.params), rec: null, sc, f: P.figures(sc), list, split, inUseIsRec: true,
         block: { title: block.members.map(k => fields[k].code).join(' + '), members, passes: Math.round(block.common.spacingM / 36.48), spacingM: block.common.spacingM },
@@ -6063,7 +6110,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     if (!params && rec) { params = { ...base, ...rec.chosen.params }; if (!invalid) store.update({ paramsByField: { ...(st.paramsByField || {}), [ui.key]: params } }); }
     const sc = tried?.sc || P.planInUse(field, params || base, edits);
     if (invalid && warnedInvalid !== ui.key) { warnedInvalid = ui.key; setTimeout(() => toast(`O plano gravado de ${field.code} não abre (${invalid}). Mostrando o recomendado.`), 0); }
-    const blind = P.uncovered(field, sc), list = P.checks(sc, people(), blind), split = P.team(sc, people());
+    const blind = P.uncovered(field, sc), split = P.team(sc, people()), list = P.checks(sc, people(), blind, split);
     return { field, params: params || base, base, rec, recPending: rec === null && !!worker, sc, f: P.figures(sc), blind, list, split, inUseIsRec: !!rec && P.sameShape(params, rec.chosen.params), block: null, others: [] };
   }
   /** Troca o plano do lote (com Desfazer). `edits`: undefined = manter, null = apagar, objeto = gravar. */
@@ -6141,6 +6188,6 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
 
 return Object.freeze({startApp});
 })();
-__m_app3_main.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),recs:JSON.parse(document.getElementById('recs-data').textContent),appVersion:'3.0.8'});
+__m_app3_main.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),recs:JSON.parse(document.getElementById('recs-data').textContent),appVersion:'3.0.9'});
 })();</script>
 </body></html>

@@ -3306,6 +3306,8 @@ const { coverageGrid, nearestDistances } = schmidtEngine2.metrics;
 const { recommendPlan, SHAPE_KEYS, metricsOf } = schmidtEngine2.recommend;
 const { restoreSamples, withSamples } = schmidtEngine2.editing;
 const { teamPlan } = schmidtEngine2.team;
+const { cumulative, pointAt } = schmidtEngine2.polyline;
+const { azimuth, cardinal } = schmidtEngine2.guidance;
 const { exactCoverage } = schmidtEngine2.voronoi;
 const { num, range, km, plural } = __m_app3_format;
 // 3.0 · aplicação: monta o plano de um lote com o motor 2, a recomendação, a conferência, a equipe e a área
@@ -3414,13 +3416,16 @@ function uncovered(field, sc, k = 0.85) {
 }
 
 /** Conferência antes de enviar: [{level: ok|alerta|erro, text}]. */
-function checks(sc, people, blind) {
+/** @param {any} [split] */
+function checks(sc, people, blind, split = null) {
   const out = [], extra = sc.samples.length - sc.minPoints;
   out.push(extra < 0 ? { level: 'erro', text: `Faltam ${plural(-extra, 'ponto', 'pontos')} para o mínimo` } : { level: 'ok', text: `${num(sc.samples.length)} pontos (mínimo ${num(sc.minPoints)})` });
   const empty = sc.trackRows.filter(r => r.empty);
   out.push(empty.length ? { level: 'erro', text: `${empty.map(r => r.trackId).join(', ')} sem ponto` } : { level: 'ok', text: 'Todos os tiros com ponto' });
   const tiros = sc.selected.length;
-  out.push(tiros > people ? { level: 'alerta', text: `${plural(tiros, 'tiro', 'tiros')} para ${plural(people, 'pessoa', 'pessoas')}` } : { level: 'ok', text: tiros === people ? '1 tiro por pessoa' : `1 tiro por pessoa · sobra ${plural(people - tiros, 'pessoa', 'pessoas')}` });
+  const rep = split?.repartidos || 0, sobra = people - tiros - rep;
+  out.push(tiros > people ? { level: 'alerta', text: `${plural(tiros, 'tiro', 'tiros')} para ${plural(people, 'pessoa', 'pessoas')}` }
+    : { level: 'ok', text: [tiros === people ? '1 tiro por pessoa' : '1 tiro por pessoa', rep ? `${plural(rep, 'tiro longo repartido', 'tiros longos repartidos')} entre duas pessoas` : '', sobra > 0 ? `sobra ${plural(sobra, 'pessoa', 'pessoas')}` : ''].filter(Boolean).join(' · ') });
   if (blind) out.push(blind.haBlind > blind.limitHa ? { level: 'alerta', text: `${num(blind.haBlind, 1)} ha a mais de ${num(blind.limitM)} m de um ponto` } : { level: 'ok', text: 'Sem área descoberta' });
   const errors = sc.warnings.filter(w => w.level === 'erro').length, alerts = sc.warnings.filter(w => w.level === 'alerta').length;
   if (errors || alerts) out.push({ level: errors ? 'erro' : 'alerta', text: [errors && plural(errors, 'erro', 'erros'), alerts && plural(alerts, 'alerta', 'alertas')].filter(Boolean).join(' e ') + ' nos dados' });
@@ -3435,13 +3440,54 @@ function figures(sc) {
     caminhada: `${km(sc.route.totalEstimatedM)} km` };
 }
 
-const team = (sc, people) => teamPlan(sc, people);
+/** Divisão da equipe (motor 2). U17/A4: se sobra gente, o tiro de maior caminhada é repartido entre duas pessoas,
+ *  uma entrando por cada ponta, no ponto que deixa a maior das duas caminhadas menor — até não sobrar ninguém ou não
+ *  haver mais ganho. Cada parte diz por onde entrar e de que ponto a que ponto andar. */
+function team(sc, people) {
+  const t = teamPlan(sc, people);
+  if (!t || !t.sobra) return t;
+  let spare = t.sobra;
+  const pessoas = t.pessoas.map(p => ({ ...p, tarefas: p.tarefas.map(x => ({ ...x })) }));
+  const geo = new Map();
+  for (const tr of sc.selected) {
+    const units = sc.units.filter(u => u.trackId === tr.id);
+    if (!units.length || units.some(u => u.wraps)) continue;
+    const pts = sc.samples.filter(s => s.trackId === tr.id && Number.isFinite(s.sTrack)).sort((x, y) => x.sTrack - y.sTrack);
+    const a = Math.min(...units.map(u => u.s0Track)), b = Math.max(...units.map(u => u.s0Track + u.len));
+    let side = { a: '', b: '' };
+    if (Array.isArray(tr.line) && tr.line.length >= 2) {
+      const cum = cumulative(tr.line), pa = pointAt(tr.line, a, cum), pb = pointAt(tr.line, b, cum);
+      side = { a: cardinal(azimuth(pa[0] - pb[0], pa[1] - pb[1])), b: cardinal(azimuth(pb[0] - pa[0], pb[1] - pa[1])) };
+    }
+    geo.set(tr.id, { a, b, pts, side });
+  }
+  while (spare > 0) {
+    const i = pessoas.reduce((bi, p, j) => (p.tarefas.length === 1 && p.tarefas[0].parte === 'inteiro' && p.m > (pessoas[bi]?.m ?? -1) ? j : bi), -1);
+    if (i < 0) break;
+    const task = pessoas[i].tarefas[0], g = geo.get(task.id);
+    if (!g || g.pts.length < 2) break;
+    const { a, b, pts, side } = g;
+    /** @type {any} */ let best = null;
+    for (let c = 1; c < pts.length; c++) {
+      const lastA = pts[c - 1].sTrack, firstB = pts[c].sTrack;
+      const mA = lastA - a + Math.min(b - lastA, lastA - a), mB = b - firstB + Math.min(firstB - a, b - firstB);
+      if (!best || Math.max(mA, mB) < best.max) best = { c, mA, mB, max: Math.max(mA, mB) };
+    }
+    if (!best || best.max >= pessoas[i].m - 1) break;
+    const partA = { id: task.id, parte: 'A', m: best.mA, entra: side.a, de: pts[0].number, ate: pts[best.c - 1].number, n: best.c };
+    const partB = { id: task.id, parte: 'B', m: best.mB, entra: side.b, de: pts.at(-1).number, ate: pts[best.c].number, n: pts.length - best.c };
+    pessoas.splice(i, 1, { m: best.mA, tarefas: [partA] }, { m: best.mB, tarefas: [partB] });
+    spare--;
+  }
+  const ms = pessoas.map(p => p.m);
+  return { ...t, pessoas, maxM: Math.max(...ms), minM: Math.min(...ms), sobra: spare, repartidos: t.sobra - spare };
+}
 
 /** Resumo em texto para colar no WhatsApp. */
 function summaryText(field, sc, people, list, split) {
   const f = figures(sc), lines = [`*SCHMIDT · Plano* · ${field.farm} / ${field.code} (${num(field.areaOfficialHa, 2)} ha)`,
     `${f.pontos} pontos · ${f.tiros} tiros · ${people} pessoas`, `Entre tiros ${f.entreTiros} · entre pontos ${f.entrePontos} · 95% do lote ${f.p95}`, ''];
-  if (split) split.pessoas.forEach((p, i) => lines.push(`- Pessoa ${i + 1} (${km(p.m)} km): ${p.tarefas.map(t => `${t.id}, entra a ${t.entra || '—'}, pontos ${t.de ?? '—'}–${t.ate ?? '—'}`).join('; ')}`));
+  if (split) split.pessoas.forEach((p, i) => lines.push(`- Pessoa ${i + 1} (${km(p.m)} km): ${p.tarefas.map(t => `${t.id}${t.parte && t.parte !== 'inteiro' ? ' (parte)' : ''}, entra a ${t.entra || '—'}, pontos ${t.de ?? '—'}–${t.ate ?? '—'}`).join('; ')}`));
   lines.push('', ...list.map(c => `[${c.level === 'ok' ? 'ok' : c.level.toUpperCase()}] ${c.text}`), '', 'Simulação: pontos planejados, não coletados.');
   return lines.join('\n');
 }
