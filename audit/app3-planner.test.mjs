@@ -100,7 +100,14 @@ test('Monitorar: estados da guia nos 51 lotes (sem GPS, chegada, a caminho, GPS 
     assert.equal(mid.state, 'go', k); assert.match(mid.title, /Ponto 2/); assert.ok(Number.isFinite(mid.azimuth));
     assert.equal(guideModel(route, sc, f, at(p1.x, p1.y, 4, 60000), now, {}).state, 'stale', k);
     const off = guideModel(route, sc, f, at(p1.x + 300, p1.y + 300), now, {});
-    if (off.state === 'go') assert.ok(off.warn.length >= 1, `${k} fora da linha avisa`);
+    // fora da linha avisa quando já se está no tiro; indo para a entrada, só a seta (sem "volte para a esquerda")
+    if (off.state === 'go' && !/entrada/.test(off.title)) assert.ok(off.warn.length >= 1, `${k} fora da linha avisa`);
+    if (off.state === 'go' && /entrada/.test(off.title)) assert.ok(!off.warn.some(w => /da linha/.test(w)), `${k} indo à entrada não manda voltar à linha`);
+    if (off.state === 'go') assert.equal(off.to.length, 2, `${k} alvo com posição para o mapa`);
+    // muito longe (chegando ao lote): vai à entrada do tiro, sem "volte para a linha"
+    const far = guideModel(route, sc, f, at(p1.x + 4000, p1.y - 4000), now, {});
+    assert.equal(far.state, 'go', k); assert.match(far.title, /entrada/, k); assert.ok(!far.warn.some(w => /linha/.test(w)), k);
+    assert.deepStrictEqual(far.to, route.parts[0].entry, k);
     // fix do GPS: válido vira posição local; repetido ou antigo é recusado
     const [lon, lat] = localToLonLat(p1.x, p1.y, f.centroidUTM), pos = { timestamp: now - 1000, coords: { longitude: lon, latitude: lat, accuracy: 5 } };
     const local = fixToPos(pos, f, 0, now); assert.ok(Math.hypot(local.x - p1.x, local.y - p1.y) < 0.01, k);

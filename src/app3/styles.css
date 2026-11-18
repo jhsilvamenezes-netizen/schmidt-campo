@@ -100,9 +100,11 @@ nav button.on{color:var(--br)}nav button.on .ic{background:var(--br2);border-rad
 .map-svg .acc{fill:var(--tr);fill-opacity:.15;stroke:var(--tr);stroke-width:1}.map-svg .me{fill:var(--tr);stroke:var(--sf);stroke-width:3}
 .chips{display:flex;flex-wrap:wrap;gap:6px}.chipb{min-width:56px;padding:8px 10px;border-radius:12px;border:1px solid var(--ln);font:700 14px system-ui}.chipb small{display:block;font:400 12px system-ui;color:var(--mu)}
 .chipb.on{background:var(--br);color:var(--on-br);border-color:var(--br)}.chipb.on small{color:inherit}
-.guide{align-items:center;text-align:center}.guide .ck{text-align:left;align-self:stretch}.guide .big{font-size:28px}.guide .dir{font:600 20px system-ui}
-.guide.arrived{background:var(--oks)}.guide.arrived .big{color:var(--ok)}
-.arrow{width:132px;height:132px}.arrow path{fill:var(--br)}.arrow text{font:700 12px system-ui;fill:var(--mu);text-anchor:middle}
+.gsheet{gap:8px;padding-top:10px}.guide{display:flex;align-items:center;gap:12px;border-radius:14px;padding:6px 4px}.gtxt{min-width:0}.guide .big{font:700 28px/1.15 system-ui;margin:0}.guide .dir{font:600 16px system-ui;color:var(--mu)}
+.guide.arrived{background:var(--oks);padding:6px 10px}.guide.arrived .big{color:var(--ok)}
+.arrow{flex:none;width:64px;height:64px}.arrow circle{fill:var(--br2)}.arrow path{fill:var(--br)}
+.map-svg .togo{fill:none;stroke:var(--br);stroke-width:2.5;stroke-dasharray:2 6;stroke-linecap:round}
+.fit[aria-pressed="true"]{color:var(--br)}
 .lotrow{width:100%;text-align:left}
 #print{display:none}
 @media print{body{display:block;overflow:visible;max-width:none;border:0;background:#fff;color:#000}body>*:not(#print){display:none}#print{display:block}

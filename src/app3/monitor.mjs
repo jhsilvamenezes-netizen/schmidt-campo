@@ -1,7 +1,7 @@
 // 3.0 · Monitorar: guia por GPS ao próximo ponto (só direção; nada é marcado como coletado). Regras da 2.x:
 // próximo ponto à frente (src/gps/guide-next), fix válido (src/gps/fix-policy), aviso de saída da linha e de tiro
 // errado com a tolerância "offLineWarnM". Sem DOM: o modelo da tela sai daqui e é testado no Node.
-import { buildRoute, guide, tiroErrado } from '../engine/guidance.mjs';
+import { buildRoute, guide, tiroErrado, azimuth, cardinal } from '../engine/guidance.mjs';
 import { lonLatToLocal } from '../engine/projection.mjs';
 import { schmidtGuideNextPoint, schmidtGuideSession } from '../gps/guide-next.mjs';
 import { validateSchmidtGPSFix } from '../gps/fix-policy.mjs';
@@ -21,7 +21,7 @@ export function fixToPos(position, field, lastTimestamp, now) {
 
 /**
  * Modelo da tela da guia. `session` = memória da sessão (objeto mutável do chamador, ver schmidtGuideSession).
- * @returns {{state:string, title:string, big?:string, dir?:string, azimuth?:number, warn?:string[], next?:any, info?:string}}
+ * @returns {{state:string, title:string, big?:string, dir?:string, azimuth?:number, warn?:string[], next?:any, info?:string, to?:number[]}}
  */
 export function guideModel(route, sc, field, pos, now, session) {
   const monitor = sc.params.monitor;
@@ -33,14 +33,22 @@ export function guideModel(route, sc, field, pos, now, session) {
   const n = g.next, label = `Ponto ${n.seq} de ${route.nPoints}`, warn = [];
   if (g.stale) return { state: 'stale', title: label, big: 'Aguardando posição', warn: [`GPS sem atualização há ${num(ageMs / 1000)} s.`], next: n };
   if (!g.accuracyOk) warn.push(`GPS impreciso (± ${num(pos.accuracyM)} m).`);
-  if (g.offLine) {
+  // Longe do tiro (chegando ao lote): a guia leva à entrada do tiro, no início do sentido escolhido, sem avisos de linha.
+  const farM = Math.max(150, 5 * (monitor.offLineWarnM || 0)), start = route.parts?.[0]?.entry;
+  if (start && Number.isFinite(g.lateralM) && g.lateralM > farM && !g.arrived) {
+    const dx = start[0] - pos.x, dy = start[1] - pos.y, az = azimuth(dx, dy);
+    return { state: 'go', title: `Primeiro: vá até a entrada do ${route.trackId}`, big: `${num(Math.hypot(dx, dy))} m`, dir: `para o ${cardinal(az)}`, azimuth: az, to: [start[0], start[1]], warn, next: n };
+  }
+  const entry = g.alvo?.tipo === 'entrada';
+  // Indo para a entrada do tiro, "fora da linha" não ajuda (ainda não se está nela): só a seta até a entrada.
+  if (g.offLine && !entry) {
     const selected = new Set(sc.selected.map(t => t.id)), wrong = tiroErrado(sc.units.filter(u => selected.has(u.trackId)), route.trackId, pos, monitor.offLineWarnM);
     warn.push(wrong ? `Você está na linha do ${wrong.trackId}, não do ${route.trackId}. Ande de lado até o ${route.trackId} (${num(wrong.meuM)} m).`
       : `Você está ${num(g.lateralM)} m à ${g.lado} da linha: volte ${g.lado === 'direita' ? 'para a esquerda' : 'para a direita'}.`);
   }
   if (g.trecho?.passouM > 0) warn.push(`Passou do ponto ${n.seq} em ${num(g.trecho.passouM)} m: volte pela linha.`);
   if (g.arrived) return { state: 'arrived', title: `Chegou ao ponto ${n.seq} de ${route.nPoints}`, big: `nº ${n.number}`, warn: g.arrivalUncertain ? [`GPS impreciso (± ${num(pos.accuracyM)} m): confira pelos passos.`] : [], next: n };
-  const a = g.alvo, entry = a.tipo === 'entrada';
-  return { state: 'go', title: entry ? 'Primeiro: vá até a entrada do tiro' : `Próximo: ${label}`, big: `${num(a.distM)} m`, dir: `para o ${a.direction}`, azimuth: a.azimuthDeg,
+  const a = g.alvo;
+  return { state: 'go', to: [a.x, a.y], title: entry ? 'Primeiro: vá até a entrada do tiro' : `Próximo: ${label}`, big: `${num(a.distM)} m`, dir: `para o ${a.direction}`, azimuth: a.azimuthDeg,
     info: g.trecho && !entry ? `Faltam ${num(Math.max(0, g.trecho.faltaM))} m andando no tiro` : undefined, warn, next: n };
 }

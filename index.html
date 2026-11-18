@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-6zfdJ7ctJEcoVrepMjwDcNFalq1iGlvZAZWpYyzfolE='; style-src 'sha256-ptnTrYNILLfUH3nzC9qKSjdIIs7Sx3MWB02qhWhGfL8='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-GtDKfnIzY42tmhm1alUcH5j3rSPVCM5KxRQ4zBthO2g='; style-src 'sha256-mxVy1OKzTbeCMW/ZRx9JhwDq4mjoDaBsOSDqQbDXdRU='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#17594a" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c1512" media="(prefers-color-scheme: dark)">
 <title>SCHMIDT Campo</title>
 <link rel="icon" href="marca.svg"><link rel="apple-touch-icon" href="marca-180.png"><link rel="manifest" href="app.webmanifest">
@@ -107,9 +107,11 @@ nav button.on{color:var(--br)}nav button.on .ic{background:var(--br2);border-rad
 .map-svg .acc{fill:var(--tr);fill-opacity:.15;stroke:var(--tr);stroke-width:1}.map-svg .me{fill:var(--tr);stroke:var(--sf);stroke-width:3}
 .chips{display:flex;flex-wrap:wrap;gap:6px}.chipb{min-width:56px;padding:8px 10px;border-radius:12px;border:1px solid var(--ln);font:700 14px system-ui}.chipb small{display:block;font:400 12px system-ui;color:var(--mu)}
 .chipb.on{background:var(--br);color:var(--on-br);border-color:var(--br)}.chipb.on small{color:inherit}
-.guide{align-items:center;text-align:center}.guide .ck{text-align:left;align-self:stretch}.guide .big{font-size:28px}.guide .dir{font:600 20px system-ui}
-.guide.arrived{background:var(--oks)}.guide.arrived .big{color:var(--ok)}
-.arrow{width:132px;height:132px}.arrow path{fill:var(--br)}.arrow text{font:700 12px system-ui;fill:var(--mu);text-anchor:middle}
+.gsheet{gap:8px;padding-top:10px}.guide{display:flex;align-items:center;gap:12px;border-radius:14px;padding:6px 4px}.gtxt{min-width:0}.guide .big{font:700 28px/1.15 system-ui;margin:0}.guide .dir{font:600 16px system-ui;color:var(--mu)}
+.guide.arrived{background:var(--oks);padding:6px 10px}.guide.arrived .big{color:var(--ok)}
+.arrow{flex:none;width:64px;height:64px}.arrow circle{fill:var(--br2)}.arrow path{fill:var(--br)}
+.map-svg .togo{fill:none;stroke:var(--br);stroke-width:2.5;stroke-dasharray:2 6;stroke-linecap:round}
+.fit[aria-pressed="true"]{color:var(--br)}
 .lotrow{width:100%;text-align:left}
 #print{display:none}
 @media print{body{display:block;overflow:visible;max-width:none;border:0;background:#fff;color:#000}body>*:not(#print){display:none}#print{display:block}
@@ -3854,14 +3856,16 @@ function cota(cls, a, b) {
 /** Marcação SVG do lote ajustada a w × h px. `small` = mapa do Plano/guia (sem medidas).
  * @param {any} field @param {any} sc @param {number} w @param {number} h
  * @param {{pad?:number|{t:number,r:number,b:number,l:number}, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null,
- *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure}} [opts] */
+ *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null}} [opts] */
 function mapMarkup(field, sc, w, h, opts = {}) {
-  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate } = opts;
+  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null } = opts;
   const pad = typeof pad0 === 'number' ? { t: pad0, r: pad0, b: pad0, l: pad0 } : pad0;
   // Outros lotes (bloco): levados ao referencial do lote atual pela diferença dos centroides UTM.
   const shift = o => [o.field.centroidUTM[0] - field.centroidUTM[0], o.field.centroidUTM[1] - field.centroidUTM[1]];
   const extra = others.map(o => ({ ...o, d: shift(o) }));
-  const pts = [...field.geom.flat(2), ...extra.flatMap(o => o.field.geom.flat(2).map(([x, y]) => [x + o.d[0], y + o.d[1]]))], xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  // `focus`: enquadra só estes pontos (guia: posição e alvo), com folga mínima de 250 m; senão o lote (e o bloco)
+  const pts = focus?.length ? focus.flatMap(([x, y]) => [[x - 125, y - 125], [x + 125, y + 125]])
+    : [...field.geom.flat(2), ...extra.flatMap(o => o.field.geom.flat(2).map(([x, y]) => [x + o.d[0], y + o.d[1]]))], xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
   const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
   const iw = Math.max(40, w - pad.l - pad.r), ih = Math.max(40, h - pad.t - pad.b);
   const k = Math.min(iw / (x1 - x0 || 1), ih / (y1 - y0 || 1));
@@ -3930,6 +3934,7 @@ function mapMarkup(field, sc, w, h, opts = {}) {
   s += top;
   if (pos) {
     const [px, py] = XY(pos.x, pos.y), acc = Math.max(6, pos.accuracyM * kk);
+    if (to) { const [tx, ty] = XY(to[0], to[1]); s += `<path class="togo" d="M${f1(px)},${f1(py)}L${f1(tx)},${f1(ty)}"/>`; }
     s += `<circle class="acc" cx="${f1(px)}" cy="${f1(py)}" r="${f1(acc)}"/><circle class="me" cx="${f1(px)}" cy="${f1(py)}" r="7"/>`;
   }
   s += `<g class="scale" transform="translate(14 ${h - 14})"><path d="M0 -6V0H${f1(L)}V-6"/><text x="0" y="-10">${num(len)} m</text></g>`;
@@ -4138,10 +4143,12 @@ function monitorView({ tracks, trackId, flipped, active, model, steps }) {
   const head = `<section class="card">${pick}<div class="row-sb"><p class="mu">Sentido: ${flipped ? 'invertido' : 'do plano'}</p><button class="link" data-act="flip">Inverter</button></div></section>`;
   if (!active) return `<div class="map sm" data-map="guide"></div><div class="scroll">${head}<button class="btn p" data-act="gps-start">Iniciar guia</button>
 <details class="ex card"><summary>Roteiro sem GPS</summary>${steps.map(t => `<p>${esc(t)}</p>`).join('')}</details></div>`;
-  const cur = tracks.find(t => t.id === trackId), m = model, arrow = Number.isFinite(m.azimuth) ? `<svg class="arrow" viewBox="-50 -60 100 110" aria-hidden="true"><g transform="rotate(${m.azimuth.toFixed(0)})"><path d="M0 -40L22 22L0 10L-22 22Z"/></g><text x="0" y="-48">N</text></svg>` : '';
-  return `<div class="map sm" data-map="guide"></div><div class="scroll"><div class="row-sb"><p><b>${esc(trackId)}</b>${cur?.person ? ` · ${esc(cur.person)}` : ''} · ${flipped ? 'sentido invertido' : 'sentido do plano'}</p><button class="link" data-act="gps-stop">Parar</button></div>
-<section class="card guide ${m.state}" aria-live="polite"><p class="mu">${esc(m.title)}</p>${arrow}${m.big ? `<p class="big">${esc(m.big)}</p>` : ''}${m.dir ? `<p class="dir">${esc(m.dir)}</p>` : ''}
-${m.info ? `<p class="mu">${esc(m.info)}</p>` : ''}${(m.warn || []).map(w => `<p class="ck alerta">${esc(w)}</p>`).join('')}</section></div>`;
+  const cur = tracks.find(t => t.id === trackId), m = model;
+  // seta pequena ao lado da distância: o mapa (grande, acima) fica livre para contornar e se orientar
+  const arrow = Number.isFinite(m.azimuth) ? `<svg class="arrow" viewBox="-30 -30 60 60" aria-hidden="true"><circle r="28"/><g transform="rotate(${m.azimuth.toFixed(0)})"><path d="M0 -20L12 13L0 6L-12 13Z"/></g></svg>` : '';
+  return `<div class="map" data-map="guide"></div><section class="sheet gsheet"><div class="row-sb"><p><b>${esc(trackId)}</b>${cur?.person ? ` · ${esc(cur.person)}` : ''} · ${flipped ? 'invertido' : 'sentido do plano'}</p><button class="link" data-act="gps-stop">Parar</button></div>
+<div class="guide ${m.state}" aria-live="polite">${arrow}<div class="gtxt"><p class="mu">${esc(m.title)}</p>${m.big ? `<p class="big">${esc(m.big)}${m.dir ? ` <span class="dir">${esc(m.dir)}</span>` : ''}</p>` : ''}${m.info ? `<p class="mu">${esc(m.info)}</p>` : ''}</div></div>
+${(m.warn || []).map(w => `<p class="ck alerta">${esc(w)}</p>`).join('')}</section>`;
 }
 
 /** Versões anteriores do lote (mais recente primeiro). */
@@ -4293,7 +4300,7 @@ return Object.freeze({attachGestures});
 })();
 // src/app3/monitor.mjs
 const __m_app3_monitor=(()=>{
-const { buildRoute, guide, tiroErrado } = schmidtEngine2.guidance;
+const { buildRoute, guide, tiroErrado, azimuth, cardinal } = schmidtEngine2.guidance;
 const { lonLatToLocal } = schmidtEngine2.projection;
 const { schmidtGuideNextPoint, schmidtGuideSession } = __m_gps_guide_next;
 const { validateSchmidtGPSFix } = __m_gps_fix_policy;
@@ -4316,7 +4323,7 @@ function fixToPos(position, field, lastTimestamp, now) {
 
 /**
  * Modelo da tela da guia. `session` = memória da sessão (objeto mutável do chamador, ver schmidtGuideSession).
- * @returns {{state:string, title:string, big?:string, dir?:string, azimuth?:number, warn?:string[], next?:any, info?:string}}
+ * @returns {{state:string, title:string, big?:string, dir?:string, azimuth?:number, warn?:string[], next?:any, info?:string, to?:number[]}}
  */
 function guideModel(route, sc, field, pos, now, session) {
   const monitor = sc.params.monitor;
@@ -4328,15 +4335,23 @@ function guideModel(route, sc, field, pos, now, session) {
   const n = g.next, label = `Ponto ${n.seq} de ${route.nPoints}`, warn = [];
   if (g.stale) return { state: 'stale', title: label, big: 'Aguardando posição', warn: [`GPS sem atualização há ${num(ageMs / 1000)} s.`], next: n };
   if (!g.accuracyOk) warn.push(`GPS impreciso (± ${num(pos.accuracyM)} m).`);
-  if (g.offLine) {
+  // Longe do tiro (chegando ao lote): a guia leva à entrada do tiro, no início do sentido escolhido, sem avisos de linha.
+  const farM = Math.max(150, 5 * (monitor.offLineWarnM || 0)), start = route.parts?.[0]?.entry;
+  if (start && Number.isFinite(g.lateralM) && g.lateralM > farM && !g.arrived) {
+    const dx = start[0] - pos.x, dy = start[1] - pos.y, az = azimuth(dx, dy);
+    return { state: 'go', title: `Primeiro: vá até a entrada do ${route.trackId}`, big: `${num(Math.hypot(dx, dy))} m`, dir: `para o ${cardinal(az)}`, azimuth: az, to: [start[0], start[1]], warn, next: n };
+  }
+  const entry = g.alvo?.tipo === 'entrada';
+  // Indo para a entrada do tiro, "fora da linha" não ajuda (ainda não se está nela): só a seta até a entrada.
+  if (g.offLine && !entry) {
     const selected = new Set(sc.selected.map(t => t.id)), wrong = tiroErrado(sc.units.filter(u => selected.has(u.trackId)), route.trackId, pos, monitor.offLineWarnM);
     warn.push(wrong ? `Você está na linha do ${wrong.trackId}, não do ${route.trackId}. Ande de lado até o ${route.trackId} (${num(wrong.meuM)} m).`
       : `Você está ${num(g.lateralM)} m à ${g.lado} da linha: volte ${g.lado === 'direita' ? 'para a esquerda' : 'para a direita'}.`);
   }
   if (g.trecho?.passouM > 0) warn.push(`Passou do ponto ${n.seq} em ${num(g.trecho.passouM)} m: volte pela linha.`);
   if (g.arrived) return { state: 'arrived', title: `Chegou ao ponto ${n.seq} de ${route.nPoints}`, big: `nº ${n.number}`, warn: g.arrivalUncertain ? [`GPS impreciso (± ${num(pos.accuracyM)} m): confira pelos passos.`] : [], next: n };
-  const a = g.alvo, entry = a.tipo === 'entrada';
-  return { state: 'go', title: entry ? 'Primeiro: vá até a entrada do tiro' : `Próximo: ${label}`, big: `${num(a.distM)} m`, dir: `para o ${a.direction}`, azimuth: a.azimuthDeg,
+  const a = g.alvo;
+  return { state: 'go', to: [a.x, a.y], title: entry ? 'Primeiro: vá até a entrada do tiro' : `Próximo: ${label}`, big: `${num(a.distM)} m`, dir: `para o ${a.direction}`, azimuth: a.azimuthDeg,
     info: g.trecho && !entry ? `Faltam ${num(Math.max(0, g.trecho.faltaM))} m andando no tiro` : undefined, warn, next: n };
 }
 
@@ -5342,9 +5357,10 @@ function installMapa(app) {
       const opts = full ? { measure, pad: { t: 112, r: 30, b: 64, l: 40 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
         reserve: [[0, 0, info ? Math.min(W - 40, 330) : Math.min(W * 0.66, 252), 104], [W - 214, H - 60, W, H]] } : { pad: 22 };
       const g = guide ? app.guide() : null;
-      el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, others: cur.others || [], ...opts })
+      el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view: guide && g.focus ? { k: 1, x: 0, y: 0 } : view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, focus: guide ? g.focus : null, others: cur.others || [], ...opts })
         + (full ? (info ? balloon() : V.legend(cur.field, P.figures(cur.sc), areas)) + V.mapTools(layers, view.k > 1.01)
-          : (view.k > 1.01 ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : '') + balloon());
+          : guide && g.pos ? `<button class="fit" data-act="follow" aria-pressed="${!!g.follow}" aria-label="${g.follow ? 'Ver o lote inteiro' : 'Seguir minha posição'}">${g.follow ? '⤢' : '◎'}</button>`
+            : (view.k > 1.01 ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : '') + balloon());
       if (!el.dataset.g) {
         el.dataset.g = '1';
         attachGestures(el, { getView: () => view, setView: v => { view = v; }, onChange: () => requestAnimationFrame(drawMaps),
@@ -5378,7 +5394,7 @@ const { routeFor, fixToPos, guideModel } = __m_app3_monitor;
 function installMonitor(app) {
   const { document, window, ui } = app;
   /** Guia: tiro, sentido, GPS ligado, última posição, memória da sessão, trava de tela. */
-  /** @type {any} */ const mon = { trackId: null, flipped: false, active: false, watchId: null, pos: null, session: {}, wake: null, arrivedId: null, ticker: 0 };
+  /** @type {any} */ const mon = { follow: true, trackId: null, flipped: false, active: false, watchId: null, pos: null, session: {}, wake: null, arrivedId: null, ticker: 0 };
 
   function monitorData() {
     const cur = app.cur, sc = cur.sc, tasks = new Map();
@@ -5414,12 +5430,16 @@ function installMonitor(app) {
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && mon.active) keepAwake(true); });
 
   app.monitorData = monitorData;
-  app.guide = () => ({ target: mon.active ? monitorData().target : null, pos: mon.pos });
+  app.guide = () => {
+    const d = mon.active ? monitorData() : null, to = d?.model?.to || null;
+    return { target: d?.target ?? null, pos: mon.pos, to, follow: mon.follow, focus: mon.follow && mon.pos ? [[mon.pos.x, mon.pos.y], ...(to ? [to] : [])] : null };
+  };
   app.onLotChange.push(() => { if (mon.active) gpsStop(); mon.trackId = null; });
   app.clicks.push(t => { if (!t.dataset.track) return false; mon.trackId = t.dataset.track; mon.session = {}; mon.arrivedId = null; app.render(); return true; });
   Object.assign(app.ACTIONS, {
     'gps-start': () => gpsStart(),
     'gps-stop': () => gpsStop(),
+    follow: () => { mon.follow = !mon.follow; app.drawMaps(); },
     flip: () => { mon.flipped = !mon.flipped; mon.session = {}; app.render(); },
   });
 }
@@ -5915,6 +5935,6 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
 
 return Object.freeze({startApp});
 })();
-__m_app3_main.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),recs:JSON.parse(document.getElementById('recs-data').textContent),appVersion:'3.0.5'});
+__m_app3_main.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),recs:JSON.parse(document.getElementById('recs-data').textContent),appVersion:'3.0.6'});
 })();</script>
 </body></html>
