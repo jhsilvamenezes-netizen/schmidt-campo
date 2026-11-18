@@ -3,7 +3,7 @@
    dourada; mapa em fundo verde-sálvia com o lote claro; pontos dourados (número escuro, aro branco) sobre tiros verdes;
    ponto tocado em verde. Medidas "entre pontos" no dourado dos pontos; "entre tiros" no verde dos tiros. */
 :root{--bg:#f3f4ef;--sf:#fff;--sf2:#f1f4ee;--ink:#111a16;--mu:#56635d;--ln:#e2e6de;--br:#0d5446;--br2:#e3efe8;--on-br:#fff;--gold:#b8892f;
---hd:#0b3f35;--hd-ink:#fff;--mapbg:#e1e9e0;--pt:#7a5208;--tr:#0d5446;--ptf:#e3ae4b;--ptr:#0d5446;--pti:#111a16;--fd:#fbfcf8;--fl:#0d5446;
+--hd:#0b3f35;--hd-ink:#fff;--mapbg:#e1e9e0;--pt:#8a5a06;--tr:#0d5446;--ptf:#e3ae4b;--ptr:#0d5446;--pti:#111a16;--fd:#fbfcf8;--fl:#0d5446;
 --ok:#1b7a45;--oks:#dff1e6;--al:#8d5c08;--als:#fbefd6;--er:#b42318;--ers:#fdeceb;--sh:0 1px 0 #0d221a0a,0 8px 24px -12px #0d221a29;--focus:#1d5fd1;color-scheme:light}
 @media (prefers-color-scheme:dark){:root:not(.sun){--bg:#090e0c;--sf:#111916;--sf2:#16211c;--ink:#eef3ef;--mu:#9aaba3;--ln:#1f2b26;--br:#7fd0ae;--br2:#17302a;--on-br:#04110b;--gold:#d6a957;
 --hd:#0a2a23;--hd-ink:#fff;--mapbg:#0d1714;--pt:#e2b462;--tr:#5fbf9e;--ptf:#d9a441;--ptr:#f2f7f4;--pti:#13221c;--fd:#14231d;--fl:#5fbf9e;
@@ -235,3 +235,18 @@ main>.sheet{background:color-mix(in srgb,var(--sf) 94%,transparent);backdrop-fil
 @media (min-width:900px){.lot small{font-size:12px}}
 .sw{border-top:3px solid color-mix(in srgb,var(--tr) 60%,transparent)}.sw.p{border-top:3px solid var(--pt)}.sw.b{border-top:2px dashed var(--ink)}.sw.a{border:1px solid var(--fl)}
 :root.sun nav button.on .ic{background:none;color:var(--br)}
+/* 3.1 · Lotes: panorama da fazenda */
+.map.farm{height:38vh;min-height:230px}
+.map-svg .flot{fill:var(--fd);stroke:var(--fl);stroke-width:1.25;fill-rule:evenodd;vector-effect:non-scaling-stroke;cursor:pointer;transition:fill .15s}
+.map-svg .flot.on{fill:var(--ptf);stroke:var(--br);stroke-width:2.5}
+.map-svg .fcode{font:700 11px system-ui;fill:var(--ink);text-anchor:middle;pointer-events:none;paint-order:stroke;stroke:var(--fd);stroke-width:3px;stroke-linejoin:round}
+.map-svg .fcode.on{stroke:var(--ptf);fill:var(--pti)}
+.hero{gap:10px;border-color:color-mix(in srgb,var(--br) 30%,var(--ln))}
+.eyebrow{font:600 12px system-ui;color:var(--mu);margin-bottom:2px}
+.lotrow{width:100%;text-align:left}.lotrow.on .id{background:var(--br);color:var(--on-br);border-color:var(--br)}
+/* conferência e equipe dobráveis no Plano */
+.fold{gap:0}.fold>summary{list-style:none;cursor:pointer;gap:12px}.fold>summary::-webkit-details-marker{display:none}
+.fold>summary .x{flex:1;min-width:0}.fold>summary .x b{font:650 15px system-ui}.fold>summary .x .sub{display:block;color:var(--mu);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fold[open]>summary{margin-bottom:8px}.fold .ck{padding:4px 0}
+.fold>summary:after{content:"›";color:var(--mu);font-size:20px;line-height:1;transition:transform .15s}.fold[open]>summary:after{transform:rotate(90deg)}
+:root.sun .map-svg .flot{stroke:#000;stroke-width:1.5}

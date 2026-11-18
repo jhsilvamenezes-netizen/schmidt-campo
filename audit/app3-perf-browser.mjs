@@ -23,14 +23,14 @@ try {
   const lote = [];
   for (const k of ['Bananal|BD3', 'Bananal|BC2', 'Rio de Janeiro|RB5', 'Bananal|BD5']) { await p.click('button.lot'); await p.waitForSelector(`[data-lot="${k}"]`); lote.push(await timed(`[data-lot="${k}"]`)); }
   const aba = [];
-  for (const t of ['plano', 'enviar', 'mapa', 'plano', 'mapa']) aba.push(await timed(`[data-tab="${t}"]`));
+  for (const t of ['plano', 'lotes', 'mapa', 'plano', 'mapa']) aba.push(await timed(`[data-tab="${t}"]`));
   // "Todos os lotes": maior tarefa longa enquanto monta
   await p.evaluate(() => { window.__long = 0; new PerformanceObserver(l => { for (const e of l.getEntries()) window.__long = Math.max(window.__long, e.duration); }).observe({ type: 'longtask' }); });
-  await p.click('[data-open="menu"]'); const t0 = Date.now(); await p.click('.sheet [data-open="todos"]');
-  await p.waitForSelector('.lotrow', { timeout: 60000 }); const todos = Date.now() - t0, maiorTravada = Math.round(await p.evaluate(() => window.__long));
-  await p.keyboard.press('Escape');
+  // 3.1: o panorama passou para a aba Lotes (cálculo em partes de ~25 ms)
+  const t0 = Date.now(); await p.click('[data-tab="lotes"]');
+  await p.waitForFunction(() => !/calculando/i.test(document.querySelector('[data-rows]')?.textContent ?? 'calculando'), null, { timeout: 60000 }); const todos = Date.now() - t0, maiorTravada = Math.round(await p.evaluate(() => window.__long));
   // 10 toques seguidos (abas e lote) sem erro e sem tela de recuperação
-  for (let i = 0; i < 10; i++) await p.click(`[data-tab="${['mapa', 'plano', 'enviar', 'monitorar'][i % 4]}"]`);
+  for (let i = 0; i < 10; i++) await p.click(`[data-tab="${['mapa', 'plano', 'lotes', 'monitorar'][i % 4]}"]`);
   await p.waitForSelector('[data-tab="plano"][aria-current="page"]');
   assert.equal(await p.locator('[data-act="reset-lot"]').count(), 0);
   // U17: mudar a regra num lote que se beneficia do equilíbrio (BA2, 25 ha) — o plano aparece na hora e o ajuste

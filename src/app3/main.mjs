@@ -11,6 +11,7 @@ import { installMapa } from './screen-mapa.mjs';
 import { installMonitor } from './screen-monitor.mjs';
 import { installPlano } from './screen-plano.mjs';
 import { installEnviar } from './screen-enviar.mjs';
+import { installLotes } from './screen-lotes.mjs';
 import { installMais } from './screen-mais.mjs';
 import { installBloco } from './screen-bloco.mjs';
 
@@ -202,13 +203,13 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     if (ui.view === 'mapa') main.innerHTML = V.mapaView(c);
     else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), hiTrack: app.hiTrack,
       rows: c.sc.trackRows.map(r => ({ ...r, d: c.block ? null : (c.details ??= new Map()).get(r.trackId) ?? c.details.set(r.trackId, P.trackDetail(c.field, c.sc, r.trackId)).get(r.trackId) })) });
-    else if (ui.view === 'enviar') main.innerHTML = V.enviarView(c);
+    else if (ui.view === 'lotes') main.innerHTML = app.lotesView();
     else main.innerHTML = V.monitorView(app.monitorData());
     requestAnimationFrame(app.drawMaps);
   }
 
   // cada tela registra o que é seu
-  installBloco(app); installMapa(app); installMonitor(app); installPlano(app); installEnviar(app); installMais(app);
+  installBloco(app); installMapa(app); installMonitor(app); installPlano(app); installEnviar(app); installMais(app); installLotes(app);
 
   // ---------- eventos (um ouvinte por tipo; cada tela responde pelos seus botões e campos) ----------
   document.addEventListener('click', e => {

@@ -5,6 +5,7 @@ export const ICONS = {
   mapa: '<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>',
   plano: '<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',
   enviar: '<path d="M4 12l16-8-6 16-3-7z"/><path d="M11 13l9-9"/>',
+  lotes: '<path d="M3 7l6-3 6 2 6-2v13l-6 3-6-2-6 2z"/><path d="M9 4l-1 16M15 6l1 16M3 13l18-1"/>',
   monitorar: '<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" class="fill"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
   sol: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   mais: '<circle cx="5" cy="12" r="1.6" class="fill"/><circle cx="12" cy="12" r="1.6" class="fill"/><circle cx="19" cy="12" r="1.6" class="fill"/>',
@@ -41,7 +42,7 @@ export const mapTools = (layers, zoomed, here = false) => `<div class="mtools">$
 const stepper = (id, label, hint, value) => `<div class="step"><label for="${id}">${label}${hint ? `<small>${hint}</small>` : ''}</label><div class="stp">
 <button data-dec="${id}" aria-label="Diminuir ${label.toLowerCase()}">−</button><input id="${id}" inputmode="numeric" value="${esc(value)}"><button data-inc="${id}" aria-label="Aumentar ${label.toLowerCase()}">+</button></div></div>`;
 
-export function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, block, hiTrack = null }) {
+export function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, block, hiTrack = null, list = [], split = null }) {
   if (block) return blockPlanoView({ f, sc, rows, block });
   const alts = (rec?.alternatives || []).filter(a => a);
   return `<div class="map sm" data-map="small"></div><div class="scroll">
@@ -50,20 +51,27 @@ export function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, bu
 <section class="card"><div class="row-sb"><h2 class="h">${inUseIsRec ? 'Plano recomendado' : 'Plano em uso'}</h2>${inUseIsRec ? '<span class="tag">em uso</span>' : rec ? '<button class="link" data-use="rec">Usar recomendado</button>' : '<span class="mu">calculando o recomendado…</span>'}</div>
 ${metrics(f)}<p class="mu">Caminhada ${esc(f.caminhada)}${f.tiros ? ` · ${km(sc.route.totalEstimatedM / f.tiros)} km por tiro` : ''}</p>${busy ? '<p class="mu">Calculando…</p>' : ''}</section>
 ${trackRows(rows, hiTrack)}
+${checkAndTeam(list, split)}
 <section class="card list"><h2 class="h">Outras opções</h2>${alts.length ? alts.map((a, i) => `<div class="li"><span class="x">${num(a.m.tiros)} tiros · ${num(a.m.pontos)} pontos<br><small>95% &lt; ${num(a.m.p95M)} m · ${num(a.m.caminhadaKm, 1)} km${a.id === 'equipe' ? ' · igual por pessoa' : ''}</small></span><button class="use" data-alt="${i}">Usar</button></div>`).join('') : '<p class="mu">Sem outra opção melhor.</p>'}
 <button class="lnk" data-open="ajustes">Ajustes avançados</button><button class="lnk" data-open="calculo">Como foi calculado</button></section></div>`;
 }
 
-export function enviarView({ list, split }) {
+/** Equipe: cada pessoa com o(s) tiro(s) inteiro(s), pontos e entrada. */
+const teamList = split => split.pessoas.map((p, i) => `<div class="li"><span class="id">${esc(p.tarefas.map(t => t.id).join('+'))}</span><span class="x"><b>Pessoa ${i + 1}</b><small class="sub">${esc(p.tarefas.map(t => `pontos\u00a0${t.de ?? '—'}–${t.ate ?? '—'}${t.entra ? ` · entra a ${t.entra}` : ''}`).join(' · '))}</small></span><span class="r">${km(p.m)} km</span></div>`).join('');
+
+/** Conferência e equipe no Plano (antes na aba Enviar): fechadas, com o resumo à vista. */
+export function checkAndTeam(list, split) {
   const ok = list.filter(c => c.level === 'ok').length, all = ok === list.length;
-  return `<div class="scroll"><section class="card"><div class="row-sb"><h2 class="big md">${all ? 'Pronto para enviar' : 'Conferir antes de enviar'}</h2>${chip(all ? 'ok' : 'alerta', `${ok} de ${list.length}`)}</div>
-${list.map(c => `<p class="ck ${c.level}">${esc(c.text)}</p>`).join('')}</section>
-${split ? `<section class="card list"><h2 class="h">Equipe</h2>${split.pessoas.map((p, i) => `<div class="li"><span class="id">${esc(p.tarefas.map(t => t.id).join('+'))}</span><span class="x"><b>Pessoa ${i + 1}</b><small class="sub">${esc(p.tarefas.map(t => `pontos\u00a0${t.de ?? '—'}–${t.ate ?? '—'}${t.entra ? ` · entra a ${t.entra}` : ''}`).join(' · '))}</small></span><span class="r">${km(p.m)} km</span></div>`).join('')}</section>` : ''}
-<button class="btn p" data-act="share">Enviar plano aos monitores</button>
+  const kms = split ? split.pessoas.map(p => p.m / 1000) : [];
+  return `<details class="card fold"><summary class="sumc"><span class="x"><b>${all ? 'Plano conferido' : 'Conferir o plano'}</b><small class="sub">${esc(list.filter(c => c.level !== 'ok').map(c => c.text).join(' · ') || list.map(c => c.text).slice(0, 2).join(' · '))}</small></span>${chip(all ? 'ok' : 'alerta', `${ok} de ${list.length}`)}</summary>${list.map(c => `<p class="ck ${c.level}">${esc(c.text)}</p>`).join('')}</details>`
+    + (split ? `<details class="card fold list"><summary class="sumc"><span class="x"><b>Equipe</b><small class="sub">${num(split.pessoas.length)} ${split.pessoas.length === 1 ? 'pessoa' : 'pessoas'} · ${num(Math.min(...kms), 1)} a ${num(Math.max(...kms), 1)} km cada</small></span></summary>${teamList(split)}</details>` : '');
+}
+
+/** Folha "Arquivos e fichas" (menu): enviar o plano, fichas impressas, resumo e arquivos de GPS/SIG. */
+export const arquivosBody = () => `<button class="btn p" data-act="share">Compartilhar o plano</button>
 <div class="two"><button class="btn" data-act="fichas">Fichas de campo</button><button class="btn" data-act="copy">Copiar resumo</button></div>
 <p class="center"><button class="link" data-act="gpx">GPX</button> · <button class="link" data-act="kml">KML</button> · <button class="link" data-act="csv">CSV</button> · <button class="link" data-act="geojson">GeoJSON</button></p>
-<p class="status" role="status" id="status"></p></div>`;
-}
+<p class="status" role="status" id="status"></p>`;
 
 export const sheet = (title, body) => `<div class="ov" data-close><section class="sheet menu" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="grab"></div><div class="row-sb"><h2 class="big md">${esc(title)}</h2><button class="close" data-close aria-label="Fechar">×</button></div>${body}</section></div>`;
 

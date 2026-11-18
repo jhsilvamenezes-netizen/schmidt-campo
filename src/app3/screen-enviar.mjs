@@ -37,6 +37,7 @@ export function installEnviar(app) {
       dl(text, name, 'application/json'); status('Arquivo do plano baixado: envie aos monitores.');
     },
   });
+  app.SHEETS.arquivos = () => app.openSheet('Arquivos e fichas', V.arquivosBody());
   app.SHEETS.abrir = () => { app.closeSheet(); document.querySelector('#plan-input').click(); };
   app.changes.push(t => {
     if (t.id !== 'plan-input' || !t.files?.[0]) return false;

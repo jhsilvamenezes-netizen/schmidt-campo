@@ -18,7 +18,7 @@ const server = createServer(async (q, r) => { try { const f = q.url === '/' ? 'i
 await new Promise(r => server.listen(0, '127.0.0.1', r));
 const url = `http://127.0.0.1:${server.address().port}/`;
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
-const LIMITS = { mapa: 40, plano: 110, enviar: 90 };
+const LIMITS = { mapa: 40, plano: 130, lotes: 200 };
 const ready = p => p.waitForFunction(() => document.documentElement.dataset.ready === '1', null, { timeout: 15000 });
 try {
   for (const colorScheme of ['light', 'dark']) {
@@ -85,7 +85,8 @@ try {
     await p.mouse.click(pt.x + pt.width / 2, pt.y + pt.height / 2); await p.waitForSelector('.bal');
     assert.match(await p.textContent('.bal'), /Ponto \d+ · T\d/);
     // arquivos: plano (sem compartilhamento no navegador de teste → baixa) e CSV
-    await p.click('[data-tab="enviar"]');
+    // 3.1: arquivos saíram da aba Enviar e foram para o menu (Arquivos e fichas)
+    await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="arquivos"]');
     const [plan] = await Promise.all([p.waitForEvent('download'), p.click('[data-act="share"]')]);
     assert.match(plan.suggestedFilename(), /BD3_SIMULADO\.plano\.json$/);
     const [csv] = await Promise.all([p.waitForEvent('download'), p.click('[data-act="csv"]')]);
@@ -106,8 +107,17 @@ try {
     assert.match(await p.textContent('.sheet'), /1 ponto a cada 15 ha/); await p.keyboard.press('Escape');
     await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="dados"]');
     assert.match(await p.textContent('.sheet'), /ATAQUE I2X.*73,0 mm/s); await p.keyboard.press('Escape');
-    await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="todos"]'); await p.waitForSelector('.lotrow', { timeout: 20000 });
-    assert.equal(await p.locator('.lotrow').count(), 51); await p.keyboard.press('Escape');
+    // 3.1 · aba Lotes (no lugar de Enviar): fazenda desenhada, lote em uso em destaque e a lista com o plano de cada lote
+    await p.click('[data-tab="lotes"]'); await p.waitForSelector('[data-farm] .flot.on');
+    const fazenda = await p.locator('[data-farm-pick][aria-pressed="true"]').textContent();
+    await p.waitForFunction(() => !/calculando/i.test(document.querySelector('[data-rows]').textContent), null, { timeout: 30000 });
+    const n1 = await p.locator('.lotrow').count();
+    await p.click('[data-farm-pick]:not([aria-pressed="true"])'); await p.waitForFunction(() => !/calculando/i.test(document.querySelector('[data-rows]').textContent), null, { timeout: 30000 });
+    assert.equal(n1 + await p.locator('.lotrow').count(), 51, `lotes por fazenda (${fazenda})`);
+    const outro = await p.locator('.lotrow').first().getAttribute('data-pick');
+    await p.locator('.lotrow').first().click(); await p.waitForSelector('.hero'); assert.equal(await p.textContent('#lot-name'), outro.split('|')[1]);
+    await p.click('.hero [data-go="mapa"]'); await p.waitForSelector('[data-map="full"] .pt');
+    await p.click('button.lot'); await p.click('[data-lot="Bananal|BD3"]');
     // cópia: baixa, muda o plano, restaura e volta ao de 15 ha
     await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="copia"]');
     const [dl] = await Promise.all([p.waitForEvent('download'), p.click('[data-act="backup"]')]);
@@ -129,7 +139,7 @@ try {
     await p.waitForFunction(() => /recusada/.test(document.getElementById('toast').textContent)); await p.keyboard.press('Escape');
     // fichas de campo: uma por tiro
     await p.evaluate(() => { window.print = () => { window.__printed = document.querySelectorAll('#print .ficha').length; }; });
-    await p.click('[data-tab="enviar"]'); await p.click('[data-act="fichas"]');
+    await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="arquivos"]'); await p.click('[data-act="fichas"]');
     assert.ok(await p.evaluate(() => window.__printed) >= 4);
     assert.deepStrictEqual(errors, []);
     await ctx.close();

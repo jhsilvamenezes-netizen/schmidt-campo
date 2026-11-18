@@ -11,8 +11,8 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', 'app3/store', 'app3/plan-file', 'app3/planner', 'app3/map', 'app3/views',
   'app3/advanced', 'app3/gestures', 'app3/monitor', 'app3/compass', 'persistence/backup-service', 'persistence/backup-format', 'platform/browser-backup-adapters', 'platform/browser-session-lock',
   'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/versions', 'app3/backup',
-  'app3/screen-mapa', 'app3/screen-monitor', 'app3/screen-plano', 'app3/screen-enviar', 'app3/screen-mais', 'app3/screen-bloco', 'app3/main'];
-export const APP_VERSION = '3.0.11';
+  'app3/screen-mapa', 'app3/screen-monitor', 'app3/screen-plano', 'app3/screen-enviar', 'app3/screen-mais', 'app3/screen-lotes', 'app3/screen-bloco', 'app3/main'];
+export const APP_VERSION = '3.1.0';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
 /** Cada módulo no seu escopo; importações do motor viram o namespace schmidtEngine2. */
@@ -73,7 +73,7 @@ export async function build3() {
   const recs = await recsData(JSON.parse(fields).fields);
   const [engine, app, css, shell] = [await bundleEngine(), await bundleApp(), await readFile(root + 'src/app3/styles.css', 'utf8'), await readFile(root + 'src/app3/shell.html', 'utf8')];
   for (const [n, t] of [['motor', engine], ['tela', app], ['dados', fields], ['safra', safra], ['recomendações', recs]]) if (/<\/script/i.test(t)) throw Error(`${n} contém </script>`);
-  const nav = [['mapa', 'Mapa'], ['plano', 'Plano'], ['enviar', 'Enviar'], ['monitorar', 'Monitorar']]
+  const nav = [['lotes', 'Lotes'], ['mapa', 'Mapa'], ['plano', 'Plano'], ['monitorar', 'Monitorar']]
     .map(([k, l]) => `<button data-tab="${k}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>${l}</button>`).join('');
   const csp = `default-src 'self'; script-src ${sha(engine)} ${sha(app)}; style-src ${sha(css)}; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'`;
   const html = shell.replace('__CSP__', csp).replace('__CSS__', () => css).replace('__ICON_SOL__', ICONS.sol).replace('__ICON_MAIS__', ICONS.mais)
