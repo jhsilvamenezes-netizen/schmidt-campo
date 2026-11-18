@@ -196,7 +196,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   function draw(main) {
     const c = compute();
     $('#lot-name').textContent = c.field.code;
-    $('#lot-farm').textContent = `· ${c.field.farm}`;
+    $('#lot-farm').textContent = c.field.farm;
     for (const a of document.querySelectorAll('[data-tab]')) { const on = a.dataset.tab === ui.view; a.classList.toggle('on', on); a.setAttribute('aria-current', on ? 'page' : 'false'); }
     main.dataset.view = ui.view;
     if (ui.view === 'mapa') main.innerHTML = V.mapaView(c);
