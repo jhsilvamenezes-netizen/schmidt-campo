@@ -37,7 +37,7 @@ Estado: `livre` · `em andamento · IA · branch` · `pronto para revisão · PR
 | U05 | P1 | Desempenho no celular | N1–N5, N18, A6 | `src/app3/planner.mjs`, worker novo, `scripts/build-3.mjs` | Celular lento (6×): trocar lote e aba < 0,2 s; "Todos os lotes" sem travar; 10 toques sem travar | pronto para revisão · Claude · 3.0.5 (falta: ha por ponto 0,55 s no celular lento → worker) |
 | U06 | P1 | Ferramentas do mapa | M1, M2, M4, M13 | `src/app3/map.mjs`, `gestures.mjs` | Norte/Talhão, aproximar, afastar, enquadrar, cobertura | livre |
 | U07 | P1 | Celular: deitado, iPhone, prévia do link | N22, N23, N24, N21 | `src/app3/{styles.css,shell.html}` | Deitado com mapa útil; topo seguro no iPhone; prévia no WhatsApp | livre |
-| U08 | P1 | Monitorar completo | N7, N8, N19, G1–G8 | `src/app3/monitor*.mjs` | Bússola, voz, seguir, "onde estou", nome, arquivos do próprio tiro; GPS pausa fora da aba | livre |
+| U08 | P1 | Monitorar completo | N7, N8, N19, G1–G8 | `src/app3/monitor*.mjs` | Bússola, voz, seguir, "onde estou", nome, arquivos do próprio tiro; GPS pausa fora da aba | em andamento · Claude · 3.0.7 (bússola, voz, pausa do GPS; falta: "onde estou", nome e arquivos do tiro) |
 | U09 | P1 | Acessibilidade e toque | N6, N14, N20, N25, D1 | `src/app3/main.mjs` (ou módulos de U02), `styles.css` | Voltar fecha janela; foco preso e devolvido; alvos ≥ 44 px; axe sem falhas | livre |
 | U10 | P2 | Plano: ajustes completos | P1, P2, P4–P8, P14, N11–N13 | `src/app3/advanced.mjs` | Todos os ajustes da 2.5 no celular, conferidos pelo catálogo | livre |
 | U11 | P2 | Comparar espaçamentos e diagnóstico | P9, P10, P13, P15, F6, M3 | `src/app3/` (tela de comparação) | 5 opções lado a lado com prévia no mapa; mancha descoberta; visão da fazenda | livre |

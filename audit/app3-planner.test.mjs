@@ -124,3 +124,17 @@ test('U05 · recomendações embutidas no arquivo = motor da tela, nos 51 lotes 
   assert.deepStrictEqual(Object.keys(data.recs).sort(), keys);
   for (const k of keys) assert.deepStrictEqual(data.recs[k], JSON.parse(JSON.stringify(P.recommend(fields[k], {}, RECS_PEOPLE, false))), k);
 });
+
+test('U08 · bússola: rumo do iPhone e do Android, tela deitada, suavização pelo caminho curto e ângulo da seta', async () => {
+  const { headingOf, smoothHeading, arrowAngle } = await import('../src/app3/compass.mjs');
+  assert.equal(headingOf({ webkitCompassHeading: 90 }), 90);
+  assert.equal(headingOf({ absolute: true, alpha: 90 }), 270);
+  assert.equal(headingOf({ absolute: false, alpha: 90 }), null, 'alpha relativo não serve de bússola');
+  assert.equal(headingOf({}), null);
+  assert.equal(headingOf({ webkitCompassHeading: 350 }, 90), 80, 'tela deitada soma o ângulo da tela');
+  assert.ok(Math.abs(smoothHeading(359, 1, 0.5) - 0) < 1e-9, '359° → 1° passa pelo norte');
+  assert.equal(smoothHeading(null, 42), 42);
+  assert.equal(arrowAngle(90, 90), 0, 'alvo à frente: seta para cima');
+  assert.equal(arrowAngle(90, 180), 270, 'alvo à esquerda');
+  assert.equal(arrowAngle(135, null), 135, 'sem bússola: norte para cima');
+});

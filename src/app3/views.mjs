@@ -85,16 +85,18 @@ ${findings.length ? findings.map(x => `<p class="ck ${x.level === 'info' ? 'info
 export const calculoBody = steps => steps.map(s => `<details class="ex"><summary>${esc(s.etapa)}</summary>${s.texto.map(t => `<p>${esc(t)}</p>`).join('')}</details>`).join('');
 
 /** Guia por GPS: escolha do tiro, seta, distância e avisos. Sem marcação de coleta. */
-export function monitorView({ tracks, trackId, flipped, active, model, steps }) {
+export function monitorView({ tracks, trackId, flipped, active, model, steps, heading = null, voice = false, canSpeak = false }) {
   const pick = `<div class="chips" role="group" aria-label="Tiro">${tracks.map(t => `<button class="chipb${t.id === trackId ? ' on' : ''}" data-track="${esc(t.id)}" aria-pressed="${t.id === trackId}">${esc(t.id)}${t.person ? `<small>${esc(t.person)}</small>` : ''}</button>`).join('')}</div>`;
   const head = `<section class="card">${pick}<div class="row-sb"><p class="mu">Sentido: ${flipped ? 'invertido' : 'do plano'}</p><button class="link" data-act="flip">Inverter</button></div></section>`;
   if (!active) return `<div class="map sm" data-map="guide"></div><div class="scroll">${head}<button class="btn p" data-act="gps-start">Iniciar guia</button>
 <details class="ex card"><summary>Roteiro sem GPS</summary>${steps.map(t => `<p>${esc(t)}</p>`).join('')}</details></div>`;
   const cur = tracks.find(t => t.id === trackId), m = model;
   // seta pequena ao lado da distância: o mapa (grande, acima) fica livre para contornar e se orientar
-  const arrow = Number.isFinite(m.azimuth) ? `<svg class="arrow" viewBox="-30 -30 60 60" aria-hidden="true"><circle r="28"/><g transform="rotate(${m.azimuth.toFixed(0)})"><path d="M0 -20L12 13L0 6L-12 13Z"/></g></svg>` : '';
-  return `<div class="map" data-map="guide"></div><section class="sheet gsheet"><div class="row-sb"><p><b>${esc(trackId)}</b>${cur?.person ? ` · ${esc(cur.person)}` : ''} · ${flipped ? 'invertido' : 'sentido do plano'}</p><button class="link" data-act="gps-stop">Parar</button></div>
-<div class="guide ${m.state}" aria-live="polite">${arrow}<div class="gtxt"><p class="mu">${esc(m.title)}</p>${m.big ? `<p class="big">${esc(m.big)}${m.dir ? ` <span class="dir">${esc(m.dir)}</span>` : ''}</p>` : ''}${m.info ? `<p class="mu">${esc(m.info)}</p>` : ''}</div></div>
+  // com bússola, a seta aponta para onde andar com o celular na mão; sem ela, norte para cima
+  const rel = Number.isFinite(m.azimuth) ? (Number.isFinite(heading) ? (((m.azimuth - Number(heading)) % 360) + 360) % 360 : m.azimuth) : null;
+  const arrow = rel === null ? '' : `<svg class="arrow" viewBox="-30 -30 60 60" aria-hidden="true"><circle r="28"/><g data-az="${m.azimuth.toFixed(1)}" transform="rotate(${rel.toFixed(0)})"><path d="M0 -20L12 13L0 6L-12 13Z"/></g></svg>`;
+  return `<div class="map" data-map="guide"></div><section class="sheet gsheet"><div class="row-sb"><p><b>${esc(trackId)}</b>${cur?.person ? ` · ${esc(cur.person)}` : ''} · ${flipped ? 'invertido' : 'sentido do plano'}</p><span class="gact">${canSpeak ? `<button class="link" data-act="voice" aria-pressed="${voice}">${voice ? 'Voz ligada' : 'Voz'}</button>` : ''}<button class="link" data-act="gps-stop">Parar</button></span></div>
+<div class="guide ${m.state}" aria-live="polite">${arrow}<div class="gtxt"><p class="mu">${esc(m.title)}</p>${m.big ? `<p class="big">${esc(m.big)}${m.dir ? ` <span class="dir">${esc(m.dir)}</span>` : ''}</p>` : ''}${m.info ? `<p class="mu">${esc(m.info)}</p>` : ''}${rel === null ? '' : `<p class="mu sm" data-compass-label>${Number.isFinite(heading) ? 'seta pelo celular' : 'seta com o norte para cima'}</p>`}</div></div>
 ${(m.warn || []).map(w => `<p class="ck alerta">${esc(w)}</p>`).join('')}</section>`;
 }
 
