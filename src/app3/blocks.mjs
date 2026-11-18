@@ -15,9 +15,9 @@ function buildScenarioMetrics(f, sc) { return deps.metrics(f, sc); }
 /** Blocos (só compatíveis) que contêm o lote; o grupo completo primeiro. */
 export const blocksFor = (fields, key) => schmidtReferenceBlocks(fields).filter(g => g.compatible && g.members.includes(key));
 
-/** Tolerância do bloco na 3.0: até 1% de diferença (95% do lote e pior vazio) conta como "mesma cobertura" — na 2.5 era
+/** Tolerância do bloco na 3.0 (definida pelo proprietário): até 5% de diferença (95% do lote e pior vazio) conta como "mesma cobertura" — na 2.5 era
  *  zero até a 6ª casa, e 31 dos 40 grupos ficavam sem opção por perdas de 0,0–0,4%. A 2.5 (legado/) segue igual. */
-export const BLOCK_TOLERANCE = 0.01;
+export const BLOCK_TOLERANCE = 0.05;
 
 /** Aplica a tolerância: marca o que pode ser usado e escolhe, entre esses, o de menos pontos a mais (depois, o de menor perda). */
 export function withTolerance(rec, tol = BLOCK_TOLERANCE) {

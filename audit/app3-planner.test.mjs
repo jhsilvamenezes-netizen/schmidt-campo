@@ -154,3 +154,11 @@ test('U17 · áreas equilibradas nos 51 lotes: variação mediana ≤ 8%, sem pi
   assert.ok(med(rows.map(r => r.b1.cv)) <= 0.08, `variação mediana ${med(rows.map(r => r.b1.cv))}`);
   assert.ok(med(rows.map(r => r.b1.cv)) < med(rows.map(r => r.b0.cv)));
 });
+
+test('"Onde estou": dentro/fora do lote, tiro e ponto mais perto', () => {
+  const f = fields['Bananal|BD3'], sc = P.planInUse(f, P.recommend(f, {}, 5, false).chosen.params, null), p = sc.samples[3];
+  const on = P.whereAmI(f, sc, { x: p.x, y: p.y, accuracyM: 4 });
+  assert.equal(on.inside, true); assert.equal(on.point.number, p.number); assert.ok(on.point.m < 1e-6); assert.equal(on.track.id, p.trackId); assert.ok(on.track.m < 1e-6);
+  const far = P.whereAmI(f, sc, { x: p.x + 50000, y: p.y, accuracyM: 4 });
+  assert.equal(far.inside, false); assert.ok(far.edgeM > 40000);
+});
