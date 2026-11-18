@@ -120,7 +120,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   /** Contexto comum: cada tela (screen-*.mjs) lê daqui e registra as suas folhas, ações e eventos. */
   /** @type {any} */ const app = {
     document, window, fields, keys, ui, store, storage, persistent, session, safra, appVersion, host, versions: createVersions(window.indexedDB),
-    cur: null, toast, saved, people, recFor, whenRec, render, setParams,
+    cur: null, hiTrack: null, toast, saved, people, recFor, whenRec, render, setParams,
     /** Recomendação já pronta (sem calcular), ou undefined. */
     /** Recomendação já pronta ou feita na hora (para listas e bloco, que precisam do valor já). */
     recNow: (field, base, key = ui.key) => recFor(field, base, key) ?? P.recommendBase(field, base, people(), saved().fitTeam),
@@ -200,7 +200,8 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     for (const a of document.querySelectorAll('[data-tab]')) { const on = a.dataset.tab === ui.view; a.classList.toggle('on', on); a.setAttribute('aria-current', on ? 'page' : 'false'); }
     main.dataset.view = ui.view;
     if (ui.view === 'mapa') main.innerHTML = V.mapaView(c);
-    else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), rows: c.sc.trackRows });
+    else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), hiTrack: app.hiTrack,
+      rows: c.sc.trackRows.map(r => ({ ...r, d: c.block ? null : (c.details ??= new Map()).get(r.trackId) ?? c.details.set(r.trackId, P.trackDetail(c.field, c.sc, r.trackId)).get(r.trackId) })) });
     else if (ui.view === 'enviar') main.innerHTML = V.enviarView(c);
     else main.innerHTML = V.monitorView(app.monitorData());
     requestAnimationFrame(app.drawMaps);

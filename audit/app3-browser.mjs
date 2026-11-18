@@ -47,6 +47,11 @@ try {
     assert.equal(pts.haPerPoint, 10);
     await p.reload(); await ready(p); await p.click('[data-tab="mapa"]');
     await p.waitForFunction(() => document.querySelectorAll('.map-svg .pt').length === 47, null, { timeout: 5000 });
+    // U04 · tiro completo: régua borda → pontos → borda, vizinhos de lado e destaque no mapa do Plano
+    await p.click('[data-tab="plano"]'); await p.click('details.trk >> nth=1 >> summary');
+    assert.match((await p.textContent('details.trk[open]')).replace(/\s+/g, ' '), /Entra a \S+ e anda para \S+.*borda.*m.*borda.*Tiros vizinhos: T1 a \d+ m · T3 a \d+ m/);
+    await p.click('[data-hitrack="T2"]'); await p.waitForSelector('[data-map="small"] .track.hi');
+    await p.click('[data-tab="mapa"]');
     // pessoas e opções
     await p.click('[data-tab="plano"]'); await p.click('[data-inc="people"]');
     assert.equal(await p.inputValue('#people'), '6');

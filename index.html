@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-zCJFWZSwwYeUvGoMMISYUs9gN74PnHWgBO+YkqoeDh0='; style-src 'sha256-nWDvQroOc/V7pyVcVVT4yOQSwi2pM0pnAhpmiqkJGdY='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-XucpYXUsCKf3h18RuFsnOpQdNtQnRakxNMZBh6YvOZ8='; style-src 'sha256-01P55qWnCU1qYoJQJORtS7nhY+2PJXpQiwTqfOTYGFk='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#17594a" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c1512" media="(prefers-color-scheme: dark)">
 <title>SCHMIDT Campo</title>
 <link rel="icon" href="marca.svg"><link rel="apple-touch-icon" href="marca-180.png"><link rel="manifest" href="app.webmanifest">
@@ -139,6 +139,15 @@ nav button.on{color:var(--br)}nav button.on .ic{background:var(--br2);border-rad
 .mtools{position:absolute;right:10px;bottom:10px;display:flex;gap:6px}
 .mt{min-width:44px;height:44px;padding:0 12px;border-radius:12px;background:var(--sf);box-shadow:var(--sh);font:600 14px system-ui;color:var(--ink)}
 .mt[aria-pressed="true"]{background:var(--br);color:var(--on-br)}
+/* 3.1 · tiros completos (U04) */
+.trk>summary{list-style:none;cursor:pointer}.trk>summary::-webkit-details-marker{display:none}
+.trk>summary .r::after{content:" ▾";color:var(--mu)}.trk[open]>summary .r::after{content:" ▴"}
+.trkb{display:flex;flex-direction:column;gap:6px;padding:4px 0 12px}
+.ruler{display:flex;flex-wrap:wrap;align-items:center;row-gap:6px;font-size:12px}
+.rs{display:inline-flex;align-items:center;white-space:nowrap}.rs b{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 6px;border-radius:12px;background:var(--pt);color:#fff;font:700 12px system-ui}
+.rs:first-child b,.rs:last-child b{background:var(--br2);color:var(--ink);font-weight:600}
+.rs i{font-style:normal;color:var(--mu);padding:0 6px;border-bottom:2px dashed var(--tr);margin:0 4px}
+.map-svg .track.hi{stroke-width:5;stroke-dasharray:none}.map-svg .track.lo{opacity:.35}
 </style></head>
 <body>
 <a class="skip" href="#view">Ir para o conteúdo</a>
@@ -3641,7 +3650,7 @@ const { recommendPlan, SHAPE_KEYS, metricsOf } = schmidtEngine2.recommend;
 const { restoreSamples, withSamples } = schmidtEngine2.editing;
 const { teamPlan } = schmidtEngine2.team;
 const { cumulative, pointAt } = schmidtEngine2.polyline;
-const { azimuth, cardinal } = schmidtEngine2.guidance;
+const { azimuth, cardinal, buildRoute } = schmidtEngine2.guidance;
 const { exactCoverage } = schmidtEngine2.voronoi;
 const { num, range, km, plural } = __m_app3_format;
 // 3.0 · aplicação: monta o plano de um lote com o motor 2, a recomendação, a conferência, a equipe e a área
@@ -3888,7 +3897,23 @@ function tryPlan(field, params, edits) {
   try { return { sc: planInUse(field, params, edits) }; } catch (e) { return { error: friendly(e) }; }
 }
 
-return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BALANCE,balanceStats,balanceAreas,balanceSteps,planInUse,uncovered,checks,figures,team,summaryText,pointAreas,pointInfo,optimizeEdits,friendly,tryPlan,DEFAULT_PARAMS,paramsSignature});
+/** U04 · tiro completo, como na 2.5: comprimento, régua (borda → pontos → borda), tiros vizinhos (medidos de lado) e por
+ *  onde entrar. Cada parte do tiro (quando o lote o corta) tem a sua régua. */
+function trackDetail(field, sc, trackId) {
+  let route;
+  try { route = buildRoute(sc, field, trackId); } catch { return null; }
+  const parts = route.parts.map(part => {
+    const pts = route.points.filter(p => p.partIndex === part.index);
+    const steps = pts.map((p, i) => ({ de: i === 0 ? 'borda' : pts[i - 1].number, ate: p.number, m: p.deltaM }));
+    if (pts.length) steps.push({ de: pts.at(-1).number, ate: 'borda', m: part.afterLastM });
+    return { entra: part.entrySide, sai: part.exitSide, anda: part.walkDir, lengthM: part.lengthM, steps };
+  });
+  const order = sc.selected.filter(t => Number.isFinite(t.offsetM)).sort((a, b) => a.offsetM - b.offsetM), i = order.findIndex(t => t.id === trackId);
+  const neighbors = i < 0 ? [] : [order[i - 1], order[i + 1]].filter(Boolean).map(t => ({ id: t.id, m: Math.abs(t.offsetM - order[i].offsetM) }));
+  return { id: trackId, lengthM: route.totalLengthM, n: route.nPoints, parts, neighbors };
+}
+
+return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BALANCE,balanceStats,balanceAreas,balanceSteps,planInUse,uncovered,checks,figures,team,summaryText,pointAreas,pointInfo,optimizeEdits,friendly,tryPlan,trackDetail,DEFAULT_PARAMS,paramsSignature});
 })();
 // src/app3/map.mjs
 const __m_app3_map=(()=>{
@@ -3965,9 +3990,9 @@ function cota(cls, a, b) {
 /** Marcação SVG do lote ajustada a w × h px. `small` = mapa do Plano/guia (sem medidas).
  * @param {any} field @param {any} sc @param {number} w @param {number} h
  * @param {{pad?:number|{t:number,r:number,b:number,l:number}, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null,
- *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null}} [opts] */
+ *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null, hiTrack?:string|null}} [opts] */
 function mapMarkup(field, sc, w, h, opts = {}) {
-  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null } = opts;
+  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null, hiTrack = null } = opts;
   const pad = typeof pad0 === 'number' ? { t: pad0, r: pad0, b: pad0, l: pad0 } : pad0;
   // Outros lotes (bloco): levados ao referencial do lote atual pela diferença dos centroides UTM.
   const shift = o => [o.field.centroidUTM[0] - field.centroidUTM[0], o.field.centroidUTM[1] - field.centroidUTM[1]];
@@ -4011,7 +4036,7 @@ function mapMarkup(field, sc, w, h, opts = {}) {
     for (const [, [x, y]] of scr) sp.circles.push([x, y, r + 1]);
     // área de cada ponto: contornos das células por baixo dos tiros
     if (areas && !small) s += `<g class="cells">${areas.cells.map(c => `<path d="${c.rings.map(rg => `M${rg.map(P).join('L')}Z`).join('')}"/>`).join('')}</g>`;
-    for (const u of sc.units) s += `<path class="track" d="M${u.line.map(P).join('L')}"/>`;
+    for (const u of sc.units) s += `<path class="track${hiTrack ? (u.trackId === hiTrack ? ' hi' : ' lo') : ''}" d="M${u.line.map(P).join('L')}"/>`;
     // ponto tocado primeiro: as distâncias dele têm prioridade sobre os demais textos
     if (info && !small) top = tocado(info, XY, sp, r);
     // nome do tiro na ponta esquerda; se não couber, na direita (nunca sob um ponto)
@@ -4206,7 +4231,7 @@ const mapTools = (layers, zoomed) => `<div class="mtools">${zoomed ? '<button cl
 const stepper = (id, label, hint, value) => `<div class="step"><label for="${id}">${label}${hint ? `<small>${hint}</small>` : ''}</label><div class="stp">
 <button data-dec="${id}" aria-label="Diminuir ${label.toLowerCase()}">−</button><input id="${id}" inputmode="numeric" value="${esc(value)}"><button data-inc="${id}" aria-label="Aumentar ${label.toLowerCase()}">+</button></div></div>`;
 
-function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, block }) {
+function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, block, hiTrack = null }) {
   if (block) return blockPlanoView({ f, sc, rows, block });
   const alts = (rec?.alternatives || []).filter(a => a);
   return `<div class="map sm" data-map="small"></div><div class="scroll">
@@ -4214,7 +4239,7 @@ function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, blo
 <div class="seg" role="group" aria-label="Planejar"><button class="on" aria-pressed="true">Lote</button><button data-open="bloco" aria-pressed="false">Bloco</button></div></section>
 <section class="card"><div class="row-sb"><h2 class="h">${inUseIsRec ? 'Plano recomendado' : 'Plano em uso'}</h2>${inUseIsRec ? '<span class="tag">em uso</span>' : rec ? '<button class="link" data-use="rec">Usar recomendado</button>' : '<span class="mu">calculando o recomendado…</span>'}</div>
 ${metrics(f)}<p class="mu">Caminhada ${esc(f.caminhada)}${f.tiros ? ` · ${km(sc.route.totalEstimatedM / f.tiros)} km por tiro` : ''}</p>${busy ? '<p class="mu">Calculando…</p>' : ''}</section>
-<section class="card list"><h2 class="h">Tiros</h2>${rows.map(r => `<div class="li"><span class="id">${esc(r.trackId)}</span><span class="x">${num(r.lengthM)} m <small>· ${r.n === 1 ? '1 ponto' : `${num(r.n)} pontos`}</small></span><span class="r">${r.medianGapM ? `a cada ${num(r.medianGapM)} m` : r.n ? '1 ponto' : 'sem ponto'}</span></div>`).join('')}</section>
+${trackRows(rows, hiTrack)}
 <section class="card list"><h2 class="h">Outras opções</h2>${alts.length ? alts.map((a, i) => `<div class="li"><span class="x">${num(a.m.tiros)} tiros · ${num(a.m.pontos)} pontos<br><small>95% &lt; ${num(a.m.p95M)} m · ${num(a.m.caminhadaKm, 1)} km${a.id === 'equipe' ? ' · igual por pessoa' : ''}</small></span><button class="use" data-alt="${i}">Usar</button></div>`).join('') : '<p class="mu">Sem outra opção melhor.</p>'}
 <button class="lnk" data-open="ajustes">Ajustes avançados</button><button class="lnk" data-open="calculo">Como foi calculado</button></section></div>`;
 }
@@ -4284,6 +4309,20 @@ function fichasMarkup(field, routes, people, mapFor) {
 <p>${num(r.totalLengthM)} m dentro do lote · ${num(r.nPoints)} pontos · SIMULAÇÃO: pontos planejados</p></header><div class="fmap">${mapFor(r.trackId)}</div>
 <table><thead><tr><th>Ponto</th><th>nº</th><th>Desde a entrada</th><th>Do anterior</th><th>Passos</th></tr></thead><tbody>${r.points.map(p => `<tr><td>${p.seq}</td><td>${p.number}</td><td>${p.fromEntryM == null ? '—' : `${num(p.fromEntryM)} m`}</td><td>${p.deltaM == null ? '—' : `${num(p.deltaM)} m`}</td><td>${p.steps ?? '—'}</td></tr>`).join('')}</tbody></table>
 <ol>${r.instructions.map(t => `<li>${esc(t)}</li>`).join('')}</ol></section>`).join('');
+}
+
+/** U04 · lista de tiros que abre cada um, como na 2.5: régua (borda → pontos → borda), vizinhos e por onde entrar. */
+const ruler = steps => `<div class="ruler" aria-label="Distâncias ao longo do tiro">${steps.map(st => `<span class="rs"><b>${esc(String(st.de === 'borda' ? 'borda' : st.de))}</b><i>${num(st.m)} m</i></span>`).join('')}<span class="rs"><b>borda</b></span></div>`;
+function trackRows(rows, hiTrack) {
+  return `<section class="card list"><h2 class="h">Tiros</h2>${rows.map(r => {
+    const d = r.d, head = `<span class="id">${esc(r.trackId)}</span><span class="x">${num(r.lengthM)} m <small>· ${r.n === 1 ? '1 ponto' : `${num(r.n)} pontos`}</small></span><span class="r">${r.medianGapM ? `a cada ${num(r.medianGapM)} m` : r.n ? '1 ponto' : 'sem ponto'}</span>`;
+    if (!d) return `<div class="li">${head}</div>`;
+    const on = hiTrack === r.trackId;
+    return `<details class="trk"${on ? ' open' : ''}><summary class="li">${head}</summary><div class="trkb">
+${d.parts.map((pt, i) => `${d.parts.length > 1 ? `<p class="mu sm">Parte ${i + 1} · ${num(pt.lengthM)} m</p>` : ''}<p class="mu sm">Entra a ${esc(pt.entra)} e anda para ${esc(pt.anda)}</p>${ruler(pt.steps)}`).join('')}
+${d.neighbors.length ? `<p class="mu sm">${d.neighbors.length > 1 ? 'Tiros vizinhos' : 'Tiro vizinho'}: ${d.neighbors.map(nb => `${esc(nb.id)} a ${num(nb.m)} m`).join(' · ')} (de lado)</p>` : ''}
+<button class="link" data-hitrack="${esc(r.trackId)}" aria-pressed="${on}">${on ? 'Destacado no mapa' : 'Ver no mapa'}</button></div></details>`;
+  }).join('')}</section>`;
 }
 
 const tracksList = rows => `<section class="card list"><h2 class="h">Tiros</h2>${rows.map(r => `<div class="li"><span class="id">${esc(r.trackId)}</span><span class="x">${num(r.lengthM)} m <small>· ${r.n === 1 ? '1 ponto' : `${num(r.n)} pontos`}</small></span><span class="r">${r.medianGapM ? `a cada ${num(r.medianGapM)} m` : r.n ? '1 ponto' : 'sem ponto'}</span></div>`).join('')}</section>`;
@@ -5499,7 +5538,7 @@ function installMapa(app) {
       const opts = full ? { measure, pad: { t: 112, r: 30, b: 64, l: 40 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
         reserve: [[0, 0, info ? Math.min(W - 40, 330) : Math.min(W * 0.66, 252), 104], [W - 214, H - 60, W, H]] } : { pad: 22 };
       const g = guide ? app.guide() : null;
-      el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view: guide && g.focus ? { k: 1, x: 0, y: 0 } : view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, focus: guide ? g.focus : null, others: cur.others || [], ...opts })
+      el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view: guide && g.focus ? { k: 1, x: 0, y: 0 } : view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, hiTrack: !full && !guide ? app.hiTrack : null, focus: guide ? g.focus : null, others: cur.others || [], ...opts })
         + (full ? (info ? balloon() : V.legend(cur.field, P.figures(cur.sc), areas)) + V.mapTools(layers, view.k > 1.01)
           : guide && g.pos ? `<button class="fit" data-act="follow" aria-pressed="${!!g.follow}" aria-label="${g.follow ? 'Ver o lote inteiro' : 'Seguir minha posição'}">${g.follow ? '⤢' : '◎'}</button>`
             : (view.k > 1.01 ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : '') + balloon());
@@ -5517,7 +5556,7 @@ function installMapa(app) {
   }
 
   app.drawMaps = drawMaps;
-  app.onLotChange.push(() => { view = { k: 1, x: 0, y: 0 }; selectedPt = null; });
+  app.onLotChange.push(() => { view = { k: 1, x: 0, y: 0 }; selectedPt = null; app.hiTrack = null; });
   Object.assign(app.ACTIONS, {
     fit: () => { view = { k: 1, x: 0, y: 0 }; drawMaps(); },
     'layer-medidas': () => toggleLayer('medidas'),
@@ -5657,6 +5696,8 @@ function installPlano(app) {
   app.SHEETS.ajustes = () => app.openSheet('Ajustes avançados', advancedForm(app.cur.params, app.cur.sc, app.saved().fitTeam));
   app.clicks.push(t => {
     const cur = app.cur;
+    // U04: destaca o tiro no mapa do Plano (tocar de novo tira o destaque)
+    if (t.dataset.hitrack) { app.hiTrack = app.hiTrack === t.dataset.hitrack ? null : t.dataset.hitrack; t.setAttribute('aria-pressed', String(app.hiTrack === t.dataset.hitrack)); t.textContent = app.hiTrack ? 'Destacado no mapa' : 'Ver no mapa'; app.drawMaps(); return true; }
     if (t.dataset.set) { advancedChange(t.dataset.set, t.dataset.v); return true; }
     if (t.dataset.alt) { const a = cur.rec.alternatives.filter(Boolean)[+t.dataset.alt]; if (a) app.setParams({ ...cur.base, ...a.params }, `Usando ${a.m.tiros} tiros · ${a.m.pontos} pontos`, null); return true; }
     if (t.dataset.use === 'rec') { app.setParams({ ...cur.base, ...cur.rec.chosen.params }, 'Usando o plano recomendado', null); return true; }
@@ -6074,7 +6115,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   /** Contexto comum: cada tela (screen-*.mjs) lê daqui e registra as suas folhas, ações e eventos. */
   /** @type {any} */ const app = {
     document, window, fields, keys, ui, store, storage, persistent, session, safra, appVersion, host, versions: createVersions(window.indexedDB),
-    cur: null, toast, saved, people, recFor, whenRec, render, setParams,
+    cur: null, hiTrack: null, toast, saved, people, recFor, whenRec, render, setParams,
     /** Recomendação já pronta (sem calcular), ou undefined. */
     /** Recomendação já pronta ou feita na hora (para listas e bloco, que precisam do valor já). */
     recNow: (field, base, key = ui.key) => recFor(field, base, key) ?? P.recommendBase(field, base, people(), saved().fitTeam),
@@ -6154,7 +6195,8 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     for (const a of document.querySelectorAll('[data-tab]')) { const on = a.dataset.tab === ui.view; a.classList.toggle('on', on); a.setAttribute('aria-current', on ? 'page' : 'false'); }
     main.dataset.view = ui.view;
     if (ui.view === 'mapa') main.innerHTML = V.mapaView(c);
-    else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), rows: c.sc.trackRows });
+    else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), hiTrack: app.hiTrack,
+      rows: c.sc.trackRows.map(r => ({ ...r, d: c.block ? null : (c.details ??= new Map()).get(r.trackId) ?? c.details.set(r.trackId, P.trackDetail(c.field, c.sc, r.trackId)).get(r.trackId) })) });
     else if (ui.view === 'enviar') main.innerHTML = V.enviarView(c);
     else main.innerHTML = V.monitorView(app.monitorData());
     requestAnimationFrame(app.drawMaps);
@@ -6188,6 +6230,6 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
 
 return Object.freeze({startApp});
 })();
-__m_app3_main.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),recs:JSON.parse(document.getElementById('recs-data').textContent),appVersion:'3.0.9'});
+__m_app3_main.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),recs:JSON.parse(document.getElementById('recs-data').textContent),appVersion:'3.0.10'});
 })();</script>
 </body></html>

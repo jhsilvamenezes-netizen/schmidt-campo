@@ -1,16 +1,17 @@
 {
-  "entrega": "3.0.9",
+  "entrega": "3.0.10",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-16",
-  "versaoDoApp": "3.0.9",
+  "versaoDoApp": "3.0.10",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "df5f18c24b0df4f4e321ac4afb78ba2671bb6e1d84c0e55b21c8bad7b6a8b073",
-  "workerSha256": "3a5b43dde5cf356a68b5aa53d83bcf21a845b4d67a588339cf9377bc6e143ab3",
+  "htmlSha256": "dbbc2663af4e490caeacc51eba9efcaffadb7187ddc100354b77c592e352e04f",
+  "workerSha256": "126ae5e63ed00121e0e3eab45f4603b2b2eb5c731f6dcf15f0918f3c65caa186",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "3.0.10: tiros completos no Plano (como na 2.5) — cada tiro abre a régua borda → pontos → borda com as distâncias, os tiros vizinhos medidos de lado, por onde entrar e para onde andar; \"Ver no mapa\" destaca o tiro",
     "3.0.9: equipe mais equilibrada — quando sobra gente, o tiro mais longo é repartido entre duas pessoas (uma por cada ponta); a maior caminhada cai 25–31% em 11 lotes e nunca aumenta; cada ponto continua com uma pessoa só",
     "3.0.8: motor mais assertivo — entre planos com a mesma cobertura, escolhe o de áreas por ponto mais iguais (variação mediana 11,6% → 7,7% nos 51 lotes; 95% do lote no máximo 3% pior, pior vazio nunca maior, nenhum tiro de 1 ponto a mais); a recomendação é feita num motor em segundo plano (motor.js): mudar a regra não trava a tela",
     "3.0.7: bússola no Monitorar (a seta aponta para onde andar com o celular na mão; cone da direção no mapa), voz opcional na chegada e GPS em pausa com a tela apagada",
@@ -74,5 +75,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "2c403ed1d72f0aac00d2f7ce8ab221c831e3a33ffc9ece327640b412c47ce636"
+  "motorSha256": "ed511581ceb94249331e5bbf2a28d361123c0ee55494dffc1db944aa49a9607e"
 }

@@ -132,3 +132,12 @@ nav button.on{color:var(--br)}nav button.on .ic{background:var(--br2);border-rad
 .mtools{position:absolute;right:10px;bottom:10px;display:flex;gap:6px}
 .mt{min-width:44px;height:44px;padding:0 12px;border-radius:12px;background:var(--sf);box-shadow:var(--sh);font:600 14px system-ui;color:var(--ink)}
 .mt[aria-pressed="true"]{background:var(--br);color:var(--on-br)}
+/* 3.1 · tiros completos (U04) */
+.trk>summary{list-style:none;cursor:pointer}.trk>summary::-webkit-details-marker{display:none}
+.trk>summary .r::after{content:" ▾";color:var(--mu)}.trk[open]>summary .r::after{content:" ▴"}
+.trkb{display:flex;flex-direction:column;gap:6px;padding:4px 0 12px}
+.ruler{display:flex;flex-wrap:wrap;align-items:center;row-gap:6px;font-size:12px}
+.rs{display:inline-flex;align-items:center;white-space:nowrap}.rs b{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 6px;border-radius:12px;background:var(--pt);color:#fff;font:700 12px system-ui}
+.rs:first-child b,.rs:last-child b{background:var(--br2);color:var(--ink);font-weight:600}
+.rs i{font-style:normal;color:var(--mu);padding:0 6px;border-bottom:2px dashed var(--tr);margin:0 4px}
+.map-svg .track.hi{stroke-width:5;stroke-dasharray:none}.map-svg .track.lo{opacity:.35}
