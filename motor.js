@@ -1,5 +1,5 @@
 const schmidtEngine2=(()=>{
-// src/engine/tolerances.mjs
+// src/engine3/tolerances.mjs
 const __tolerances=(()=>{
 
 // Motor 2 · tolerâncias numéricas. Mesmos valores do motor 0.5.1 (conferido no oráculo audit/legacy-engine.mjs).
@@ -24,7 +24,7 @@ const TOLERANCES = Object.freeze({
 
 return Object.freeze({TOLERANCES});
 })();
-// src/engine/vocab.mjs
+// src/engine3/vocab.mjs
 const __vocab=(()=>{
 
 // Motor 2 · vocabulário: valores fixos usados pelo motor e pela tela (reescrita do módulo vocab do motor 0.5.1).
@@ -39,7 +39,7 @@ const ALLOC_STATUS = Object.freeze({ OK: 'ok', CONFLITO: 'conflito', SEM_TRECHOS
 
 return Object.freeze({STATUS_TEXT,KIND,TRACK_MODE,SELECTION_MODE,POINT_MODE,EDGE_POLICY,OPT_MODE,ALLOC_STATUS});
 })();
-// src/engine/errors.mjs
+// src/engine3/errors.mjs
 const __errors=(()=>{
 
 // Motor 2 · erros de domínio com código estável (reescrita do módulo errors do motor 0.5.1).
@@ -57,7 +57,7 @@ class DomainError extends Error {
 
 return Object.freeze({ERR,DomainError});
 })();
-// src/engine/numero.mjs
+// src/engine3/numero.mjs
 const __numero=(()=>{
 
 // Motor 2 · número no formato brasileiro (vírgula decimal, ponto de milhar), com formatadores em cache.
@@ -72,7 +72,7 @@ function numBR(value, min = 0, max = 3) {
 
 return Object.freeze({numBR});
 })();
-// src/engine/projection.mjs
+// src/engine3/projection.mjs
 const __projection=(()=>{
 
 // Motor 2 · projeção UTM (hemisfério sul, WGS 84) ↔ longitude/latitude, série de Krüger de 6ª ordem
@@ -118,7 +118,7 @@ function lonLatToLocal(lon, lat, centroidUTM) { const [e, n] = lonLatToUtmSouth(
 
 return Object.freeze({lonLatToUtmSouth,utmSouthToLonLat,localToLonLat,lonLatToLocal});
 })();
-// src/engine/geometry.mjs
+// src/engine3/geometry.mjs
 const __geometry=(()=>{
 const { TOLERANCES } = __tolerances;
 // Motor 2 · geometria plana de polígonos em metros locais (UTM 23S − centroide do lote).
@@ -252,7 +252,7 @@ function validateGeom(geom) {
 
 return Object.freeze({DEGREE_LIKE_EXTENT,ringEdges,ringSignedArea,polygonArea,geomArea,pointInRing,pointInPolygon,pointInGeom,geomBounds,geomCentroid,segmentIntersectionT,geomEdges,validateGeom});
 })();
-// src/engine/predicates.mjs
+// src/engine3/predicates.mjs
 const __predicates=(()=>{
 
 // Motor 2 · predicados geométricos exatos (precisão adaptativa de Shewchuk).
@@ -541,7 +541,7 @@ function leftOf(ax, ay, bx, by, cx, cy) { return -orient2d(ax, ay, bx, by, cx, c
 
 return Object.freeze({orient2d,leftOf});
 })();
-// src/engine/delaunay.mjs
+// src/engine3/delaunay.mjs
 const __delaunay=(()=>{
 const { orient2d } = __predicates;
 // Motor 2 · triangulação de Delaunay (base do diagrama de Voronoi da cobertura exata).
@@ -1159,7 +1159,7 @@ function dlnGetY(p) {
 
 return Object.freeze({Delaunator});
 })();
-// src/engine/voronoi.mjs
+// src/engine3/voronoi.mjs
 const __voronoi=(()=>{
 const { ringSignedArea, pointInGeom, geomArea } = __geometry;
 const { Delaunator } = __delaunay;
@@ -1278,7 +1278,7 @@ function cellsWith(geom, xy, nb) {
 
 return Object.freeze({exactCoverage});
 })();
-// src/engine/polyline.mjs
+// src/engine3/polyline.mjs
 const __polyline=(()=>{
 const { TOLERANCES } = __tolerances;
 // Motor 2 · polilinhas em metros: comprimento acumulado (s), ponto em s, projeção e recorte entre s0 e s1.
@@ -1355,7 +1355,7 @@ function circlePolyline(center, radius, stepM = 10, startDeg = 0) {
 
 return Object.freeze({assertPolyline,cumulative,lengthOf,pointAt,locate,slice,isClosed,circlePolyline});
 })();
-// src/engine/clip.mjs
+// src/engine3/clip.mjs
 const __clip=(()=>{
 const { TOLERANCES } = __tolerances;
 const { geomEdges, pointInGeom, segmentIntersectionT } = __geometry;
@@ -1411,7 +1411,7 @@ function clipPolylineToGeom(line, geom, { minPieceM = 0 } = {}) {
 
 return Object.freeze({clipPolylineToGeom});
 })();
-// src/engine/tracks.mjs
+// src/engine3/tracks.mjs
 const __tracks=(()=>{
 const { TOLERANCES } = __tolerances;
 const { clipPolylineToGeom } = __clip;
@@ -1572,7 +1572,7 @@ const trackLength = track => lengthOf(track.line);
 
 return Object.freeze({TRACK_KINDS,trackKindLabel,trackFrame,projectionRange,straightOffsets,buildStraightTracks,buildCircularTracks,buildImportedTracks,selectTracks,clipTracks,trackLength});
 })();
-// src/engine/sampling.mjs
+// src/engine3/sampling.mjs
 const __sampling=(()=>{
 const { cumulative, pointAt } = __polyline;
 // Motor 2 · posição dos pontos ao longo de um trecho de comprimento L com n pontos.
@@ -1664,7 +1664,7 @@ function numberSamples(samples, units) {
 
 return Object.freeze({effectiveMargin,positions,internalGap,alongCoverageRadius,shiftedPositions,trackPosition,sampleUnits,numberSamples});
 })();
-// src/engine/allocation.mjs
+// src/engine3/allocation.mjs
 const __allocation=(()=>{
 const { TOLERANCES } = __tolerances;
 const { alongCoverageRadius, internalGap } = __sampling;
@@ -1761,7 +1761,7 @@ function allocateBySpacing(units, target, policy, margin, minimum, cap) {
 
 return Object.freeze({minimumPoints,allocateBalanced,allocatePerTrack,countForSpacing,allocateBySpacing});
 })();
-// src/engine/metrics.mjs
+// src/engine3/metrics.mjs
 const __metrics=(()=>{
 const { geomArea, geomBounds } = __geometry;
 const { cumulative, locate, pointAt } = __polyline;
@@ -1866,15 +1866,26 @@ function nearestUncached(grid, samples) {
   return out;
 }
 
-const nearestCache = new WeakMap();
+const nearestCache = new WeakMap(), contentCache = new WeakMap();
 /** Igual a nearestUncached, com cache por grade e lista de pontos (invalidado se algum ponto mudar). */
 function nearestDistances(grid, samples) {
   let byGrid = nearestCache.get(grid);
   if (!byGrid) { byGrid = new WeakMap(); nearestCache.set(grid, byGrid); }
   const hit = byGrid.get(samples);
   if (hit && hit.xy.length === samples.length * 2 && samples.every((p, i) => p.x === hit.xy[2 * i] && p.y === hit.xy[2 * i + 1])) return hit.d;
-  const d = nearestUncached(grid, samples), xy = new Float64Array(samples.length * 2);
+  const xy = new Float64Array(samples.length * 2);
   samples.forEach((p, i) => { xy[2 * i] = p.x; xy[2 * i + 1] = p.y; });
+  // 3.2 (M4): a busca do motor monta listas novas com os mesmos pontos (~22% das contas eram repetidas); também guarda
+  // pelo conteúdo (coordenadas exatas), as últimas 64 por grade. Mesmo resultado: mesmas coordenadas, mesma conta.
+  let byContent = contentCache.get(grid);
+  if (!byContent) { byContent = new Map(); contentCache.set(grid, byContent); }
+  const key = Array.prototype.join.call(xy, ',');
+  let d = byContent.get(key);
+  if (d) { byContent.delete(key); byContent.set(key, d); }
+  else {
+    d = nearestUncached(grid, samples); byContent.set(key, d);
+    if (byContent.size > 64) byContent.delete(byContent.keys().next().value);
+  }
   byGrid.set(samples, { xy, d });
   return d;
 }
@@ -1987,7 +1998,7 @@ function route(units) {
 
 return Object.freeze({summarize,longitudinal,coverageGrid,nearestDistances,kthSmallest,distanceStats,gridStep,coverage,boundaryPoints,quickP95,transverse,route});
 })();
-// src/engine/optimize.mjs
+// src/engine3/optimize.mjs
 const __optimize=(()=>{
 const { TOLERANCES } = __tolerances;
 const { cumulative, pointAt } = __polyline;
@@ -2119,7 +2130,7 @@ function optimizeDistribution({ geom, units, counts: initialCounts, policy, marg
 
 return Object.freeze({optimizeDistribution});
 })();
-// src/engine/params.mjs
+// src/engine3/params.mjs
 const __params=(()=>{
 
 // Motor 2 · parâmetros padrão, resolução (padrão + informados) e assinatura estável.
@@ -2152,7 +2163,7 @@ const paramsSignature = params => Object.keys(params).sort().map(k => `${k}=${JS
 
 return Object.freeze({ENGINE_VERSION,DEFAULT_PARAMS,resolveParams,paramsSignature});
 })();
-// src/engine/plan.mjs
+// src/engine3/plan.mjs
 const __plan=(()=>{
 const { buildCircularTracks, buildImportedTracks, buildStraightTracks, clipTracks, selectTracks } = __tracks;
 const { allocateBalanced, allocateBySpacing, allocatePerTrack, minimumPoints } = __allocation;
@@ -2208,7 +2219,7 @@ function planCore(field, params, opts = {}) {
 
 return Object.freeze({planCore});
 })();
-// src/engine/diagnostics.mjs
+// src/engine3/diagnostics.mjs
 const __diagnostics=(()=>{
 const { TOLERANCES } = __tolerances;
 // Motor 2 · avisos do cenário (nível erro/alerta/info), na ordem em que aparecem para a pessoa.
@@ -2248,7 +2259,7 @@ function buildWarnings(field, sc, assessField) {
 
 return Object.freeze({LEVEL,buildWarnings});
 })();
-// src/engine/scenario.mjs
+// src/engine3/scenario.mjs
 const __scenario=(()=>{
 const { validateGeom } = __geometry;
 const { DomainError } = __errors;
@@ -2353,7 +2364,7 @@ function buildScenario(field, given = {}, opts = {}, legacy) {
 
 return Object.freeze({STATUS,trackRows,withMetrics,BALANCED_MIN_GAIN,planScenario,buildScenario});
 })();
-// src/engine/dataQuality.mjs
+// src/engine3/dataQuality.mjs
 const __dataQuality=(()=>{
 const { geomArea, pointInGeom, segmentIntersectionT, validateGeom } = __geometry;
 const { TOLERANCES } = __tolerances;
@@ -2453,7 +2464,7 @@ function assessField(field, limits = QUALITY_LIMITS) {
 
 return Object.freeze({QUALITY_LIMITS,axisDifferenceDeg,selfIntersections,vertexIssues,assessField});
 })();
-// src/engine/paramCatalog.mjs
+// src/engine3/paramCatalog.mjs
 const __paramCatalog=(()=>{
 const { DomainError, ERR } = __errors;
 const { EDGE_POLICY, OPT_MODE, POINT_MODE, SELECTION_MODE, TRACK_MODE } = __vocab;
@@ -2579,7 +2590,7 @@ function sanitizeParams(given) {
 
 return Object.freeze({CATALOG,KNOWN_TOP,KNOWN_NESTED,getParam,checkParams,assertParams,displayValue,sanitizeParams});
 })();
-// src/engine/explain.mjs
+// src/engine3/explain.mjs
 const __explain=(()=>{
 const { internalGap } = __sampling;
 const { EDGE_POLICY, POINT_MODE, SELECTION_MODE, TRACK_MODE } = __vocab;
@@ -2654,7 +2665,7 @@ function explainScenario(sc, field) {
 
 return Object.freeze({regularityWord,explainScenario});
 })();
-// src/engine/guidance.mjs
+// src/engine3/guidance.mjs
 const __guidance=(()=>{
 const { geomCentroid } = __geometry;
 const { locate, pointAt } = __polyline;
@@ -2774,7 +2785,7 @@ function tiroErrado(units, trackId, pos, toleranceM) {
 
 return Object.freeze({CARDINAIS,GPS_MAX_AGE_MS,azimuth,cardinal,stepsFor,buildRoute,pointLabel,instructions,guide,tiroErrado});
 })();
-// src/engine/team.mjs
+// src/engine3/team.mjs
 const __team=(()=>{
 const { cumulative, pointAt } = __polyline;
 const { azimuth, cardinal } = __guidance;
@@ -2857,7 +2868,7 @@ function teamPlan(sc, people) {
 
 return Object.freeze({teamPlan});
 })();
-// src/engine/tradeoffs.mjs
+// src/engine3/tradeoffs.mjs
 const __tradeoffs=(()=>{
 const { SELECTION_MODE } = __vocab;
 // Motor 2 · fronteira de esforço (quantos tiros × caminhada × cobertura) e resumo de regularidade.
@@ -2881,7 +2892,7 @@ const regularitySummary = sc => ({ n: sc.samples.length, activeTracks: sc.select
 
 return Object.freeze({effortFrontier,regularitySummary});
 })();
-// src/engine/editing.mjs
+// src/engine3/editing.mjs
 const __editing=(()=>{
 const { pointInGeom } = __geometry;
 const { cumulative, locate, pointAt } = __polyline;
@@ -2962,7 +2973,7 @@ function restoreSamples(sc, saved) {
 
 return Object.freeze({moveSample,addSample,withSamples,restoreSamples});
 })();
-// src/engine/presets.mjs
+// src/engine3/presets.mjs
 const __presets=(()=>{
 const { minimumPoints } = __allocation;
 const { regularityWord } = __explain;
@@ -3011,7 +3022,7 @@ function compareTeamSplits(field, monitors, given = {}, build) {
 
 return Object.freeze({PRESETS,pointsPerMonitor,presetParams,compareTeamSplits});
 })();
-// src/engine/recommend.mjs
+// src/engine3/recommend.mjs
 const __recommend=(()=>{
 const { minimumPoints } = __allocation;
 const { DEFAULT_PARAMS } = __params;
@@ -3153,7 +3164,7 @@ function recommendPlan(field, given = {}, opts = {}, build) {
 
 return Object.freeze({SHAPE_KEYS,metricsOf,recommendPlan});
 })();
-// src/engine/exporters.mjs
+// src/engine3/exporters.mjs
 const __exporters=(()=>{
 const { localToLonLat } = __projection;
 const { ringSignedArea } = __geometry;
@@ -3302,9 +3313,9 @@ const { buildWarnings } = schmidtEngine2.diagnostics;
 const { assessField } = schmidtEngine2.dataQuality;
 const { optimizeDistribution } = schmidtEngine2.optimize;
 const { DEFAULT_PARAMS, paramsSignature } = schmidtEngine2.params;
-const { coverageGrid, nearestDistances } = schmidtEngine2.metrics;
+const { coverageGrid, nearestDistances, quickP95 } = schmidtEngine2.metrics;
 const { recommendPlan, SHAPE_KEYS, metricsOf } = schmidtEngine2.recommend;
-const { restoreSamples, withSamples } = schmidtEngine2.editing;
+const { restoreSamples, withSamples, moveSample } = schmidtEngine2.editing;
 const { teamPlan } = schmidtEngine2.team;
 const { buildRoute } = schmidtEngine2.guidance;
 const { exactCoverage } = schmidtEngine2.voronoi;
@@ -3313,7 +3324,7 @@ const { num, range, km, plural } = __m_app3_format;
 // 3.0 · aplicação: monta o plano de um lote com o motor 2, a recomendação, a conferência, a equipe e a área
 // descoberta. Sem DOM: testável no Node com os 51 lotes.
 
-const ENGINE_LABEL = '2.0.0';
+const ENGINE_LABEL = '3.2.0';
 const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
@@ -3458,7 +3469,7 @@ function pointAreas(field, sc) {
     const cov = exactCoverage(field.geom, sc.samples);
     const cells = cov.cells.map((c, i) => ({ id: sc.samples[i].id, ha: c.areaM2 / 1e4, rings: c.rings }));
     const has = cells.map(c => c.ha);
-    a = { cells, minHa: Math.min(...has), maxHa: Math.max(...has) };
+    a = { cells, minHa: Math.min(...has), maxHa: Math.max(...has), worstGapM: cov.worstGapM };
     areaCache.set(sc, a);
   }
   return a;
@@ -3488,12 +3499,66 @@ function pointInfo(field, sc, id) {
     prev: i > 0 ? same[i - 1] : null, next: i >= 0 && i < same.length - 1 ? same[i + 1] : null, edgeAt, across };
 }
 
+/** Pior vazio exato (Voronoi) e variação da área de cada ponto. */
+function exactStats(field, samples) {
+  const cov = exactCoverage(field.geom, samples), a = cov.cells.map(c => c.areaM2), mean = a.reduce((x, y) => x + y, 0) / a.length;
+  return { worst: cov.worstGapM, cv: mean ? Math.sqrt(a.reduce((x, y) => x + (y - mean) ** 2, 0) / a.length) / mean : 0 };
+}
+
 /** "Buscar distribuição melhor" (mesma busca da 2.x): devolve os pontos como ajuste gravável ou null se não melhorou. */
 function optimizeEdits(field, params) {
   const sc = buildScenario(field, params, { optimize: true }, deps), o = sc.optimization;
   if (!o?.accepted) return { edits: null, report: o };
+  // 3.2: a busca da 2.x só olha o "95% do lote"; nos 51 lotes ela aumentava o pior vazio em 27 de 34 (364 → 383 m em
+  // média) e deixava as áreas mais desiguais. Agora só vale se o pior vazio (exato) e a variação das áreas não pioram.
+  const before = exactStats(field, planInUse(field, params, null).samples), after = exactStats(field, sc.samples);
+  if (after.worst > before.worst + 1 || after.cv > before.cv + 0.005) return { edits: null, report: { ...o, accepted: false, rejectedBy: 'piora o pior vazio ou a igualdade das áreas', before, after } };
   const samples = sc.samples.map(s => ({ id: s.id, x: s.x, y: s.y, unitId: s.unitId, s: s.s, manual: false, offTrack: !!s.offTrack }));
   return { edits: { signature: paramsSignature(sc.params), samples }, report: o };
+}
+
+/**
+ * 3.2 · minimax: desliza cada ponto sobre o próprio tiro (passos de 80, 40 e 20 m) para diminuir o PIOR VAZIO exato
+ * (Voronoi), sem deixar o 95% do lote mais de 1% pior, sem deixar as áreas mais desiguais (+1 ponto percentual),
+ * sem trocar a ordem dos pontos no tiro (mínimo de 60 m entre vizinhos) e sem encostar na ponta do tiro (≥ 30 m).
+ * Mesmos pontos, mesmos tiros; devolve um ajuste gravável ou null se não melhorou.
+ */
+function minimaxEdits(field, params, edits = null, { maxEvals = 600 } = {}) {
+  let sc = planInUse(field, params, edits);
+  if (sc.samples.length < 2 || sc.samples.some(p => p.offTrack)) return { edits: null };
+  const grid = coverageGrid(field.geom, sc.coverage.fineStepM ?? 20), p95of = smp => quickP95(grid, smp).p95;
+  const start = { ...exactStats(field, sc.samples), p95: p95of(sc.samples) };
+  let cur = start, samples = sc.samples, evals = 0, improved = false;
+  const units = new Map(sc.units.map(u => [u.id, u]));
+  const okPlace = (list, p) => {
+    const u = units.get(p.unitId);
+    if (!u || p.s < Math.min(30, u.len / 2) || p.s > u.len - Math.min(30, u.len / 2)) return false;
+    return list.every(q => q.id === p.id || q.unitId !== p.unitId || Math.abs(q.s - p.s) >= 60);
+  };
+  for (const step of [80, 40, 20]) {
+    let again = true;
+    while (again && evals < maxEvals) {
+      again = false;
+      for (const p of samples) for (const d of [step, -step]) {
+        if (evals >= maxEvals) break;
+        const r = moveSample({ ...sc, samples }, field, p.id, { deltaS: d });
+        if (!r.ok) continue;
+        const moved = r.samples.find(q => q.id === p.id), before = samples.find(q => q.id === p.id);
+        // a ordem no tiro não muda: o ponto não passa por cima do vizinho
+        if (!okPlace(r.samples, moved) || r.samples.some(q => q.unitId === moved.unitId && q.id !== moved.id && Math.sign(q.s - before.s) !== Math.sign(q.s - moved.s))) continue;
+        evals++;
+        const st = exactStats(field, r.samples);
+        if (st.worst >= cur.worst - 1 || st.cv > start.cv + 0.01) continue;
+        const p95 = p95of(r.samples);
+        if (p95 > start.p95 * 1.01) continue;
+        samples = r.samples; cur = { ...st, p95 }; improved = again = true;
+        break;
+      }
+    }
+  }
+  if (!improved) return { edits: null, before: start, after: cur, evals };
+  const out = samples.map(q => ({ id: q.id, x: q.x, y: q.y, unitId: q.unitId, s: q.s, manual: false, offTrack: false }));
+  return { edits: { signature: paramsSignature(sc.params), samples: out }, before: start, after: cur, evals };
 }
 
 /** Mensagem curta para quem usa, a partir do erro do motor. */
@@ -3546,7 +3611,7 @@ function whereAmI(field, sc, pos) {
   return { inside, edgeM, track, point, accuracyM: pos.accuracyM };
 }
 
-return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BALANCE,balanceStats,balanceAreas,balanceSteps,planInUse,uncovered,checks,figures,team,summaryText,pointAreas,pointInfo,optimizeEdits,friendly,tryPlan,trackDetail,whereAmI,DEFAULT_PARAMS,paramsSignature});
+return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BALANCE,balanceStats,balanceAreas,balanceSteps,planInUse,uncovered,checks,figures,team,summaryText,pointAreas,pointInfo,optimizeEdits,minimaxEdits,friendly,tryPlan,trackDetail,whereAmI,DEFAULT_PARAMS,paramsSignature});
 })();
 const P=__m_app3_planner;
 self.onmessage=e=>{const {id,field,base,people,fitTeam}=e.data;let rec=null,error=null;try{rec=P.recommend(field,base,people,fitTeam);}catch(x){error=String((x&&x.message)||x);}self.postMessage({id,rec,error});};

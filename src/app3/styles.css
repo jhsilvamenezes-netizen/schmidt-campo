@@ -2,11 +2,11 @@
 /* Paleta SCHMIDT (3.1): verde da marca (#0B5A50 do logo), dourado (#C99A3E) e branco, preenchidos. Topo verde com faixa
    dourada; mapa em fundo verde-sálvia com o lote claro; pontos dourados (número escuro, aro branco) sobre tiros verdes;
    ponto tocado em verde. Medidas "entre pontos" no dourado dos pontos; "entre tiros" no verde dos tiros. */
-:root{--bg:#eef3f0;--sf:#fff;--sf2:#e9f2ed;--ink:#13221c;--mu:#566760;--ln:#d8e3dd;--br:#0e5a4b;--br2:#dcebe3;--on-br:#fff;--gold:#c99a3e;
---hd:#0e5a4b;--hd-ink:#fff;--mapbg:#cfe0d5;--pt:#7f560a;--tr:#0e5a4b;--ptf:#d9a441;--ptr:#0e5a4b;--pti:#13221c;--fd:#f5faf6;--fl:#0e5a4b;
---ok:#1b7a45;--oks:#dff1e6;--al:#8d5c08;--als:#fbefd6;--er:#b42318;--ers:#fdeceb;--sh:0 1px 2px #0d221a14,0 6px 18px #0d221a12;--focus:#1d5fd1;color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not(.sun){--bg:#0c1512;--sf:#14201b;--sf2:#1a2a23;--ink:#e8f0ec;--mu:#9db2a8;--ln:#26372f;--br:#6cc6a4;--br2:#1b3028;--on-br:#06110c;--gold:#d9ae5c;
---hd:#0b3a30;--hd-ink:#fff;--mapbg:#0f201a;--pt:#e2b462;--tr:#5fbf9e;--ptf:#d9a441;--ptr:#f2f7f4;--pti:#13221c;--fd:#18302a;--fl:#5fbf9e;
+:root{--bg:#f3f4ef;--sf:#fff;--sf2:#f1f4ee;--ink:#111a16;--mu:#56635d;--ln:#e2e6de;--br:#0d5446;--br2:#e3efe8;--on-br:#fff;--gold:#b8892f;
+--hd:#0b3f35;--hd-ink:#fff;--mapbg:#e1e9e0;--pt:#8a5a06;--tr:#0d5446;--ptf:#e3ae4b;--ptr:#0d5446;--pti:#111a16;--fd:#fbfcf8;--fl:#0d5446;
+--ok:#1b7a45;--oks:#dff1e6;--al:#8d5c08;--als:#fbefd6;--er:#b42318;--ers:#fdeceb;--sh:0 1px 0 #0d221a0a,0 8px 24px -12px #0d221a29;--focus:#1d5fd1;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not(.sun){--bg:#090e0c;--sf:#111916;--sf2:#16211c;--ink:#eef3ef;--mu:#9aaba3;--ln:#1f2b26;--br:#7fd0ae;--br2:#17302a;--on-br:#04110b;--gold:#d6a957;
+--hd:#0a2a23;--hd-ink:#fff;--mapbg:#0d1714;--pt:#e2b462;--tr:#5fbf9e;--ptf:#d9a441;--ptr:#f2f7f4;--pti:#13221c;--fd:#14231d;--fl:#5fbf9e;
 --ok:#7fd6a0;--oks:#16301f;--al:#f0c26a;--als:#33280f;--er:#ff8f85;--ers:#3a1714;--sh:0 1px 2px #0007;--focus:#8ab4ff;color-scheme:dark}}
 :root.sun{--bg:#eef3ef;--sf:#fff;--sf2:#fff;--ink:#000;--mu:#1d2b26;--ln:#000;--br:#00422e;--br2:#d6eadf;--on-br:#fff;--gold:#b07a1a;--hd:#00422e;--hd-ink:#fff;--mapbg:#e2ede6;--pt:#6b4300;--tr:#00422e;--ptf:#e0a838;--ptr:#000;--pti:#000;--fd:#fff;--fl:#00422e;--sh:none}
 *{box-sizing:border-box;margin:0}
@@ -165,3 +165,90 @@ header .ib{color:var(--hd-ink)}.lot small{color:#ffffffc7}
 .sumc{display:flex;justify-content:space-between;align-items:center}.trk[open]>.sumc{margin-bottom:6px}.sumc:after{content:"›";color:var(--mu);font-size:20px;line-height:1;transition:transform .15s}.trk[open]>.sumc:after{transform:rotate(90deg)}
 :root.sun .h{color:#000}:root.sun .chipb{border:2px solid #000}
 .ex.card{padding:12px 14px}
+
+/* ===== 3.1 · redesenho "instrumento de campo" =====
+   Princípios: papel claro e superfícies brancas com fio fino (sem caixa dentro de caixa); números tabulares e grandes,
+   rótulos curtos e calmos; verde floresta como cor de ação, dourado só como assinatura (faixa do topo, marca das seções,
+   pontos); mapa como carta: grade fina, lote nítido, tiros contínuos e pontos menores com aro. */
+html{-webkit-text-size-adjust:100%}
+body{font-family:"Inter","SF Pro Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-feature-settings:"tnum" 1,"cv11" 1;letter-spacing:-.005em;-webkit-font-smoothing:antialiased}
+/* topo: verde profundo com faixa dourada fina; o lote é o título */
+header{height:58px;gap:4px;padding:0 6px 0 14px;background:linear-gradient(180deg,#0e4a3e,var(--hd));border-bottom:2px solid var(--gold);box-shadow:0 1px 0 #0003}
+.logo{font:700 13px system-ui;letter-spacing:.18em}.logo svg{width:30px;height:30px}
+.lot{margin:0 auto 0 10px;flex-direction:column;align-items:flex-start;gap:0;padding:4px 12px 4px 12px;border-radius:10px;background:#ffffff14;border:1px solid #ffffff26;font:700 17px/1.15 system-ui;letter-spacing:-.01em;position:relative;padding-right:28px}
+.lot small{font:500 12px/1.2 system-ui;letter-spacing:0}.lot small[aria-hidden]{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px}
+#lot-farm:before{content:none}
+.ib{width:42px;height:42px;border-radius:10px}.ib:active{background:#ffffff1a}
+/* superfícies */
+.card{border-radius:18px;padding:16px;box-shadow:none;border:1px solid var(--ln);gap:12px}
+.scroll{padding:14px 14px 20px;gap:14px}
+.h{font:650 13px system-ui;letter-spacing:0;text-transform:none;color:var(--ink);margin-bottom:2px}.h:before{width:3px;height:14px;border-radius:2px}
+/* números: três medidas lado a lado, separadas por fio — sem caixas */
+.m3{gap:0;border:1px solid var(--ln);border-radius:14px;overflow:hidden;background:var(--sf2)}
+.m{background:none;border-radius:0;padding:10px 12px;border-left:1px solid var(--ln)}.m:first-child{border-left:0}
+.m small{font:500 11px system-ui;letter-spacing:.02em;margin-bottom:2px}.m b{font:700 17px system-ui;letter-spacing:-.02em}
+.big{font:750 30px/1.05 system-ui;letter-spacing:-.025em}.big.md{font-size:22px;letter-spacing:-.02em}
+/* controles */
+.btn{min-height:52px;border-radius:14px;font:650 16px system-ui;letter-spacing:-.01em;border-color:var(--ln);transition:transform .08s,filter .15s}
+.btn.p{background:linear-gradient(180deg,#126150,var(--br));box-shadow:inset 0 1px 0 #ffffff26,0 6px 16px -8px #0d5446a6}
+.btn:active{transform:scale(.985)}
+.stp button{width:44px;height:44px;border-radius:12px;background:var(--sf2);border:1px solid var(--ln);font-weight:500}
+.stp input{font:750 22px system-ui;letter-spacing:-.02em}
+.step label{font:600 15px system-ui}
+.seg{background:var(--sf2);border:1px solid var(--ln);padding:3px}
+.seg button{border-radius:9px;font-weight:600}
+.use{border-radius:10px;background:var(--sf);font-weight:650}
+.chip{font:650 12px system-ui;padding:5px 10px}
+.tag{background:var(--oks);color:var(--ok);padding:3px 9px;border-radius:99px}
+/* listas */
+.li{padding:11px 0;gap:12px}
+.li .id{min-width:36px;height:28px;border-radius:8px;background:var(--sf2);border:1px solid var(--ln);color:var(--ink);font:700 12px ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.02em}
+.li .r{font:650 14px system-ui}
+.lnk{padding:14px 2px;font-weight:600}
+/* navegação: fundo fosco, item ativo com traço dourado em cima */
+nav{height:66px;background:color-mix(in srgb,var(--sf) 88%,transparent);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);border-top:1px solid var(--ln)}
+nav button{position:relative;font:600 11px system-ui;letter-spacing:.01em;gap:4px}
+nav button.on .ic{background:none;color:var(--br);padding:0;width:24px;height:24px;stroke-width:2.1}
+nav button.on:before{content:"";position:absolute;top:0;left:50%;width:28px;height:3px;margin-left:-14px;border-radius:0 0 3px 3px;background:var(--gold)}
+/* folha sobre o mapa: vidro */
+.sheet{border-radius:22px 22px 0 0;box-shadow:0 -10px 30px -18px #0d221a59;border-top:1px solid var(--ln)}
+main>.sheet{background:color-mix(in srgb,var(--sf) 94%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.ov{background:#05110cb3;backdrop-filter:blur(2px)}
+/* mapa como carta: grade fina de 40 px, lote nítido, tiros contínuos, pontos com aro */
+.map{background-color:var(--mapbg)}
+/* 3.2 (G1) · grade em metros: um quadrado = a barra de escala */
+.map-svg .mgrid{fill:none;stroke:var(--fl);stroke-opacity:.12;stroke-width:1;shape-rendering:crispEdges}
+.map-svg .lot{stroke-width:2;filter:drop-shadow(0 6px 14px #0d221a24)}
+.map-svg .track{stroke-width:2;stroke-dasharray:none;stroke-opacity:.55}
+.map-svg .track.hi{stroke-opacity:1;stroke-width:4}
+.map-svg .pt circle{stroke-width:1.75;filter:drop-shadow(0 1px 1.5px #0d221a40)}
+.map-svg .pt text{font:750 12px system-ui;letter-spacing:-.03em}
+.map-svg .tid{font:700 11px system-ui;fill:var(--mu)}
+.leg,.bal,.mt,.fit{border:1px solid var(--ln);box-shadow:0 8px 24px -14px #0d221a4d}
+.leg,.bal{border-radius:14px;padding:10px 12px;background:color-mix(in srgb,var(--sf) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.mt{border-radius:12px;font-weight:650}
+.ck:before{width:20px;height:20px}
+#toast:not(:empty){border-radius:14px;box-shadow:0 12px 30px -12px #0008}
+@media (prefers-color-scheme:dark){:root:not(.sun) header{background:linear-gradient(180deg,#0c3129,var(--hd))}:root:not(.sun) .btn.p{background:var(--br);box-shadow:none}}
+:root.sun header{background:var(--hd)}:root.sun .btn.p{background:var(--br);box-shadow:none}:root.sun .map-svg .mgrid{stroke:#000;stroke-opacity:.18}:root.sun .map-svg .track{stroke-opacity:1}
+:root.sun .m3{border:2px solid #000}:root.sun .m{border-left:2px solid #000}:root.sun .m:first-child{border-left:0}:root.sun nav{background:#fff;backdrop-filter:none}
+:root.sun .li .id{border:1.5px solid #000;background:#fff}
+.lot>span{display:block}
+@media (min-width:900px){.lot small{font-size:12px}}
+.sw{border-top:3px solid color-mix(in srgb,var(--tr) 60%,transparent)}.sw.p{border-top:3px solid var(--pt)}.sw.b{border-top:2px dashed var(--ink)}.sw.a{border:1px solid var(--fl)}
+:root.sun nav button.on .ic{background:none;color:var(--br)}
+/* 3.1 · Lotes: panorama da fazenda */
+.map.farm{height:38vh;min-height:230px}
+.map-svg .flot{fill:var(--fd);stroke:var(--fl);stroke-width:1.25;fill-rule:evenodd;vector-effect:non-scaling-stroke;cursor:pointer;transition:fill .15s}
+.map-svg .flot.on{fill:var(--ptf);stroke:var(--br);stroke-width:2.5}
+.map-svg .fcode{font:700 11px system-ui;fill:var(--ink);text-anchor:middle;pointer-events:none;paint-order:stroke;stroke:var(--fd);stroke-width:3px;stroke-linejoin:round}
+.map-svg .fcode.on{stroke:var(--ptf);fill:var(--pti)}
+.hero{gap:10px;border-color:color-mix(in srgb,var(--br) 30%,var(--ln))}
+.eyebrow{font:600 12px system-ui;color:var(--mu);margin-bottom:2px}
+.lotrow{width:100%;text-align:left}.lotrow.on .id{background:var(--br);color:var(--on-br);border-color:var(--br)}
+/* conferência e equipe dobráveis no Plano */
+.fold{gap:0}.fold>summary{list-style:none;cursor:pointer;gap:12px}.fold>summary::-webkit-details-marker{display:none}
+.fold>summary .x{flex:1;min-width:0}.fold>summary .x b{font:650 15px system-ui}.fold>summary .x .sub{display:block;color:var(--mu);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fold[open]>summary{margin-bottom:8px}.fold .ck{padding:4px 0}
+.fold>summary:after{content:"›";color:var(--mu);font-size:20px;line-height:1;transition:transform .15s}.fold[open]>summary:after{transform:rotate(90deg)}
+:root.sun .map-svg .flot{stroke:#000;stroke-width:1.5}

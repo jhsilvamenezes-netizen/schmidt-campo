@@ -1,7 +1,7 @@
 // 3.0 · cópia de segurança no formato da 2.x ("schmidt.backup.v2", com hash SHA-256 do conteúdo). O serviço
 // transacional (diário de restauração e volta atrás) é o mesmo da 2.x: src/persistence.
 import { buildSchmidtBackup, validateSchmidtRestore } from '../persistence/backup-format.mjs';
-import { sanitizeParams } from '../engine/paramCatalog.mjs';
+import { sanitizeParams } from '../engine3/paramCatalog.mjs';
 
 export const BACKUP_SCHEMA = 'schmidt.backup.v2';
 export const ITEM_LABELS = { lotes_com_parametros: 'lotes com parâmetros próprios', lotes_com_ajustes: 'lotes com ajustes manuais', monitores_nomeados: 'nomes de monitores',

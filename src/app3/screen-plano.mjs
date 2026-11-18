@@ -62,6 +62,12 @@ export function installPlano(app) {
       const st = app.saved(), by = { ...(st.paramsByField || {}) }, ed = { ...(st.editsByField || {}) }; delete by[app.ui.key]; delete ed[app.ui.key];
       if (store.update({ paramsByField: by, editsByField: ed })) { app.clearInvalid(); app.render(); app.toast('Usando o plano recomendado.'); }
     },
+    // 3.2 · minimax: desliza os pontos no próprio tiro para encurtar o maior vazio (sem piorar o resto); com Desfazer
+    minimax() {
+      const cur = app.cur, edits = app.saved().editsByField?.[app.ui.key] ?? null, r = P.minimaxEdits(cur.field, cur.params, edits);
+      if (!r.edits) { app.toast('O maior vazio já está no menor possível sem piorar o resto.'); return; }
+      app.setParams(cur.params, `Maior vazio ${num(r.before.worst)} → ${num(r.after.worst)} m`, r.edits);
+    },
     optimize() {
       const cur = app.cur, r = P.optimizeEdits(cur.field, cur.params);
       if (!r.edits) { app.toast('Nenhuma distribuição melhor sem piorar a regularidade.'); return; }

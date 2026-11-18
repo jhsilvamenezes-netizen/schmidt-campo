@@ -1,6 +1,6 @@
 // 3.0 · ajustes avançados: formulário curto, valores conferidos pelo catálogo do motor (mesmos limites da 2.x).
-import { checkParams } from '../engine/paramCatalog.mjs';
-import { DEFAULT_PARAMS } from '../engine/params.mjs';
+import { checkParams } from '../engine3/paramCatalog.mjs';
+import { DEFAULT_PARAMS } from '../engine3/params.mjs';
 import { esc, num } from './format.mjs';
 
 const POINT_MODES = [['total', 'Pelo tamanho do tiro'], ['por_tiro', 'Mesmo número por tiro'], ['espacamento', 'Pela distância']];

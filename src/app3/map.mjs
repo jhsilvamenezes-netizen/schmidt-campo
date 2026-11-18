@@ -88,7 +88,7 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
   const XY = (x, y) => [view.x + view.k * (ox + k * (x - x0)), view.y + view.k * (h - oy - k * (y - y0))];
   const P = ([x, y]) => XY(x, y).map(f1).join(',');
   const kk = k * view.k, sp = space(w, h, measure);
-  let r = small ? 10 : 12.5;
+  let r = small ? 9.5 : 11.5;
   const numY = 4.2;
   for (const b of reserve) sp.boxes.push(b);
   // escala e norte ocupam o seu canto
@@ -105,6 +105,17 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
   }
   const ring = field.geom.map(pg => pg.map(rg => `M${rg.map(P).join('L')}Z`).join('')).join('');
   let s = `<svg class="map-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Lote ${field.code}: ${sc ? `${sc.samples.length} pontos em ${sc.selected.length} tiros` : 'sem plano'}">`;
+  // 3.2 (G1) · grade em METROS: cada quadrado tem o tamanho da barra de escala (ex.: 500 m), presa ao terreno (anda com o zoom)
+  {
+    const wx = sx => x0 + ((sx - view.x) / view.k - ox) / k, wy = sy => y0 + (h - oy - (sy - view.y) / view.k) / k;
+    const ax = Math.floor(wx(0) / len) * len, bx = wx(w), ay = Math.floor(wy(h) / len) * len, by = wy(0);
+    let g = '';
+    if ((bx - ax) / len < 60 && (by - ay) / len < 60) {
+      for (let gx = ax; gx <= bx; gx += len) { const X = XY(gx, 0)[0]; g += `M${f1(X)} 0V${h}`; }
+      for (let gy = ay; gy <= by; gy += len) { const Y = XY(0, gy)[1]; g += `M0 ${f1(Y)}H${w}`; }
+    }
+    if (g) s += `<path class="mgrid" d="${g}"/>`;
+  }
   s += s0 + `<path class="lot" d="${ring}" fill-rule="evenodd"/>`;
   let top = '';
   if (sc) {
@@ -113,7 +124,7 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
     const sp0 = [...scr.values()];
     let dmin = Infinity;
     for (let i = 0; i < sp0.length; i++) for (let j = i + 1; j < sp0.length; j++) dmin = Math.min(dmin, Math.hypot(sp0[i][0] - sp0[j][0], sp0[i][1] - sp0[j][1]));
-    r = Math.max(9, Math.min(r, dmin / 2 - 0.5));
+    r = Math.max(8.5, Math.min(r, dmin / 2 - 0.5));
     for (const [, [x, y]] of scr) sp.circles.push([x, y, r + 1]);
     // área de cada ponto: contornos das células por baixo dos tiros
     if (areas && !small) s += `<g class="cells">${areas.cells.map(c => `<path d="${c.rings.map(rg => `M${rg.map(P).join('L')}Z`).join('')}"/>`).join('')}</g>`;

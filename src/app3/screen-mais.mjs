@@ -6,8 +6,8 @@ import { esc, num } from './format.mjs';
 import { makeBackup, readBackup, ITEM_LABELS } from './backup.mjs';
 import { createSchmidtBackupService } from '../persistence/backup-service.mjs';
 import { createSchmidtJournal, createSchmidtImageRepository } from '../platform/browser-backup-adapters.mjs';
-import { explainScenario } from '../engine/explain.mjs';
-import { assessField } from '../engine/dataQuality.mjs';
+import { explainScenario } from '../engine3/explain.mjs';
+import { assessField } from '../engine3/dataQuality.mjs';
 
 const RECENT_KEY = 'schmidt3.recentes', LAST_BACKUP = 'schmidt3.ultimaCopia';
 
@@ -41,6 +41,7 @@ export function installMais(app) {
     }
     return rowCache.get(id);
   }
+  app.lotRow = lotRow;
   /** U05: a visão geral é montada em partes de ~30 ms, com o progresso na tela: o celular não trava e dá para fechar. */
   let allRun = 0;
   function openAll() {
@@ -71,7 +72,7 @@ export function installMais(app) {
   }
 
   Object.assign(app.SHEETS, {
-    menu: () => app.openSheet('Mais', V.menuBody([['todos', 'Todos os lotes'], ['dados', 'Dados do lote'], ['calculo', 'Como foi calculado'], ['versoes', 'Versões anteriores'],
+    menu: () => app.openSheet('Mais', V.menuBody([['arquivos', 'Arquivos e fichas'], ['dados', 'Dados do lote'], ['calculo', 'Como foi calculado'], ['versoes', 'Versões anteriores'],
       ['copia', 'Cópia de segurança'], ['abrir', 'Abrir plano recebido']])),
     todos: openAll,
     versoes: async () => { app.openSheet(`Versões · ${app.cur.field.code}`, '<p class="mu">…</p>'); const rows = await versions.list(ui.key); app.openSheet(`Versões · ${app.cur.field.code}`, V.versionsBody(rows)); },

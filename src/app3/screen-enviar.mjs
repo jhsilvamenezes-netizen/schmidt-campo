@@ -3,8 +3,8 @@ import { mapMarkup } from './map.mjs';
 import * as P from './planner.mjs';
 import * as V from './views.mjs';
 import { buildPlanFile, parsePlanFile } from './plan-file.mjs';
-import { buildRoute } from '../engine/guidance.mjs';
-import { toCSV, toGeoJSON, toGPX, toKML } from '../engine/exporters.mjs';
+import { buildRoute } from '../engine3/guidance.mjs';
+import { toCSV, toGeoJSON, toGPX, toKML } from '../engine3/exporters.mjs';
 
 /** @param {any} app */
 export function installEnviar(app) {
@@ -37,6 +37,7 @@ export function installEnviar(app) {
       dl(text, name, 'application/json'); status('Arquivo do plano baixado: envie aos monitores.');
     },
   });
+  app.SHEETS.arquivos = () => app.openSheet('Arquivos e fichas', V.arquivosBody());
   app.SHEETS.abrir = () => { app.closeSheet(); document.querySelector('#plan-input').click(); };
   app.changes.push(t => {
     if (t.id !== 'plan-input' || !t.files?.[0]) return false;

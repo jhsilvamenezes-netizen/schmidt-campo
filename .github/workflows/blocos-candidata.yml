@@ -16,7 +16,7 @@ concurrency:
 jobs:
   blocos:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 30   # a instalação do navegador de testes varia de 2 a 10 min no GitHub
     steps:
       - uses: actions/checkout@v4
         with:
