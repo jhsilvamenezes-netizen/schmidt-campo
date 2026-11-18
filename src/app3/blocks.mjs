@@ -1,10 +1,11 @@
 // 3.0 · bloco de lotes vizinhos com a mesma referência A/B: grade comum de tiros (cálculo da 2.x em
 // src/application/block-planning.mjs). Registros no mesmo lugar da 2.x (estado.planningBlocks), compatíveis nos dois sentidos.
-import { prepareSchmidtBlock, schmidtReferenceBlocks, schmidtCommonBlockFields, selectSchmidtSavedBlock, validateSchmidtBlocks, schmidtBlockSourceSignature, SCHMIDT_BLOCK_SCHEMA } from '../application/block-planning.mjs';
+import { prepareSchmidtBlock, schmidtReferenceBlocks, schmidtCommonBlockFields, schmidtBlockAlternativeSummary, schmidtBlockBorderDistance, selectSchmidtSavedBlock, validateSchmidtBlocks, schmidtBlockSourceSignature, SCHMIDT_BLOCK_SCHEMA } from '../application/block-planning.mjs';
 import { buildScenario, planScenario } from '../engine/scenario.mjs';
 import { restoreSamples, withSamples } from '../engine/editing.mjs';
 import { coverageGrid, nearestDistances, kthSmallest, gridStep } from '../engine/metrics.mjs';
 import { sanitizeParams } from '../engine/paramCatalog.mjs';
+import { DEFAULT_PARAMS } from '../engine/params.mjs';
 import { deps, scenarioOf } from './planner.mjs';
 
 const plain = (f, p) => buildScenario(f, p, {}, deps);
@@ -31,10 +32,54 @@ export function withTolerance(rec, tol = BLOCK_TOLERANCE) {
   return { ...base, alternatives: alts.map(a => ({ ...a, record: fix(a.record), chosen: a === pick })), tolerance: tol, minLoss };
 }
 
+const statsOf = (grid, samples) => {
+  const d = nearestDistances(grid, samples), n = d.length, k = Math.min(n - 1, Math.floor(0.95 * n));
+  let max = -Infinity; for (let i = 0; i < n; i++) if (d[i] > max) max = d[i];
+  return { p95: kthSmallest(d, k), max };
+};
+
+/** A busca da 2.x põe pontos a mais até a cobertura ficar igual (perda zero). Com a tolerância da 3.0, devolve os que
+ *  sobram: em cada lote, o menor número de pontos (≥ o do lote sozinho) que fica dentro da margem. Mesma grade de
+ *  células e mesma conta de cobertura da 2.x; nunca acrescenta, só tira. */
+export function trimExtra(fields, rec, tol = BLOCK_TOLERANCE) {
+  const commons = schmidtCommonBlockFields(fields, rec.members, rec.common), grids = {};
+  const gridOf = key => (grids[key] ??= coverageGrid(fields[key].geom, gridStep(fields[key].geom, { gridTargetCells: 1500, minStepM: 15, maxStepM: 150 })));
+  /** @param {any} r */
+  const trim = r => {
+    const a = r.assessment, added = { ...a.addedPointsByField }, coverage = { ...a.coverage }, params = { ...r.state.paramsByField }, scenarios = {};
+    let changed = false;
+    for (const key of r.members) {
+      const p = params[key];
+      scenarios[key] = null;
+      if (!(added[key] > 0)) continue;
+      const base = p.totalPoints - added[key], before = coverage[key].before;
+      for (let n = base; n < p.totalPoints; n++) {
+        let sc; try { sc = planScenario(commons[key], { ...p, totalPoints: n }, deps); } catch { continue; }
+        if (sc.samples.length !== n) continue;
+        const after = statsOf(gridOf(key), sc.samples), ratio = Math.max(after.p95 / before.p95, after.max / before.max);
+        if (ratio <= 1 + tol) { params[key] = { ...p, totalPoints: n }; coverage[key] = { before, after, ratio }; added[key] = n - base; scenarios[key] = sc; changed = true; break; }
+      }
+    }
+    if (!changed) return null;
+    for (const key of r.members) scenarios[key] ??= planScenario(commons[key], params[key], deps);
+    const worstRatio = Math.max(...Object.values(coverage).map(c => c.ratio));
+    const out = { ...r, state: { ...r.state, paramsByField: params }, assessment: { ...a, coverage, worstRatio, addedPointsByField: added,
+      minimumBorderMByField: Object.fromEntries(r.members.map(k => [k, schmidtBlockBorderDistance(fields[k].geom, scenarios[k].samples)])) } };
+    return { record: out, summary: schmidtBlockAlternativeSummary(fields, r.members, { scenarios, coverage, addedPointsByField: added, worstRatio, common: r.common }) };
+  };
+  const top = { ...rec }; delete top.alternatives;
+  return { ...rec, alternatives: rec.alternatives.map(alt => {
+    const t = trim(alt.record || { ...top, common: { ...top.common } });
+    return t ? { ...alt, record: t.record, summary: t.summary } : alt;
+  }) };
+}
+
 /** Prepara o bloco (assíncrono, cede a vez à tela). Devolve o registro com alternativas por espaçamento. */
 export function prepareBlock(fields, group, paramsOf, signal) {
-  return prepareSchmidtBlock({ group, fields, parametersFor: f => paramsOf(`${f.farm}|${f.code}`), engine,
-    metrics: { coverageGrid, nearestDistances, kthSmallest, gridStep }, signal, yieldTask: () => new Promise(r => setTimeout(r, 0)) }).then(r => withTolerance(r));
+  // O teto de pontos entra explícito: sem ele a redistribuição da 2.x (min(teto, …)) não tentava nenhum ponto a mais
+  // e grupos como RC7 + RC8 ficavam sem opção por 5–8% que um ou dois pontos resolvem.
+  return prepareSchmidtBlock({ group, fields, parametersFor: f => ({ maxPointsCap: DEFAULT_PARAMS.maxPointsCap, ...paramsOf(`${f.farm}|${f.code}`) }), engine,
+    metrics: { coverageGrid, nearestDistances, kthSmallest, gridStep }, signal, yieldTask: () => new Promise(r => setTimeout(r, 0)) }).then(r => withTolerance(trimExtra(fields, r)));
 }
 
 /** Grava o registro no estado (sem a lista de alternativas) e devolve o novo planningBlocks e o id usado. */

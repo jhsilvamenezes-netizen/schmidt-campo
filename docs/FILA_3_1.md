@@ -43,7 +43,7 @@ Estado: `livre` · `em andamento · IA · branch` · `pronto para revisão · PR
 | U11 | P2 | Comparar espaçamentos e diagnóstico | P9, P10, P13, P15, F6, M3 | `src/app3/` (tela de comparação) | 5 opções lado a lado com prévia no mapa; mancha descoberta; visão da fazenda | livre |
 | U12 | P2 | Editor de pontos | M12, F1 | `src/app3/editor.mjs` (novo) | Arrastar no tiro, ±10 m, extra, remover, desfazer e refazer | livre |
 | U13 | P2 | Arquivos e dados | Q1–Q5, N9, N10, M9, M10, G5, G6 | `src/app3/` (menu Mais) | Compartilhar direto, dados dos lotes, "Atualizar agora", régua, SVG | livre |
-| U14 | P2 | Bloco completo e no motor | P16, P17, H2 | `src/engine/blocks.mjs` (novo) | Teste diferencial com o bloco da 2.5; combinações, mapa do grupo, GPX | livre |
+| U14 | P2 | Bloco completo e no motor | P16, P17, H2 | `src/engine/blocks.mjs` (novo) | Teste diferencial com o bloco da 2.5; combinações, mapa do grupo, GPX | em andamento · Claude · 3.0.11: os 40 grupos com opção (teto de pontos passado à busca; pontos que sobram devolvidos dentro de 5%); falta motor próprio do bloco |
 | U15 | P2 | Trajeto importado | P3, F4, C4 | `src/app3/import.mjs` (novo) | GeoJSON/CSV como na 2.5; plano da 2.5 com trajeto abre | livre |
 | U16 | P2 | Satélite e imagem de fundo | M7, M8 | `src/app3/basemap.mjs` (novo) | Mesmas regras da 2.5 (sem consulta externa até escolher) | livre |
 | U17 | P3 | Motor assertivo | A1–A5 | `src/engine/` | Critérios da seção 2 do plano nos 51 lotes | pronto para revisão · Claude · 3.0.8 (A1+A5 feitos: variação mediana 11,6% → 7,7%; A6 motor em segundo plano; faltam A2 borda, A3 tiro de 1 ponto, A4 equipe) |

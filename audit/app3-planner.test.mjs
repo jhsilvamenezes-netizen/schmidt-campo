@@ -162,3 +162,21 @@ test('"Onde estou": dentro/fora do lote, tiro e ponto mais perto', () => {
   const far = P.whereAmI(f, sc, { x: p.x + 50000, y: p.y, accuracyM: 4 });
   assert.equal(far.inside, false); assert.ok(far.edgeM > 40000);
 });
+
+test('3.0.11 · bloco: grupos que ficavam sem opção (teto de pontos ausente) passam a ter, sem ponto a mais além da margem de 5%', async () => {
+  const { blocksFor, prepareBlock, blockScenario, BLOCK_TOLERANCE } = await import('../src/app3/blocks.mjs');
+  for (const want of ['RC7 + RC8', 'BE1 + BE2 + BE3']) {
+    const key = keys.find(k => want.startsWith(fields[k].code + ' ')), g = blocksFor(fields, key).find(x => x.title === want);
+    const rec = await prepareBlock(fields, g, k => P.recommend(fields[k], {}, 5).chosen.params);
+    const ch = rec.alternatives.find(a => a.chosen);
+    assert.ok(ch, `${want}: sem opção`);
+    const record = ch.record || rec;
+    for (const k of g.members) {
+      const c = record.assessment.coverage[k], pts = record.state.paramsByField[k].totalPoints;
+      assert.ok(c.ratio <= 1 + BLOCK_TOLERANCE, `${want} ${k}: ${c.ratio}`);
+      // o registro gravado reabre com o mesmo número de pontos que a tela mostrou
+      assert.equal(blockScenario(fields, record, k).sc.samples.length, pts, `${want} ${k}`);
+      assert.equal(ch.summary.perField.find(f => f.key === k).points, pts);
+    }
+  }
+});
