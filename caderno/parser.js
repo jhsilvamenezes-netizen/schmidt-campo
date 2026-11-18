@@ -24,44 +24,40 @@
     const m = normalize(lot).match(/^([A-Z]+)\d+$/);
     return !m ? '' : BA.has(m[1]) ? 'Bananal' : RJ.has(m[1]) ? 'Rio de Janeiro' : '';
   };
+  // Núcleo conservador: RA12 e P10 são identificadores únicos, nunca RA1+RA2.
+  // Agrupamentos compactos de 3+ dígitos (BD12345) são expandidos somente
+  // se forem sequências de dígitos simples de 1 a 9, sem repetição.
   const parseLots = input => {
-    let s = normalize(input).replace(/PIVOS?/g, 'P').replace(/[–—]/g, '-');
-    const out = [];
-    const add = (pref, nums) => {
-      const p = pref.trim();
-      let parts = [];
-      let st = String(nums).replace(/\s/g, '').replace(/\//g, ',');
-      for (const x of st.split(',')) {
-        if (!x) continue;
-        const range = x.match(/^([1-9])-([1-9])$/);
-        if (range) {
-          const a=+range[1],b=+range[2];
-          for (let i=Math.min(a,b); i<=Math.max(a,b);i++) parts.push(i);
-        } else if (/^[1-9]{2,}$/.test(x)) parts.push(...x.split('').map(Number));
-        else if (/^[1-9]$/.test(x)) parts.push(+x);
+    let s=normalize(input).replace(/P[IÍ]V[OÔ]S?/g,'P').replace(/[–—]/g,'-');
+    const out=[];
+    const append=(prefix,value)=>{const id=prefix+value;if(!out.includes(id))out.push(id)};
+    const parseNumbers=raw=>{
+      const nums=[];
+      const token=String(raw||'').trim().replace(/^[,\s/\-]+|[,\s/\-]+$/g,'');
+      for(const chunk of token.split(/[,/\s]+/).filter(Boolean)){
+        const range=chunk.match(/^(\d{1,2})-(\d{1,2})$/);
+        if(range){const a=+range[1],b=+range[2];if(a>=1&&b<=99&&Math.abs(b-a)<=20)for(let v=Math.min(a,b);v<=Math.max(a,b);v++)nums.push(v);continue;}
+        if(/^\d{1,2}$/.test(chunk)&&+chunk>=1){nums.push(+chunk);continue;}
+        if(/^[1-9]{3,9}$/.test(chunk)&&new Set(chunk).size===chunk.length){for(const digit of chunk)nums.push(+digit);}
       }
-      for (const n of parts) { const val=p+n; if (!out.includes(val)) out.push(val); }
+      return nums;
     };
-    // Ex.: "RA - RB - RC 7, 8" = seis lotes.
-    s = s.replace(/((?:RA|RB|RC|BA|BB|BC|BD|BE)(?:\s*-\s*(?:RA|RB|RC|BA|BB|BC|BD|BE))+)[\s:]+([1-9][\d,\s-]*)/g,(whole, pp, nn) => {
-      const prefixes=pp.split(/\s*-\s*/);
-      const last=nn.match(/^[\d,\s-]+/)[0];
-      prefixes.forEach(p=>add(p,last));
-      return ' ';
+    // Grupos de prefixos compartilhando os mesmos números: RA-RB-RC 7,8.
+    const group=/((?:RA|RB|RC|BA|BB|BC|BD|BE)(?:\s*-\s*(?:RA|RB|RC|BA|BB|BC|BD|BE))+)[\s:]+([0-9][0-9,\s/\-]*)/g;
+    s=s.replace(group,(all,prefixes,raw)=>{
+      const numbers=parseNumbers(raw);for(const prefix of prefixes.split(/\s*-\s*/))for(const n of numbers)append(prefix,n);
+      return ' '.repeat(all.length);
     });
-    const re = new RegExp(`(${PRE})\\s*(\\d[\\d,\\s-]*)(?=\\s*(?:${PRE}|$|\\/))`, 'g');
-    let m;
-    while ((m=re.exec(s))) {
-      let num=m[2].replace(/\s+/g,'');
-      num=num.replace(/[-,]+$/,'');
-      add(m[1], num);
-    }
-    // "BB1-BC1" é uma separação entre dois talhões, não um intervalo numérico.
-    if (!out.length) {
-      const fallback = new RegExp(`(${PRE})\\s*([1-9])`, 'g');
-      while ((m=fallback.exec(s))) add(m[1],m[2]);
-    }
+    const parts=new RegExp(`(${PRE})\\s*([0-9][0-9,\\s/\\-]*)`,'g');
+    let match;while((match=parts.exec(s))){for(const n of parseNumbers(match[2]))append(match[1],n);}
     return out;
+  };
+  const ambiguousLots=(input,knownLots=[])=>{
+    const s=normalize(input).replace(/P[IÍ]V[OÔ]S?/g,'P');const known=new Set(knownLots.map(x=>normalize(typeof x==='string'?x:x.id)));
+    const warnings=[];for(const m of s.matchAll(new RegExp(`(${PRE})\\s*([1-9]{2})(?!\\d)`,'g'))){
+      const id=m[1]+m[2];if(!known.has(id)&&known.has(m[1]+m[2][0])&&known.has(m[1]+m[2][1]))warnings.push(`${id} pode representar um único talhão ou ${m[1]+m[2][0]} + ${m[1]+m[2][1]}. Confirme.`);
+    }
+    return warnings;
   };
   const lineProduct = raw => {
     let s = String(raw || '').replace(/\*/g,'').trim();
@@ -71,7 +67,7 @@
     if (!m) return null;
     const name=m[1].trim();
     if (!name || /^(?:DATA|OS|LOTE|HORIMETRO|PILOTO|AVIAO)/i.test(normalize(name))) return null;
-    return {name, qty: m[2].replace(',','.'), unit: m[3] ? normalize(m[3]).replace(/^LTS?$/,'L') : ''};
+    return {name, qty: m[2].replace(',','.'), unit: m[3] ? ({KG:'kg',G:'g',ML:'mL',L:'L',LT:'L',LTS:'L'}[normalize(m[3])]||'') : ''};
   };
   const getField = (text, name) => {
     const e=new RegExp(`^\\s*\\*?\\s*${name}\\s*\\*?\\s*:\\s*\\*?\\s*(.+)$`,'im');
@@ -138,5 +134,5 @@
     if(type==='Aérea' && !equipment.aircraft)warnings.push('Identificação da aeronave não informada.');
     return {value:{os,farm,lots,start,end,type,products,notes:'',equipment,raw,complete:true,origin:'Relatório WhatsApp'},warnings};
   }
-  return {parse,parseLots,lotFarm,isoDate,lineProduct,normalize,matchName};
+  return {parse,parseLots,ambiguousLots,lotFarm,isoDate,lineProduct,normalize,matchName};
 });

@@ -1,90 +1,48 @@
-# Caderno Campo — Sistema independente de aplicações · V2
+# Caderno Campo — V3 candidata (não publicada)
 
-**Status:** candidata para revisão visual e funcional. Não publicar em `main` sem validação. Nenhum dado real agrícola acompanha o código público.
+Aplicativo web independente para registrar aplicações agrícolas e consultar o histórico por fazenda e talhão. O repositório contém **somente código e testes fictícios**. Nenhuma planilha, relatório real ou base com consumo da safra deve ser publicado em GitHub Pages.
 
-## Objetivo operacional
+## Operação
 
-Transformar o caderno Excel em um registro móvel de aplicações, mantendo a OS como entidade principal e disponibilizando sua consulta por cada talhão correspondente. Entrada por colagem de texto do WhatsApp ou lançamento manual, com conferência humana antes do armazenamento.
+1. Abra pelo navegador em uma origem HTTPS exclusiva do Caderno Campo (ou servidor local para desenvolvimento).
+2. Em **Dados**, importe uma cópia JSON do caderno existente. Revise o resumo de inclusões, duplicados e quarentena.
+3. Em **Lançar**, cole uma OS do WhatsApp ou preencha manualmente. Confirme fazenda, período, bloco de talhões e produtos.
+4. Blocos e doses são **referências históricas**, nunca prescrições. Unidade do catálogo só passa ao registro quando confirmada explicitamente.
+5. Consulte **Painel**, **Histórico**, **Talhões** e **Análises**. Para restaurar uma OS anulada, use Histórico → Incluir OS anuladas.
+6. Exporte cópias JSON regularmente. O site não possui conta, autenticação ou sincronização remota.
 
-## Estrutura de domínio
+## Melhorias concretas da V3
 
-- **Fazenda → Talhões**: Rio de Janeiro e Bananal, cadastro da safra, cultura, variedade e área **cadastrada**.
-- **Aplicação (registro único)**: identificador, OS, fazenda, início/fim, modalidade, situação, conjunto de talhões, produtos, observações, origem e, quando disponível, dados da aeronave.
-- **Produto por aplicação**: nome comercial, dose informada (valor e unidade), quantidade usada total na OS, sobra total na OS, unidades e observação.
-- **Relatório original**: texto guardado no registro parseado. Relatório de conferência associado pela fazenda, número, datas e conjunto de talhões.
-- **Rastreabilidade**: log de criação, edição, importação, anulação, restauração e mudança de situação. Anulação preserva registro para revisão.
+- Reconhecimento conservador de talhões: `RA12` e `P10` permanecem identificadores únicos, enquanto `BD12345` e `RA-RB-RC 7,8` expandem com regras próprias.
+- Unidades reais (`KG` → `kg`, `G` → `g`, `ML` → `mL`) preservadas como valores distintos de doses e unidade cadastral. Sem rateio implícito entre talhões.
+- Blocos mais utilizados na mesma fazenda; catálogo pesquisável; histórico contextual de doses **somente para consulta**.
+- Interface focada em tarefas, com acesso direto às pendências, histórico e aplicações abertas; gráficos clicáveis para consultar registros.
+- Importação sem descarte silencioso: relatórios estruturais inválidos entram em quarentena; duplicatas são relatadas; registros antigos com término ausente ou identificador inconsistente permanecem visíveis para revisão sem correção automática.
+- Restauro da auditoria de backups; revisões de OS com estado anterior/posterior no evento; anulação/restauração acessíveis.
+- Rascunhos separados do workspace no IndexedDB e validação antes de salvar; gravação concorrente com revisão otimista.
+- Atualização do service worker sem `skipWaiting`/`clients.claim` forçados, minimizando risco de troca de versão durante um rascunho.
+- Legibilidade melhorada em 360/390/1440px, versão mobile com cinco destinos e acesso a Dados pelo cabeçalho.
 
-### Regras de integridade
+## Arquitetura
 
-1. Uma aplicação com cinco talhões é **um registro único** vinculado a cinco históricos; nunca somar o total da OS cinco vezes.
-2. A mesma numeração de OS pode pertencer a fazendas diferentes, datas diferentes ou execuções distintas. Chave de equivalência considera fazenda + OS + início/fim + modalidade + conjunto de talhões.
-3. **Não** preencher dose, unidade de consumo, área efetivamente tratada ou consumo individual por talhão por inferência.
-4. Não misturar `kg`, `g`, `L` e `mL` em um único consolidado sem conversão e validação. O painel inicial usa frequência de registros, não soma de quantidades.
-5. Arquivos importados mesclam dados, sem sobrescrever silenciosamente registros existentes. Toda nova OS precisa de confirmação do usuário.
-6. Identificadores de talhão inválidos ficam no histórico como pendência; não são transformados em talhões oficiais nem têm área presumida.
-7. Editar, anular e restaurar produzem evento no log. Backups JSON contêm o histórico completo, inclusive anulados.
+- `core.js`: regras e consultas, sem dependência da interface.
+- `parser.js`: interpretação de relatórios e aliases.
+- `store.js`: transações IndexedDB; atualiza o banco `schmidt-caderno-campo-standalone-v2` da versão 1 para a 2 sem apagar a base existente.
+- `app.js`: UI e orquestração (ainda em processo de decomposição, sem adoção prematura de framework).
+- `sw.js`: cache estático; não armazena dados da safra no Cache Storage.
 
-## Arquitetura independente
+> **Limites importantes:** um banco de nome diferente **não é isolamento de segurança por si só**. Hospedar em domínio/origem próprios e adotar autenticação/RLS antes de expor o aplicativo para equipes ou sincronizar dados entre dispositivos. Sem backend. Restauração e concorrência ainda precisam de testes reais no Android. Os resultados do protótipo em memória não substituem esses testes.
 
-```
-Caderno_Campo_Independente_V2/
-  index.html             interface PWA separada
-  app.js                 fluxo de lançamento, visualização e navegação
-  parser.js              leitura conservadora de relatórios WhatsApp
-  core.js                regras e análises puras (testáveis)
-  store.js               IndexedDB próprio: schmidt-caderno-campo-standalone-v2
-  styles.css             estilo próprio, responsivo, mobile-first
-  sw.js                  cache apenas de recursos do subdiretório
-  manifest.webmanifest   aplicativo independente
-  tests/                 testes de domínio, navegador e parser
-```
+## Testes
 
-Nenhuma importação de arquivos, CSS, rotas, armazenamento ou componentes do Schmidt Campo Monitoramento. A publicação segura definitiva deverá idealmente usar um **repositório e endereço próprios**. Enquanto isso, a candidata pode ficar isolada numa branch e no subdiretório `caderno/` sem modificar `main` ou a página atual.
-
-## Fluxo do usuário
-
-1. **Dados → Importar JSON** (histórico do caderno). Não publicar o JSON em repositório aberto.
-2. **Lançar**: colar **um** relatório por vez; selecionar “Interpretar relatório”; corrigir OS, datas, talhões, produtos, quantidades, unidades e dados aéreos; confirmar.
-3. **Histórico**: pesquisar OS, produto, talhão, fazenda, situação ou período; detalhes completos; editar ou anular com auditoria.
-4. **Talhões**: selecionar fazenda e talhão para consultar as aplicações vinculadas.
-5. **Análises**: filtrar período e fazenda e ler frequência de aplicações, tendências por mês, produtos mais registrados, modalidades e pendências.
-6. **Dados → Exportar backup JSON** regularmente. CSV está disponível para análise externa; evitar abrir e salvar o arquivo CSV como substituto do JSON.
-
-## Significado dos indicadores
-
-| Indicador | O que representa | O que NÃO representa |
-|---|---|---|
-| Registros | Quantidade de lançamentos de OS | Número de tanques, passadas ou subáreas |
-| Talhões atingidos | Talhões identificados em registros | Hectares efetivamente tratados |
-| Produtos registrados | Ocorrências de itens nas OS | Massa/volume aplicado ou predominância agronômica |
-| Aplicações por mês | Registros segundo a data de término | Cronograma planejado ou horas de operação |
-| Em aberto | Situação escrita no caderno | Pendência no sistema de OS oficial |
-| Integridade | Campos ausentes e cadastro inconsistente | Qualidade da aplicação ou nível de dano econômico |
-
-**Fontes de estudo:** [FAO — boas práticas de registro](https://www.fao.org/fileadmin/templates/agphome/documents/Pests_Pesticides/Code/Old_guidelines/Ground_application.pdf); [EPA NSW — registro de aplicação](https://www.epa.nsw.gov.au/Your-environment/Pesticides/compulsory-record-keeping/Sample-pesticide-application-record); [web.dev — dados offline/PWA](https://web.dev/learn/pwa/offline-data?hl=pt-br); [WCAG 2.2 — alvos de toque](https://www.w3.org/TR/WCAG22/#target-size-minimum).
-
-## Limitações e requisitos de produção
-
-- Armazenamento **local via IndexedDB**; os dados **não sincronizam** entre celulares/notebooks.
-- Não há autenticação, servidor remoto, backup automático na nuvem, relatórios legais auditáveis com assinatura nem integração com Cropwise.
-- O armazenamento de um navegador pode ser limpo pelo usuário/sistema; exportar JSON frequentemente e após lançamentos críticos.
-- O parser não substitui revisão humana. Produtos que aparecem sem unidade, dose ou área não são completados automaticamente.
-- Aplicações futuras exigem cadastro de **área efetivamente tratada por talhão**, se a meta for indicadores de hectares, custo/ha, consumo/ha e histórico de doses efetivas.
-- Antes de produção: homologar em Galaxy/Chrome real, testar restauração após fechamento, uso offline e exportação/importação com dados revisados; definir rotina de backup e acesso privado.
-
-## Verificação
-
-```sh
-node --check core.js && node --check parser.js && node --check app.js
+```bash
 node tests/core.test.cjs
 node tests/parser.test.cjs
+node tests/domain-v3.test.cjs
 ```
 
-O teste `tests/render_smoke.py` usa Chromium com armazenamento simulado porque a navegação HTTP/file externa é bloqueada no ambiente de verificação. Ele é útil para conferir renderização, fluxo colar → salvar → histórico e ausência de overflow, mas **não** substitui teste persistente real do IndexedDB.
+Teste visual `tests/render_v3.py` utiliza Chromium com armazenamento simulado e arquivo privado de referência que **não faz parte deste repositório**. Testes de IndexedDB e service worker em HTTPS real são pendências antes da publicação.
 
-## Próxima fase recomendada
+## Implantação
 
-1. Confirmar no celular o fluxo de conferência e a visualização de OS grandes.
-2. Corrigir as pendências detectadas do histórico de importação antes de usar métricas por talhão.
-3. Definir autenticação e sincronização (API + banco privado, controle de fazenda/usuário e migração), preservando offline-first e histórico de auditoria.
-4. Só depois ampliar para indicadores avançados com área executada, equipamento, horário, operador, clima, alvo, produtos e unidades validadas.
+Esta pasta representa uma candidata de revisão, ainda sem merge ou publicação. Recomendado criar um repositório **e domínio próprios** para o Caderno Campo; manter o `SCHMIDT Campo` de monitoramento em projeto separado. Não usar o diretório/Pages atual como espaço definitivo de dados agrícolas.
