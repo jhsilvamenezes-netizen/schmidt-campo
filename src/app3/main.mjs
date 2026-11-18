@@ -60,16 +60,40 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   };
   const saved = () => store.get();
   const people = () => Math.max(1, Math.min(60, Math.round(saved().quickMonitors ?? 5)));
-  /** Recomendação do lote. Vem pronta do arquivo (regra padrão) ou é montada na hora; o equilíbrio das áreas (U17)
-   *  roda depois, aos poucos (~25 ms por vez), e ajusta o plano sozinho se ele ainda for o recomendado. */
-  function recFor(field, base, key = ui.key) {
-    const id = `${key}|${JSON.stringify(base)}|${people()}|${!!saved().fitTeam}`;
-    if (!recCache.has(id)) {
-      const first = P.recommendBase(field, base, people(), saved().fitTeam);
-      recCache.set(id, first);
-      if (first) balanceLater(id, field, base, key, first);
+  /** Recomendação do lote. Vem pronta do arquivo (regra padrão) ou é montada no motor em segundo plano (motor.js,
+   *  Web Worker): a tela não trava; enquanto isso o lote mostra o plano gravado e "calculando o recomendado".
+   *  Sem worker (navegador antigo ou arquivo local): recomendação base na hora e equilíbrio aos poucos. */
+  const recId = (base, key) => `${key}|${JSON.stringify(base)}|${people()}|${!!saved().fitTeam}`;
+  /** @type {Map<string, {field:any, base:any, key:string, fns:Function[]}>} */ const pending = new Map();
+  /** @type {any} */ let worker = null;
+  try {
+    if (/^https?:$/.test(window.location.protocol) && window.Worker) {
+      worker = new window.Worker('motor.js');
+      worker.onmessage = e => { const { id, rec, error } = e.data || {}; const p = pending.get(id); if (!p) return; pending.delete(id); done(id, error ? P.recommendBase(p.field, p.base, people(), saved().fitTeam) : rec, p); };
+      worker.onerror = () => { worker = null; for (const [id, p] of [...pending]) { pending.delete(id); done(id, P.recommend(p.field, p.base, people(), saved().fitTeam), p); } };
     }
-    return recCache.get(id);
+  } catch { worker = null; }
+  function done(id, rec, p) {
+    recCache.set(id, rec); memo = null;
+    for (const fn of p.fns) fn(rec);
+    if (ui.key === p.key) render();
+  }
+  function recFor(field, base, key = ui.key) {
+    const id = recId(base, key);
+    if (recCache.has(id)) return recCache.get(id);
+    if (worker) {
+      if (!pending.has(id)) { pending.set(id, { field, base, key, fns: [] }); worker.postMessage({ id, field, base, people: people(), fitTeam: !!saved().fitTeam }); }
+      return null;
+    }
+    const first = P.recommendBase(field, base, people(), saved().fitTeam);
+    recCache.set(id, first);
+    if (first) balanceLater(id, field, base, key, first);
+    return first;
+  }
+  /** Chama `fn(rec)` quando a recomendação estiver pronta (na hora, se já estiver). */
+  function whenRec(field, base, fn, key = ui.key) {
+    const r = recFor(field, base, key), p = pending.get(recId(base, key));
+    if (p) p.fns.push(fn); else fn(r);
   }
   function balanceLater(id, field, base, key, first) {
     const steps = P.balanceSteps(field, base, first);
@@ -79,7 +103,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
       while (!r.done && Date.now() - t0 < 25) r = steps.next();
       if (!r.done) { setTimeout(run, 0); return; }
       const rec = r.value;
-      recCache.set(id, rec);
+      recCache.set(id, rec); memo = null;
       if (rec === first) return;
       // ajusta o plano gravado só se ele ainda é o recomendado de antes (a pessoa não escolheu outro no meio)
       const st = saved(), now = st.paramsByField?.[key];
@@ -95,7 +119,11 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   /** Contexto comum: cada tela (screen-*.mjs) lê daqui e registra as suas folhas, ações e eventos. */
   /** @type {any} */ const app = {
     document, window, fields, keys, ui, store, storage, persistent, session, safra, appVersion, host, versions: createVersions(window.indexedDB),
-    cur: null, toast, saved, people, recFor, render, setParams,
+    cur: null, toast, saved, people, recFor, whenRec, render, setParams,
+    /** Recomendação já pronta (sem calcular), ou undefined. */
+    /** Recomendação já pronta ou feita na hora (para listas e bloco, que precisam do valor já). */
+    recNow: (field, base, key = ui.key) => recFor(field, base, key) ?? P.recommendBase(field, base, people(), saved().fitTeam),
+    peekRec: (field, base, key = ui.key) => recCache.get(`${key}|${JSON.stringify(base)}|${people()}|${!!saved().fitTeam}`),
     SHEETS: {}, ACTIONS: {}, clicks: [], changes: [], inputs: [], onLotChange: [], onCloseSheet: [],
     openSheet: (title, body) => { host.innerHTML = V.sheet(title, body); host.querySelector('.close')?.focus(); },
     closeSheet: () => { host.innerHTML = ''; for (const f of app.onCloseSheet) f(); },
@@ -128,7 +156,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     const sc = tried?.sc || P.planInUse(field, params || base, edits);
     if (invalid && warnedInvalid !== ui.key) { warnedInvalid = ui.key; setTimeout(() => toast(`O plano gravado de ${field.code} não abre (${invalid}). Mostrando o recomendado.`), 0); }
     const blind = P.uncovered(field, sc), list = P.checks(sc, people(), blind), split = P.team(sc, people());
-    return { field, params: params || base, base, rec, sc, f: P.figures(sc), blind, list, split, inUseIsRec: !!rec && P.sameShape(params, rec.chosen.params), block: null, others: [] };
+    return { field, params: params || base, base, rec, recPending: rec === null && !!worker, sc, f: P.figures(sc), blind, list, split, inUseIsRec: !!rec && P.sameShape(params, rec.chosen.params), block: null, others: [] };
   }
   /** Troca o plano do lote (com Desfazer). `edits`: undefined = manter, null = apagar, objeto = gravar. */
   function setParams(params, msg = 'Plano alterado', edits) {

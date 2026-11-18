@@ -42,7 +42,7 @@ try {
   await p.waitForFunction(w => { const s = JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BA2']; return s && s.trackSpacingM === w.trackSpacingM && s.trackPhaseM === w.trackPhaseM; }, want, { timeout: 60000 });
   const regraTravada = Math.round(await p.evaluate(() => window.__long));
   console.log(JSON.stringify({ loteMs: lote, abaMs: aba, todosMs: todos, maiorTravadaMs: maiorTravada, regraMaiorTravadaMs: regraTravada }));
-  assert.ok(regraTravada < 1200, `mudar a regra (recomendação base, ainda na tela; worker = A6) travou ${regraTravada} ms`);
+  assert.ok(regraTravada < 400, `mudar a regra (motor em segundo plano) travou ${regraTravada} ms`);
   assert.ok(Math.max(...lote) < 400, `trocar de lote: ${lote} ms`);
   assert.ok(Math.max(...aba) < 300, `trocar de aba: ${aba} ms`);
   assert.ok(maiorTravada < 400, `"Todos os lotes" travou ${maiorTravada} ms`);

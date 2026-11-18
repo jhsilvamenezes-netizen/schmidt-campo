@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-KKaRWtgdTg0P3rf61tjumoRB/F4Jiwcc47UAJEQBfsg='; style-src 'sha256-nWDvQroOc/V7pyVcVVT4yOQSwi2pM0pnAhpmiqkJGdY='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-ZMigOBvjogHcv/8L1SHArX8utaKuTYSIfI0eFMGt6Sk='; style-src 'sha256-nWDvQroOc/V7pyVcVVT4yOQSwi2pM0pnAhpmiqkJGdY='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#17594a" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c1512" media="(prefers-color-scheme: dark)">
 <title>SCHMIDT Campo</title>
 <link rel="icon" href="marca.svg"><link rel="apple-touch-icon" href="marca-180.png"><link rel="manifest" href="app.webmanifest">
@@ -4166,7 +4166,7 @@ function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, blo
   return `<div class="map sm" data-map="small"></div><div class="scroll">
 <section class="card">${stepper('ha', 'Hectares por ponto', `mínimo ${num(sc.minPoints)} pontos`, haPerPoint)}${stepper('people', 'Pessoas', '', people)}
 <div class="seg" role="group" aria-label="Planejar"><button class="on" aria-pressed="true">Lote</button><button data-open="bloco" aria-pressed="false">Bloco</button></div></section>
-<section class="card"><div class="row-sb"><h2 class="h">${inUseIsRec ? 'Plano recomendado' : 'Plano em uso'}</h2>${inUseIsRec ? '<span class="tag">em uso</span>' : '<button class="link" data-use="rec">Usar recomendado</button>'}</div>
+<section class="card"><div class="row-sb"><h2 class="h">${inUseIsRec ? 'Plano recomendado' : 'Plano em uso'}</h2>${inUseIsRec ? '<span class="tag">em uso</span>' : rec ? '<button class="link" data-use="rec">Usar recomendado</button>' : '<span class="mu">calculando o recomendado…</span>'}</div>
 ${metrics(f)}<p class="mu">Caminhada ${esc(f.caminhada)}${f.tiros ? ` · ${km(sc.route.totalEstimatedM / f.tiros)} km por tiro` : ''}</p>${busy ? '<p class="mu">Calculando…</p>' : ''}</section>
 <section class="card list"><h2 class="h">Tiros</h2>${rows.map(r => `<div class="li"><span class="id">${esc(r.trackId)}</span><span class="x">${num(r.lengthM)} m <small>· ${r.n === 1 ? '1 ponto' : `${num(r.n)} pontos`}</small></span><span class="r">${r.medianGapM ? `a cada ${num(r.medianGapM)} m` : r.n ? '1 ponto' : 'sem ponto'}</span></div>`).join('')}</section>
 <section class="card list"><h2 class="h">Outras opções</h2>${alts.length ? alts.map((a, i) => `<div class="li"><span class="x">${num(a.m.tiros)} tiros · ${num(a.m.pontos)} pontos<br><small>95% &lt; ${num(a.m.p95M)} m · ${num(a.m.caminhadaKm, 1)} km${a.id === 'equipe' ? ' · igual por pessoa' : ''}</small></span><button class="use" data-alt="${i}">Usar</button></div>`).join('') : '<p class="mu">Sem outra opção melhor.</p>'}
@@ -5624,8 +5624,18 @@ function installPlano(app) {
     if (t.id === 'ha') {
       const v = Math.round(Number(String(t.value).trim().replace(',', '.')) * 10) / 10;
       if (!(v >= 1 && v <= 1000)) { t.value = String(cur.params.haPerPoint ?? 20).replace('.', ','); app.toast('Hectares por ponto: de 1 a 1.000.'); return true; }
-      const base = { ...cur.base, haPerPoint: v }, rec = app.recFor(cur.field, base);
-      app.setParams(cur.inUseIsRec && rec ? { ...base, ...rec.chosen.params } : { ...cur.params, haPerPoint: v }, `1 ponto a cada ${num(v, v % 1 ? 1 : 0)} ha`);
+      const base = { ...cur.base, haPerPoint: v }, msg = `1 ponto a cada ${num(v, v % 1 ? 1 : 0)} ha`, ready = app.peekRec(cur.field, base);
+      if (!cur.inUseIsRec && !cur.recPending) { app.setParams({ ...cur.params, haPerPoint: v }, msg); return true; }
+      if (ready) { app.setParams({ ...base, ...ready.chosen.params }, msg); return true; }
+      // A6: a regra nova aparece na hora (mesmos tiros, pontos da regra nova); a recomendação vem do motor em segundo
+      // plano e só substitui o plano se ele ainda for este (a pessoa não mudou nada no meio)
+      const key = app.ui.key, quick = { ...cur.params, haPerPoint: v };
+      if (!app.setParams(quick, msg)) return true;
+      app.whenRec(cur.field, base, rec => {
+        const st = app.saved();
+        if (!rec || JSON.stringify(st.paramsByField?.[key]) !== JSON.stringify(quick)) return;
+        if (store.update({ paramsByField: { ...(st.paramsByField || {}), [key]: { ...base, ...rec.chosen.params } } }) && app.ui.key === key) app.render();
+      }, key);
       return true;
     }
     if (t.id === 'people') {
@@ -5647,8 +5657,8 @@ function installPlano(app) {
       app.setParams(cur.params, `95% do lote: ${num(r.report.baseline.p95M)} → ${num(r.report.optimized.p95M)} m`, r.edits); setTimeout(reopenAdvanced, 0);
     },
     restore() {
-      const cur = app.cur, base = { haPerPoint: cur.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint }, rec = app.recFor(cur.field, base);
-      app.setParams(rec ? { ...base, ...rec.chosen.params } : base, 'Padrões do lote restaurados', null); setTimeout(reopenAdvanced, 0);
+      const cur = app.cur, base = { haPerPoint: cur.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint };
+      app.whenRec(cur.field, base, rec => { app.setParams(rec ? { ...base, ...rec.chosen.params } : base, 'Padrões do lote restaurados', null); setTimeout(reopenAdvanced, 0); });
     },
   });
 }
@@ -5746,7 +5756,7 @@ function installMais(app) {
   /** Plano salvo (ou recomendado) de um lote, para a visão geral; guardado até o plano do lote mudar. */
   const rowCache = new Map();
   function lotRow(k, st) {
-    const f = fields[k], params = st.paramsByField?.[k] ?? { ...app.recFor(f, {}, k).chosen.params }, edits = st.editsByField?.[k];
+    const f = fields[k], params = st.paramsByField?.[k] ?? { ...app.recNow(f, {}, k).chosen.params }, edits = st.editsByField?.[k];
     const id = `${k}|${JSON.stringify(params)}|${JSON.stringify(edits ?? null)}`;
     if (!rowCache.has(id)) {
       let row;
@@ -5871,7 +5881,7 @@ function installBloco(app) {
     if (t.dataset.block) {
       const g = blockUi.groups[+t.dataset.block], st = app.saved(), ctl = new AbortController();
       blockUi = { ...blockUi, busy: true, abort: ctl }; app.openSheet(`Bloco ${g.title}`, V.blockPickBody([], null, true));
-      const paramsOf = k => st.paramsByField?.[k] ?? { ...app.recFor(fields[k], {}, k).chosen.params };
+      const paramsOf = k => st.paramsByField?.[k] ?? { ...app.recNow(fields[k], {}, k).chosen.params };
       prepareBlock(fields, g, paramsOf, ctl.signal).then(rec => { blockUi = { ...blockUi, busy: false, prepared: rec }; if (app.host.innerHTML) app.openSheet(`Bloco ${g.title}`, V.blockPickBody([], rec, false)); })
         .catch(err => { blockUi.busy = false; if (app.host.innerHTML) app.openSheet(`Bloco ${g.title}`, `<p class="ck alerta">${esc(err.message)}</p>`); });
       return true;
@@ -5957,16 +5967,40 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   };
   const saved = () => store.get();
   const people = () => Math.max(1, Math.min(60, Math.round(saved().quickMonitors ?? 5)));
-  /** Recomendação do lote. Vem pronta do arquivo (regra padrão) ou é montada na hora; o equilíbrio das áreas (U17)
-   *  roda depois, aos poucos (~25 ms por vez), e ajusta o plano sozinho se ele ainda for o recomendado. */
-  function recFor(field, base, key = ui.key) {
-    const id = `${key}|${JSON.stringify(base)}|${people()}|${!!saved().fitTeam}`;
-    if (!recCache.has(id)) {
-      const first = P.recommendBase(field, base, people(), saved().fitTeam);
-      recCache.set(id, first);
-      if (first) balanceLater(id, field, base, key, first);
+  /** Recomendação do lote. Vem pronta do arquivo (regra padrão) ou é montada no motor em segundo plano (motor.js,
+   *  Web Worker): a tela não trava; enquanto isso o lote mostra o plano gravado e "calculando o recomendado".
+   *  Sem worker (navegador antigo ou arquivo local): recomendação base na hora e equilíbrio aos poucos. */
+  const recId = (base, key) => `${key}|${JSON.stringify(base)}|${people()}|${!!saved().fitTeam}`;
+  /** @type {Map<string, {field:any, base:any, key:string, fns:Function[]}>} */ const pending = new Map();
+  /** @type {any} */ let worker = null;
+  try {
+    if (/^https?:$/.test(window.location.protocol) && window.Worker) {
+      worker = new window.Worker('motor.js');
+      worker.onmessage = e => { const { id, rec, error } = e.data || {}; const p = pending.get(id); if (!p) return; pending.delete(id); done(id, error ? P.recommendBase(p.field, p.base, people(), saved().fitTeam) : rec, p); };
+      worker.onerror = () => { worker = null; for (const [id, p] of [...pending]) { pending.delete(id); done(id, P.recommend(p.field, p.base, people(), saved().fitTeam), p); } };
     }
-    return recCache.get(id);
+  } catch { worker = null; }
+  function done(id, rec, p) {
+    recCache.set(id, rec); memo = null;
+    for (const fn of p.fns) fn(rec);
+    if (ui.key === p.key) render();
+  }
+  function recFor(field, base, key = ui.key) {
+    const id = recId(base, key);
+    if (recCache.has(id)) return recCache.get(id);
+    if (worker) {
+      if (!pending.has(id)) { pending.set(id, { field, base, key, fns: [] }); worker.postMessage({ id, field, base, people: people(), fitTeam: !!saved().fitTeam }); }
+      return null;
+    }
+    const first = P.recommendBase(field, base, people(), saved().fitTeam);
+    recCache.set(id, first);
+    if (first) balanceLater(id, field, base, key, first);
+    return first;
+  }
+  /** Chama `fn(rec)` quando a recomendação estiver pronta (na hora, se já estiver). */
+  function whenRec(field, base, fn, key = ui.key) {
+    const r = recFor(field, base, key), p = pending.get(recId(base, key));
+    if (p) p.fns.push(fn); else fn(r);
   }
   function balanceLater(id, field, base, key, first) {
     const steps = P.balanceSteps(field, base, first);
@@ -5976,7 +6010,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
       while (!r.done && Date.now() - t0 < 25) r = steps.next();
       if (!r.done) { setTimeout(run, 0); return; }
       const rec = r.value;
-      recCache.set(id, rec);
+      recCache.set(id, rec); memo = null;
       if (rec === first) return;
       // ajusta o plano gravado só se ele ainda é o recomendado de antes (a pessoa não escolheu outro no meio)
       const st = saved(), now = st.paramsByField?.[key];
@@ -5992,7 +6026,11 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   /** Contexto comum: cada tela (screen-*.mjs) lê daqui e registra as suas folhas, ações e eventos. */
   /** @type {any} */ const app = {
     document, window, fields, keys, ui, store, storage, persistent, session, safra, appVersion, host, versions: createVersions(window.indexedDB),
-    cur: null, toast, saved, people, recFor, render, setParams,
+    cur: null, toast, saved, people, recFor, whenRec, render, setParams,
+    /** Recomendação já pronta (sem calcular), ou undefined. */
+    /** Recomendação já pronta ou feita na hora (para listas e bloco, que precisam do valor já). */
+    recNow: (field, base, key = ui.key) => recFor(field, base, key) ?? P.recommendBase(field, base, people(), saved().fitTeam),
+    peekRec: (field, base, key = ui.key) => recCache.get(`${key}|${JSON.stringify(base)}|${people()}|${!!saved().fitTeam}`),
     SHEETS: {}, ACTIONS: {}, clicks: [], changes: [], inputs: [], onLotChange: [], onCloseSheet: [],
     openSheet: (title, body) => { host.innerHTML = V.sheet(title, body); host.querySelector('.close')?.focus(); },
     closeSheet: () => { host.innerHTML = ''; for (const f of app.onCloseSheet) f(); },
@@ -6025,7 +6063,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     const sc = tried?.sc || P.planInUse(field, params || base, edits);
     if (invalid && warnedInvalid !== ui.key) { warnedInvalid = ui.key; setTimeout(() => toast(`O plano gravado de ${field.code} não abre (${invalid}). Mostrando o recomendado.`), 0); }
     const blind = P.uncovered(field, sc), list = P.checks(sc, people(), blind), split = P.team(sc, people());
-    return { field, params: params || base, base, rec, sc, f: P.figures(sc), blind, list, split, inUseIsRec: !!rec && P.sameShape(params, rec.chosen.params), block: null, others: [] };
+    return { field, params: params || base, base, rec, recPending: rec === null && !!worker, sc, f: P.figures(sc), blind, list, split, inUseIsRec: !!rec && P.sameShape(params, rec.chosen.params), block: null, others: [] };
   }
   /** Troca o plano do lote (com Desfazer). `edits`: undefined = manter, null = apagar, objeto = gravar. */
   function setParams(params, msg = 'Plano alterado', edits) {

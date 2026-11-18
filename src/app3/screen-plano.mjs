@@ -33,8 +33,18 @@ export function installPlano(app) {
     if (t.id === 'ha') {
       const v = Math.round(Number(String(t.value).trim().replace(',', '.')) * 10) / 10;
       if (!(v >= 1 && v <= 1000)) { t.value = String(cur.params.haPerPoint ?? 20).replace('.', ','); app.toast('Hectares por ponto: de 1 a 1.000.'); return true; }
-      const base = { ...cur.base, haPerPoint: v }, rec = app.recFor(cur.field, base);
-      app.setParams(cur.inUseIsRec && rec ? { ...base, ...rec.chosen.params } : { ...cur.params, haPerPoint: v }, `1 ponto a cada ${num(v, v % 1 ? 1 : 0)} ha`);
+      const base = { ...cur.base, haPerPoint: v }, msg = `1 ponto a cada ${num(v, v % 1 ? 1 : 0)} ha`, ready = app.peekRec(cur.field, base);
+      if (!cur.inUseIsRec && !cur.recPending) { app.setParams({ ...cur.params, haPerPoint: v }, msg); return true; }
+      if (ready) { app.setParams({ ...base, ...ready.chosen.params }, msg); return true; }
+      // A6: a regra nova aparece na hora (mesmos tiros, pontos da regra nova); a recomendação vem do motor em segundo
+      // plano e só substitui o plano se ele ainda for este (a pessoa não mudou nada no meio)
+      const key = app.ui.key, quick = { ...cur.params, haPerPoint: v };
+      if (!app.setParams(quick, msg)) return true;
+      app.whenRec(cur.field, base, rec => {
+        const st = app.saved();
+        if (!rec || JSON.stringify(st.paramsByField?.[key]) !== JSON.stringify(quick)) return;
+        if (store.update({ paramsByField: { ...(st.paramsByField || {}), [key]: { ...base, ...rec.chosen.params } } }) && app.ui.key === key) app.render();
+      }, key);
       return true;
     }
     if (t.id === 'people') {
@@ -56,8 +66,8 @@ export function installPlano(app) {
       app.setParams(cur.params, `95% do lote: ${num(r.report.baseline.p95M)} → ${num(r.report.optimized.p95M)} m`, r.edits); setTimeout(reopenAdvanced, 0);
     },
     restore() {
-      const cur = app.cur, base = { haPerPoint: cur.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint }, rec = app.recFor(cur.field, base);
-      app.setParams(rec ? { ...base, ...rec.chosen.params } : base, 'Padrões do lote restaurados', null); setTimeout(reopenAdvanced, 0);
+      const cur = app.cur, base = { haPerPoint: cur.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint };
+      app.whenRec(cur.field, base, rec => { app.setParams(rec ? { ...base, ...rec.chosen.params } : base, 'Padrões do lote restaurados', null); setTimeout(reopenAdvanced, 0); });
     },
   });
 }

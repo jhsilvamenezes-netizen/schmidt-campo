@@ -67,5 +67,12 @@ try {
     assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3'].haPerPoint), 20.5);
     await p.fill('#people', '2,5'); await p.dispatchEvent('#people', 'change'); await toastHas(p, /Pessoas: número inteiro de 1 a 60/);
     await ctx.close(); }
+  // A6 · sem o motor em segundo plano (motor.js indisponível): mudar a regra continua funcionando e chega ao mesmo plano
+  { const { ctx, p, errors } = await page(state({ fieldKey: 'Bananal|BA2' }));
+    await ctx.route('**/motor.js', r => r.abort()); await p.reload(); await ready(p);
+    await p.click('[data-tab="plano"]'); await p.fill('#ha', '25'); await p.dispatchEvent('#ha', 'change');
+    await toastHas(p, /1 ponto a cada 25 ha/);
+    await p.waitForFunction(() => JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BA2']?.haPerPoint === 25, null, { timeout: 30000 });
+    assert.deepStrictEqual(errors, []); await ctx.close(); }
   console.log('3.0.1: abre com plano inválido, sem armazenamento e com trajeto da 2.5; recusa acima do teto e versão inválida; avisa quando não grava; aceita decimal');
 } finally { await browser.close(); server.close(); }

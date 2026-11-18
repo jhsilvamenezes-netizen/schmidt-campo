@@ -16,9 +16,9 @@ export const APP_VERSION = '3.0.8';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
 /** Cada módulo no seu escopo; importações do motor viram o namespace schmidtEngine2. */
-async function bundleApp() {
+async function bundleModules(MODULES, tail) {
   const parts = [];
-  for (const id of APP_MODULES) {
+  for (const id of MODULES) {
     let src = await readFile(`${root}src/${id}.mjs`, 'utf8');
     const dir = id.split('/')[0], binds = [];
     for (const line of src.match(/^import[^\n]*\n/gm) || []) {
@@ -26,11 +26,11 @@ async function bundleApp() {
       if (!m) throw Error(`Importação fora do contrato em ${id}: ${line.trim()}`);
       const target = m[3] === '.' ? `${dir}/${m[4]}` : `${m[4]}/${m[5]}`;
       let from;
-      if (target.startsWith('engine/') && !APP_MODULES.includes(target)) {
+      if (target.startsWith('engine/') && !MODULES.includes(target)) {
         if (!ENGINE_MODULES.includes(target.slice(7))) throw Error(`Módulo do motor inexistente: ${target}`);
         from = `schmidtEngine2.${target.slice(7)}`;
       } else {
-        if (!(APP_MODULES.indexOf(target) >= 0 && APP_MODULES.indexOf(target) < APP_MODULES.indexOf(id))) throw Error(`Ordem ou módulo ausente: ${id} importa ${target}`);
+        if (!(MODULES.indexOf(target) >= 0 && MODULES.indexOf(target) < MODULES.indexOf(id))) throw Error(`Ordem ou módulo ausente: ${id} importa ${target}`);
         from = ident(target);
       }
       binds.push(m[2] ? `const ${m[2]} = ${from};` : `const { ${m[1].split(',').map(x => x.trim()).filter(Boolean).map(x => x.replace(/^(\w+) as (\w+)$/, '$1: $2')).join(', ')} } = ${from};`);
@@ -41,8 +41,14 @@ async function bundleApp() {
     src = src.replace(/^export \{[^}]+\};?\s*$/gm, '').replace(/^export /gm, '');
     parts.push(`// src/${id}.mjs\nconst ${ident(id)}=(()=>{\n${binds.join('\n')}\n${src}\nreturn Object.freeze({${[...exported, ...reexp].join(',')}});\n})();`);
   }
-  return `(()=>{\n'use strict';\n${parts.join('\n')}\n${ident('app3/main')}.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),recs:JSON.parse(document.getElementById('recs-data').textContent),appVersion:'${APP_VERSION}'});\n})();`;
+  return `(()=>{\n'use strict';\n${parts.join('\n')}\n${tail}\n})();`;
 }
+const bundleApp = () => bundleModules(APP_MODULES, `${ident('app3/main')}.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),recs:JSON.parse(document.getElementById('recs-data').textContent),appVersion:'${APP_VERSION}'});`);
+
+/** U17/A6 · motor em segundo plano (Web Worker): recomendação equilibrada sem travar a tela. Mesmo código da tela. */
+export const WORKER_MODULES = ['app3/format', 'app3/planner'];
+const bundleWorker = async () => `${await bundleEngine()}\n${await bundleModules(WORKER_MODULES, `const P=${ident('app3/planner')};
+self.onmessage=e=>{const {id,field,base,people,fitTeam}=e.data;let rec=null,error=null;try{rec=P.recommend(field,base,people,fitTeam);}catch(x){error=String((x&&x.message)||x);}self.postMessage({id,rec,error});};`)}`;
 
 /** U05 · recomendação de cada lote para a regra padrão (5 pessoas, sem limitar à equipe), calculada aqui com o mesmo
  * motor da tela: o celular abre e troca de lote sem refazer essa busca (como os presets embutidos da 2.5). */
@@ -87,18 +93,20 @@ export async function build3() {
   worker = worker.replace(hook, hook + "if(new URL(request.url).pathname.includes('/legado/'))return;");
   const files = "const ARQUIVOS = ['./','index.html','manifest.webmanifest','icone.svg','icone-192.png','icone-512.png','icone-180.png'];";
   if (worker.split(files).length !== 2) throw Error('Lista de arquivos do service worker mudou');
-  worker = worker.replace(files, "const ARQUIVOS = ['./','index.html','app.webmanifest','marca.svg','marca-192.png','marca-512.png','marca-180.png'];");
+  worker = worker.replace(files, "const ARQUIVOS = ['./','index.html','motor.js','app.webmanifest','marca.svg','marca-192.png','marca-512.png','marca-180.png'];");
   await writeFile(root + 'build/3/sw.js', worker);
-  return { html, worker, bytes: Buffer.byteLength(html), engine: engine.length, app: app.length };
+  const motor = await bundleWorker();
+  await writeFile(root + 'build/3/motor.js', motor);
+  return { html, worker, motor, bytes: Buffer.byteLength(html), engine: engine.length, app: app.length };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const r = await build3();
   if (process.argv.includes('--check')) {
-    if (await readFile(root + 'index.html', 'utf8') !== r.html || await readFile(root + 'sw.js', 'utf8') !== r.worker) throw Error('index.html/sw.js diferentes do build da 3.0 (rode node scripts/build-3.mjs --root)');
-    console.log('3.0 conferida: index.html e sw.js = build de src/.');
+    if (await readFile(root + 'index.html', 'utf8') !== r.html || await readFile(root + 'sw.js', 'utf8') !== r.worker || await readFile(root + 'motor.js', 'utf8').catch(() => '') !== r.motor) throw Error('index.html/sw.js/motor.js diferentes do build da 3.0 (rode node scripts/build-3.mjs --root)');
+    console.log('3.0 conferida: index.html, sw.js e motor.js = build de src/.');
   } else if (process.argv.includes('--root')) {
-    await writeFile(root + 'index.html', r.html); await writeFile(root + 'sw.js', r.worker);
+    await writeFile(root + 'index.html', r.html); await writeFile(root + 'sw.js', r.worker); await writeFile(root + 'motor.js', r.motor);
     console.log('3.0 gravada na raiz', { bytes: r.bytes });
   } else console.log('3.0 gerada em build/3/index.html', { bytes: r.bytes, engine: r.engine, app: r.app });
 }

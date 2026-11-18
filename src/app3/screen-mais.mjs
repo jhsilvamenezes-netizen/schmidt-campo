@@ -31,7 +31,7 @@ export function installMais(app) {
   /** Plano salvo (ou recomendado) de um lote, para a visão geral; guardado até o plano do lote mudar. */
   const rowCache = new Map();
   function lotRow(k, st) {
-    const f = fields[k], params = st.paramsByField?.[k] ?? { ...app.recFor(f, {}, k).chosen.params }, edits = st.editsByField?.[k];
+    const f = fields[k], params = st.paramsByField?.[k] ?? { ...app.recNow(f, {}, k).chosen.params }, edits = st.editsByField?.[k];
     const id = `${k}|${JSON.stringify(params)}|${JSON.stringify(edits ?? null)}`;
     if (!rowCache.has(id)) {
       let row;
