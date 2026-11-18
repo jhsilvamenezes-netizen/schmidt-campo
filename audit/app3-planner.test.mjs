@@ -181,13 +181,13 @@ test('3.0.11 · bloco: grupos que ficavam sem opção (teto de pontos ausente) p
   }
 });
 
-test('3.2 · minimax: nos 51 lotes nunca piora (pior vazio, 95% ≤ +1%, áreas ≤ +1 p.p.) e reduz BD5 e BD3', () => {
+test('3.3 · melhorar a distribuição: nos 51 lotes nunca piora (pior vazio, 95% ≤ +1%, áreas ≤ +1 p.p.) e reduz BD5 e BD3', () => {
   let improved = 0;
   for (const k of keys) {
     const f = fields[k], params = P.recommend(f, {}, 5).chosen.params, r = P.minimaxEdits(f, params);
     if (!r.edits) continue;
     improved++;
-    assert.ok(r.after.worst < r.before.worst, `${k}: pior vazio`);
+    assert.ok(r.after.worst <= r.before.worst + 1e-6 && (r.after.worst < r.before.worst - 1 || r.after.cv < r.before.cv - 0.004), `${k}: melhora`);
     assert.ok(r.after.p95 <= r.before.p95 * 1.01 + 1e-9, `${k}: 95%`);
     assert.ok(r.after.cv <= r.before.cv + 0.01 + 1e-9, `${k}: áreas`);
     // o ajuste gravado reabre com os mesmos pontos, cada um no seu tiro
@@ -195,7 +195,7 @@ test('3.2 · minimax: nos 51 lotes nunca piora (pior vazio, 95% ≤ +1%, áreas 
     assert.equal(sc.samples.length, base.samples.length, k);
     assert.deepStrictEqual(sc.samples.map(s => s.trackId).sort(), base.samples.map(s => s.trackId).sort(), k);
   }
-  assert.ok(improved >= 15, `lotes melhorados: ${improved}`);
+  assert.ok(improved >= 28, `lotes melhorados: ${improved}`);
   for (const [code, max] of [['BD5', 620], ['BD3', 360]]) {
     const k = keys.find(x => fields[x].code === code), r = P.minimaxEdits(fields[k], P.recommend(fields[k], {}, 5).chosen.params);
     assert.ok(r.after.worst <= max, `${code}: ${r.after.worst}`);

@@ -15,7 +15,7 @@ import { exactCoverage } from '../engine3/voronoi.mjs';
 import { pointInGeom } from '../engine3/geometry.mjs';
 import { num, range, km, plural } from './format.mjs';
 
-export const ENGINE_LABEL = '3.2.0';
+export const ENGINE_LABEL = '3.3.0';
 export const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
@@ -215,7 +215,7 @@ export function optimizeEdits(field, params) {
  * sem trocar a ordem dos pontos no tiro (mínimo de 60 m entre vizinhos) e sem encostar na ponta do tiro (≥ 30 m).
  * Mesmos pontos, mesmos tiros; devolve um ajuste gravável ou null se não melhorou.
  */
-export function minimaxEdits(field, params, edits = null, { maxEvals = 600 } = {}) {
+export function minimaxEdits(field, params, edits = null, { maxEvals = 900 } = {}) {
   let sc = planInUse(field, params, edits);
   if (sc.samples.length < 2 || sc.samples.some(p => p.offTrack)) return { edits: null };
   const grid = coverageGrid(field.geom, sc.coverage.fineStepM ?? 20), p95of = smp => quickP95(grid, smp).p95;
@@ -227,27 +227,34 @@ export function minimaxEdits(field, params, edits = null, { maxEvals = 600 } = {
     if (!u || p.s < Math.min(30, u.len / 2) || p.s > u.len - Math.min(30, u.len / 2)) return false;
     return list.every(q => q.id === p.id || q.unitId !== p.unitId || Math.abs(q.s - p.s) >= 60);
   };
-  for (const step of [80, 40, 20]) {
-    let again = true;
-    while (again && evals < maxEvals) {
-      again = false;
-      for (const p of samples) for (const d of [step, -step]) {
-        if (evals >= maxEvals) break;
-        const r = moveSample({ ...sc, samples }, field, p.id, { deltaS: d });
-        if (!r.ok) continue;
-        const moved = r.samples.find(q => q.id === p.id), before = samples.find(q => q.id === p.id);
-        // a ordem no tiro não muda: o ponto não passa por cima do vizinho
-        if (!okPlace(r.samples, moved) || r.samples.some(q => q.unitId === moved.unitId && q.id !== moved.id && Math.sign(q.s - before.s) !== Math.sign(q.s - moved.s))) continue;
-        evals++;
-        const st = exactStats(field, r.samples);
-        if (st.worst >= cur.worst - 1 || st.cv > start.cv + 0.01) continue;
-        const p95 = p95of(r.samples);
-        if (p95 > start.p95 * 1.01) continue;
-        samples = r.samples; cur = { ...st, p95 }; improved = again = true;
-        break;
+  /** Uma etapa de busca: tenta deslizar cada ponto ±passo e aceita a primeira mudança que `wins` aprovar. */
+  const pass = wins => {
+    for (const step of [80, 40, 20]) {
+      let again = true;
+      while (again && evals < maxEvals) {
+        again = false;
+        for (const p of samples) for (const d of [step, -step]) {
+          if (evals >= maxEvals) break;
+          const r = moveSample({ ...sc, samples }, field, p.id, { deltaS: d });
+          if (!r.ok) continue;
+          const moved = r.samples.find(q => q.id === p.id), before = samples.find(q => q.id === p.id);
+          // a ordem no tiro não muda: o ponto não passa por cima do vizinho
+          if (!okPlace(r.samples, moved) || r.samples.some(q => q.unitId === moved.unitId && q.id !== moved.id && Math.sign(q.s - before.s) !== Math.sign(q.s - moved.s))) continue;
+          evals++;
+          const st = exactStats(field, r.samples);
+          if (!wins(st)) continue;
+          const p95 = p95of(r.samples);
+          if (p95 > start.p95 * 1.01) continue;
+          samples = r.samples; cur = { ...st, p95 }; improved = again = true;
+          break;
+        }
       }
     }
-  }
+  };
+  // 1º o pior vazio (minimax); 2º, sem deixar o pior vazio voltar a crescer, áreas por ponto mais iguais (lotes pequenos)
+  pass(st => st.worst < cur.worst - 1 && st.cv <= start.cv + 0.01);
+  const worstCap = cur.worst;
+  pass(st => st.cv < cur.cv - 0.005 && st.worst <= worstCap + 1e-6);
   if (!improved) return { edits: null, before: start, after: cur, evals };
   const out = samples.map(q => ({ id: q.id, x: q.x, y: q.y, unitId: q.unitId, s: q.s, manual: false, offTrack: false }));
   return { edits: { signature: paramsSignature(sc.params), samples: out }, before: start, after: cur, evals };

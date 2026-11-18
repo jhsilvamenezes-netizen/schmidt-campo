@@ -15,6 +15,8 @@ export function installMapa(app) {
   const ID = { k: 1, x: 0, y: 0 }, views = { full: ID, small: ID, guide: ID };
   const moved = v => v.k > 1.01 || v.k < 0.99 || Math.abs(v.x) > 2 || Math.abs(v.y) > 2;
   /** @type {string|null} */ let selectedPt = null;
+  /** régua: segundo ponto tocado com um ponto já escolhido */
+  /** @type {string|null} */ let rulerPt = null;
   /** "Onde estou": última posição pedida no Mapa (só enquanto o lote não muda) */
   /** @type {any} */ let here = null;
   let layers = { medidas: true, areas: false };
@@ -58,22 +60,30 @@ export function installMapa(app) {
       const r = el.getBoundingClientRect();
       if (r.width < 10 || r.height < 10) continue;
       const W = Math.round(r.width), H = Math.round(r.height), full = el.dataset.map === 'full', guide = el.dataset.map === 'guide';
-      const areas = full ? P.pointAreas(cur.field, cur.sc) : null, info = full && selectedPt ? P.pointInfo(cur.field, cur.sc, selectedPt) : null;
+      const areas = full ? P.pointAreas(cur.field, cur.sc) : null, info = full && selectedPt && !rulerPt ? P.pointInfo(cur.field, cur.sc, selectedPt) : null;
       // mapa principal: legenda no alto à esquerda e botões das camadas embaixo à direita ficam fora do desenho
       const w = full && here ? P.whereAmI(cur.field, cur.sc, here) : null;
-      const opts = full ? { measure, pos: here, to: w ? [w.point.x, w.point.y] : null, focus: here && w && views.full === ID ? [[here.x, here.y], [w.point.x, w.point.y]] : null, pad: { t: 112, r: 30, b: 64, l: 40 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
+      const ra = full && selectedPt && rulerPt ? cur.sc.samples.find(p => p.id === selectedPt) : null, rb = ra ? cur.sc.samples.find(p => p.id === rulerPt) : null;
+      const ruler = ra && rb ? { a: [ra.x, ra.y], b: [rb.x, rb.y], m: Math.hypot(ra.x - rb.x, ra.y - rb.y), na: ra.number, nb: rb.number } : null;
+      const opts = full ? { measure, ruler, pos: here, to: w ? [w.point.x, w.point.y] : null, focus: here && w && views.full === ID ? [[here.x, here.y], [w.point.x, w.point.y]] : null, pad: { t: 112, r: 30, b: 64, l: 40 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
         reserve: [[0, 0, info ? Math.min(W - 40, 330) : Math.min(W * 0.66, 252), 104], [W - 214, H - 60, W, H]] } : { pad: 22 };
       const g = guide ? app.guide() : null;
       const kind = full ? 'full' : guide ? 'guide' : 'small', view = guide && g.focus ? ID : views[kind];
       el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, hiTrack: !full && !guide ? app.hiTrack : null, focus: guide ? g.focus : null, others: cur.others || [], ...opts })
-        + (full ? (info ? balloon() : w ? hereCard(w) : V.legend(cur.field, P.figures(cur.sc), areas)) + V.mapTools(layers, moved(view), !!here)
+        + (full ? (ruler ? `<div class="bal" role="status"><b>${num(ruler.m)} m</b><span>do ponto ${num(ruler.na)} ao ponto ${num(ruler.nb)} (em linha reta)</span><span>Toque fora para limpar</span></div>` : info ? balloon() : w ? hereCard(w) : V.legend(cur.field, P.figures(cur.sc), areas)) + V.mapTools(layers, moved(view), !!here)
           : guide && g.pos ? `<button class="fit" data-act="follow" aria-pressed="${!!g.follow}" aria-label="${g.follow ? 'Ver o lote inteiro' : 'Seguir minha posição'}">${g.follow ? '⤢' : '◎'}</button>`
             : (moved(view) ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : ''));
       if (!el.dataset.g) {
         el.dataset.g = '1';
         const k2 = full ? 'full' : el.dataset.map === 'guide' ? 'guide' : 'small';
         attachGestures(el, { getView: () => views[k2], setView: v => { views[k2] = v; }, onChange: () => requestAnimationFrame(drawMaps),
-          onTap: target => { const t = target.closest?.('[data-pt]'); selectedPt = t ? t.dataset.pt : null; drawMaps(); } });
+          onTap: target => {
+            const t = target.closest?.('[data-pt]'), id = t ? t.dataset.pt : null;
+            // com um ponto escolhido, tocar em outro mede a distância entre os dois (régua); tocar fora limpa
+            if (k2 === 'full' && id && selectedPt && id !== selectedPt && !rulerPt) rulerPt = id;
+            else { selectedPt = id; rulerPt = null; }
+            drawMaps();
+          } });
       }
     }
   }
@@ -84,7 +94,7 @@ export function installMapa(app) {
   }
 
   app.drawMaps = drawMaps;
-  app.onLotChange.push(() => { here = null; views.full = views.small = views.guide = ID; selectedPt = null; app.hiTrack = null; });
+  app.onLotChange.push(() => { here = null; views.full = views.small = views.guide = ID; selectedPt = null; rulerPt = null; app.hiTrack = null; });
   Object.assign(app.ACTIONS, {
     fit: () => { views.full = views.small = views.guide = ID; drawMaps(); },
     where() {

@@ -8,7 +8,9 @@ import { num } from './format.mjs';
 const NICE = [50, 100, 200, 250, 500, 1000, 2000, 2500, 5000];
 /** Fonte de cada classe de texto (igual ao styles.css). Medida no próprio aparelho quando há tela (qualquer fonte de
  * celular); sem tela (Node), estimativa conservadora pela largura média do caractere. */
-export const FONTS = { tid: '600 12px system-ui', med: '700 12px system-ui', ha: '600 12px system-ui', sel: '700 13px system-ui' };
+// mesma família do CSS (--f): a medida dos rótulos bate com o que a tela desenha
+const FAMILY = '"Inter","SF Pro Text","Segoe UI Variable","Segoe UI",Roboto,system-ui,-apple-system,sans-serif';
+export const FONTS = { tid: `700 12px ${FAMILY}`, med: `700 12px ${FAMILY}`, ha: `600 12px ${FAMILY}`, sel: `700 14px ${FAMILY}` };
 const CH = { tid: 7.6, med: 7.2, ha: 7.2, sel: 8 };
 /** @typedef {(text:string, font:string) => {w:number, a:number, d:number}} Measure */
 /** @type {Measure} */
@@ -71,9 +73,9 @@ function cota(cls, a, b) {
 /** Marcação SVG do lote ajustada a w × h px. `small` = mapa do Plano/guia (sem medidas).
  * @param {any} field @param {any} sc @param {number} w @param {number} h
  * @param {{pad?:number|{t:number,r:number,b:number,l:number}, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null,
- *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null, hiTrack?:string|null}} [opts] */
+ *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null, hiTrack?:string|null, ruler?:{a:number[],b:number[],m:number}|null}} [opts] */
 export function mapMarkup(field, sc, w, h, opts = {}) {
-  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null, hiTrack = null } = opts;
+  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null, hiTrack = null, ruler = null } = opts;
   const pad = typeof pad0 === 'number' ? { t: pad0, r: pad0, b: pad0, l: pad0 } : pad0;
   // Outros lotes (bloco): levados ao referencial do lote atual pela diferença dos centroides UTM.
   const shift = o => [o.field.centroidUTM[0] - field.centroidUTM[0], o.field.centroidUTM[1] - field.centroidUTM[1]];
@@ -158,6 +160,11 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
     }
   }
   s += top;
+  // 3.3 (G2) · régua: linha entre dois pontos tocados e a distância no meio (fundo do lote atrás do número)
+  if (ruler) {
+    const [a, b] = [XY(ruler.a[0], ruler.a[1]), XY(ruler.b[0], ruler.b[1])], mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+    s += `<path class="rul" d="M${f1(a[0])},${f1(a[1])}L${f1(b[0])},${f1(b[1])}"/><text class="rul-t" x="${f1(mx)}" y="${f1(my - 8)}" text-anchor="middle">${num(ruler.m)} m</text>`;
+  }
   if (pos) {
     const [px, py] = XY(pos.x, pos.y), acc = Math.max(6, pos.accuracyM * kk);
     if (to) { const [tx, ty] = XY(to[0], to[1]); s += `<path class="togo" d="M${f1(px)},${f1(py)}L${f1(tx)},${f1(ty)}"/>`; }
