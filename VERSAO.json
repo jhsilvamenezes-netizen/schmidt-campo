@@ -1,16 +1,17 @@
 {
-  "entrega": "3.0.8",
+  "entrega": "3.0.9",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-16",
-  "versaoDoApp": "3.0.8",
+  "versaoDoApp": "3.0.9",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "e123b7574604bac01cfb0caacb9f5ba3af526dcbc06449503d3a048d69e079d1",
-  "workerSha256": "8cce667e28effdb3c24a8e95ce42d9cc326582c3593ca0912e5bcef5d368462f",
+  "htmlSha256": "4170539cae4f3935eb74b6a9b60cb174bb14bc6439e8da90737165aca71da940",
+  "workerSha256": "46183d90debbce25933f1126181918cfefbcc996088e04a626640cf34d30584b",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "3.0.9: tiros completos no Plano (régua borda → pontos → borda, vizinhos de lado, entrada; \"Ver no mapa\"); cada mapa com o seu zoom (o lote não some no Plano); bloco com tolerância de 1% e explicação quando não há grade comum; paleta da marca preenchida (topo verde com faixa dourada, mapa em fundo verde-sálvia com o lote claro, pontos dourados com aro verde, ponto tocado em verde) com contraste conferido no claro, escuro e Sol; Sol com a identidade SCHMIDT",
     "3.0.8: motor mais assertivo — entre planos com a mesma cobertura, escolhe o de áreas por ponto mais iguais (variação mediana 11,6% → 7,7% nos 51 lotes; 95% do lote no máximo 3% pior, pior vazio nunca maior, nenhum tiro de 1 ponto a mais); a recomendação é feita num motor em segundo plano (motor.js): mudar a regra não trava a tela",
     "3.0.7: bússola no Monitorar (a seta aponta para onde andar com o celular na mão; cone da direção no mapa), voz opcional na chegada e GPS em pausa com a tela apagada",
     "3.0.6: Monitorar com mapa grande que acompanha você e o alvo (linha até ele), seta pequena ao lado da distância; longe do lote, leva à entrada do tiro sem avisos de \"volte para a linha\"",
@@ -73,5 +74,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "6f15a32aabeb818be93defb1f391d32a4bbeff7411b8ff142ab4b001ff797cd7"
+  "motorSha256": "3673bb7a9bffc4dc1f0d1ee65797202a564345892d6920d4596eb0508ca45a5e"
 }

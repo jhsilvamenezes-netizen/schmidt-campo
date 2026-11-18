@@ -47,6 +47,11 @@ try {
     assert.equal(pts.haPerPoint, 10);
     await p.reload(); await ready(p); await p.click('[data-tab="mapa"]');
     await p.waitForFunction(() => document.querySelectorAll('.map-svg .pt').length === 47, null, { timeout: 5000 });
+    // U04 · tiro completo: régua borda → pontos → borda, vizinhos de lado e destaque no mapa do Plano
+    await p.click('[data-tab="plano"]'); await p.click('details.trk >> nth=1 >> summary');
+    assert.match((await p.textContent('details.trk[open]')).replace(/\s+/g, ' '), /Entra a \S+ e anda para \S+.*borda.*m.*borda.*Tiros vizinhos: T1 a \d+ m · T3 a \d+ m/);
+    await p.click('[data-hitrack="T2"]'); await p.waitForSelector('[data-map="small"] .track.hi');
+    await p.click('[data-tab="mapa"]');
     // pessoas e opções
     await p.click('[data-tab="plano"]'); await p.click('[data-inc="people"]');
     assert.equal(await p.inputValue('#people'), '6');
@@ -146,6 +151,21 @@ try {
     await p.click('[data-tab="mapa"]'); await p.waitForSelector('.map-svg .lot.other');
     await p.click('[data-tab="plano"]'); await p.click('[data-act="block-leave"]');
     await p.waitForSelector('[data-open="bloco"]');
+    // BD3 + BD4: nenhuma grade comum mantém a cobertura → a folha explica (não fica uma lista sem botão)
+    await p.click('button.lot'); await p.click('[data-lot="Bananal|BD4"]'); await p.click('[data-tab="plano"]');
+    await p.click('[data-open="bloco"]'); await p.click('[data-block="0"]'); await p.waitForSelector('#sheets .ck.alerta', { timeout: 30000 });
+    assert.match(await p.textContent('#sheets .ck.alerta'), /Nenhuma grade comum mantém a cobertura.*planeje cada lote/);
+    await p.keyboard.press('Escape');
+    // cada mapa com o seu zoom: arrastar o Mapa não tira o lote do quadro no Plano
+    await p.click('[data-tab="mapa"]'); const mb = await p.locator('[data-map="full"]').boundingBox();
+    await p.mouse.move(mb.x + 150, mb.y + 150); await p.mouse.down(); await p.mouse.move(mb.x + 380, mb.y + 480, { steps: 8 }); await p.mouse.up();
+    await p.click('[data-tab="plano"]'); await p.waitForSelector('[data-map="small"] .pt');
+    const inside = await p.evaluate(() => { const m = document.querySelector('[data-map="small"]').getBoundingClientRect(); return [...document.querySelectorAll('[data-map="small"] .pt circle')].every(c => { const r = c.getBoundingClientRect(); return r.top >= m.top - 1 && r.bottom <= m.bottom + 1 && r.left >= m.left - 1 && r.right <= m.right + 1; }); });
+    assert.ok(inside, 'lote inteiro no mapa do Plano depois de arrastar o Mapa');
+    // Sol: liga com a identidade (topo verde) e desliga
+    await p.click('#sol'); assert.equal(await p.getAttribute('#sol', 'aria-pressed'), 'true');
+    assert.notEqual(await p.evaluate(() => getComputedStyle(document.querySelector('header')).backgroundColor), 'rgb(255, 255, 255)');
+    await p.click('#sol'); assert.equal(await p.getAttribute('#sol', 'aria-pressed'), 'false');
     assert.deepStrictEqual(errors, []);
     await ctx.close();
   }

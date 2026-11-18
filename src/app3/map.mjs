@@ -71,9 +71,9 @@ function cota(cls, a, b) {
 /** Marcação SVG do lote ajustada a w × h px. `small` = mapa do Plano/guia (sem medidas).
  * @param {any} field @param {any} sc @param {number} w @param {number} h
  * @param {{pad?:number|{t:number,r:number,b:number,l:number}, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null,
- *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null}} [opts] */
+ *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null, hiTrack?:string|null}} [opts] */
 export function mapMarkup(field, sc, w, h, opts = {}) {
-  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null } = opts;
+  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null, hiTrack = null } = opts;
   const pad = typeof pad0 === 'number' ? { t: pad0, r: pad0, b: pad0, l: pad0 } : pad0;
   // Outros lotes (bloco): levados ao referencial do lote atual pela diferença dos centroides UTM.
   const shift = o => [o.field.centroidUTM[0] - field.centroidUTM[0], o.field.centroidUTM[1] - field.centroidUTM[1]];
@@ -117,7 +117,7 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
     for (const [, [x, y]] of scr) sp.circles.push([x, y, r + 1]);
     // área de cada ponto: contornos das células por baixo dos tiros
     if (areas && !small) s += `<g class="cells">${areas.cells.map(c => `<path d="${c.rings.map(rg => `M${rg.map(P).join('L')}Z`).join('')}"/>`).join('')}</g>`;
-    for (const u of sc.units) s += `<path class="track" d="M${u.line.map(P).join('L')}"/>`;
+    for (const u of sc.units) s += `<path class="track${hiTrack ? (u.trackId === hiTrack ? ' hi' : ' lo') : ''}" d="M${u.line.map(P).join('L')}"/>`;
     // ponto tocado primeiro: as distâncias dele têm prioridade sobre os demais textos
     if (info && !small) top = tocado(info, XY, sp, r);
     // nome do tiro na ponta esquerda; se não couber, na direita (nunca sob um ponto)

@@ -120,7 +120,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   /** Contexto comum: cada tela (screen-*.mjs) lê daqui e registra as suas folhas, ações e eventos. */
   /** @type {any} */ const app = {
     document, window, fields, keys, ui, store, storage, persistent, session, safra, appVersion, host, versions: createVersions(window.indexedDB),
-    cur: null, toast, saved, people, recFor, whenRec, render, setParams,
+    cur: null, hiTrack: null, toast, saved, people, recFor, whenRec, render, setParams,
     /** Recomendação já pronta (sem calcular), ou undefined. */
     /** Recomendação já pronta ou feita na hora (para listas e bloco, que precisam do valor já). */
     recNow: (field, base, key = ui.key) => recFor(field, base, key) ?? P.recommendBase(field, base, people(), saved().fitTeam),
@@ -200,7 +200,8 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     for (const a of document.querySelectorAll('[data-tab]')) { const on = a.dataset.tab === ui.view; a.classList.toggle('on', on); a.setAttribute('aria-current', on ? 'page' : 'false'); }
     main.dataset.view = ui.view;
     if (ui.view === 'mapa') main.innerHTML = V.mapaView(c);
-    else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), rows: c.sc.trackRows });
+    else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), hiTrack: app.hiTrack,
+      rows: c.sc.trackRows.map(r => ({ ...r, d: c.block ? null : (c.details ??= new Map()).get(r.trackId) ?? c.details.set(r.trackId, P.trackDetail(c.field, c.sc, r.trackId)).get(r.trackId) })) });
     else if (ui.view === 'enviar') main.innerHTML = V.enviarView(c);
     else main.innerHTML = V.monitorView(app.monitorData());
     requestAnimationFrame(app.drawMaps);
@@ -224,8 +225,9 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   document.addEventListener('change', e => { for (const h of app.changes) if (h(e.target)) return; });
   document.addEventListener('input', e => { for (const h of app.inputs) if (h(e.target)) return; });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && host.innerHTML) app.closeSheet(); });
-  $('#sol').addEventListener('click', () => { const on = !saved().sunMode; store.update({ sunMode: on }); document.documentElement.classList.toggle('sun', on); });
-  document.documentElement.classList.toggle('sun', !!saved().sunMode);
+  const sun = on => { document.documentElement.classList.toggle('sun', on); $('#sol').setAttribute('aria-pressed', String(on)); requestAnimationFrame(() => app.drawMaps?.()); };
+  $('#sol').addEventListener('click', () => { const on = !saved().sunMode; store.update({ sunMode: on }); sun(on); toast(on ? 'Sol: contraste alto para a luz do dia.' : 'Sol desligado.'); });
+  sun(!!saved().sunMode);
   new window.ResizeObserver(() => app.cur && app.drawMaps()).observe($('#view'));
   render();
   document.documentElement.dataset.ready = '1';

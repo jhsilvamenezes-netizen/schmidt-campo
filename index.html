@@ -1,16 +1,21 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-KMuFxh4YIOzJaum1wfXXPMWRUUrSZ8gHnLkWMey/BEo='; style-src 'sha256-nWDvQroOc/V7pyVcVVT4yOQSwi2pM0pnAhpmiqkJGdY='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-gA7vjJTwhrWDU9S8o5WlJGwZRpuUzpkBZJLaRuvyJAI='; style-src 'sha256-gmlrnAccgAnvYE3rEZkGydbh8o12ml7u2P3/mBMiDC8='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#17594a" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c1512" media="(prefers-color-scheme: dark)">
 <title>SCHMIDT Campo</title>
 <link rel="icon" href="marca.svg"><link rel="apple-touch-icon" href="marca-180.png"><link rel="manifest" href="app.webmanifest">
 <style>/* 3.0 · uma folha só. Tipografia: 12/14/16/20/28 px; pesos 400/600/700. Cores em tokens; escuro e Sol. */
-:root{--bg:#f3f7f4;--sf:#fff;--ink:#13241f;--mu:#56685f;--ln:#dbe6df;--br:#17594a;--br2:#e3f0ea;--on-br:#fff;--pt:#95521c;--tr:#096f86;--fd:#e3f3e8;--fl:#2f7553;
---ok:#1d6b3a;--oks:#e3f3e8;--al:#8a5a00;--als:#fff4d6;--er:#a3221b;--ers:#fbe9e7;--sh:0 1px 2px #10251b14,0 4px 16px #10251b10;--focus:#0a58ca;color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not(.sun){--bg:#0c1512;--sf:#142019;--ink:#e6eee9;--mu:#9db1a6;--ln:#24362e;--br:#7fd0b0;--br2:#1a2f26;--on-br:#08130e;--pt:#e59a5c;--tr:#56c4dc;--fd:#18291f;--fl:#6fbf94;
---ok:#86d6a1;--oks:#173022;--al:#f2c066;--als:#33280f;--er:#ff8a80;--ers:#3a1714;--sh:0 1px 2px #0006;--focus:#8ab4ff;color-scheme:dark}}
-:root.sun{--bg:#fff;--sf:#fff;--ink:#000;--mu:#1d2b26;--ln:#000;--br:#003b29;--br2:#e3f0ea;--pt:#5a2600;--tr:#00337a;--fd:#fff;--fl:#000;--sh:none}
+/* Paleta SCHMIDT (3.1): verde da marca (#0B5A50 do logo), dourado (#C99A3E) e branco, preenchidos. Topo verde com faixa
+   dourada; mapa em fundo verde-sálvia com o lote claro; pontos dourados (número escuro, aro branco) sobre tiros verdes;
+   ponto tocado em verde. Medidas "entre pontos" no dourado dos pontos; "entre tiros" no verde dos tiros. */
+:root{--bg:#eef3f0;--sf:#fff;--sf2:#e9f2ed;--ink:#13221c;--mu:#566760;--ln:#d8e3dd;--br:#0e5a4b;--br2:#dcebe3;--on-br:#fff;--gold:#c99a3e;
+--hd:#0e5a4b;--hd-ink:#fff;--mapbg:#cfe0d5;--pt:#7f560a;--tr:#0e5a4b;--ptf:#d9a441;--ptr:#0e5a4b;--pti:#13221c;--fd:#f5faf6;--fl:#0e5a4b;
+--ok:#1b7a45;--oks:#dff1e6;--al:#8d5c08;--als:#fbefd6;--er:#b42318;--ers:#fdeceb;--sh:0 1px 2px #0d221a14,0 6px 18px #0d221a12;--focus:#1d5fd1;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not(.sun){--bg:#0c1512;--sf:#14201b;--sf2:#1a2a23;--ink:#e8f0ec;--mu:#9db2a8;--ln:#26372f;--br:#6cc6a4;--br2:#1b3028;--on-br:#06110c;--gold:#d9ae5c;
+--hd:#0b3a30;--hd-ink:#fff;--mapbg:#0f201a;--pt:#e2b462;--tr:#5fbf9e;--ptf:#d9a441;--ptr:#f2f7f4;--pti:#13221c;--fd:#18302a;--fl:#5fbf9e;
+--ok:#7fd6a0;--oks:#16301f;--al:#f0c26a;--als:#33280f;--er:#ff8f85;--ers:#3a1714;--sh:0 1px 2px #0007;--focus:#8ab4ff;color-scheme:dark}}
+:root.sun{--bg:#eef3ef;--sf:#fff;--sf2:#fff;--ink:#000;--mu:#1d2b26;--ln:#000;--br:#00422e;--br2:#d6eadf;--on-br:#fff;--gold:#b07a1a;--hd:#00422e;--hd-ink:#fff;--mapbg:#e2ede6;--pt:#6b4300;--tr:#00422e;--ptf:#e0a838;--ptr:#000;--pti:#000;--fd:#fff;--fl:#00422e;--sh:none}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font:400 14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;overflow:hidden;-webkit-tap-highlight-color:transparent}
@@ -18,21 +23,21 @@ button,input{font:inherit;color:inherit}
 button{background:none;border:0;cursor:pointer;padding:0}
 :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 .skip{position:absolute;left:-9999px}.skip:focus{left:8px;top:8px;z-index:9;background:var(--sf);padding:8px}
-header{height:56px;flex:none;display:flex;align-items:center;gap:6px;padding:0 8px 0 12px;background:var(--sf);border-bottom:1px solid var(--ln)}
-.logo{display:flex;align-items:center;gap:6px;font:700 14px system-ui;letter-spacing:.08em;color:var(--br)}
+header{height:56px;flex:none;display:flex;align-items:center;gap:6px;padding:0 8px 0 12px;background:var(--hd);color:var(--hd-ink);border-bottom:3px solid var(--gold)}
+.logo{display:flex;align-items:center;gap:6px;font:700 14px system-ui;letter-spacing:.08em;color:var(--hd-ink)}
 .logo svg{width:32px;height:32px;flex:none}
-.lot{margin:0 auto;display:flex;align-items:baseline;gap:6px;padding:8px 12px;border-radius:12px;background:var(--br2);font:600 16px system-ui;max-width:52vw;overflow:hidden;white-space:nowrap}
+.lot{margin:0 auto;display:flex;align-items:baseline;gap:6px;padding:8px 12px;border-radius:12px;background:#ffffff1f;color:var(--hd-ink);border:1px solid #ffffff38;font:600 16px system-ui;max-width:52vw;overflow:hidden;white-space:nowrap}
 .lot small{font:400 14px system-ui;color:var(--mu);overflow:hidden;text-overflow:ellipsis}
 .ib{width:44px;height:44px;border-radius:12px;display:grid;place-items:center}
 .ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.ic .fill{fill:currentColor;stroke:none}
 main{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
-.map{flex:1;min-height:0;position:relative;touch-action:none;overflow:hidden;user-select:none}.map.sm{flex:none;height:30vh;min-height:190px}
+.map{flex:1;min-height:0;position:relative;touch-action:none;overflow:hidden;user-select:none;background:var(--mapbg)}.map.sm{flex:none;height:30vh;min-height:190px}
 .map-svg{display:block;width:100%;height:100%}
 .map-svg .lot{fill:var(--fd);stroke:var(--fl);stroke-width:2.5;stroke-linejoin:round}
-.map-svg .track{fill:none;stroke:var(--tr);stroke-width:2.5;stroke-dasharray:7 5}
+.map-svg .track{fill:none;stroke:var(--tr);stroke-width:2.5;stroke-dasharray:8 5;stroke-linecap:round}
 .map-svg .tid{font:600 12px system-ui;fill:var(--ink)}.map-svg .tid.sm{font-size:11px}
-.map-svg .pt circle{fill:var(--pt);stroke:var(--sf);stroke-width:2}.map-svg .pt.off circle{stroke:var(--er);stroke-dasharray:3 2}
-.map-svg .pt text{font:700 12px system-ui;fill:#fff;text-anchor:middle}
+.map-svg .pt circle{fill:var(--ptf);stroke:var(--ptr);stroke-width:2.5}.map-svg .pt.off circle{stroke:var(--er);stroke-dasharray:3 2}
+.map-svg .pt text{font:700 12px system-ui;fill:var(--pti);text-anchor:middle}
 .map-svg .scale path,.map-svg .north path{fill:none;stroke:var(--ink);stroke-width:2}
 .map-svg .scale text,.map-svg .north text{font:600 12px system-ui;fill:var(--ink)}.map-svg .north text{text-anchor:middle}
 .sheet{background:var(--sf);border-radius:20px 20px 0 0;box-shadow:var(--sh);padding:12px 16px 16px;display:flex;flex-direction:column;gap:12px}
@@ -40,7 +45,7 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
 .row-sb{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .big{font:700 28px/1.1 system-ui;letter-spacing:-.01em}.big span{font:400 16px system-ui;color:var(--mu);letter-spacing:0}.big.md{font-size:20px}
 .m3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.m{background:var(--bg);border-radius:12px;padding:8px;white-space:nowrap;overflow:hidden}
+.m{background:var(--sf2);border-radius:12px;padding:8px 10px;white-space:nowrap;overflow:hidden}
 .m small{display:block;font:400 12px system-ui;color:var(--mu)}.m b{font:700 16px system-ui;letter-spacing:-.01em}
 .chip{display:inline-flex;align-items:center;gap:6px;font:600 12px system-ui;padding:4px 10px;border-radius:99px;white-space:nowrap}
 .chip:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
@@ -53,7 +58,7 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
 .center{text-align:center;color:var(--mu)}
 nav{height:64px;flex:none;display:grid;grid-template-columns:repeat(4,1fr);background:var(--sf);border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom)}
 nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:600 12px system-ui;color:var(--mu)}
-nav button.on{color:var(--br)}nav button.on .ic{background:var(--br2);border-radius:10px;width:44px;padding:2px 11px;box-sizing:content-box}
+nav button.on{color:var(--br)}nav button.on .ic{background:var(--br);color:var(--on-br);border-radius:10px;width:44px;padding:2px 11px;box-sizing:content-box}
 .scroll{flex:1;min-height:0;overflow:auto;padding:12px 16px 16px;display:flex;flex-direction:column;gap:12px;overscroll-behavior:contain}
 .card{background:var(--sf);border-radius:16px;padding:14px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:10px}
 .card.list{gap:0}
@@ -92,7 +97,7 @@ nav button.on{color:var(--br)}nav button.on .ic{background:var(--br2);border-rad
 #toast button{font:700 14px system-ui;color:var(--sf);text-decoration:underline;min-height:32px;padding:0 4px}
 @media (min-width:900px){body{max-width:480px;margin:0 auto;border-inline:1px solid var(--ln)}}
 
-.map-svg .pt.sel circle{stroke:var(--ink);stroke-width:3}
+.map-svg .pt.sel circle{fill:var(--br);stroke:var(--ptr);stroke-width:3}.map-svg .pt.sel text{fill:var(--on-br)}
 .fit{position:absolute;right:10px;bottom:10px;width:44px;height:44px;border-radius:12px;background:var(--sf);box-shadow:var(--sh);font-size:20px}
 .bal{position:absolute;left:10px;top:10px;max-width:70%;background:var(--sf);box-shadow:var(--sh);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--mu);pointer-events:none}
 .bal b{font:600 14px system-ui;color:var(--ink)}
@@ -119,13 +124,13 @@ nav button.on{color:var(--br)}nav button.on .ic{background:var(--br2);border-rad
 @media print{body{display:block;overflow:visible;max-width:none;border:0;background:#fff;color:#000}body>*:not(#print){display:none}#print{display:block}
 .ficha{page-break-after:always;font:12px/1.4 system-ui;color:#000}.ficha h1{font:700 16px system-ui;margin:0 0 4px}.ficha .fmap{height:240px;margin:8px 0}.ficha .fmap svg{width:100%;height:100%}
 .ficha table{width:100%;border-collapse:collapse;margin:8px 0}.ficha th,.ficha td{border:1px solid #000;padding:3px 6px;text-align:right}.ficha th:first-child,.ficha td:first-child{text-align:center}.ficha ol{padding-left:18px}
-.ficha .map-svg .lot{fill:#fff;stroke:#000}.ficha .map-svg .track{stroke:#999}.ficha .map-svg .pt circle{fill:#000;stroke:#fff}.ficha .map-svg .pt.sel circle{fill:#000}}
+.ficha .map-svg .lot{fill:#fff;stroke:#000}.ficha .map-svg .track{stroke:#999}.ficha .map-svg .pt circle{fill:#000;stroke:#fff}.ficha .map-svg .pt text{fill:#fff}.ficha .map-svg .pt.sel circle{fill:#000}}
 .map-svg .lot.other{fill:var(--bg);stroke:var(--mu);stroke-width:1.5;stroke-dasharray:4 3}.map-svg .track.other{stroke:var(--mu);stroke-width:1.5;opacity:.7}
-.map-svg .opt{fill:var(--pt);opacity:.55}.map-svg .oname{font:700 12px system-ui;fill:var(--mu);text-anchor:middle}
+.map-svg .opt{fill:var(--mu);opacity:.5}.map-svg .oname{font:700 12px system-ui;fill:var(--mu);text-anchor:middle}
 .blk{display:flex;flex-direction:column;gap:6px}
 /* 3.1 · medidas no mapa (U03) */
 .map-svg text{paint-order:stroke;stroke-linejoin:round}
-.map-svg .tid,.map-svg .med-t,.map-svg .med-p,.map-svg .ha,.map-svg .sel-l{stroke:var(--bg);stroke-width:4px}
+.map-svg .tid,.map-svg .med-t,.map-svg .med-p,.map-svg .ha,.map-svg .sel-l{stroke:var(--fd);stroke-width:4px}
 .map-svg .pt text{stroke:none}
 .map-svg .med-t{font:700 12px system-ui;fill:var(--tr)}.map-svg .med-p{font:600 12px system-ui;fill:var(--pt)}
 .map-svg .ha{font:600 12px system-ui;fill:var(--ink)}.map-svg .sel-l{font:700 13px system-ui;fill:var(--ink)}
@@ -139,6 +144,26 @@ nav button.on{color:var(--br)}nav button.on .ic{background:var(--br2);border-rad
 .mtools{position:absolute;right:10px;bottom:10px;display:flex;gap:6px}
 .mt{min-width:44px;height:44px;padding:0 12px;border-radius:12px;background:var(--sf);box-shadow:var(--sh);font:600 14px system-ui;color:var(--ink)}
 .mt[aria-pressed="true"]{background:var(--br);color:var(--on-br)}
+/* 3.1 · tiros completos (U04) */
+.trk>summary{list-style:none;cursor:pointer}.trk>summary::-webkit-details-marker{display:none}
+.trk>summary .r::after{content:" ▾";color:var(--mu)}.trk[open]>summary .r::after{content:" ▴"}
+.trkb{display:flex;flex-direction:column;gap:6px;padding:4px 0 12px}
+.ruler{display:flex;flex-wrap:wrap;align-items:center;row-gap:6px;font-size:12px}
+.rs{display:inline-flex;align-items:center;white-space:nowrap}.rs b{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 6px;border-radius:12px;background:var(--ptf);color:var(--pti);box-shadow:inset 0 0 0 2px var(--ptr);font:700 12px system-ui}
+.rs:first-child b,.rs:last-child b{background:var(--br2);color:var(--ink);font-weight:600}
+.rs i{font-style:normal;color:var(--mu);padding:0 6px;border-bottom:2px dashed var(--tr);margin:0 4px}
+.map-svg .track.hi{stroke-width:5;stroke-dasharray:none}.map-svg .track.lo{opacity:.35}
+/* Sol (alto contraste para enxergar no sol) com a identidade SCHMIDT: topo verde da marca, cartões com borda forte,
+   seleções preenchidas — nada some no branco */
+:root.sun .card,:root.sun .sheet{border:2px solid #000}:root.sun .m{background:#fff;border:1.5px solid #000}
+:root.sun .seg{background:#fff;border:2px solid #000}:root.sun .seg button.on{background:var(--br);color:#fff}
+:root.sun nav{border-top:2px solid #000}:root.sun nav button{color:#000}:root.sun nav button.on .ic{background:var(--br);color:#fff}
+:root.sun .stp button{border-width:2px}:root.sun .tag{background:var(--br);color:#fff;padding:2px 8px;border-radius:8px}
+:root.sun .map-svg .lot{stroke-width:3}:root.sun .map-svg .track{stroke-width:3}
+:root.sun .leg,:root.sun .bal,:root.sun .mt{border:2px solid #000}
+header .ib{color:var(--hd-ink)}.lot small{color:#ffffffc7}
+:root.sun .lot{background:#fff;color:#000}:root.sun .lot small{color:#1d2b26}
+.map-svg .lot{stroke-width:2.5}
 </style></head>
 <body>
 <a class="skip" href="#view">Ir para o conteúdo</a>
@@ -3640,6 +3665,7 @@ const { coverageGrid, nearestDistances } = schmidtEngine2.metrics;
 const { recommendPlan, SHAPE_KEYS, metricsOf } = schmidtEngine2.recommend;
 const { restoreSamples, withSamples } = schmidtEngine2.editing;
 const { teamPlan } = schmidtEngine2.team;
+const { buildRoute } = schmidtEngine2.guidance;
 const { exactCoverage } = schmidtEngine2.voronoi;
 const { num, range, km, plural } = __m_app3_format;
 // 3.0 · aplicação: monta o plano de um lote com o motor 2, a recomendação, a conferência, a equipe e a área
@@ -3842,7 +3868,23 @@ function tryPlan(field, params, edits) {
   try { return { sc: planInUse(field, params, edits) }; } catch (e) { return { error: friendly(e) }; }
 }
 
-return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BALANCE,balanceStats,balanceAreas,balanceSteps,planInUse,uncovered,checks,figures,team,summaryText,pointAreas,pointInfo,optimizeEdits,friendly,tryPlan,DEFAULT_PARAMS,paramsSignature});
+/** U04 · tiro completo, como na 2.5: comprimento, régua (borda → pontos → borda), tiros vizinhos (medidos de lado) e por
+ *  onde entrar. Cada parte do tiro (quando o lote o corta) tem a sua régua. */
+function trackDetail(field, sc, trackId) {
+  let route;
+  try { route = buildRoute(sc, field, trackId); } catch { return null; }
+  const parts = route.parts.map(part => {
+    const pts = route.points.filter(p => p.partIndex === part.index);
+    const steps = pts.map((p, i) => ({ de: i === 0 ? 'borda' : pts[i - 1].number, ate: p.number, m: p.deltaM }));
+    if (pts.length) steps.push({ de: pts.at(-1).number, ate: 'borda', m: part.afterLastM });
+    return { entra: part.entrySide, sai: part.exitSide, anda: part.walkDir, lengthM: part.lengthM, steps };
+  });
+  const order = sc.selected.filter(t => Number.isFinite(t.offsetM)).sort((a, b) => a.offsetM - b.offsetM), i = order.findIndex(t => t.id === trackId);
+  const neighbors = i < 0 ? [] : [order[i - 1], order[i + 1]].filter(Boolean).map(t => ({ id: t.id, m: Math.abs(t.offsetM - order[i].offsetM) }));
+  return { id: trackId, lengthM: route.totalLengthM, n: route.nPoints, parts, neighbors };
+}
+
+return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BALANCE,balanceStats,balanceAreas,balanceSteps,planInUse,uncovered,checks,figures,team,summaryText,pointAreas,pointInfo,optimizeEdits,friendly,tryPlan,trackDetail,DEFAULT_PARAMS,paramsSignature});
 })();
 // src/app3/map.mjs
 const __m_app3_map=(()=>{
@@ -3919,9 +3961,9 @@ function cota(cls, a, b) {
 /** Marcação SVG do lote ajustada a w × h px. `small` = mapa do Plano/guia (sem medidas).
  * @param {any} field @param {any} sc @param {number} w @param {number} h
  * @param {{pad?:number|{t:number,r:number,b:number,l:number}, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null,
- *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null}} [opts] */
+ *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null, hiTrack?:string|null}} [opts] */
 function mapMarkup(field, sc, w, h, opts = {}) {
-  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null } = opts;
+  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null, hiTrack = null } = opts;
   const pad = typeof pad0 === 'number' ? { t: pad0, r: pad0, b: pad0, l: pad0 } : pad0;
   // Outros lotes (bloco): levados ao referencial do lote atual pela diferença dos centroides UTM.
   const shift = o => [o.field.centroidUTM[0] - field.centroidUTM[0], o.field.centroidUTM[1] - field.centroidUTM[1]];
@@ -3965,7 +4007,7 @@ function mapMarkup(field, sc, w, h, opts = {}) {
     for (const [, [x, y]] of scr) sp.circles.push([x, y, r + 1]);
     // área de cada ponto: contornos das células por baixo dos tiros
     if (areas && !small) s += `<g class="cells">${areas.cells.map(c => `<path d="${c.rings.map(rg => `M${rg.map(P).join('L')}Z`).join('')}"/>`).join('')}</g>`;
-    for (const u of sc.units) s += `<path class="track" d="M${u.line.map(P).join('L')}"/>`;
+    for (const u of sc.units) s += `<path class="track${hiTrack ? (u.trackId === hiTrack ? ' hi' : ' lo') : ''}" d="M${u.line.map(P).join('L')}"/>`;
     // ponto tocado primeiro: as distâncias dele têm prioridade sobre os demais textos
     if (info && !small) top = tocado(info, XY, sp, r);
     // nome do tiro na ponta esquerda; se não couber, na direita (nunca sob um ponto)
@@ -4160,7 +4202,7 @@ const mapTools = (layers, zoomed) => `<div class="mtools">${zoomed ? '<button cl
 const stepper = (id, label, hint, value) => `<div class="step"><label for="${id}">${label}${hint ? `<small>${hint}</small>` : ''}</label><div class="stp">
 <button data-dec="${id}" aria-label="Diminuir ${label.toLowerCase()}">−</button><input id="${id}" inputmode="numeric" value="${esc(value)}"><button data-inc="${id}" aria-label="Aumentar ${label.toLowerCase()}">+</button></div></div>`;
 
-function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, block }) {
+function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, block, hiTrack = null }) {
   if (block) return blockPlanoView({ f, sc, rows, block });
   const alts = (rec?.alternatives || []).filter(a => a);
   return `<div class="map sm" data-map="small"></div><div class="scroll">
@@ -4168,7 +4210,7 @@ function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, blo
 <div class="seg" role="group" aria-label="Planejar"><button class="on" aria-pressed="true">Lote</button><button data-open="bloco" aria-pressed="false">Bloco</button></div></section>
 <section class="card"><div class="row-sb"><h2 class="h">${inUseIsRec ? 'Plano recomendado' : 'Plano em uso'}</h2>${inUseIsRec ? '<span class="tag">em uso</span>' : rec ? '<button class="link" data-use="rec">Usar recomendado</button>' : '<span class="mu">calculando o recomendado…</span>'}</div>
 ${metrics(f)}<p class="mu">Caminhada ${esc(f.caminhada)}${f.tiros ? ` · ${km(sc.route.totalEstimatedM / f.tiros)} km por tiro` : ''}</p>${busy ? '<p class="mu">Calculando…</p>' : ''}</section>
-<section class="card list"><h2 class="h">Tiros</h2>${rows.map(r => `<div class="li"><span class="id">${esc(r.trackId)}</span><span class="x">${num(r.lengthM)} m <small>· ${r.n === 1 ? '1 ponto' : `${num(r.n)} pontos`}</small></span><span class="r">${r.medianGapM ? `a cada ${num(r.medianGapM)} m` : r.n ? '1 ponto' : 'sem ponto'}</span></div>`).join('')}</section>
+${trackRows(rows, hiTrack)}
 <section class="card list"><h2 class="h">Outras opções</h2>${alts.length ? alts.map((a, i) => `<div class="li"><span class="x">${num(a.m.tiros)} tiros · ${num(a.m.pontos)} pontos<br><small>95% &lt; ${num(a.m.p95M)} m · ${num(a.m.caminhadaKm, 1)} km${a.id === 'equipe' ? ' · igual por pessoa' : ''}</small></span><button class="use" data-alt="${i}">Usar</button></div>`).join('') : '<p class="mu">Sem outra opção melhor.</p>'}
 <button class="lnk" data-open="ajustes">Ajustes avançados</button><button class="lnk" data-open="calculo">Como foi calculado</button></section></div>`;
 }
@@ -4240,6 +4282,20 @@ function fichasMarkup(field, routes, people, mapFor) {
 <ol>${r.instructions.map(t => `<li>${esc(t)}</li>`).join('')}</ol></section>`).join('');
 }
 
+/** U04 · lista de tiros que abre cada um, como na 2.5: régua (borda → pontos → borda), vizinhos e por onde entrar. */
+const ruler = steps => `<div class="ruler" aria-label="Distâncias ao longo do tiro">${steps.map(st => `<span class="rs"><b>${esc(String(st.de === 'borda' ? 'borda' : st.de))}</b><i>${num(st.m)} m</i></span>`).join('')}<span class="rs"><b>borda</b></span></div>`;
+function trackRows(rows, hiTrack) {
+  return `<section class="card list"><h2 class="h">Tiros</h2>${rows.map(r => {
+    const d = r.d, head = `<span class="id">${esc(r.trackId)}</span><span class="x">${num(r.lengthM)} m <small>· ${r.n === 1 ? '1 ponto' : `${num(r.n)} pontos`}</small></span><span class="r">${r.medianGapM ? `a cada ${num(r.medianGapM)} m` : r.n ? '1 ponto' : 'sem ponto'}</span>`;
+    if (!d) return `<div class="li">${head}</div>`;
+    const on = hiTrack === r.trackId;
+    return `<details class="trk"${on ? ' open' : ''}><summary class="li">${head}</summary><div class="trkb">
+${d.parts.map((pt, i) => `${d.parts.length > 1 ? `<p class="mu sm">Parte ${i + 1} · ${num(pt.lengthM)} m</p>` : ''}<p class="mu sm">Entra a ${esc(pt.entra)} e anda para ${esc(pt.anda)}</p>${ruler(pt.steps)}`).join('')}
+${d.neighbors.length ? `<p class="mu sm">${d.neighbors.length > 1 ? 'Tiros vizinhos' : 'Tiro vizinho'}: ${d.neighbors.map(nb => `${esc(nb.id)} a ${num(nb.m)} m`).join(' · ')} (de lado)</p>` : ''}
+<button class="link" data-hitrack="${esc(r.trackId)}" aria-pressed="${on}">${on ? 'Destacado no mapa' : 'Ver no mapa'}</button></div></details>`;
+  }).join('')}</section>`;
+}
+
 const tracksList = rows => `<section class="card list"><h2 class="h">Tiros</h2>${rows.map(r => `<div class="li"><span class="id">${esc(r.trackId)}</span><span class="x">${num(r.lengthM)} m <small>· ${r.n === 1 ? '1 ponto' : `${num(r.n)} pontos`}</small></span><span class="r">${r.medianGapM ? `a cada ${num(r.medianGapM)} m` : r.n ? '1 ponto' : 'sem ponto'}</span></div>`).join('')}</section>`;
 
 function blockPlanoView({ f, sc, rows, block }) {
@@ -4256,8 +4312,12 @@ function blockPickBody(groups, prepared, busy) {
   if (busy) return '<p class="mu">Preparando a grade comum…</p>';
   if (prepared) {
     const pct = r => `${num((r - 1) * 100, 1)}%`;
-    return `<p class="mu">Mesmo lote e mesma regra de pontos; muda a distância entre tiros. Só dá para usar a opção que não perde cobertura em nenhum lote.</p>
-${prepared.alternatives.map((a, i) => { const m = a.summary; return `<div class="li"><span class="x">${num(m.passes)} passadas · ${num(m.tracks)} tiros · ${num(m.points)} pontos${m.added ? ` (+${num(m.added)})` : ''}${a.chosen ? ' <b>· recomendada</b>' : ''}<br><small>${m.coverageTradeoff ? `perde cobertura em ${esc(m.worstCode)} (${pct(m.worstRatio)})` : 'cobertura igual ou melhor em todos'}</small></span>${m.coverageTradeoff ? '' : `<button class="use" data-block-use="${i}">Usar</button>`}</div>`; }).join('')}`;
+    const tol = num((prepared.tolerance ?? 0) * 100, 0), anyOk = prepared.alternatives.some(a => !a.summary.coverageTradeoff);
+    const worst = prepared.alternatives.reduce((m, a) => (a.summary.worstRatio < (m?.summary.worstRatio ?? Infinity) ? a : m), null);
+    // sem opção: diz por quê e o que fazer, em vez de uma lista sem botão
+    const none = anyOk ? '' : `<p class="ck alerta">Nenhuma grade comum mantém a cobertura destes lotes: a melhor ainda perde ${pct(worst.summary.worstRatio)} em ${esc(worst.summary.worstCode)}. Os espaçamentos ideais dos lotes são diferentes demais — planeje cada lote no próprio plano.</p>`;
+    return `${none}<p class="mu">Mesma regra de pontos; os lotes passam a usar a mesma grade de tiros. Só dá para usar a opção que mantém a cobertura de cada lote (diferença de até ${tol}%).</p>
+${prepared.alternatives.map((a, i) => { const m = a.summary; return `<div class="li"><span class="x">${num(m.passes)} passadas · ${num(m.tracks)} tiros · ${num(m.points)} pontos${m.added ? ` (+${num(m.added)})` : ''}${a.chosen ? ' <b>· recomendada</b>' : ''}<br><small>${m.coverageTradeoff ? `perde cobertura em ${esc(m.worstCode)} (${pct(m.worstRatio)})` : m.worstRatio > 1 + 1e-6 ? `cobertura mantida (diferença de ${pct(m.worstRatio)} em ${esc(m.worstCode)})` : 'cobertura igual ou melhor em todos'}</small></span>${m.coverageTradeoff ? '' : `<button class="use" data-block-use="${i}">Usar</button>`}</div>`; }).join('')}`;
   }
   return groups.length ? groups.map((g, i) => `<button class="lnk" data-block="${i}">${esc(g.title)}</button>`).join('') : '<p class="mu">Este lote não tem vizinho com a mesma referência A/B.</p>';
 }
@@ -5281,10 +5341,26 @@ function buildScenarioMetrics(f, sc) { return deps.metrics(f, sc); }
 /** Blocos (só compatíveis) que contêm o lote; o grupo completo primeiro. */
 const blocksFor = (fields, key) => schmidtReferenceBlocks(fields).filter(g => g.compatible && g.members.includes(key));
 
+/** Tolerância do bloco na 3.0: até 1% de diferença (95% do lote e pior vazio) conta como "mesma cobertura" — na 2.5 era
+ *  zero até a 6ª casa, e 31 dos 40 grupos ficavam sem opção por perdas de 0,0–0,4%. A 2.5 (legado/) segue igual. */
+const BLOCK_TOLERANCE = 0.01;
+
+/** Aplica a tolerância: marca o que pode ser usado e escolhe, entre esses, o de menos pontos a mais (depois, o de menor perda). */
+function withTolerance(rec, tol = BLOCK_TOLERANCE) {
+  const ok = r => Number.isFinite(r) && r <= 1 + tol;
+  const alts = rec.alternatives.map(a => ({ ...a, summary: { ...a.summary, coverageTradeoff: !ok(a.summary.worstRatio) } }));
+  const usable = alts.filter(a => !a.summary.coverageTradeoff).sort((a, b) => a.summary.added - b.summary.added || a.summary.worstRatio - b.summary.worstRatio);
+  const pick = usable[0] || null, base = { ...rec, assessment: { ...rec.assessment, coverageTradeoff: !ok(rec.assessment.worstRatio) } };
+  const minLoss = Math.min(...alts.map(a => a.summary.worstRatio ?? Infinity));
+  // o registro de cada alternativa também leva a marca nova (é ele que é gravado ao usar)
+  const fix = r => (r ? { ...r, assessment: { ...r.assessment, coverageTradeoff: !ok(r.assessment.worstRatio) } } : r);
+  return { ...base, alternatives: alts.map(a => ({ ...a, record: fix(a.record), chosen: a === pick })), tolerance: tol, minLoss };
+}
+
 /** Prepara o bloco (assíncrono, cede a vez à tela). Devolve o registro com alternativas por espaçamento. */
 function prepareBlock(fields, group, paramsOf, signal) {
   return prepareSchmidtBlock({ group, fields, parametersFor: f => paramsOf(`${f.farm}|${f.code}`), engine,
-    metrics: { coverageGrid, nearestDistances, kthSmallest, gridStep }, signal, yieldTask: () => new Promise(r => setTimeout(r, 0)) });
+    metrics: { coverageGrid, nearestDistances, kthSmallest, gridStep }, signal, yieldTask: () => new Promise(r => setTimeout(r, 0)) }).then(r => withTolerance(r));
 }
 
 /** Grava o registro no estado (sem a lista de alternativas) e devolve o novo planningBlocks e o id usado. */
@@ -5307,7 +5383,7 @@ function blockScenario(fields, record, key) {
 }
 
 
-return Object.freeze({blocksFor,prepareBlock,storeBlock,blockScenario,scenarioOf});
+return Object.freeze({blocksFor,BLOCK_TOLERANCE,withTolerance,prepareBlock,storeBlock,blockScenario,scenarioOf});
 })();
 // src/app3/versions.mjs
 const __m_app3_versions=(()=>{
@@ -5410,7 +5486,9 @@ const LAYERS_KEY = 'schmidt.mapa.v1';
 /** @param {any} app */
 function installMapa(app) {
   const { document, storage } = app;
-  let view = { k: 1, x: 0, y: 0 };
+  // cada mapa com o seu zoom: mexer no Mapa não tira o lote do quadro no Plano ou na guia
+  const ID = { k: 1, x: 0, y: 0 }, views = { full: ID, small: ID, guide: ID };
+  const moved = v => v.k > 1.01 || v.k < 0.99 || Math.abs(v.x) > 2 || Math.abs(v.y) > 2;
   /** @type {string|null} */ let selectedPt = null;
   let layers = { medidas: true, areas: false };
   try { const l = JSON.parse(storage.getItem(LAYERS_KEY) || '{}'); layers = { medidas: l.medidas !== false, areas: l.areas === true }; } catch { /* padrão */ }
@@ -5453,13 +5531,15 @@ function installMapa(app) {
       const opts = full ? { measure, pad: { t: 112, r: 30, b: 64, l: 40 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
         reserve: [[0, 0, info ? Math.min(W - 40, 330) : Math.min(W * 0.66, 252), 104], [W - 214, H - 60, W, H]] } : { pad: 22 };
       const g = guide ? app.guide() : null;
-      el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view: guide && g.focus ? { k: 1, x: 0, y: 0 } : view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, focus: guide ? g.focus : null, others: cur.others || [], ...opts })
-        + (full ? (info ? balloon() : V.legend(cur.field, P.figures(cur.sc), areas)) + V.mapTools(layers, view.k > 1.01)
+      const kind = full ? 'full' : guide ? 'guide' : 'small', view = guide && g.focus ? ID : views[kind];
+      el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, hiTrack: !full && !guide ? app.hiTrack : null, focus: guide ? g.focus : null, others: cur.others || [], ...opts })
+        + (full ? (info ? balloon() : V.legend(cur.field, P.figures(cur.sc), areas)) + V.mapTools(layers, moved(view))
           : guide && g.pos ? `<button class="fit" data-act="follow" aria-pressed="${!!g.follow}" aria-label="${g.follow ? 'Ver o lote inteiro' : 'Seguir minha posição'}">${g.follow ? '⤢' : '◎'}</button>`
-            : (view.k > 1.01 ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : '') + balloon());
+            : (moved(view) ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : ''));
       if (!el.dataset.g) {
         el.dataset.g = '1';
-        attachGestures(el, { getView: () => view, setView: v => { view = v; }, onChange: () => requestAnimationFrame(drawMaps),
+        const k2 = full ? 'full' : el.dataset.map === 'guide' ? 'guide' : 'small';
+        attachGestures(el, { getView: () => views[k2], setView: v => { views[k2] = v; }, onChange: () => requestAnimationFrame(drawMaps),
           onTap: target => { const t = target.closest?.('[data-pt]'); selectedPt = t ? t.dataset.pt : null; drawMaps(); } });
       }
     }
@@ -5471,9 +5551,9 @@ function installMapa(app) {
   }
 
   app.drawMaps = drawMaps;
-  app.onLotChange.push(() => { view = { k: 1, x: 0, y: 0 }; selectedPt = null; });
+  app.onLotChange.push(() => { views.full = views.small = views.guide = ID; selectedPt = null; app.hiTrack = null; });
   Object.assign(app.ACTIONS, {
-    fit: () => { view = { k: 1, x: 0, y: 0 }; drawMaps(); },
+    fit: () => { views.full = views.small = views.guide = ID; drawMaps(); },
     'layer-medidas': () => toggleLayer('medidas'),
     'layer-areas': () => toggleLayer('areas'),
   });
@@ -5610,6 +5690,8 @@ function installPlano(app) {
   app.SHEETS.ajustes = () => app.openSheet('Ajustes avançados', advancedForm(app.cur.params, app.cur.sc, app.saved().fitTeam));
   app.clicks.push(t => {
     const cur = app.cur;
+    // U04: destaca o tiro no mapa do Plano (tocar de novo tira o destaque)
+    if (t.dataset.hitrack) { app.hiTrack = app.hiTrack === t.dataset.hitrack ? null : t.dataset.hitrack; t.setAttribute('aria-pressed', String(app.hiTrack === t.dataset.hitrack)); t.textContent = app.hiTrack ? 'Destacado no mapa' : 'Ver no mapa'; app.drawMaps(); return true; }
     if (t.dataset.set) { advancedChange(t.dataset.set, t.dataset.v); return true; }
     if (t.dataset.alt) { const a = cur.rec.alternatives.filter(Boolean)[+t.dataset.alt]; if (a) app.setParams({ ...cur.base, ...a.params }, `Usando ${a.m.tiros} tiros · ${a.m.pontos} pontos`, null); return true; }
     if (t.dataset.use === 'rec') { app.setParams({ ...cur.base, ...cur.rec.chosen.params }, 'Usando o plano recomendado', null); return true; }
@@ -6027,7 +6109,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   /** Contexto comum: cada tela (screen-*.mjs) lê daqui e registra as suas folhas, ações e eventos. */
   /** @type {any} */ const app = {
     document, window, fields, keys, ui, store, storage, persistent, session, safra, appVersion, host, versions: createVersions(window.indexedDB),
-    cur: null, toast, saved, people, recFor, whenRec, render, setParams,
+    cur: null, hiTrack: null, toast, saved, people, recFor, whenRec, render, setParams,
     /** Recomendação já pronta (sem calcular), ou undefined. */
     /** Recomendação já pronta ou feita na hora (para listas e bloco, que precisam do valor já). */
     recNow: (field, base, key = ui.key) => recFor(field, base, key) ?? P.recommendBase(field, base, people(), saved().fitTeam),
@@ -6107,7 +6189,8 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     for (const a of document.querySelectorAll('[data-tab]')) { const on = a.dataset.tab === ui.view; a.classList.toggle('on', on); a.setAttribute('aria-current', on ? 'page' : 'false'); }
     main.dataset.view = ui.view;
     if (ui.view === 'mapa') main.innerHTML = V.mapaView(c);
-    else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), rows: c.sc.trackRows });
+    else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), hiTrack: app.hiTrack,
+      rows: c.sc.trackRows.map(r => ({ ...r, d: c.block ? null : (c.details ??= new Map()).get(r.trackId) ?? c.details.set(r.trackId, P.trackDetail(c.field, c.sc, r.trackId)).get(r.trackId) })) });
     else if (ui.view === 'enviar') main.innerHTML = V.enviarView(c);
     else main.innerHTML = V.monitorView(app.monitorData());
     requestAnimationFrame(app.drawMaps);
@@ -6131,8 +6214,9 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   document.addEventListener('change', e => { for (const h of app.changes) if (h(e.target)) return; });
   document.addEventListener('input', e => { for (const h of app.inputs) if (h(e.target)) return; });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && host.innerHTML) app.closeSheet(); });
-  $('#sol').addEventListener('click', () => { const on = !saved().sunMode; store.update({ sunMode: on }); document.documentElement.classList.toggle('sun', on); });
-  document.documentElement.classList.toggle('sun', !!saved().sunMode);
+  const sun = on => { document.documentElement.classList.toggle('sun', on); $('#sol').setAttribute('aria-pressed', String(on)); requestAnimationFrame(() => app.drawMaps?.()); };
+  $('#sol').addEventListener('click', () => { const on = !saved().sunMode; store.update({ sunMode: on }); sun(on); toast(on ? 'Sol: contraste alto para a luz do dia.' : 'Sol desligado.'); });
+  sun(!!saved().sunMode);
   new window.ResizeObserver(() => app.cur && app.drawMaps()).observe($('#view'));
   render();
   document.documentElement.dataset.ready = '1';
@@ -6141,6 +6225,6 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
 
 return Object.freeze({startApp});
 })();
-__m_app3_main.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),recs:JSON.parse(document.getElementById('recs-data').textContent),appVersion:'3.0.8'});
+__m_app3_main.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),recs:JSON.parse(document.getElementById('recs-data').textContent),appVersion:'3.0.9'});
 })();</script>
 </body></html>

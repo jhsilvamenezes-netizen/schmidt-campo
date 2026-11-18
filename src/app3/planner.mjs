@@ -10,6 +10,7 @@ import { coverageGrid, nearestDistances } from '../engine/metrics.mjs';
 import { recommendPlan, SHAPE_KEYS, metricsOf } from '../engine/recommend.mjs';
 import { restoreSamples, withSamples } from '../engine/editing.mjs';
 import { teamPlan } from '../engine/team.mjs';
+import { buildRoute } from '../engine/guidance.mjs';
 import { exactCoverage } from '../engine/voronoi.mjs';
 import { num, range, km, plural } from './format.mjs';
 
@@ -209,4 +210,20 @@ export function tryPlan(field, params, edits) {
   const { removed } = sanitizeParams(params || {});
   if (removed.length) return { error: `valor fora da faixa (${removed[0]})` };
   try { return { sc: planInUse(field, params, edits) }; } catch (e) { return { error: friendly(e) }; }
+}
+
+/** U04 · tiro completo, como na 2.5: comprimento, régua (borda → pontos → borda), tiros vizinhos (medidos de lado) e por
+ *  onde entrar. Cada parte do tiro (quando o lote o corta) tem a sua régua. */
+export function trackDetail(field, sc, trackId) {
+  let route;
+  try { route = buildRoute(sc, field, trackId); } catch { return null; }
+  const parts = route.parts.map(part => {
+    const pts = route.points.filter(p => p.partIndex === part.index);
+    const steps = pts.map((p, i) => ({ de: i === 0 ? 'borda' : pts[i - 1].number, ate: p.number, m: p.deltaM }));
+    if (pts.length) steps.push({ de: pts.at(-1).number, ate: 'borda', m: part.afterLastM });
+    return { entra: part.entrySide, sai: part.exitSide, anda: part.walkDir, lengthM: part.lengthM, steps };
+  });
+  const order = sc.selected.filter(t => Number.isFinite(t.offsetM)).sort((a, b) => a.offsetM - b.offsetM), i = order.findIndex(t => t.id === trackId);
+  const neighbors = i < 0 ? [] : [order[i - 1], order[i + 1]].filter(Boolean).map(t => ({ id: t.id, m: Math.abs(t.offsetM - order[i].offsetM) }));
+  return { id: trackId, lengthM: route.totalLengthM, n: route.nPoints, parts, neighbors };
 }
