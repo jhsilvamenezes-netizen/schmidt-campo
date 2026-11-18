@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-ZMigOBvjogHcv/8L1SHArX8utaKuTYSIfI0eFMGt6Sk='; style-src 'sha256-nWDvQroOc/V7pyVcVVT4yOQSwi2pM0pnAhpmiqkJGdY='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-KMuFxh4YIOzJaum1wfXXPMWRUUrSZ8gHnLkWMey/BEo='; style-src 'sha256-nWDvQroOc/V7pyVcVVT4yOQSwi2pM0pnAhpmiqkJGdY='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#17594a" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c1512" media="(prefers-color-scheme: dark)">
 <title>SCHMIDT Campo</title>
 <link rel="icon" href="marca.svg"><link rel="apple-touch-icon" href="marca-180.png"><link rel="manifest" href="app.webmanifest">
@@ -6016,7 +6016,8 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
       const st = saved(), now = st.paramsByField?.[key];
       if (now && P.sameShape(now, first.chosen.params) && JSON.stringify(P.baseOf(now)) === JSON.stringify(base)) {
         if (store.update({ paramsByField: { ...(st.paramsByField || {}), [key]: { ...base, ...rec.chosen.params } } })) {
-          if (ui.key === key) { render(); toast('Recomendado ajustado: áreas por ponto mais iguais.'); }
+          // não cobre um aviso em curso (ex.: "Desfazer" da regra)
+          if (ui.key === key) { render(); if (!$('#toast').textContent) toast('Recomendado ajustado: áreas por ponto mais iguais.'); }
         }
       } else if (ui.key === key) render();
     };

@@ -109,7 +109,8 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
       const st = saved(), now = st.paramsByField?.[key];
       if (now && P.sameShape(now, first.chosen.params) && JSON.stringify(P.baseOf(now)) === JSON.stringify(base)) {
         if (store.update({ paramsByField: { ...(st.paramsByField || {}), [key]: { ...base, ...rec.chosen.params } } })) {
-          if (ui.key === key) { render(); toast('Recomendado ajustado: áreas por ponto mais iguais.'); }
+          // não cobre um aviso em curso (ex.: "Desfazer" da regra)
+          if (ui.key === key) { render(); if (!$('#toast').textContent) toast('Recomendado ajustado: áreas por ponto mais iguais.'); }
         }
       } else if (ui.key === key) render();
     };
