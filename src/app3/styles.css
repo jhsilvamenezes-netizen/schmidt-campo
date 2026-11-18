@@ -157,3 +157,11 @@ nav button.on{color:var(--br)}nav button.on .ic{background:var(--br);color:var(-
 header .ib{color:var(--hd-ink)}.lot small{color:#ffffffc7}
 :root.sun .lot{background:#fff;color:#000}:root.sun .lot small{color:#1d2b26}
 .map-svg .lot{stroke-width:2.5}
+/* 3.0.11 · identidade nas seções e controles: título com traço dourado, segmento ativo cheio, tiros em uma linha só */
+.h{color:var(--br);display:flex;align-items:center;gap:8px}.h:before{content:"";flex:none;width:14px;height:3px;border-radius:2px;background:var(--gold)}
+.seg button.on{background:var(--br);color:var(--on-br)}
+.chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:2px;margin:-2px}.chips::-webkit-scrollbar{display:none}.chipb{flex:none}
+.li .x b{font:600 14px system-ui}.li .x .sub{display:block}
+.sumc{display:flex;justify-content:space-between;align-items:center}.trk[open]>.sumc{margin-bottom:6px}.sumc:after{content:"›";color:var(--mu);font-size:20px;line-height:1;transition:transform .15s}.trk[open]>.sumc:after{transform:rotate(90deg)}
+:root.sun .h{color:#000}:root.sun .chipb{border:2px solid #000}
+.ex.card{padding:12px 14px}

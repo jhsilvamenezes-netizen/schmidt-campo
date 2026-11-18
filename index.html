@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-qUDOxW7Y00faz7RSu0UR3D2PvjUeOq2MyBOQ0lTK2IU='; style-src 'sha256-gmlrnAccgAnvYE3rEZkGydbh8o12ml7u2P3/mBMiDC8='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-DEVFIY9hU/VUbWa2YyPz2tZyW49yO84ePKzIM0nLMtY='; style-src 'sha256-1TLnSUPXWXkGTLiJPW6l05uk3NDESA04IsArvyBvn8Q='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#17594a" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c1512" media="(prefers-color-scheme: dark)">
 <title>SCHMIDT Campo</title>
 <link rel="icon" href="marca.svg"><link rel="apple-touch-icon" href="marca-180.png"><link rel="manifest" href="app.webmanifest">
@@ -164,6 +164,14 @@ nav button.on{color:var(--br)}nav button.on .ic{background:var(--br);color:var(-
 header .ib{color:var(--hd-ink)}.lot small{color:#ffffffc7}
 :root.sun .lot{background:#fff;color:#000}:root.sun .lot small{color:#1d2b26}
 .map-svg .lot{stroke-width:2.5}
+/* 3.0.11 · identidade nas seções e controles: título com traço dourado, segmento ativo cheio, tiros em uma linha só */
+.h{color:var(--br);display:flex;align-items:center;gap:8px}.h:before{content:"";flex:none;width:14px;height:3px;border-radius:2px;background:var(--gold)}
+.seg button.on{background:var(--br);color:var(--on-br)}
+.chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:2px;margin:-2px}.chips::-webkit-scrollbar{display:none}.chipb{flex:none}
+.li .x b{font:600 14px system-ui}.li .x .sub{display:block}
+.sumc{display:flex;justify-content:space-between;align-items:center}.trk[open]>.sumc{margin-bottom:6px}.sumc:after{content:"›";color:var(--mu);font-size:20px;line-height:1;transition:transform .15s}.trk[open]>.sumc:after{transform:rotate(90deg)}
+:root.sun .h{color:#000}:root.sun .chipb{border:2px solid #000}
+.ex.card{padding:12px 14px}
 </style></head>
 <body>
 <a class="skip" href="#view">Ir para o conteúdo</a>
@@ -4240,7 +4248,7 @@ function enviarView({ list, split }) {
   const ok = list.filter(c => c.level === 'ok').length, all = ok === list.length;
   return `<div class="scroll"><section class="card"><div class="row-sb"><h2 class="big md">${all ? 'Pronto para enviar' : 'Conferir antes de enviar'}</h2>${chip(all ? 'ok' : 'alerta', `${ok} de ${list.length}`)}</div>
 ${list.map(c => `<p class="ck ${c.level}">${esc(c.text)}</p>`).join('')}</section>
-${split ? `<section class="card list"><h2 class="h">Equipe</h2>${split.pessoas.map((p, i) => `<div class="li"><span class="id">${esc(p.tarefas.map(t => t.id).join('+'))}</span><span class="x">Pessoa ${i + 1} <small>· ${esc(p.tarefas.map(t => `${t.entra ? `entra a ${t.entra} · ` : ''}pontos\u00a0${t.de ?? "—"}–${t.ate ?? "—"}`).join(" · "))}</small></span><span class="r">${km(p.m)} km</span></div>`).join('')}</section>` : ''}
+${split ? `<section class="card list"><h2 class="h">Equipe</h2>${split.pessoas.map((p, i) => `<div class="li"><span class="id">${esc(p.tarefas.map(t => t.id).join('+'))}</span><span class="x"><b>Pessoa ${i + 1}</b><small class="sub">${esc(p.tarefas.map(t => `pontos\u00a0${t.de ?? '—'}–${t.ate ?? '—'}${t.entra ? ` · entra a ${t.entra}` : ''}`).join(' · '))}</small></span><span class="r">${km(p.m)} km</span></div>`).join('')}</section>` : ''}
 <button class="btn p" data-act="share">Enviar plano aos monitores</button>
 <div class="two"><button class="btn" data-act="fichas">Fichas de campo</button><button class="btn" data-act="copy">Copiar resumo</button></div>
 <p class="center"><button class="link" data-act="gpx">GPX</button> · <button class="link" data-act="kml">KML</button> · <button class="link" data-act="csv">CSV</button> · <button class="link" data-act="geojson">GeoJSON</button></p>
@@ -4271,7 +4279,7 @@ function monitorView({ tracks, trackId, flipped, active, model, steps, heading =
   const pick = `<div class="chips" role="group" aria-label="Tiro">${tracks.map(t => `<button class="chipb${t.id === trackId ? ' on' : ''}" data-track="${esc(t.id)}" aria-pressed="${t.id === trackId}">${esc(t.id)}${t.person ? `<small>${esc(t.person)}</small>` : ''}</button>`).join('')}</div>`;
   const head = `<section class="card">${pick}<div class="row-sb"><p class="mu">Sentido: ${flipped ? 'invertido' : 'do plano'}</p><button class="link" data-act="flip">Inverter</button></div></section>`;
   if (!active) return `<div class="map sm" data-map="guide"></div><div class="scroll">${head}<button class="btn p" data-act="gps-start">Iniciar guia</button><button class="btn" data-act="gpx-track">GPX do ${esc(trackId || 'tiro')} (para outro app de GPS)</button>
-<details class="ex card"><summary>Roteiro sem GPS</summary>${steps.map(t => `<p>${esc(t)}</p>`).join('')}</details></div>`;
+<details class="ex card trk"><summary class="sumc">Roteiro sem GPS</summary>${steps.map(t => `<p>${esc(t)}</p>`).join('')}</details></div>`;
   const cur = tracks.find(t => t.id === trackId), m = model;
   // seta pequena ao lado da distância: o mapa (grande, acima) fica livre para contornar e se orientar
   // com bússola, a seta aponta para onde andar com o celular na mão; sem ela, norte para cima
@@ -4338,7 +4346,7 @@ function blockPickBody(groups, prepared, busy) {
     // sem opção: diz por quê e o que fazer, em vez de uma lista sem botão
     const none = anyOk ? '' : `<p class="ck alerta">Nenhuma grade comum mantém a cobertura destes lotes: a melhor ainda perde ${pct(worst.summary.worstRatio)} em ${esc(worst.summary.worstCode)}. Os espaçamentos ideais dos lotes são diferentes demais — planeje cada lote no próprio plano.</p>`;
     return `${none}<p class="mu">Mesma regra de pontos; os lotes passam a usar a mesma grade de tiros. Só dá para usar a opção que mantém a cobertura de cada lote (diferença de até ${tol}%).</p>
-${prepared.alternatives.map((a, i) => { const m = a.summary; return `<div class="li"><span class="x">${num(m.passes)} passadas · ${num(m.tracks)} tiros · ${num(m.points)} pontos${m.added ? ` (+${num(m.added)})` : ''}${a.chosen ? ' <b>· recomendada</b>' : ''}<br><small>${m.coverageTradeoff ? `perde cobertura em ${esc(m.worstCode)} (${pct(m.worstRatio)})` : m.worstRatio > 1 + 1e-6 ? `cobertura mantida (diferença de ${pct(m.worstRatio)} em ${esc(m.worstCode)})` : 'cobertura igual ou melhor em todos'}</small></span>${m.coverageTradeoff ? '' : `<button class="use" data-block-use="${i}">Usar</button>`}</div>`; }).join('')}`;
+${prepared.alternatives.map((a, i) => [a, i]).sort((x, y) => Number(y[0].chosen) - Number(x[0].chosen)).map(([a, i]) => { const m = a.summary; return `<div class="li"><span class="x">${num(m.passes)} passadas · ${num(m.tracks)} tiros · ${num(m.points)} pontos${m.added ? ` (+${num(m.added)})` : ''}${a.chosen ? ' <b>· recomendada</b>' : ''}<br><small>${m.coverageTradeoff ? `perde cobertura em ${esc(m.worstCode)} (${pct(m.worstRatio)})` : m.worstRatio > 1 + 1e-6 ? `cobertura mantida (diferença de ${pct(m.worstRatio)} em ${esc(m.worstCode)})` : 'cobertura igual ou melhor em todos'}</small></span>${m.coverageTradeoff ? '' : `<button class="use" data-block-use="${i}">Usar</button>`}</div>`; }).join('')}`;
   }
   return groups.length ? groups.map((g, i) => `<button class="lnk" data-block="${i}">${esc(g.title)}</button>`).join('') : '<p class="mu">Este lote não tem vizinho com a mesma referência A/B.</p>';
 }
@@ -5345,11 +5353,12 @@ return Object.freeze({SCHMIDT_BLOCK_SCHEMA,SCHMIDT_BLOCK_MAPS,schmidtBlockInputS
 })();
 // src/app3/blocks.mjs
 const __m_app3_blocks=(()=>{
-const { prepareSchmidtBlock, schmidtReferenceBlocks, schmidtCommonBlockFields, selectSchmidtSavedBlock, validateSchmidtBlocks, schmidtBlockSourceSignature, SCHMIDT_BLOCK_SCHEMA } = __m_application_block_planning;
+const { prepareSchmidtBlock, schmidtReferenceBlocks, schmidtCommonBlockFields, schmidtBlockAlternativeSummary, schmidtBlockBorderDistance, selectSchmidtSavedBlock, validateSchmidtBlocks, schmidtBlockSourceSignature, SCHMIDT_BLOCK_SCHEMA } = __m_application_block_planning;
 const { buildScenario, planScenario } = schmidtEngine2.scenario;
 const { restoreSamples, withSamples } = schmidtEngine2.editing;
 const { coverageGrid, nearestDistances, kthSmallest, gridStep } = schmidtEngine2.metrics;
 const { sanitizeParams } = schmidtEngine2.paramCatalog;
+const { DEFAULT_PARAMS } = schmidtEngine2.params;
 const { deps, scenarioOf } = __m_app3_planner;
 // 3.0 · bloco de lotes vizinhos com a mesma referência A/B: grade comum de tiros (cálculo da 2.x em
 // src/application/block-planning.mjs). Registros no mesmo lugar da 2.x (estado.planningBlocks), compatíveis nos dois sentidos.
@@ -5378,10 +5387,54 @@ function withTolerance(rec, tol = BLOCK_TOLERANCE) {
   return { ...base, alternatives: alts.map(a => ({ ...a, record: fix(a.record), chosen: a === pick })), tolerance: tol, minLoss };
 }
 
+const statsOf = (grid, samples) => {
+  const d = nearestDistances(grid, samples), n = d.length, k = Math.min(n - 1, Math.floor(0.95 * n));
+  let max = -Infinity; for (let i = 0; i < n; i++) if (d[i] > max) max = d[i];
+  return { p95: kthSmallest(d, k), max };
+};
+
+/** A busca da 2.x põe pontos a mais até a cobertura ficar igual (perda zero). Com a tolerância da 3.0, devolve os que
+ *  sobram: em cada lote, o menor número de pontos (≥ o do lote sozinho) que fica dentro da margem. Mesma grade de
+ *  células e mesma conta de cobertura da 2.x; nunca acrescenta, só tira. */
+function trimExtra(fields, rec, tol = BLOCK_TOLERANCE) {
+  const commons = schmidtCommonBlockFields(fields, rec.members, rec.common), grids = {};
+  const gridOf = key => (grids[key] ??= coverageGrid(fields[key].geom, gridStep(fields[key].geom, { gridTargetCells: 1500, minStepM: 15, maxStepM: 150 })));
+  /** @param {any} r */
+  const trim = r => {
+    const a = r.assessment, added = { ...a.addedPointsByField }, coverage = { ...a.coverage }, params = { ...r.state.paramsByField }, scenarios = {};
+    let changed = false;
+    for (const key of r.members) {
+      const p = params[key];
+      scenarios[key] = null;
+      if (!(added[key] > 0)) continue;
+      const base = p.totalPoints - added[key], before = coverage[key].before;
+      for (let n = base; n < p.totalPoints; n++) {
+        let sc; try { sc = planScenario(commons[key], { ...p, totalPoints: n }, deps); } catch { continue; }
+        if (sc.samples.length !== n) continue;
+        const after = statsOf(gridOf(key), sc.samples), ratio = Math.max(after.p95 / before.p95, after.max / before.max);
+        if (ratio <= 1 + tol) { params[key] = { ...p, totalPoints: n }; coverage[key] = { before, after, ratio }; added[key] = n - base; scenarios[key] = sc; changed = true; break; }
+      }
+    }
+    if (!changed) return null;
+    for (const key of r.members) scenarios[key] ??= planScenario(commons[key], params[key], deps);
+    const worstRatio = Math.max(...Object.values(coverage).map(c => c.ratio));
+    const out = { ...r, state: { ...r.state, paramsByField: params }, assessment: { ...a, coverage, worstRatio, addedPointsByField: added,
+      minimumBorderMByField: Object.fromEntries(r.members.map(k => [k, schmidtBlockBorderDistance(fields[k].geom, scenarios[k].samples)])) } };
+    return { record: out, summary: schmidtBlockAlternativeSummary(fields, r.members, { scenarios, coverage, addedPointsByField: added, worstRatio, common: r.common }) };
+  };
+  const top = { ...rec }; delete top.alternatives;
+  return { ...rec, alternatives: rec.alternatives.map(alt => {
+    const t = trim(alt.record || { ...top, common: { ...top.common } });
+    return t ? { ...alt, record: t.record, summary: t.summary } : alt;
+  }) };
+}
+
 /** Prepara o bloco (assíncrono, cede a vez à tela). Devolve o registro com alternativas por espaçamento. */
 function prepareBlock(fields, group, paramsOf, signal) {
-  return prepareSchmidtBlock({ group, fields, parametersFor: f => paramsOf(`${f.farm}|${f.code}`), engine,
-    metrics: { coverageGrid, nearestDistances, kthSmallest, gridStep }, signal, yieldTask: () => new Promise(r => setTimeout(r, 0)) }).then(r => withTolerance(r));
+  // O teto de pontos entra explícito: sem ele a redistribuição da 2.x (min(teto, …)) não tentava nenhum ponto a mais
+  // e grupos como RC7 + RC8 ficavam sem opção por 5–8% que um ou dois pontos resolvem.
+  return prepareSchmidtBlock({ group, fields, parametersFor: f => ({ maxPointsCap: DEFAULT_PARAMS.maxPointsCap, ...paramsOf(`${f.farm}|${f.code}`) }), engine,
+    metrics: { coverageGrid, nearestDistances, kthSmallest, gridStep }, signal, yieldTask: () => new Promise(r => setTimeout(r, 0)) }).then(r => withTolerance(trimExtra(fields, r)));
 }
 
 /** Grava o registro no estado (sem a lista de alternativas) e devolve o novo planningBlocks e o id usado. */
@@ -5404,7 +5457,7 @@ function blockScenario(fields, record, key) {
 }
 
 
-return Object.freeze({blocksFor,BLOCK_TOLERANCE,withTolerance,prepareBlock,storeBlock,blockScenario,scenarioOf});
+return Object.freeze({blocksFor,BLOCK_TOLERANCE,withTolerance,trimExtra,prepareBlock,storeBlock,blockScenario,scenarioOf});
 })();
 // src/app3/versions.mjs
 const __m_app3_versions=(()=>{
@@ -6273,6 +6326,6 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
 
 return Object.freeze({startApp});
 })();
-__m_app3_main.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),recs:JSON.parse(document.getElementById('recs-data').textContent),appVersion:'3.0.10'});
+__m_app3_main.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),recs:JSON.parse(document.getElementById('recs-data').textContent),appVersion:'3.0.11'});
 })();</script>
 </body></html>
