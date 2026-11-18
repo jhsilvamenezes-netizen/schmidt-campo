@@ -7,7 +7,7 @@ import { assessField } from '../engine/dataQuality.mjs';
 import { optimizeDistribution } from '../engine/optimize.mjs';
 import { DEFAULT_PARAMS, paramsSignature } from '../engine/params.mjs';
 import { coverageGrid, nearestDistances } from '../engine/metrics.mjs';
-import { recommendPlan, SHAPE_KEYS } from '../engine/recommend.mjs';
+import { recommendPlan, SHAPE_KEYS, metricsOf } from '../engine/recommend.mjs';
 import { restoreSamples, withSamples } from '../engine/editing.mjs';
 import { teamPlan } from '../engine/team.mjs';
 import { exactCoverage } from '../engine/voronoi.mjs';
@@ -27,9 +27,70 @@ export function baseOf(params) { const p = { ...(params || {}) }; for (const k o
 /** `params` usa a forma `shape` (recomendação ou opção): todo campo de forma que ela define tem o mesmo valor. */
 export const sameShape = (params, shape) => !!shape && Object.keys(shape).every(k => !SHAPE_KEYS.includes(k) || JSON.stringify(params?.[k] ?? null) === JSON.stringify(shape[k] ?? null));
 
-/** Recomendação do lote para a regra (ha por ponto), pessoas e "limitar à equipe". */
-export function recommend(field, base, people, fitTeam) {
+/** Recomendação do motor 2 (igual ao motor 0.5.1), antes do equilíbrio das áreas. */
+export function recommendBase(field, base, people, fitTeam) {
   return recommendPlan(field, base, { monitors: people, fitTeam: !!fitTeam }, plain);
+}
+
+/** Recomendação do lote para a regra (ha por ponto), pessoas e "limitar à equipe" — com as áreas equilibradas (U17). */
+export function recommend(field, base, people, fitTeam) {
+  const rec = recommendBase(field, base, people, fitTeam);
+  return rec ? balanceAreas(field, base, rec) : rec;
+}
+
+/** Limites do equilíbrio (A5): a cobertura nunca piora além disto. */
+export const BALANCE = Object.freeze({ p95: 1.03, km: 1.10, spread: 1 });
+const BOOM = 36.48;
+
+/** Mede um plano: cobertura (95% e pior vazio exato), variação da área de cada ponto, tiros de 1 ponto, caminhada. */
+export function balanceStats(field, params) {
+  let sc;
+  try { sc = planInUse(field, params, null); } catch { return null; }
+  if (sc.longitudinal.emptyUnits.length || sc.samples.length < sc.minPoints || !sc.samples.length) return null;
+  const cov = exactCoverage(field.geom, sc.samples), a = cov.cells.map(c => c.areaM2), mean = a.reduce((x, y) => x + y, 0) / a.length;
+  const cv = mean ? Math.sqrt(a.reduce((x, y) => x + (y - mean) ** 2, 0) / a.length) / mean : 0;
+  return { sc, p95: sc.coverage.p95, worst: cov.worstGapM, cv, ones: sc.trackRows.filter(r => r.n === 1).length, km: sc.route.totalEstimatedM / 1e3 };
+}
+
+/**
+ * U17 · A1+A5: entre os espaçamentos (múltiplos da barra, ±1 passada do escolhido) e todas as fases a partir do ponto A,
+ * fica com o de áreas por ponto mais iguais, desde que: 95% do lote no máximo 3% pior, pior vazio nunca maior,
+ * nenhum tiro de 1 ponto a mais e caminhada no máximo 10% maior. Sem candidato melhor, a recomendação fica igual.
+ */
+export function balanceAreas(field, base, rec) {
+  const it = balanceSteps(field, base, rec);
+  let r = it.next();
+  while (!r.done) r = it.next();
+  return r.value;
+}
+
+/** O mesmo cálculo em passos (um candidato por passo), para a tela rodar aos poucos sem travar. */
+export function* balanceSteps(field, base, rec) {
+  const cp = rec.chosen?.params;
+  if (!cp || cp.trackMode !== 'espacamento' || !Number.isFinite(cp.trackSpacingM)) return rec;
+  const now = balanceStats(field, { ...base, ...cp });
+  if (!now) return rec;
+  const k0 = Math.round(cp.trackSpacingM / BOOM);
+  /** @type {any} */ let best = { params: cp, ...now };
+  for (let k = Math.max(3, k0 - BALANCE.spread); k <= k0 + BALANCE.spread; k++) for (let ph = 0; ph < k; ph++) {
+    const params = { ...cp, trackSpacingM: Math.round((k * BOOM + 0.01) * 100) / 100, trackPhaseM: Math.round(ph * BOOM * 100) / 100 };
+    if (params.trackSpacingM === cp.trackSpacingM && params.trackPhaseM === cp.trackPhaseM) continue;
+    yield;
+    const c = balanceStats(field, { ...base, ...params });
+    if (!c || c.p95 > now.p95 * BALANCE.p95 || c.worst > now.worst + 1e-6 || c.ones > now.ones || c.km > now.km * BALANCE.km) continue;
+    if (c.cv < best.cv - 1e-9) best = { params, ...c };
+  }
+  if (best.params === cp) return rec;
+  const pct = v => `${num(v * 100)}%`;
+  const m = metricsOf(best.sc), passes = Math.round(best.params.trackSpacingM / BOOM), esp = Math.round(best.params.trackSpacingM * 100) / 100;
+  // o "porquê" passa a descrever o plano equilibrado (mesmas frases do motor, com os números novos)
+  const ppt = m.pontosPorTiro[0] === m.pontosPorTiro[1] ? m.pontosPorTiro[0] : `${m.pontosPorTiro[0]} a ${m.pontosPorTiro[1]}`;
+  const ph = best.params.trackPhaseM || 0, phaseLine = ph ? [`Conjunto de tiros deslocado ${num(ph)} m (${Math.round(ph / BOOM)} passadas) a partir do ponto A, para cobrir melhor as bordas do lote.`] : [];
+  const why = (rec.porque || []).filter(t => !/^Conjunto de tiros deslocado/.test(t)).flatMap(t => (/^Pontos repartidos pelo comprimento/.test(t) ? [...phaseLine, t] : [t])).map(t => (/^Por isso \d+ tiros a /.test(t) ? `Por isso ${m.tiros} tiros a ${num(esp)} m um do outro, medidos de lado (${passes} passadas da barra).`
+    : /^Pontos repartidos pelo comprimento/.test(t) ? `Pontos repartidos pelo comprimento: ${ppt} por tiro${m.aoLongoM > 0 ? `, a cada ~${num(m.aoLongoM)} m andando sobre o tiro` : ''}.` : t));
+  return { ...rec, chosen: { ...rec.chosen, params: best.params, m, passes, espacamentoM: esp },
+    porque: [...why, `Tiros ajustados para áreas por ponto mais iguais (variação ${pct(now.cv)} → ${pct(best.cv)}), sem piorar a cobertura.`],
+    equilibrio: { antes: { cv: now.cv, p95M: now.p95, piorVazioM: now.worst, km: now.km }, depois: { cv: best.cv, p95M: best.p95, piorVazioM: best.worst, km: best.km } } };
 }
 
 /** Plano em uso: parâmetros salvos (ou recomendados), ajustes manuais válidos para a mesma assinatura. */

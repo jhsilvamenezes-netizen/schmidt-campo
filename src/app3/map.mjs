@@ -71,9 +71,9 @@ function cota(cls, a, b) {
 /** Marcação SVG do lote ajustada a w × h px. `small` = mapa do Plano/guia (sem medidas).
  * @param {any} field @param {any} sc @param {number} w @param {number} h
  * @param {{pad?:number|{t:number,r:number,b:number,l:number}, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null,
- *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null}} [opts] */
+ *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null}} [opts] */
 export function mapMarkup(field, sc, w, h, opts = {}) {
-  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null } = opts;
+  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null } = opts;
   const pad = typeof pad0 === 'number' ? { t: pad0, r: pad0, b: pad0, l: pad0 } : pad0;
   // Outros lotes (bloco): levados ao referencial do lote atual pela diferença dos centroides UTM.
   const shift = o => [o.field.centroidUTM[0] - field.centroidUTM[0], o.field.centroidUTM[1] - field.centroidUTM[1]];
@@ -150,7 +150,10 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
   if (pos) {
     const [px, py] = XY(pos.x, pos.y), acc = Math.max(6, pos.accuracyM * kk);
     if (to) { const [tx, ty] = XY(to[0], to[1]); s += `<path class="togo" d="M${f1(px)},${f1(py)}L${f1(tx)},${f1(ty)}"/>`; }
-    s += `<circle class="acc" cx="${f1(px)}" cy="${f1(py)}" r="${f1(acc)}"/><circle class="me" cx="${f1(px)}" cy="${f1(py)}" r="7"/>`;
+    s += `<circle class="acc" cx="${f1(px)}" cy="${f1(py)}" r="${f1(acc)}"/>`;
+    // para onde o celular aponta (bússola): cone curto à frente do ponto azul
+    if (Number.isFinite(heading)) s += `<path class="cone" transform="translate(${f1(px)} ${f1(py)}) rotate(${Number(heading).toFixed(0)})" d="M0 0L-11 -26A28 28 0 0 1 11 -26Z"/>`;
+    s += `<circle class="me" cx="${f1(px)}" cy="${f1(py)}" r="7"/>`;
   }
   s += `<g class="scale" transform="translate(14 ${h - 14})"><path d="M0 -6V0H${f1(L)}V-6"/><text x="0" y="-10">${num(len)} m</text></g>`;
   s += `<g class="north" transform="translate(${w - 18} 16)"><text x="0" y="8">N</text><path d="M0 14V30M-4 19L0 14L4 19"/></g>`;

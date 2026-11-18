@@ -34,7 +34,7 @@ export function installBloco(app) {
     if (t.dataset.block) {
       const g = blockUi.groups[+t.dataset.block], st = app.saved(), ctl = new AbortController();
       blockUi = { ...blockUi, busy: true, abort: ctl }; app.openSheet(`Bloco ${g.title}`, V.blockPickBody([], null, true));
-      const paramsOf = k => st.paramsByField?.[k] ?? { ...app.recFor(fields[k], {}, k).chosen.params };
+      const paramsOf = k => st.paramsByField?.[k] ?? { ...app.recNow(fields[k], {}, k).chosen.params };
       prepareBlock(fields, g, paramsOf, ctl.signal).then(rec => { blockUi = { ...blockUi, busy: false, prepared: rec }; if (app.host.innerHTML) app.openSheet(`Bloco ${g.title}`, V.blockPickBody([], rec, false)); })
         .catch(err => { blockUi.busy = false; if (app.host.innerHTML) app.openSheet(`Bloco ${g.title}`, `<p class="ck alerta">${esc(err.message)}</p>`); });
       return true;

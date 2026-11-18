@@ -34,10 +34,10 @@ Estado: `livre` · `em andamento · IA · branch` · `pronto para revisão · PR
 | U02 | P0 | Separar a tela em módulos (destrava trabalho em paralelo) | K1, K2, K4, H3, H4 | `src/app3/` (novos módulos por tela), `scripts/build-3.mjs` | Mesmo comportamento (todos os testes passam); cada tela num arquivo; atualização só do que mudou | feito · 3.0.4 (PR #32) |
 | U03 | P1 | **Medidas no mapa como na 2.5** (pedido do proprietário) | M5, M6, M11, N15, N16, D2, D8 | `src/app3/map.mjs` | Legenda ligada às cores (entre tiros, entre pontos, ha por ponto); intervalos e área de cada ponto desenhados; toque no ponto desenha as medidas; números ≥ 12 px; 0 colisão nos 51 lotes | feito · 3.0.2 (PR #30) |
 | U04 | P1 | **Tiros completos** | T1–T3, P11, P12 | `src/app3/views-plano.mjs` (após U02) | Por tiro: vizinhos, régua, borda · intervalos · borda; tocar mostra no mapa; esquema das distâncias | livre |
-| U05 | P1 | Desempenho no celular | N1–N5, N18, A6 | `src/app3/planner.mjs`, worker novo, `scripts/build-3.mjs` | Celular lento (6×): trocar lote e aba < 0,2 s; "Todos os lotes" sem travar; 10 toques sem travar | pronto para revisão · Claude · 3.0.5 (falta: ha por ponto 0,55 s no celular lento → worker) |
+| U05 | P1 | Desempenho no celular | N1–N5, N18, A6 | `src/app3/planner.mjs`, worker novo, `scripts/build-3.mjs` | Celular lento (6×): trocar lote e aba < 0,2 s; "Todos os lotes" sem travar; 10 toques sem travar | feito · 3.0.5 + 3.0.8 (mudar a regra: maior travada 0,19 s com o motor em segundo plano) |
 | U06 | P1 | Ferramentas do mapa | M1, M2, M4, M13 | `src/app3/map.mjs`, `gestures.mjs` | Norte/Talhão, aproximar, afastar, enquadrar, cobertura | livre |
 | U07 | P1 | Celular: deitado, iPhone, prévia do link | N22, N23, N24, N21 | `src/app3/{styles.css,shell.html}` | Deitado com mapa útil; topo seguro no iPhone; prévia no WhatsApp | livre |
-| U08 | P1 | Monitorar completo | N7, N8, N19, G1–G8 | `src/app3/monitor*.mjs` | Bússola, voz, seguir, "onde estou", nome, arquivos do próprio tiro; GPS pausa fora da aba | livre |
+| U08 | P1 | Monitorar completo | N7, N8, N19, G1–G8 | `src/app3/monitor*.mjs` | Bússola, voz, seguir, "onde estou", nome, arquivos do próprio tiro; GPS pausa fora da aba | em andamento · Claude · 3.0.7 (bússola, voz, pausa do GPS; falta: "onde estou", nome e arquivos do tiro) |
 | U09 | P1 | Acessibilidade e toque | N6, N14, N20, N25, D1 | `src/app3/main.mjs` (ou módulos de U02), `styles.css` | Voltar fecha janela; foco preso e devolvido; alvos ≥ 44 px; axe sem falhas | livre |
 | U10 | P2 | Plano: ajustes completos | P1, P2, P4–P8, P14, N11–N13 | `src/app3/advanced.mjs` | Todos os ajustes da 2.5 no celular, conferidos pelo catálogo | livre |
 | U11 | P2 | Comparar espaçamentos e diagnóstico | P9, P10, P13, P15, F6, M3 | `src/app3/` (tela de comparação) | 5 opções lado a lado com prévia no mapa; mancha descoberta; visão da fazenda | livre |
@@ -46,7 +46,7 @@ Estado: `livre` · `em andamento · IA · branch` · `pronto para revisão · PR
 | U14 | P2 | Bloco completo e no motor | P16, P17, H2 | `src/engine/blocks.mjs` (novo) | Teste diferencial com o bloco da 2.5; combinações, mapa do grupo, GPX | livre |
 | U15 | P2 | Trajeto importado | P3, F4, C4 | `src/app3/import.mjs` (novo) | GeoJSON/CSV como na 2.5; plano da 2.5 com trajeto abre | livre |
 | U16 | P2 | Satélite e imagem de fundo | M7, M8 | `src/app3/basemap.mjs` (novo) | Mesmas regras da 2.5 (sem consulta externa até escolher) | livre |
-| U17 | P3 | Motor assertivo | A1–A5 | `src/engine/` | Critérios da seção 2 do plano nos 51 lotes | livre |
+| U17 | P3 | Motor assertivo | A1–A5 | `src/engine/` | Critérios da seção 2 do plano nos 51 lotes | pronto para revisão · Claude · 3.0.8 (A1+A5 feitos: variação mediana 11,6% → 7,7%; A6 motor em segundo plano; faltam A2 borda, A3 tiro de 1 ponto, A4 equipe) |
 | U18 | P3 | Visual novo (após aprovação da prévia) | V1–V10, D3–D5, K3, K6, K7, H5 | `src/app3/` | Prévia aprovada; 360/390/412; claro, escuro, Sol | aguardando aprovação |
 | U19 | P4 | Tablet e notebook | L1, L2, D6, D7 | `src/app3/styles.css` | Painel lateral ≥ 900 px; tablet deitado | livre |
 | U20 | P4 | Congelar a 2.5 | H1, K5 | `scripts/build-preserved.mjs` | 2.5 só reserva; lembranças da 3.0 na cópia de segurança | livre |
