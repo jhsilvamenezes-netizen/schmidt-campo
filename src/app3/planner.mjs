@@ -12,6 +12,7 @@ import { restoreSamples, withSamples } from '../engine/editing.mjs';
 import { teamPlan } from '../engine/team.mjs';
 import { buildRoute } from '../engine/guidance.mjs';
 import { exactCoverage } from '../engine/voronoi.mjs';
+import { pointInGeom } from '../engine/geometry.mjs';
 import { num, range, km, plural } from './format.mjs';
 
 export const ENGINE_LABEL = '2.0.0';
@@ -226,4 +227,24 @@ export function trackDetail(field, sc, trackId) {
   const order = sc.selected.filter(t => Number.isFinite(t.offsetM)).sort((a, b) => a.offsetM - b.offsetM), i = order.findIndex(t => t.id === trackId);
   const neighbors = i < 0 ? [] : [order[i - 1], order[i + 1]].filter(Boolean).map(t => ({ id: t.id, m: Math.abs(t.offsetM - order[i].offsetM) }));
   return { id: trackId, lengthM: route.totalLengthM, n: route.nPoints, parts, neighbors };
+}
+
+/** "Onde estou": dentro ou fora do lote, distância à borda, ao tiro e ao ponto mais perto (em metros, no lote). */
+export function whereAmI(field, sc, pos) {
+  const inside = pointInGeom(pos.x, pos.y, field.geom);
+  let edgeM = Infinity;
+  for (const pg of field.geom) for (const ring of pg) for (let j = 1; j < ring.length; j++) {
+    const [ax, ay] = ring[j - 1], [bx, by] = ring[j], ex = bx - ax, ey = by - ay, L2 = ex * ex + ey * ey;
+    const t = L2 ? Math.max(0, Math.min(1, ((pos.x - ax) * ex + (pos.y - ay) * ey) / L2)) : 0;
+    edgeM = Math.min(edgeM, Math.hypot(pos.x - ax - t * ex, pos.y - ay - t * ey));
+  }
+  /** @type {any} */ let track = null;
+  for (const u of sc.units) for (let j = 1; j < u.line.length; j++) {
+    const [ax, ay] = u.line[j - 1], [bx, by] = u.line[j], ex = bx - ax, ey = by - ay, L2 = ex * ex + ey * ey;
+    const t = L2 ? Math.max(0, Math.min(1, ((pos.x - ax) * ex + (pos.y - ay) * ey) / L2)) : 0, d = Math.hypot(pos.x - ax - t * ex, pos.y - ay - t * ey);
+    if (!track || d < track.m) track = { id: u.trackId, m: d };
+  }
+  /** @type {any} */ let point = null;
+  for (const q of sc.samples) { const d = Math.hypot(q.x - pos.x, q.y - pos.y); if (!point || d < point.m) point = { id: q.id, number: q.number, trackId: q.trackId, m: d, x: q.x, y: q.y }; }
+  return { inside, edgeM, track, point, accuracyM: pos.accuracyM };
 }

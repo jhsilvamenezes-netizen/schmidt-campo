@@ -1,6 +1,7 @@
 // 3.1 (U02) · tela Monitorar: tiro e sentido, guia por GPS (política 2.0), tela acesa e vibração ao chegar.
 import { routeFor, fixToPos, guideModel } from './monitor.mjs';
 import { headingOf, smoothHeading, arrowAngle } from './compass.mjs';
+import { toGPX } from '../engine/exporters.mjs';
 
 /** @param {any} app */
 export function installMonitor(app) {
@@ -92,6 +93,12 @@ export function installMonitor(app) {
   app.onLotChange.push(() => { if (mon.active) gpsStop(); mon.trackId = null; });
   app.clicks.push(t => { if (!t.dataset.track) return false; mon.trackId = t.dataset.track; mon.session = {}; mon.arrivedId = null; app.render(); return true; });
   Object.assign(app.ACTIONS, {
+    // arquivo só do tiro escolhido (no sentido escolhido), para abrir em outro app de GPS
+    'gpx-track': () => {
+      const cur = app.cur; if (!mon.trackId) return;
+      const route = routeFor(cur.sc, cur.field, mon.trackId, mon.flipped), name = `${cur.field.farm}_${cur.field.code}_${mon.trackId}_SIMULADO`.replace(/[^\p{L}\p{N}_-]+/gu, '_');
+      app.download(toGPX([route], cur.field, cur.sc, app.appVersion), `${name}.gpx`, 'application/gpx+xml'); app.toast(`GPX do ${mon.trackId} baixado.`);
+    },
     'gps-start': () => gpsStart(),
     'gps-stop': () => gpsStop(),
     voice: () => { mon.voice = !mon.voice; if (mon.voice) say('Voz ligada.'); app.render(); },

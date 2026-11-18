@@ -35,8 +35,8 @@ ${ha ? `<span><i class="sw a" aria-hidden="true"></i>Cada ponto <b>${ha} ha</b><
 }
 
 /** Botões do mapa: camadas (medidas, área de cada ponto) e enquadrar. */
-export const mapTools = (layers, zoomed) => `<div class="mtools">${zoomed ? '<button class="mt" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : ''}
-<button class="mt" data-act="layer-medidas" aria-pressed="${!!layers.medidas}">Medidas</button><button class="mt" data-act="layer-areas" aria-pressed="${!!layers.areas}" aria-label="Área de cada ponto">Área</button></div>`;
+export const mapTools = (layers, zoomed, here = false) => `<div class="mtools">${zoomed ? '<button class="mt" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : ''}
+<button class="mt" data-act="where" aria-label="Onde estou" aria-pressed="${here}">◎</button><button class="mt" data-act="layer-medidas" aria-pressed="${!!layers.medidas}">Medidas</button><button class="mt" data-act="layer-areas" aria-pressed="${!!layers.areas}" aria-label="Área de cada ponto">Área</button></div>`;
 
 const stepper = (id, label, hint, value) => `<div class="step"><label for="${id}">${label}${hint ? `<small>${hint}</small>` : ''}</label><div class="stp">
 <button data-dec="${id}" aria-label="Diminuir ${label.toLowerCase()}">−</button><input id="${id}" inputmode="numeric" value="${esc(value)}"><button data-inc="${id}" aria-label="Aumentar ${label.toLowerCase()}">+</button></div></div>`;
@@ -88,7 +88,7 @@ export const calculoBody = steps => steps.map(s => `<details class="ex"><summary
 export function monitorView({ tracks, trackId, flipped, active, model, steps, heading = null, voice = false, canSpeak = false }) {
   const pick = `<div class="chips" role="group" aria-label="Tiro">${tracks.map(t => `<button class="chipb${t.id === trackId ? ' on' : ''}" data-track="${esc(t.id)}" aria-pressed="${t.id === trackId}">${esc(t.id)}${t.person ? `<small>${esc(t.person)}</small>` : ''}</button>`).join('')}</div>`;
   const head = `<section class="card">${pick}<div class="row-sb"><p class="mu">Sentido: ${flipped ? 'invertido' : 'do plano'}</p><button class="link" data-act="flip">Inverter</button></div></section>`;
-  if (!active) return `<div class="map sm" data-map="guide"></div><div class="scroll">${head}<button class="btn p" data-act="gps-start">Iniciar guia</button>
+  if (!active) return `<div class="map sm" data-map="guide"></div><div class="scroll">${head}<button class="btn p" data-act="gps-start">Iniciar guia</button><button class="btn" data-act="gpx-track">GPX do ${esc(trackId || 'tiro')} (para outro app de GPS)</button>
 <details class="ex card"><summary>Roteiro sem GPS</summary>${steps.map(t => `<p>${esc(t)}</p>`).join('')}</details></div>`;
   const cur = tracks.find(t => t.id === trackId), m = model;
   // seta pequena ao lado da distância: o mapa (grande, acima) fica livre para contornar e se orientar

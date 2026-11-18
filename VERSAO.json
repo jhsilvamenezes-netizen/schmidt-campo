@@ -1,16 +1,17 @@
 {
-  "entrega": "3.0.9",
+  "entrega": "3.0.10",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-16",
-  "versaoDoApp": "3.0.9",
+  "versaoDoApp": "3.0.10",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "4170539cae4f3935eb74b6a9b60cb174bb14bc6439e8da90737165aca71da940",
-  "workerSha256": "46183d90debbce25933f1126181918cfefbcc996088e04a626640cf34d30584b",
+  "htmlSha256": "826ced5481b44b4464efe0a0565a0499de5429cd74c45938b78aaeed0d98be9a",
+  "workerSha256": "298ab59f255ad65ac0a91c52448abb1fae11c6ba3a41a1f488c15f7bfcfe0788",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "3.0.10: bloco com margem de 5% (definida pelo proprietário; 30 de 40 grupos usáveis); \"Onde estou\" no Mapa (dentro/fora do lote, tiro e ponto mais perto, linha até o ponto); GPX só do tiro escolhido no Monitorar",
     "3.0.9: tiros completos no Plano (régua borda → pontos → borda, vizinhos de lado, entrada; \"Ver no mapa\"); cada mapa com o seu zoom (o lote não some no Plano); bloco com tolerância de 1% e explicação quando não há grade comum; paleta da marca preenchida (topo verde com faixa dourada, mapa em fundo verde-sálvia com o lote claro, pontos dourados com aro verde, ponto tocado em verde) com contraste conferido no claro, escuro e Sol; Sol com a identidade SCHMIDT",
     "3.0.8: motor mais assertivo — entre planos com a mesma cobertura, escolhe o de áreas por ponto mais iguais (variação mediana 11,6% → 7,7% nos 51 lotes; 95% do lote no máximo 3% pior, pior vazio nunca maior, nenhum tiro de 1 ponto a mais); a recomendação é feita num motor em segundo plano (motor.js): mudar a regra não trava a tela",
     "3.0.7: bússola no Monitorar (a seta aponta para onde andar com o celular na mão; cone da direção no mapa), voz opcional na chegada e GPS em pausa com a tela apagada",
@@ -74,5 +75,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "3673bb7a9bffc4dc1f0d1ee65797202a564345892d6920d4596eb0508ca45a5e"
+  "motorSha256": "b7e96adc55636e70b6e99cf1ba37b91a019b0ee0e3682c0531db038002079ab3"
 }

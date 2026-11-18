@@ -151,8 +151,8 @@ try {
     await p.click('[data-tab="mapa"]'); await p.waitForSelector('.map-svg .lot.other');
     await p.click('[data-tab="plano"]'); await p.click('[data-act="block-leave"]');
     await p.waitForSelector('[data-open="bloco"]');
-    // BD3 + BD4: nenhuma grade comum mantém a cobertura → a folha explica (não fica uma lista sem botão)
-    await p.click('button.lot'); await p.click('[data-lot="Bananal|BD4"]'); await p.click('[data-tab="plano"]');
+    // BE1 + BE2 + BE3: nenhuma grade comum fica dentro de 5% → a folha explica (não fica uma lista sem botão)
+    await p.click('button.lot'); await p.click('[data-lot="Bananal|BE1"]'); await p.click('[data-tab="plano"]');
     await p.click('[data-open="bloco"]'); await p.click('[data-block="0"]'); await p.waitForSelector('#sheets .ck.alerta', { timeout: 30000 });
     assert.match(await p.textContent('#sheets .ck.alerta'), /Nenhuma grade comum mantém a cobertura.*planeje cada lote/);
     await p.keyboard.press('Escape');

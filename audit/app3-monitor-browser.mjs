@@ -57,5 +57,22 @@ try {
     assert.match(t, /Próximo: Ponto 2/); assert.match(t, /Faltam \d+ m andando no tiro/);
     assert.deepStrictEqual(errors, []); await ctx.close();
   }
-  console.log('Monitorar: entrada do tiro de longe, mapa grande com linha ao alvo, seta pequena, bússola e seguir ok');
+  { // "Onde estou" no Mapa e GPX só do tiro escolhido
+    const [lon, lat] = localToLonLat(p1.x + 5, p1.y, f.centroidUTM);
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block', acceptDownloads: true, geolocation: { longitude: lon, latitude: lat, accuracy: 5 }, permissions: ['geolocation'] });
+    const p = await ctx.newPage(), errors = []; p.on('pageerror', e => errors.push(e.message));
+    await p.goto(`http://127.0.0.1:${server.address().port}/`); await p.evaluate(() => localStorage.setItem('monitoramento.v03', JSON.stringify({ fieldKey: 'Bananal|BC1' }))); await p.reload();
+    await p.waitForSelector('[data-map="full"] .pt'); await p.click('[data-act="where"]');
+    await p.waitForFunction(() => /Você está aqui/.test(document.querySelector('[data-map="full"] .bal')?.textContent || ''), null, { timeout: 15000 });
+    const t = (await p.textContent('[data-map="full"] .bal')).replace(/\s+/g, ' ');
+    assert.match(t, /Dentro de BC1/); assert.match(t, /tiro mais perto: T1 a \d+ m/); assert.match(t, /ponto mais perto: nº \d+ \(T1\)/);
+    await p.waitForSelector('[data-map="full"] .me');
+    await p.click('[data-tab="monitorar"]');
+    const [dl] = await Promise.all([p.waitForEvent('download'), p.click('[data-act="gpx-track"]')]);
+    assert.match(dl.suggestedFilename(), /BC1_T1_SIMULADO\.gpx$/);
+    const gpx = await (await import('node:fs/promises')).readFile(await dl.path(), 'utf8');
+    assert.match(gpx, /<gpx/); assert.equal((gpx.match(/<wpt/g) || []).length, route.points.length, 'um ponto de passagem por ponto do tiro');
+    assert.deepStrictEqual(errors, []); await ctx.close();
+  }
+  console.log('Monitorar: entrada do tiro de longe, mapa grande com linha ao alvo, seta pequena, bússola, seguir, onde estou e GPX do tiro ok');
 } finally { await browser.close(); server.close(); }
