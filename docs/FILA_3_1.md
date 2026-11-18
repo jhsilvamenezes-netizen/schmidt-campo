@@ -46,7 +46,7 @@ Estado: `livre` · `em andamento · IA · branch` · `pronto para revisão · PR
 | U14 | P2 | Bloco completo e no motor | P16, P17, H2 | `src/engine/blocks.mjs` (novo) | Teste diferencial com o bloco da 2.5; combinações, mapa do grupo, GPX | livre |
 | U15 | P2 | Trajeto importado | P3, F4, C4 | `src/app3/import.mjs` (novo) | GeoJSON/CSV como na 2.5; plano da 2.5 com trajeto abre | livre |
 | U16 | P2 | Satélite e imagem de fundo | M7, M8 | `src/app3/basemap.mjs` (novo) | Mesmas regras da 2.5 (sem consulta externa até escolher) | livre |
-| U17 | P3 | Motor assertivo | A1–A5 | `src/engine/` | Critérios da seção 2 do plano nos 51 lotes | livre |
+| U17 | P3 | Motor assertivo | A1–A5 | `src/engine/` | Critérios da seção 2 do plano nos 51 lotes | pronto para revisão · Claude · 3.0.8 (A1+A5 feitos: variação mediana 11,6% → 7,7%; faltam A2 borda, A3 tiro de 1 ponto, A4 equipe, A6 worker) |
 | U18 | P3 | Visual novo (após aprovação da prévia) | V1–V10, D3–D5, K3, K6, K7, H5 | `src/app3/` | Prévia aprovada; 360/390/412; claro, escuro, Sol | aguardando aprovação |
 | U19 | P4 | Tablet e notebook | L1, L2, D6, D7 | `src/app3/styles.css` | Painel lateral ≥ 900 px; tablet deitado | livre |
 | U20 | P4 | Congelar a 2.5 | H1, K5 | `scripts/build-preserved.mjs` | 2.5 só reserva; lembranças da 3.0 na cópia de segurança | livre |

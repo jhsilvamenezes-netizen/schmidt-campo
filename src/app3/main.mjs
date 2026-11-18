@@ -60,10 +60,36 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   };
   const saved = () => store.get();
   const people = () => Math.max(1, Math.min(60, Math.round(saved().quickMonitors ?? 5)));
+  /** Recomendação do lote. Vem pronta do arquivo (regra padrão) ou é montada na hora; o equilíbrio das áreas (U17)
+   *  roda depois, aos poucos (~25 ms por vez), e ajusta o plano sozinho se ele ainda for o recomendado. */
   function recFor(field, base, key = ui.key) {
     const id = `${key}|${JSON.stringify(base)}|${people()}|${!!saved().fitTeam}`;
-    if (!recCache.has(id)) recCache.set(id, P.recommend(field, base, people(), saved().fitTeam));
+    if (!recCache.has(id)) {
+      const first = P.recommendBase(field, base, people(), saved().fitTeam);
+      recCache.set(id, first);
+      if (first) balanceLater(id, field, base, key, first);
+    }
     return recCache.get(id);
+  }
+  function balanceLater(id, field, base, key, first) {
+    const steps = P.balanceSteps(field, base, first);
+    const run = () => {
+      const t0 = Date.now();
+      let r = steps.next();
+      while (!r.done && Date.now() - t0 < 25) r = steps.next();
+      if (!r.done) { setTimeout(run, 0); return; }
+      const rec = r.value;
+      recCache.set(id, rec);
+      if (rec === first) return;
+      // ajusta o plano gravado só se ele ainda é o recomendado de antes (a pessoa não escolheu outro no meio)
+      const st = saved(), now = st.paramsByField?.[key];
+      if (now && P.sameShape(now, first.chosen.params) && JSON.stringify(P.baseOf(now)) === JSON.stringify(base)) {
+        if (store.update({ paramsByField: { ...(st.paramsByField || {}), [key]: { ...base, ...rec.chosen.params } } })) {
+          if (ui.key === key) { render(); toast('Recomendado ajustado: áreas por ponto mais iguais.'); }
+        }
+      } else if (ui.key === key) render();
+    };
+    setTimeout(run, 0);
   }
   const host = $('#sheets');
   /** Contexto comum: cada tela (screen-*.mjs) lê daqui e registra as suas folhas, ações e eventos. */

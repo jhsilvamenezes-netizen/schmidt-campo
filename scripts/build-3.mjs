@@ -12,7 +12,7 @@ export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', '
   'app3/advanced', 'app3/gestures', 'app3/monitor', 'app3/compass', 'persistence/backup-service', 'persistence/backup-format', 'platform/browser-backup-adapters', 'platform/browser-session-lock',
   'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/versions', 'app3/backup',
   'app3/screen-mapa', 'app3/screen-monitor', 'app3/screen-plano', 'app3/screen-enviar', 'app3/screen-mais', 'app3/screen-bloco', 'app3/main'];
-export const APP_VERSION = '3.0.7';
+export const APP_VERSION = '3.0.8';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
 /** Cada módulo no seu escopo; importações do motor viram o namespace schmidtEngine2. */
@@ -36,7 +36,7 @@ async function bundleApp() {
       binds.push(m[2] ? `const ${m[2]} = ${from};` : `const { ${m[1].split(',').map(x => x.trim()).filter(Boolean).map(x => x.replace(/^(\w+) as (\w+)$/, '$1: $2')).join(', ')} } = ${from};`);
     }
     src = src.replace(/^import[^\n]*\n/gm, '');
-    const exported = [...src.matchAll(/^export (?:async )?(?:function|const|class) ([A-Za-z_$][\w$]*)/gm)].map(m => m[1]);
+    const exported = [...src.matchAll(/^export (?:async )?(?:function\*?|const|class) ([A-Za-z_$][\w$]*)/gm)].map(m => m[1]);
     const reexp = [...src.matchAll(/^export \{([^}]+)\};?\s*$/gm)].flatMap(m => m[1].split(',').map(x => x.trim()));
     src = src.replace(/^export \{[^}]+\};?\s*$/gm, '').replace(/^export /gm, '');
     parts.push(`// src/${id}.mjs\nconst ${ident(id)}=(()=>{\n${binds.join('\n')}\n${src}\nreturn Object.freeze({${[...exported, ...reexp].join(',')}});\n})();`);

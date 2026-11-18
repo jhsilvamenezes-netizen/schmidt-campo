@@ -9,9 +9,9 @@ import { createStore, STATE_KEY } from '../src/app3/store.mjs';
 
 const old = await loadLegacyEngine(), fields = await loadFields(), keys = Object.keys(fields).sort();
 
-test('recomendação da tela nova = motor 0.5.1 nos 51 lotes (espaçamento, fase e alternativas)', () => {
+test('recomendação base da tela nova = motor 0.5.1 nos 51 lotes (espaçamento, fase e alternativas)', () => {
   for (const k of keys) {
-    const a = P.recommend(fields[k], {}, 5, false), b = old.recommend.recommendPlan(fields[k], {}, { monitors: 5, fitTeam: false });
+    const a = P.recommendBase(fields[k], {}, 5, false), b = old.recommend.recommendPlan(fields[k], {}, { monitors: 5, fitTeam: false });
     assert.deepStrictEqual(JSON.parse(JSON.stringify(a)), JSON.parse(JSON.stringify(b)), k);
   }
 });
@@ -137,4 +137,20 @@ test('U08 · bússola: rumo do iPhone e do Android, tela deitada, suavização p
   assert.equal(arrowAngle(90, 90), 0, 'alvo à frente: seta para cima');
   assert.equal(arrowAngle(90, 180), 270, 'alvo à esquerda');
   assert.equal(arrowAngle(135, null), 135, 'sem bússola: norte para cima');
+});
+
+test('U17 · áreas equilibradas nos 51 lotes: variação mediana ≤ 8%, sem piorar a cobertura (A1 + A5)', () => {
+  const rows = keys.map(k => {
+    const f = fields[k], b0 = P.balanceStats(f, P.recommendBase(f, {}, 5, false).chosen.params), r = P.recommend(f, {}, 5, false), b1 = P.balanceStats(f, r.chosen.params);
+    assert.ok(b1.p95 <= b0.p95 * P.BALANCE.p95 + 1e-9, `${k}: 95% do lote ${b0.p95} → ${b1.p95}`);
+    assert.ok(b1.worst <= b0.worst + 1e-6, `${k}: pior vazio ${b0.worst} → ${b1.worst}`);
+    assert.ok(b1.ones <= b0.ones, `${k}: tiros de 1 ponto ${b0.ones} → ${b1.ones}`);
+    assert.ok(b1.km <= b0.km * P.BALANCE.km + 1e-9, `${k}: caminhada ${b0.km} → ${b1.km}`);
+    assert.ok(b1.cv <= b0.cv + 1e-9, `${k}: variação ${b0.cv} → ${b1.cv}`);
+    if (b1.cv < b0.cv - 1e-9) assert.match(r.porque.at(-1), /áreas por ponto mais iguais/, k);
+    return { b0, b1 };
+  });
+  const med = a => [...a].sort((x, y) => x - y)[a.length >> 1];
+  assert.ok(med(rows.map(r => r.b1.cv)) <= 0.08, `variação mediana ${med(rows.map(r => r.b1.cv))}`);
+  assert.ok(med(rows.map(r => r.b1.cv)) < med(rows.map(r => r.b0.cv)));
 });
