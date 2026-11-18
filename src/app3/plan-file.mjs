@@ -1,5 +1,5 @@
 // 3.0 · arquivo de plano enviado aos monitores ("monitoramento.plano.v1"), compatível com a 2.x nos dois sentidos.
-import { sanitizeParams } from '../engine/paramCatalog.mjs';
+import { sanitizeParams } from '../engine3/paramCatalog.mjs';
 
 export const PLAN_SCHEMA = 'monitoramento.plano.v1';
 const MAX_BYTES = 6 * 1024 * 1024, ID = /^[\p{L}\p{N}_ .-]{1,80}$/u, isNum = v => typeof v === 'number' && Number.isFinite(v);

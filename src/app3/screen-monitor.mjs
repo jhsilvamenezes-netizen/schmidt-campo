@@ -1,7 +1,7 @@
 // 3.1 (U02) · tela Monitorar: tiro e sentido, guia por GPS (política 2.0), tela acesa e vibração ao chegar.
 import { routeFor, fixToPos, guideModel } from './monitor.mjs';
 import { headingOf, smoothHeading, arrowAngle } from './compass.mjs';
-import { toGPX } from '../engine/exporters.mjs';
+import { toGPX } from '../engine3/exporters.mjs';
 
 /** @param {any} app */
 export function installMonitor(app) {

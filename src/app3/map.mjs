@@ -105,6 +105,17 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
   }
   const ring = field.geom.map(pg => pg.map(rg => `M${rg.map(P).join('L')}Z`).join('')).join('');
   let s = `<svg class="map-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Lote ${field.code}: ${sc ? `${sc.samples.length} pontos em ${sc.selected.length} tiros` : 'sem plano'}">`;
+  // 3.2 (G1) · grade em METROS: cada quadrado tem o tamanho da barra de escala (ex.: 500 m), presa ao terreno (anda com o zoom)
+  {
+    const wx = sx => x0 + ((sx - view.x) / view.k - ox) / k, wy = sy => y0 + (h - oy - (sy - view.y) / view.k) / k;
+    const ax = Math.floor(wx(0) / len) * len, bx = wx(w), ay = Math.floor(wy(h) / len) * len, by = wy(0);
+    let g = '';
+    if ((bx - ax) / len < 60 && (by - ay) / len < 60) {
+      for (let gx = ax; gx <= bx; gx += len) { const X = XY(gx, 0)[0]; g += `M${f1(X)} 0V${h}`; }
+      for (let gy = ay; gy <= by; gy += len) { const Y = XY(0, gy)[1]; g += `M0 ${f1(Y)}H${w}`; }
+    }
+    if (g) s += `<path class="mgrid" d="${g}"/>`;
+  }
   s += s0 + `<path class="lot" d="${ring}" fill-rule="evenodd"/>`;
   let top = '';
   if (sc) {

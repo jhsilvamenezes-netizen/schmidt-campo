@@ -1,8 +1,8 @@
 // 3.0 · Monitorar: guia por GPS ao próximo ponto (só direção; nada é marcado como coletado). Regras da 2.x:
 // próximo ponto à frente (src/gps/guide-next), fix válido (src/gps/fix-policy), aviso de saída da linha e de tiro
 // errado com a tolerância "offLineWarnM". Sem DOM: o modelo da tela sai daqui e é testado no Node.
-import { buildRoute, guide, tiroErrado, azimuth, cardinal } from '../engine/guidance.mjs';
-import { lonLatToLocal } from '../engine/projection.mjs';
+import { buildRoute, guide, tiroErrado, azimuth, cardinal } from '../engine3/guidance.mjs';
+import { lonLatToLocal } from '../engine3/projection.mjs';
 import { schmidtGuideNextPoint, schmidtGuideSession } from '../gps/guide-next.mjs';
 import { validateSchmidtGPSFix } from '../gps/fix-policy.mjs';
 import { num } from './format.mjs';

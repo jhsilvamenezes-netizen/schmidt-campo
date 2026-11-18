@@ -215,7 +215,9 @@ nav button.on:before{content:"";position:absolute;top:0;left:50%;width:28px;heig
 main>.sheet{background:color-mix(in srgb,var(--sf) 94%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 .ov{background:#05110cb3;backdrop-filter:blur(2px)}
 /* mapa como carta: grade fina de 40 px, lote nítido, tiros contínuos, pontos com aro */
-.map{background-color:var(--mapbg);background-image:linear-gradient(color-mix(in srgb,var(--fl) 9%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--fl) 9%,transparent) 1px,transparent 1px);background-size:40px 40px}
+.map{background-color:var(--mapbg)}
+/* 3.2 (G1) · grade em metros: um quadrado = a barra de escala */
+.map-svg .mgrid{fill:none;stroke:var(--fl);stroke-opacity:.12;stroke-width:1;shape-rendering:crispEdges}
 .map-svg .lot{stroke-width:2;filter:drop-shadow(0 6px 14px #0d221a24)}
 .map-svg .track{stroke-width:2;stroke-dasharray:none;stroke-opacity:.55}
 .map-svg .track.hi{stroke-opacity:1;stroke-width:4}
@@ -228,7 +230,7 @@ main>.sheet{background:color-mix(in srgb,var(--sf) 94%,transparent);backdrop-fil
 .ck:before{width:20px;height:20px}
 #toast:not(:empty){border-radius:14px;box-shadow:0 12px 30px -12px #0008}
 @media (prefers-color-scheme:dark){:root:not(.sun) header{background:linear-gradient(180deg,#0c3129,var(--hd))}:root:not(.sun) .btn.p{background:var(--br);box-shadow:none}}
-:root.sun header{background:var(--hd)}:root.sun .btn.p{background:var(--br);box-shadow:none}:root.sun .map{background-image:none}:root.sun .map-svg .track{stroke-opacity:1}
+:root.sun header{background:var(--hd)}:root.sun .btn.p{background:var(--br);box-shadow:none}:root.sun .map-svg .mgrid{stroke:#000;stroke-opacity:.18}:root.sun .map-svg .track{stroke-opacity:1}
 :root.sun .m3{border:2px solid #000}:root.sun .m{border-left:2px solid #000}:root.sun .m:first-child{border-left:0}:root.sun nav{background:#fff;backdrop-filter:none}
 :root.sun .li .id{border:1.5px solid #000;background:#fff}
 .lot>span{display:block}

@@ -1,21 +1,21 @@
 // 3.0 · aplicação: monta o plano de um lote com o motor 2, a recomendação, a conferência, a equipe e a área
 // descoberta. Sem DOM: testável no Node com os 51 lotes.
-import { buildScenario, withMetrics } from '../engine/scenario.mjs';
-import { assertParams, sanitizeParams } from '../engine/paramCatalog.mjs';
-import { buildWarnings } from '../engine/diagnostics.mjs';
-import { assessField } from '../engine/dataQuality.mjs';
-import { optimizeDistribution } from '../engine/optimize.mjs';
-import { DEFAULT_PARAMS, paramsSignature } from '../engine/params.mjs';
-import { coverageGrid, nearestDistances } from '../engine/metrics.mjs';
-import { recommendPlan, SHAPE_KEYS, metricsOf } from '../engine/recommend.mjs';
-import { restoreSamples, withSamples } from '../engine/editing.mjs';
-import { teamPlan } from '../engine/team.mjs';
-import { buildRoute } from '../engine/guidance.mjs';
-import { exactCoverage } from '../engine/voronoi.mjs';
-import { pointInGeom } from '../engine/geometry.mjs';
+import { buildScenario, withMetrics } from '../engine3/scenario.mjs';
+import { assertParams, sanitizeParams } from '../engine3/paramCatalog.mjs';
+import { buildWarnings } from '../engine3/diagnostics.mjs';
+import { assessField } from '../engine3/dataQuality.mjs';
+import { optimizeDistribution } from '../engine3/optimize.mjs';
+import { DEFAULT_PARAMS, paramsSignature } from '../engine3/params.mjs';
+import { coverageGrid, nearestDistances, quickP95 } from '../engine3/metrics.mjs';
+import { recommendPlan, SHAPE_KEYS, metricsOf } from '../engine3/recommend.mjs';
+import { restoreSamples, withSamples, moveSample } from '../engine3/editing.mjs';
+import { teamPlan } from '../engine3/team.mjs';
+import { buildRoute } from '../engine3/guidance.mjs';
+import { exactCoverage } from '../engine3/voronoi.mjs';
+import { pointInGeom } from '../engine3/geometry.mjs';
 import { num, range, km, plural } from './format.mjs';
 
-export const ENGINE_LABEL = '2.0.0';
+export const ENGINE_LABEL = '3.2.0';
 export const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
@@ -161,7 +161,7 @@ export function pointAreas(field, sc) {
     const cov = exactCoverage(field.geom, sc.samples);
     const cells = cov.cells.map((c, i) => ({ id: sc.samples[i].id, ha: c.areaM2 / 1e4, rings: c.rings }));
     const has = cells.map(c => c.ha);
-    a = { cells, minHa: Math.min(...has), maxHa: Math.max(...has) };
+    a = { cells, minHa: Math.min(...has), maxHa: Math.max(...has), worstGapM: cov.worstGapM };
     areaCache.set(sc, a);
   }
   return a;
@@ -191,12 +191,66 @@ export function pointInfo(field, sc, id) {
     prev: i > 0 ? same[i - 1] : null, next: i >= 0 && i < same.length - 1 ? same[i + 1] : null, edgeAt, across };
 }
 
+/** Pior vazio exato (Voronoi) e variação da área de cada ponto. */
+function exactStats(field, samples) {
+  const cov = exactCoverage(field.geom, samples), a = cov.cells.map(c => c.areaM2), mean = a.reduce((x, y) => x + y, 0) / a.length;
+  return { worst: cov.worstGapM, cv: mean ? Math.sqrt(a.reduce((x, y) => x + (y - mean) ** 2, 0) / a.length) / mean : 0 };
+}
+
 /** "Buscar distribuição melhor" (mesma busca da 2.x): devolve os pontos como ajuste gravável ou null se não melhorou. */
 export function optimizeEdits(field, params) {
   const sc = buildScenario(field, params, { optimize: true }, deps), o = sc.optimization;
   if (!o?.accepted) return { edits: null, report: o };
+  // 3.2: a busca da 2.x só olha o "95% do lote"; nos 51 lotes ela aumentava o pior vazio em 27 de 34 (364 → 383 m em
+  // média) e deixava as áreas mais desiguais. Agora só vale se o pior vazio (exato) e a variação das áreas não pioram.
+  const before = exactStats(field, planInUse(field, params, null).samples), after = exactStats(field, sc.samples);
+  if (after.worst > before.worst + 1 || after.cv > before.cv + 0.005) return { edits: null, report: { ...o, accepted: false, rejectedBy: 'piora o pior vazio ou a igualdade das áreas', before, after } };
   const samples = sc.samples.map(s => ({ id: s.id, x: s.x, y: s.y, unitId: s.unitId, s: s.s, manual: false, offTrack: !!s.offTrack }));
   return { edits: { signature: paramsSignature(sc.params), samples }, report: o };
+}
+
+/**
+ * 3.2 · minimax: desliza cada ponto sobre o próprio tiro (passos de 80, 40 e 20 m) para diminuir o PIOR VAZIO exato
+ * (Voronoi), sem deixar o 95% do lote mais de 1% pior, sem deixar as áreas mais desiguais (+1 ponto percentual),
+ * sem trocar a ordem dos pontos no tiro (mínimo de 60 m entre vizinhos) e sem encostar na ponta do tiro (≥ 30 m).
+ * Mesmos pontos, mesmos tiros; devolve um ajuste gravável ou null se não melhorou.
+ */
+export function minimaxEdits(field, params, edits = null, { maxEvals = 600 } = {}) {
+  let sc = planInUse(field, params, edits);
+  if (sc.samples.length < 2 || sc.samples.some(p => p.offTrack)) return { edits: null };
+  const grid = coverageGrid(field.geom, sc.coverage.fineStepM ?? 20), p95of = smp => quickP95(grid, smp).p95;
+  const start = { ...exactStats(field, sc.samples), p95: p95of(sc.samples) };
+  let cur = start, samples = sc.samples, evals = 0, improved = false;
+  const units = new Map(sc.units.map(u => [u.id, u]));
+  const okPlace = (list, p) => {
+    const u = units.get(p.unitId);
+    if (!u || p.s < Math.min(30, u.len / 2) || p.s > u.len - Math.min(30, u.len / 2)) return false;
+    return list.every(q => q.id === p.id || q.unitId !== p.unitId || Math.abs(q.s - p.s) >= 60);
+  };
+  for (const step of [80, 40, 20]) {
+    let again = true;
+    while (again && evals < maxEvals) {
+      again = false;
+      for (const p of samples) for (const d of [step, -step]) {
+        if (evals >= maxEvals) break;
+        const r = moveSample({ ...sc, samples }, field, p.id, { deltaS: d });
+        if (!r.ok) continue;
+        const moved = r.samples.find(q => q.id === p.id), before = samples.find(q => q.id === p.id);
+        // a ordem no tiro não muda: o ponto não passa por cima do vizinho
+        if (!okPlace(r.samples, moved) || r.samples.some(q => q.unitId === moved.unitId && q.id !== moved.id && Math.sign(q.s - before.s) !== Math.sign(q.s - moved.s))) continue;
+        evals++;
+        const st = exactStats(field, r.samples);
+        if (st.worst >= cur.worst - 1 || st.cv > start.cv + 0.01) continue;
+        const p95 = p95of(r.samples);
+        if (p95 > start.p95 * 1.01) continue;
+        samples = r.samples; cur = { ...st, p95 }; improved = again = true;
+        break;
+      }
+    }
+  }
+  if (!improved) return { edits: null, before: start, after: cur, evals };
+  const out = samples.map(q => ({ id: q.id, x: q.x, y: q.y, unitId: q.unitId, s: q.s, manual: false, offTrack: false }));
+  return { edits: { signature: paramsSignature(sc.params), samples: out }, before: start, after: cur, evals };
 }
 
 /** Mensagem curta para quem usa, a partir do erro do motor. */

@@ -44,7 +44,11 @@ export function installLotes(app) {
     }
     // escala: barra redonda (500 m, 1 km, 2 km…) de no máximo ~30% da largura
     const target = (W * 0.3) / s, len = [250, 500, 1000, 2000, 5000].filter(v => v <= target).pop() || 250, L = len * s;
-    el.innerHTML = `<svg class="map-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Lotes da fazenda ${esc(farm)}"><g transform="translate(${view.x.toFixed(1)} ${view.y.toFixed(1)}) scale(${view.k.toFixed(3)})">${polys}${labels}</g>
+    // grade em metros (um quadrado = a barra de escala), dentro do mesmo zoom
+    let grid = '';
+    for (let gx = Math.floor(x0 / len) * len; gx <= x1 + len; gx += len) { const X = P([gx, 0]).split(' ')[0]; grid += `M${X} ${(oy - len * s).toFixed(1)}V${(H - oy + len * s).toFixed(1)}`; }
+    for (let gy = Math.floor(y0 / len) * len; gy <= y1 + len; gy += len) { const Y = P([0, gy]).split(' ')[1]; grid += `M${(ox - len * s).toFixed(1)} ${Y}H${(W - ox + len * s).toFixed(1)}`; }
+    el.innerHTML = `<svg class="map-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Lotes da fazenda ${esc(farm)}"><g transform="translate(${view.x.toFixed(1)} ${view.y.toFixed(1)}) scale(${view.k.toFixed(3)})"><path class="mgrid" vector-effect="non-scaling-stroke" d="${grid}"/>${polys}${labels}</g>
 <g class="scale" transform="translate(14 ${H - 14})"><path d="M0 -6V0H${L.toFixed(1)}V-6"/><text x="0" y="-10">${num(len)} m</text></g><g class="north" transform="translate(${W - 18} 16)"><text x="0" y="8">N</text><path d="M0 14V30M-4 19L0 14L4 19"/></g></svg>`
       + (view !== ID ? '<button class="fit" data-act="farm-fit" aria-label="Enquadrar a fazenda">⤢</button>' : '');
     if (!el.dataset.g) {

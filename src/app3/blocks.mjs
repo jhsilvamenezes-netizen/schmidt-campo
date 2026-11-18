@@ -1,11 +1,11 @@
 // 3.0 · bloco de lotes vizinhos com a mesma referência A/B: grade comum de tiros (cálculo da 2.x em
 // src/application/block-planning.mjs). Registros no mesmo lugar da 2.x (estado.planningBlocks), compatíveis nos dois sentidos.
 import { prepareSchmidtBlock, schmidtReferenceBlocks, schmidtCommonBlockFields, schmidtBlockAlternativeSummary, schmidtBlockBorderDistance, selectSchmidtSavedBlock, validateSchmidtBlocks, schmidtBlockSourceSignature, SCHMIDT_BLOCK_SCHEMA } from '../application/block-planning.mjs';
-import { buildScenario, planScenario } from '../engine/scenario.mjs';
-import { restoreSamples, withSamples } from '../engine/editing.mjs';
-import { coverageGrid, nearestDistances, kthSmallest, gridStep } from '../engine/metrics.mjs';
-import { sanitizeParams } from '../engine/paramCatalog.mjs';
-import { DEFAULT_PARAMS } from '../engine/params.mjs';
+import { buildScenario, planScenario } from '../engine3/scenario.mjs';
+import { restoreSamples, withSamples } from '../engine3/editing.mjs';
+import { coverageGrid, nearestDistances, kthSmallest, gridStep } from '../engine3/metrics.mjs';
+import { sanitizeParams } from '../engine3/paramCatalog.mjs';
+import { DEFAULT_PARAMS } from '../engine3/params.mjs';
 import { deps, scenarioOf } from './planner.mjs';
 
 const plain = (f, p) => buildScenario(f, p, {}, deps);

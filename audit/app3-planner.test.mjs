@@ -56,7 +56,7 @@ test('estado salvo: lê o da 2.x e grava sem apagar o que não usa', () => {
 
 test('buscar distribuição melhor: ajuste gravado reabre igual e não piora o p95', () => {
   let improved = 0;
-  for (const k of keys.slice(0, 20)) {
+  for (const k of keys) { // 3.2: com a proteção do pior vazio, só RB8 ainda melhora
     const f = fields[k], rec = P.recommend(f, {}, 5, false), params = rec.chosen.params, r = P.optimizeEdits(f, params);
     if (!r.edits) continue;
     improved++;
@@ -178,5 +178,35 @@ test('3.0.11 · bloco: grupos que ficavam sem opção (teto de pontos ausente) p
       assert.equal(blockScenario(fields, record, k).sc.samples.length, pts, `${want} ${k}`);
       assert.equal(ch.summary.perField.find(f => f.key === k).points, pts);
     }
+  }
+});
+
+test('3.2 · minimax: nos 51 lotes nunca piora (pior vazio, 95% ≤ +1%, áreas ≤ +1 p.p.) e reduz BD5 e BD3', () => {
+  let improved = 0;
+  for (const k of keys) {
+    const f = fields[k], params = P.recommend(f, {}, 5).chosen.params, r = P.minimaxEdits(f, params);
+    if (!r.edits) continue;
+    improved++;
+    assert.ok(r.after.worst < r.before.worst, `${k}: pior vazio`);
+    assert.ok(r.after.p95 <= r.before.p95 * 1.01 + 1e-9, `${k}: 95%`);
+    assert.ok(r.after.cv <= r.before.cv + 0.01 + 1e-9, `${k}: áreas`);
+    // o ajuste gravado reabre com os mesmos pontos, cada um no seu tiro
+    const sc = P.planInUse(f, params, r.edits), base = P.planInUse(f, params, null);
+    assert.equal(sc.samples.length, base.samples.length, k);
+    assert.deepStrictEqual(sc.samples.map(s => s.trackId).sort(), base.samples.map(s => s.trackId).sort(), k);
+  }
+  assert.ok(improved >= 15, `lotes melhorados: ${improved}`);
+  for (const [code, max] of [['BD5', 620], ['BD3', 360]]) {
+    const k = keys.find(x => fields[x].code === code), r = P.minimaxEdits(fields[k], P.recommend(fields[k], {}, 5).chosen.params);
+    assert.ok(r.after.worst <= max, `${code}: ${r.after.worst}`);
+  }
+});
+
+test('3.2 · "Buscar distribuição melhor" não aceita piorar o pior vazio nem a igualdade das áreas', () => {
+  for (const k of keys) {
+    const f = fields[k], params = P.recommend(f, {}, 5).chosen.params, r = P.optimizeEdits(f, params);
+    if (!r.edits) continue;
+    const before = P.pointAreas(f, P.planInUse(f, params, null)), after = P.pointAreas(f, P.planInUse(f, params, r.edits));
+    assert.ok(after.worstGapM <= before.worstGapM + 1, `${k}: pior vazio ${before.worstGapM} → ${after.worstGapM}`);
   }
 });

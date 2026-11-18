@@ -3,8 +3,8 @@ import { mapMarkup } from './map.mjs';
 import * as P from './planner.mjs';
 import * as V from './views.mjs';
 import { buildPlanFile, parsePlanFile } from './plan-file.mjs';
-import { buildRoute } from '../engine/guidance.mjs';
-import { toCSV, toGeoJSON, toGPX, toKML } from '../engine/exporters.mjs';
+import { buildRoute } from '../engine3/guidance.mjs';
+import { toCSV, toGeoJSON, toGPX, toKML } from '../engine3/exporters.mjs';
 
 /** @param {any} app */
 export function installEnviar(app) {

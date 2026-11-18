@@ -1,4 +1,4 @@
-// 3.0 (R4) · gera a página nova SÓ a partir de src/: motor 2 (src/engine) + tela (src/app3) + dados dos lotes.
+// 3.2 · gera a página nova SÓ a partir de src/: motor próprio da 3.x (src/engine3) + tela (src/app3) + dados dos lotes.
 // Sem HTML da 1.31, sem trocas de texto. Saída: build/3/index.html (fora do Git; não vai ao link até a R5).
 import { readFile, writeFile, mkdir, copyFile, access } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
@@ -12,7 +12,7 @@ export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', '
   'app3/advanced', 'app3/gestures', 'app3/monitor', 'app3/compass', 'persistence/backup-service', 'persistence/backup-format', 'platform/browser-backup-adapters', 'platform/browser-session-lock',
   'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/versions', 'app3/backup',
   'app3/screen-mapa', 'app3/screen-monitor', 'app3/screen-plano', 'app3/screen-enviar', 'app3/screen-mais', 'app3/screen-lotes', 'app3/screen-bloco', 'app3/main'];
-export const APP_VERSION = '3.1.0';
+export const APP_VERSION = '3.2.0';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
 /** Cada módulo no seu escopo; importações do motor viram o namespace schmidtEngine2. */
@@ -26,9 +26,9 @@ async function bundleModules(MODULES, tail) {
       if (!m) throw Error(`Importação fora do contrato em ${id}: ${line.trim()}`);
       const target = m[3] === '.' ? `${dir}/${m[4]}` : `${m[4]}/${m[5]}`;
       let from;
-      if (target.startsWith('engine/') && !MODULES.includes(target)) {
-        if (!ENGINE_MODULES.includes(target.slice(7))) throw Error(`Módulo do motor inexistente: ${target}`);
-        from = `schmidtEngine2.${target.slice(7)}`;
+      if (target.startsWith('engine3/') && !MODULES.includes(target)) {
+        if (!ENGINE_MODULES.includes(target.slice(8))) throw Error(`Módulo do motor inexistente: ${target}`);
+        from = `schmidtEngine2.${target.slice(8)}`;
       } else {
         if (!(MODULES.indexOf(target) >= 0 && MODULES.indexOf(target) < MODULES.indexOf(id))) throw Error(`Ordem ou módulo ausente: ${id} importa ${target}`);
         from = ident(target);
@@ -47,7 +47,7 @@ const bundleApp = () => bundleModules(APP_MODULES, `${ident('app3/main')}.startA
 
 /** U17/A6 · motor em segundo plano (Web Worker): recomendação equilibrada sem travar a tela. Mesmo código da tela. */
 export const WORKER_MODULES = ['app3/format', 'app3/planner'];
-const bundleWorker = async () => `${await bundleEngine()}\n${await bundleModules(WORKER_MODULES, `const P=${ident('app3/planner')};
+const bundleWorker = async () => `${await bundleEngine('engine3')}\n${await bundleModules(WORKER_MODULES, `const P=${ident('app3/planner')};
 self.onmessage=e=>{const {id,field,base,people,fitTeam}=e.data;let rec=null,error=null;try{rec=P.recommend(field,base,people,fitTeam);}catch(x){error=String((x&&x.message)||x);}self.postMessage({id,rec,error});};`)}`;
 
 /** U05 · recomendação de cada lote para a regra padrão (5 pessoas, sem limitar à equipe), calculada aqui com o mesmo
@@ -71,7 +71,7 @@ export async function build3() {
   const safra = /<script id="safra-dados" type="application\/json">([\s\S]*?)<\/script>/.exec(current)?.[1];
   if (!safra) throw Error('Dados da safra não encontrados');
   const recs = await recsData(JSON.parse(fields).fields);
-  const [engine, app, css, shell] = [await bundleEngine(), await bundleApp(), await readFile(root + 'src/app3/styles.css', 'utf8'), await readFile(root + 'src/app3/shell.html', 'utf8')];
+  const [engine, app, css, shell] = [await bundleEngine('engine3'), await bundleApp(), await readFile(root + 'src/app3/styles.css', 'utf8'), await readFile(root + 'src/app3/shell.html', 'utf8')];
   for (const [n, t] of [['motor', engine], ['tela', app], ['dados', fields], ['safra', safra], ['recomendações', recs]]) if (/<\/script/i.test(t)) throw Error(`${n} contém </script>`);
   const nav = [['lotes', 'Lotes'], ['mapa', 'Mapa'], ['plano', 'Plano'], ['monitorar', 'Monitorar']]
     .map(([k, l]) => `<button data-tab="${k}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>${l}</button>`).join('');

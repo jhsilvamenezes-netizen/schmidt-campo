@@ -92,3 +92,14 @@ tiro inteiro por pessoa), e o que melhora é mostrado em tabela antes/depois.
 | **3.4** | C2–C6, T4, T5 | Base para crescer |
 
 Cada etapa: tabela antes/depois nos 51 lotes, testes, prévia (claro, escuro, Sol) e publicação só com o CI verde.
+
+## 7. Feito na 3.2.0 (medido)
+
+| Item | Resultado nos 51 lotes |
+|---|---|
+| C1 motor próprio | `src/engine3` só na 3.x; `legado/` idêntico (teste do build preservado) |
+| M4 contas repetidas | −18% de tempo, mesmo resultado |
+| Novo: "Reduzir o maior vazio" | 19 lotes melhoram; média 364 → 352 m; BD5 689 → 610; BD3 391 → 345; 95% ≤ +1%; áreas ≤ +1 p.p.; mediana 24 ms |
+| Achado: "Buscar distribuição melhor" piorava | Piorava o pior vazio em 27 de 34 lotes (364 → 383 m); agora recusa |
+| G1 grade em metros | Um quadrado = barra de escala (Mapa, Plano, Monitorar e Lotes) |
+| M1 só por espaçamento/fase | Testado: ganho pequeno (9 lotes, −15 a −35 m); fica para junto de M2 |

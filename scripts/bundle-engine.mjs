@@ -10,12 +10,13 @@ export const ENGINE_MODULES = ['tolerances', 'vocab', 'errors', 'numero', 'proje
   'clip', 'tracks', 'sampling', 'allocation', 'metrics', 'optimize', 'params', 'plan', 'diagnostics', 'scenario', 'dataQuality', 'paramCatalog',
   'explain', 'guidance', 'team', 'tradeoffs', 'editing', 'presets', 'recommend', 'exporters'];
 
-export async function bundleEngine() {
+/** dir: 'engine' (motor congelado da 2.5) ou 'engine3' (motor próprio da 3.x, que evolui). */
+export async function bundleEngine(dir = 'engine') {
   // Cada módulo roda no SEU escopo (função própria): nomes internos iguais em módulos diferentes não colidem.
   // Importações viram desestruturação do namespace do módulo de origem, que precisa vir antes na lista.
   const parts = [], namespaces = [];
   for (const name of ENGINE_MODULES) {
-    let src = await readFile(`${root}src/engine/${name}.mjs`, 'utf8');
+    let src = await readFile(`${root}src/${dir}/${name}.mjs`, 'utf8');
     const binds = [];
     for (const line of src.match(/^import[^\n]*\n/gm) || []) {
       const m = /^import \{([^}]+)\} from '\.\/([\w-]+)\.mjs';\s*$/.exec(line);
@@ -26,7 +27,7 @@ export async function bundleEngine() {
     src = src.replace(/^import[^\n]*\n/gm, '');
     const exported = [...src.matchAll(/^export (?:async )?(?:function|const|class) ([A-Za-z_$][\w$]*)/gm)].map(m => m[1]);
     if (/^export (?!(?:async )?(?:function|const|class) )/m.test(src)) throw Error(`Forma de export não suportada em ${name}`);
-    parts.push(`// src/engine/${name}.mjs\nconst __${name}=(()=>{\n${binds.join('\n')}\n${src.replace(/^export /gm, '')}\nreturn Object.freeze({${exported.join(',')}});\n})();`);
+    parts.push(`// src/${dir}/${name}.mjs\nconst __${name}=(()=>{\n${binds.join('\n')}\n${src.replace(/^export /gm, '')}\nreturn Object.freeze({${exported.join(',')}});\n})();`);
     namespaces.push(`${name}:__${name}`);
   }
   return `const schmidtEngine2=(()=>{\n${parts.join('\n')}\nreturn Object.freeze({${namespaces.join(',')}});\n})();`;

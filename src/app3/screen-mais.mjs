@@ -6,8 +6,8 @@ import { esc, num } from './format.mjs';
 import { makeBackup, readBackup, ITEM_LABELS } from './backup.mjs';
 import { createSchmidtBackupService } from '../persistence/backup-service.mjs';
 import { createSchmidtJournal, createSchmidtImageRepository } from '../platform/browser-backup-adapters.mjs';
-import { explainScenario } from '../engine/explain.mjs';
-import { assessField } from '../engine/dataQuality.mjs';
+import { explainScenario } from '../engine3/explain.mjs';
+import { assessField } from '../engine3/dataQuality.mjs';
 
 const RECENT_KEY = 'schmidt3.recentes', LAST_BACKUP = 'schmidt3.ultimaCopia';
 
