@@ -10,7 +10,9 @@ const LAYERS_KEY = 'schmidt.mapa.v1';
 /** @param {any} app */
 export function installMapa(app) {
   const { document, storage } = app;
-  let view = { k: 1, x: 0, y: 0 };
+  // cada mapa com o seu zoom: mexer no Mapa não tira o lote do quadro no Plano ou na guia
+  const ID = { k: 1, x: 0, y: 0 }, views = { full: ID, small: ID, guide: ID };
+  const moved = v => v.k > 1.01 || v.k < 0.99 || Math.abs(v.x) > 2 || Math.abs(v.y) > 2;
   /** @type {string|null} */ let selectedPt = null;
   let layers = { medidas: true, areas: false };
   try { const l = JSON.parse(storage.getItem(LAYERS_KEY) || '{}'); layers = { medidas: l.medidas !== false, areas: l.areas === true }; } catch { /* padrão */ }
@@ -53,13 +55,15 @@ export function installMapa(app) {
       const opts = full ? { measure, pad: { t: 112, r: 30, b: 64, l: 40 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
         reserve: [[0, 0, info ? Math.min(W - 40, 330) : Math.min(W * 0.66, 252), 104], [W - 214, H - 60, W, H]] } : { pad: 22 };
       const g = guide ? app.guide() : null;
-      el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view: guide && g.focus ? { k: 1, x: 0, y: 0 } : view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, focus: guide ? g.focus : null, others: cur.others || [], ...opts })
-        + (full ? (info ? balloon() : V.legend(cur.field, P.figures(cur.sc), areas)) + V.mapTools(layers, view.k > 1.01)
+      const kind = full ? 'full' : guide ? 'guide' : 'small', view = guide && g.focus ? ID : views[kind];
+      el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, hiTrack: !full && !guide ? app.hiTrack : null, focus: guide ? g.focus : null, others: cur.others || [], ...opts })
+        + (full ? (info ? balloon() : V.legend(cur.field, P.figures(cur.sc), areas)) + V.mapTools(layers, moved(view))
           : guide && g.pos ? `<button class="fit" data-act="follow" aria-pressed="${!!g.follow}" aria-label="${g.follow ? 'Ver o lote inteiro' : 'Seguir minha posição'}">${g.follow ? '⤢' : '◎'}</button>`
-            : (view.k > 1.01 ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : '') + balloon());
+            : (moved(view) ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : '') + balloon());
       if (!el.dataset.g) {
         el.dataset.g = '1';
-        attachGestures(el, { getView: () => view, setView: v => { view = v; }, onChange: () => requestAnimationFrame(drawMaps),
+        const k2 = full ? 'full' : el.dataset.map === 'guide' ? 'guide' : 'small';
+        attachGestures(el, { getView: () => views[k2], setView: v => { views[k2] = v; }, onChange: () => requestAnimationFrame(drawMaps),
           onTap: target => { const t = target.closest?.('[data-pt]'); selectedPt = t ? t.dataset.pt : null; drawMaps(); } });
       }
     }
@@ -71,9 +75,9 @@ export function installMapa(app) {
   }
 
   app.drawMaps = drawMaps;
-  app.onLotChange.push(() => { view = { k: 1, x: 0, y: 0 }; selectedPt = null; });
+  app.onLotChange.push(() => { views.full = views.small = views.guide = ID; selectedPt = null; app.hiTrack = null; });
   Object.assign(app.ACTIONS, {
-    fit: () => { view = { k: 1, x: 0, y: 0 }; drawMaps(); },
+    fit: () => { views.full = views.small = views.guide = ID; drawMaps(); },
     'layer-medidas': () => toggleLayer('medidas'),
     'layer-areas': () => toggleLayer('areas'),
   });

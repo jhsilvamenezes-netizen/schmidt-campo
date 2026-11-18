@@ -3306,6 +3306,7 @@ const { coverageGrid, nearestDistances } = schmidtEngine2.metrics;
 const { recommendPlan, SHAPE_KEYS, metricsOf } = schmidtEngine2.recommend;
 const { restoreSamples, withSamples } = schmidtEngine2.editing;
 const { teamPlan } = schmidtEngine2.team;
+const { buildRoute } = schmidtEngine2.guidance;
 const { exactCoverage } = schmidtEngine2.voronoi;
 const { num, range, km, plural } = __m_app3_format;
 // 3.0 · aplicação: monta o plano de um lote com o motor 2, a recomendação, a conferência, a equipe e a área
@@ -3508,7 +3509,23 @@ function tryPlan(field, params, edits) {
   try { return { sc: planInUse(field, params, edits) }; } catch (e) { return { error: friendly(e) }; }
 }
 
-return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BALANCE,balanceStats,balanceAreas,balanceSteps,planInUse,uncovered,checks,figures,team,summaryText,pointAreas,pointInfo,optimizeEdits,friendly,tryPlan,DEFAULT_PARAMS,paramsSignature});
+/** U04 · tiro completo, como na 2.5: comprimento, régua (borda → pontos → borda), tiros vizinhos (medidos de lado) e por
+ *  onde entrar. Cada parte do tiro (quando o lote o corta) tem a sua régua. */
+function trackDetail(field, sc, trackId) {
+  let route;
+  try { route = buildRoute(sc, field, trackId); } catch { return null; }
+  const parts = route.parts.map(part => {
+    const pts = route.points.filter(p => p.partIndex === part.index);
+    const steps = pts.map((p, i) => ({ de: i === 0 ? 'borda' : pts[i - 1].number, ate: p.number, m: p.deltaM }));
+    if (pts.length) steps.push({ de: pts.at(-1).number, ate: 'borda', m: part.afterLastM });
+    return { entra: part.entrySide, sai: part.exitSide, anda: part.walkDir, lengthM: part.lengthM, steps };
+  });
+  const order = sc.selected.filter(t => Number.isFinite(t.offsetM)).sort((a, b) => a.offsetM - b.offsetM), i = order.findIndex(t => t.id === trackId);
+  const neighbors = i < 0 ? [] : [order[i - 1], order[i + 1]].filter(Boolean).map(t => ({ id: t.id, m: Math.abs(t.offsetM - order[i].offsetM) }));
+  return { id: trackId, lengthM: route.totalLengthM, n: route.nPoints, parts, neighbors };
+}
+
+return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BALANCE,balanceStats,balanceAreas,balanceSteps,planInUse,uncovered,checks,figures,team,summaryText,pointAreas,pointInfo,optimizeEdits,friendly,tryPlan,trackDetail,DEFAULT_PARAMS,paramsSignature});
 })();
 const P=__m_app3_planner;
 self.onmessage=e=>{const {id,field,base,people,fitTeam}=e.data;let rec=null,error=null;try{rec=P.recommend(field,base,people,fitTeam);}catch(x){error=String((x&&x.message)||x);}self.postMessage({id,rec,error});};

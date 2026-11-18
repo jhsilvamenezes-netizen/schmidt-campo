@@ -41,7 +41,7 @@ export const mapTools = (layers, zoomed) => `<div class="mtools">${zoomed ? '<bu
 const stepper = (id, label, hint, value) => `<div class="step"><label for="${id}">${label}${hint ? `<small>${hint}</small>` : ''}</label><div class="stp">
 <button data-dec="${id}" aria-label="Diminuir ${label.toLowerCase()}">−</button><input id="${id}" inputmode="numeric" value="${esc(value)}"><button data-inc="${id}" aria-label="Aumentar ${label.toLowerCase()}">+</button></div></div>`;
 
-export function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, block }) {
+export function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, block, hiTrack = null }) {
   if (block) return blockPlanoView({ f, sc, rows, block });
   const alts = (rec?.alternatives || []).filter(a => a);
   return `<div class="map sm" data-map="small"></div><div class="scroll">
@@ -49,7 +49,7 @@ export function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, bu
 <div class="seg" role="group" aria-label="Planejar"><button class="on" aria-pressed="true">Lote</button><button data-open="bloco" aria-pressed="false">Bloco</button></div></section>
 <section class="card"><div class="row-sb"><h2 class="h">${inUseIsRec ? 'Plano recomendado' : 'Plano em uso'}</h2>${inUseIsRec ? '<span class="tag">em uso</span>' : rec ? '<button class="link" data-use="rec">Usar recomendado</button>' : '<span class="mu">calculando o recomendado…</span>'}</div>
 ${metrics(f)}<p class="mu">Caminhada ${esc(f.caminhada)}${f.tiros ? ` · ${km(sc.route.totalEstimatedM / f.tiros)} km por tiro` : ''}</p>${busy ? '<p class="mu">Calculando…</p>' : ''}</section>
-<section class="card list"><h2 class="h">Tiros</h2>${rows.map(r => `<div class="li"><span class="id">${esc(r.trackId)}</span><span class="x">${num(r.lengthM)} m <small>· ${r.n === 1 ? '1 ponto' : `${num(r.n)} pontos`}</small></span><span class="r">${r.medianGapM ? `a cada ${num(r.medianGapM)} m` : r.n ? '1 ponto' : 'sem ponto'}</span></div>`).join('')}</section>
+${trackRows(rows, hiTrack)}
 <section class="card list"><h2 class="h">Outras opções</h2>${alts.length ? alts.map((a, i) => `<div class="li"><span class="x">${num(a.m.tiros)} tiros · ${num(a.m.pontos)} pontos<br><small>95% &lt; ${num(a.m.p95M)} m · ${num(a.m.caminhadaKm, 1)} km${a.id === 'equipe' ? ' · igual por pessoa' : ''}</small></span><button class="use" data-alt="${i}">Usar</button></div>`).join('') : '<p class="mu">Sem outra opção melhor.</p>'}
 <button class="lnk" data-open="ajustes">Ajustes avançados</button><button class="lnk" data-open="calculo">Como foi calculado</button></section></div>`;
 }
@@ -121,6 +121,20 @@ export function fichasMarkup(field, routes, people, mapFor) {
 <ol>${r.instructions.map(t => `<li>${esc(t)}</li>`).join('')}</ol></section>`).join('');
 }
 
+/** U04 · lista de tiros que abre cada um, como na 2.5: régua (borda → pontos → borda), vizinhos e por onde entrar. */
+const ruler = steps => `<div class="ruler" aria-label="Distâncias ao longo do tiro">${steps.map(st => `<span class="rs"><b>${esc(String(st.de === 'borda' ? 'borda' : st.de))}</b><i>${num(st.m)} m</i></span>`).join('')}<span class="rs"><b>borda</b></span></div>`;
+function trackRows(rows, hiTrack) {
+  return `<section class="card list"><h2 class="h">Tiros</h2>${rows.map(r => {
+    const d = r.d, head = `<span class="id">${esc(r.trackId)}</span><span class="x">${num(r.lengthM)} m <small>· ${r.n === 1 ? '1 ponto' : `${num(r.n)} pontos`}</small></span><span class="r">${r.medianGapM ? `a cada ${num(r.medianGapM)} m` : r.n ? '1 ponto' : 'sem ponto'}</span>`;
+    if (!d) return `<div class="li">${head}</div>`;
+    const on = hiTrack === r.trackId;
+    return `<details class="trk"${on ? ' open' : ''}><summary class="li">${head}</summary><div class="trkb">
+${d.parts.map((pt, i) => `${d.parts.length > 1 ? `<p class="mu sm">Parte ${i + 1} · ${num(pt.lengthM)} m</p>` : ''}<p class="mu sm">Entra a ${esc(pt.entra)} e anda para ${esc(pt.anda)}</p>${ruler(pt.steps)}`).join('')}
+${d.neighbors.length ? `<p class="mu sm">${d.neighbors.length > 1 ? 'Tiros vizinhos' : 'Tiro vizinho'}: ${d.neighbors.map(nb => `${esc(nb.id)} a ${num(nb.m)} m`).join(' · ')} (de lado)</p>` : ''}
+<button class="link" data-hitrack="${esc(r.trackId)}" aria-pressed="${on}">${on ? 'Destacado no mapa' : 'Ver no mapa'}</button></div></details>`;
+  }).join('')}</section>`;
+}
+
 const tracksList = rows => `<section class="card list"><h2 class="h">Tiros</h2>${rows.map(r => `<div class="li"><span class="id">${esc(r.trackId)}</span><span class="x">${num(r.lengthM)} m <small>· ${r.n === 1 ? '1 ponto' : `${num(r.n)} pontos`}</small></span><span class="r">${r.medianGapM ? `a cada ${num(r.medianGapM)} m` : r.n ? '1 ponto' : 'sem ponto'}</span></div>`).join('')}</section>`;
 
 function blockPlanoView({ f, sc, rows, block }) {
@@ -137,8 +151,12 @@ export function blockPickBody(groups, prepared, busy) {
   if (busy) return '<p class="mu">Preparando a grade comum…</p>';
   if (prepared) {
     const pct = r => `${num((r - 1) * 100, 1)}%`;
-    return `<p class="mu">Mesmo lote e mesma regra de pontos; muda a distância entre tiros. Só dá para usar a opção que não perde cobertura em nenhum lote.</p>
-${prepared.alternatives.map((a, i) => { const m = a.summary; return `<div class="li"><span class="x">${num(m.passes)} passadas · ${num(m.tracks)} tiros · ${num(m.points)} pontos${m.added ? ` (+${num(m.added)})` : ''}${a.chosen ? ' <b>· recomendada</b>' : ''}<br><small>${m.coverageTradeoff ? `perde cobertura em ${esc(m.worstCode)} (${pct(m.worstRatio)})` : 'cobertura igual ou melhor em todos'}</small></span>${m.coverageTradeoff ? '' : `<button class="use" data-block-use="${i}">Usar</button>`}</div>`; }).join('')}`;
+    const tol = num((prepared.tolerance ?? 0) * 100, 0), anyOk = prepared.alternatives.some(a => !a.summary.coverageTradeoff);
+    const worst = prepared.alternatives.reduce((m, a) => (a.summary.worstRatio < (m?.summary.worstRatio ?? Infinity) ? a : m), null);
+    // sem opção: diz por quê e o que fazer, em vez de uma lista sem botão
+    const none = anyOk ? '' : `<p class="ck alerta">Nenhuma grade comum mantém a cobertura destes lotes: a melhor ainda perde ${pct(worst.summary.worstRatio)} em ${esc(worst.summary.worstCode)}. Os espaçamentos ideais dos lotes são diferentes demais — planeje cada lote no próprio plano.</p>`;
+    return `${none}<p class="mu">Mesma regra de pontos; os lotes passam a usar a mesma grade de tiros. Só dá para usar a opção que mantém a cobertura de cada lote (diferença de até ${tol}%).</p>
+${prepared.alternatives.map((a, i) => { const m = a.summary; return `<div class="li"><span class="x">${num(m.passes)} passadas · ${num(m.tracks)} tiros · ${num(m.points)} pontos${m.added ? ` (+${num(m.added)})` : ''}${a.chosen ? ' <b>· recomendada</b>' : ''}<br><small>${m.coverageTradeoff ? `perde cobertura em ${esc(m.worstCode)} (${pct(m.worstRatio)})` : m.worstRatio > 1 + 1e-6 ? `cobertura mantida (diferença de ${pct(m.worstRatio)} em ${esc(m.worstCode)})` : 'cobertura igual ou melhor em todos'}</small></span>${m.coverageTradeoff ? '' : `<button class="use" data-block-use="${i}">Usar</button>`}</div>`; }).join('')}`;
   }
   return groups.length ? groups.map((g, i) => `<button class="lnk" data-block="${i}">${esc(g.title)}</button>`).join('') : '<p class="mu">Este lote não tem vizinho com a mesma referência A/B.</p>';
 }
