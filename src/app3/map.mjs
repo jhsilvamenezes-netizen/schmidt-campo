@@ -71,14 +71,16 @@ function cota(cls, a, b) {
 /** Marcação SVG do lote ajustada a w × h px. `small` = mapa do Plano/guia (sem medidas).
  * @param {any} field @param {any} sc @param {number} w @param {number} h
  * @param {{pad?:number|{t:number,r:number,b:number,l:number}, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null,
- *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure}} [opts] */
+ *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null}} [opts] */
 export function mapMarkup(field, sc, w, h, opts = {}) {
-  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate } = opts;
+  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null } = opts;
   const pad = typeof pad0 === 'number' ? { t: pad0, r: pad0, b: pad0, l: pad0 } : pad0;
   // Outros lotes (bloco): levados ao referencial do lote atual pela diferença dos centroides UTM.
   const shift = o => [o.field.centroidUTM[0] - field.centroidUTM[0], o.field.centroidUTM[1] - field.centroidUTM[1]];
   const extra = others.map(o => ({ ...o, d: shift(o) }));
-  const pts = [...field.geom.flat(2), ...extra.flatMap(o => o.field.geom.flat(2).map(([x, y]) => [x + o.d[0], y + o.d[1]]))], xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  // `focus`: enquadra só estes pontos (guia: posição e alvo), com folga mínima de 250 m; senão o lote (e o bloco)
+  const pts = focus?.length ? focus.flatMap(([x, y]) => [[x - 125, y - 125], [x + 125, y + 125]])
+    : [...field.geom.flat(2), ...extra.flatMap(o => o.field.geom.flat(2).map(([x, y]) => [x + o.d[0], y + o.d[1]]))], xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
   const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
   const iw = Math.max(40, w - pad.l - pad.r), ih = Math.max(40, h - pad.t - pad.b);
   const k = Math.min(iw / (x1 - x0 || 1), ih / (y1 - y0 || 1));
@@ -147,6 +149,7 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
   s += top;
   if (pos) {
     const [px, py] = XY(pos.x, pos.y), acc = Math.max(6, pos.accuracyM * kk);
+    if (to) { const [tx, ty] = XY(to[0], to[1]); s += `<path class="togo" d="M${f1(px)},${f1(py)}L${f1(tx)},${f1(ty)}"/>`; }
     s += `<circle class="acc" cx="${f1(px)}" cy="${f1(py)}" r="${f1(acc)}"/><circle class="me" cx="${f1(px)}" cy="${f1(py)}" r="7"/>`;
   }
   s += `<g class="scale" transform="translate(14 ${h - 14})"><path d="M0 -6V0H${f1(L)}V-6"/><text x="0" y="-10">${num(len)} m</text></g>`;

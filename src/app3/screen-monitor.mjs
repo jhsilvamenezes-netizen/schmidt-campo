@@ -5,7 +5,7 @@ import { routeFor, fixToPos, guideModel } from './monitor.mjs';
 export function installMonitor(app) {
   const { document, window, ui } = app;
   /** Guia: tiro, sentido, GPS ligado, última posição, memória da sessão, trava de tela. */
-  /** @type {any} */ const mon = { trackId: null, flipped: false, active: false, watchId: null, pos: null, session: {}, wake: null, arrivedId: null, ticker: 0 };
+  /** @type {any} */ const mon = { follow: true, trackId: null, flipped: false, active: false, watchId: null, pos: null, session: {}, wake: null, arrivedId: null, ticker: 0 };
 
   function monitorData() {
     const cur = app.cur, sc = cur.sc, tasks = new Map();
@@ -41,12 +41,16 @@ export function installMonitor(app) {
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && mon.active) keepAwake(true); });
 
   app.monitorData = monitorData;
-  app.guide = () => ({ target: mon.active ? monitorData().target : null, pos: mon.pos });
+  app.guide = () => {
+    const d = mon.active ? monitorData() : null, to = d?.model?.to || null;
+    return { target: d?.target ?? null, pos: mon.pos, to, follow: mon.follow, focus: mon.follow && mon.pos ? [[mon.pos.x, mon.pos.y], ...(to ? [to] : [])] : null };
+  };
   app.onLotChange.push(() => { if (mon.active) gpsStop(); mon.trackId = null; });
   app.clicks.push(t => { if (!t.dataset.track) return false; mon.trackId = t.dataset.track; mon.session = {}; mon.arrivedId = null; app.render(); return true; });
   Object.assign(app.ACTIONS, {
     'gps-start': () => gpsStart(),
     'gps-stop': () => gpsStop(),
+    follow: () => { mon.follow = !mon.follow; app.drawMaps(); },
     flip: () => { mon.flipped = !mon.flipped; mon.session = {}; app.render(); },
   });
 }

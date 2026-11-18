@@ -90,10 +90,12 @@ export function monitorView({ tracks, trackId, flipped, active, model, steps }) 
   const head = `<section class="card">${pick}<div class="row-sb"><p class="mu">Sentido: ${flipped ? 'invertido' : 'do plano'}</p><button class="link" data-act="flip">Inverter</button></div></section>`;
   if (!active) return `<div class="map sm" data-map="guide"></div><div class="scroll">${head}<button class="btn p" data-act="gps-start">Iniciar guia</button>
 <details class="ex card"><summary>Roteiro sem GPS</summary>${steps.map(t => `<p>${esc(t)}</p>`).join('')}</details></div>`;
-  const cur = tracks.find(t => t.id === trackId), m = model, arrow = Number.isFinite(m.azimuth) ? `<svg class="arrow" viewBox="-50 -60 100 110" aria-hidden="true"><g transform="rotate(${m.azimuth.toFixed(0)})"><path d="M0 -40L22 22L0 10L-22 22Z"/></g><text x="0" y="-48">N</text></svg>` : '';
-  return `<div class="map sm" data-map="guide"></div><div class="scroll"><div class="row-sb"><p><b>${esc(trackId)}</b>${cur?.person ? ` · ${esc(cur.person)}` : ''} · ${flipped ? 'sentido invertido' : 'sentido do plano'}</p><button class="link" data-act="gps-stop">Parar</button></div>
-<section class="card guide ${m.state}" aria-live="polite"><p class="mu">${esc(m.title)}</p>${arrow}${m.big ? `<p class="big">${esc(m.big)}</p>` : ''}${m.dir ? `<p class="dir">${esc(m.dir)}</p>` : ''}
-${m.info ? `<p class="mu">${esc(m.info)}</p>` : ''}${(m.warn || []).map(w => `<p class="ck alerta">${esc(w)}</p>`).join('')}</section></div>`;
+  const cur = tracks.find(t => t.id === trackId), m = model;
+  // seta pequena ao lado da distância: o mapa (grande, acima) fica livre para contornar e se orientar
+  const arrow = Number.isFinite(m.azimuth) ? `<svg class="arrow" viewBox="-30 -30 60 60" aria-hidden="true"><circle r="28"/><g transform="rotate(${m.azimuth.toFixed(0)})"><path d="M0 -20L12 13L0 6L-12 13Z"/></g></svg>` : '';
+  return `<div class="map" data-map="guide"></div><section class="sheet gsheet"><div class="row-sb"><p><b>${esc(trackId)}</b>${cur?.person ? ` · ${esc(cur.person)}` : ''} · ${flipped ? 'invertido' : 'sentido do plano'}</p><button class="link" data-act="gps-stop">Parar</button></div>
+<div class="guide ${m.state}" aria-live="polite">${arrow}<div class="gtxt"><p class="mu">${esc(m.title)}</p>${m.big ? `<p class="big">${esc(m.big)}${m.dir ? ` <span class="dir">${esc(m.dir)}</span>` : ''}</p>` : ''}${m.info ? `<p class="mu">${esc(m.info)}</p>` : ''}</div></div>
+${(m.warn || []).map(w => `<p class="ck alerta">${esc(w)}</p>`).join('')}</section>`;
 }
 
 /** Versões anteriores do lote (mais recente primeiro). */
