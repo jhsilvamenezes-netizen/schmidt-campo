@@ -1,20 +1,21 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-s+erj+jAV5rZu8F9pJFMvg+9cr8ec9wvS4ggAYwaDLI='; style-src 'sha256-DRbRsPPvzTdi44R3hPJ2eCCKcXLEdeDpL+uQRxfPniQ='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-r+ZOXaF1whtfwFCohYaXkNYxLkSG0AwZeYz0j3hYeJk=' 'sha256-gA7vjJTwhrWDU9S8o5WlJGwZRpuUzpkBZJLaRuvyJAI='; style-src 'sha256-gmlrnAccgAnvYE3rEZkGydbh8o12ml7u2P3/mBMiDC8='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#17594a" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c1512" media="(prefers-color-scheme: dark)">
 <title>SCHMIDT Campo</title>
 <link rel="icon" href="marca.svg"><link rel="apple-touch-icon" href="marca-180.png"><link rel="manifest" href="app.webmanifest">
 <style>/* 3.0 · uma folha só. Tipografia: 12/14/16/20/28 px; pesos 400/600/700. Cores em tokens; escuro e Sol. */
-/* Paleta SCHMIDT (3.1): verde da marca (#0B5A50 do logo) + dourado (#C99A3E) nas medidas; neutros esverdeados frios.
-   Tiros e "entre tiros" em verde; intervalos "entre pontos" em dourado; pontos brancos com aro verde (selecionado: dourado). */
-:root{--bg:#f1f4f2;--sf:#fff;--sf2:#f6f8f7;--ink:#13221c;--mu:#5a6a62;--ln:#dfe6e2;--br:#0e5a4b;--br2:#e3eee9;--on-br:#fff;--gold:#c99a3e;
---pt:#82580b;--tr:#236d58;--ptf:#fff;--ptr:#0e5a4b;--pti:#0e5a4b;--fd:#e4efe9;--fl:#0e5a4b;
---ok:#1b7a45;--oks:#e2f2e8;--al:#94600a;--als:#fbf1dc;--er:#b42318;--ers:#fdeceb;--sh:0 1px 2px #0d221a12,0 6px 18px #0d221a0f;--focus:#1d5fd1;color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not(.sun){--bg:#0d1613;--sf:#15201c;--sf2:#1a2722;--ink:#e7efeb;--mu:#9cb0a7;--ln:#26362f;--br:#69c3a2;--br2:#1c2e27;--on-br:#08130e;--gold:#d9ae5c;
---pt:#e2b462;--tr:#5fbf9e;--ptf:#15201c;--ptr:#69c3a2;--pti:#e7efeb;--fd:#16261f;--fl:#4fae8c;
+/* Paleta SCHMIDT (3.1): verde da marca (#0B5A50 do logo), dourado (#C99A3E) e branco, preenchidos. Topo verde com faixa
+   dourada; mapa em fundo verde-sálvia com o lote claro; pontos dourados (número escuro, aro branco) sobre tiros verdes;
+   ponto tocado em verde. Medidas "entre pontos" no dourado dos pontos; "entre tiros" no verde dos tiros. */
+:root{--bg:#eef3f0;--sf:#fff;--sf2:#e9f2ed;--ink:#13221c;--mu:#566760;--ln:#d8e3dd;--br:#0e5a4b;--br2:#dcebe3;--on-br:#fff;--gold:#c99a3e;
+--hd:#0e5a4b;--hd-ink:#fff;--mapbg:#cfe0d5;--pt:#7f560a;--tr:#0e5a4b;--ptf:#d9a441;--ptr:#0e5a4b;--pti:#13221c;--fd:#f5faf6;--fl:#0e5a4b;
+--ok:#1b7a45;--oks:#dff1e6;--al:#8d5c08;--als:#fbefd6;--er:#b42318;--ers:#fdeceb;--sh:0 1px 2px #0d221a14,0 6px 18px #0d221a12;--focus:#1d5fd1;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not(.sun){--bg:#0c1512;--sf:#14201b;--sf2:#1a2a23;--ink:#e8f0ec;--mu:#9db2a8;--ln:#26372f;--br:#6cc6a4;--br2:#1b3028;--on-br:#06110c;--gold:#d9ae5c;
+--hd:#0b3a30;--hd-ink:#fff;--mapbg:#0f201a;--pt:#e2b462;--tr:#5fbf9e;--ptf:#d9a441;--ptr:#f2f7f4;--pti:#13221c;--fd:#18302a;--fl:#5fbf9e;
 --ok:#7fd6a0;--oks:#16301f;--al:#f0c26a;--als:#33280f;--er:#ff8f85;--ers:#3a1714;--sh:0 1px 2px #0007;--focus:#8ab4ff;color-scheme:dark}}
-:root.sun{--bg:#eef3ef;--sf:#fff;--sf2:#fff;--ink:#000;--mu:#1d2b26;--ln:#000;--br:#00422e;--br2:#d6eadf;--on-br:#fff;--gold:#b07a1a;--pt:#6b4300;--tr:#00422e;--ptf:#fff;--ptr:#000;--pti:#000;--fd:#e9f4ec;--fl:#00422e;--sh:none}
+:root.sun{--bg:#eef3ef;--sf:#fff;--sf2:#fff;--ink:#000;--mu:#1d2b26;--ln:#000;--br:#00422e;--br2:#d6eadf;--on-br:#fff;--gold:#b07a1a;--hd:#00422e;--hd-ink:#fff;--mapbg:#e2ede6;--pt:#6b4300;--tr:#00422e;--ptf:#e0a838;--ptr:#000;--pti:#000;--fd:#fff;--fl:#00422e;--sh:none}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font:400 14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;overflow:hidden;-webkit-tap-highlight-color:transparent}
@@ -22,15 +23,15 @@ button,input{font:inherit;color:inherit}
 button{background:none;border:0;cursor:pointer;padding:0}
 :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 .skip{position:absolute;left:-9999px}.skip:focus{left:8px;top:8px;z-index:9;background:var(--sf);padding:8px}
-header{height:56px;flex:none;display:flex;align-items:center;gap:6px;padding:0 8px 0 12px;background:var(--sf);border-bottom:1px solid var(--ln)}
-.logo{display:flex;align-items:center;gap:6px;font:700 14px system-ui;letter-spacing:.08em;color:var(--br)}
+header{height:56px;flex:none;display:flex;align-items:center;gap:6px;padding:0 8px 0 12px;background:var(--hd);color:var(--hd-ink);border-bottom:3px solid var(--gold)}
+.logo{display:flex;align-items:center;gap:6px;font:700 14px system-ui;letter-spacing:.08em;color:var(--hd-ink)}
 .logo svg{width:32px;height:32px;flex:none}
-.lot{margin:0 auto;display:flex;align-items:baseline;gap:6px;padding:8px 12px;border-radius:12px;background:var(--br2);font:600 16px system-ui;max-width:52vw;overflow:hidden;white-space:nowrap}
+.lot{margin:0 auto;display:flex;align-items:baseline;gap:6px;padding:8px 12px;border-radius:12px;background:#ffffff1f;color:var(--hd-ink);border:1px solid #ffffff38;font:600 16px system-ui;max-width:52vw;overflow:hidden;white-space:nowrap}
 .lot small{font:400 14px system-ui;color:var(--mu);overflow:hidden;text-overflow:ellipsis}
 .ib{width:44px;height:44px;border-radius:12px;display:grid;place-items:center}
 .ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.ic .fill{fill:currentColor;stroke:none}
 main{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
-.map{flex:1;min-height:0;position:relative;touch-action:none;overflow:hidden;user-select:none}.map.sm{flex:none;height:30vh;min-height:190px}
+.map{flex:1;min-height:0;position:relative;touch-action:none;overflow:hidden;user-select:none;background:var(--mapbg)}.map.sm{flex:none;height:30vh;min-height:190px}
 .map-svg{display:block;width:100%;height:100%}
 .map-svg .lot{fill:var(--fd);stroke:var(--fl);stroke-width:2.5;stroke-linejoin:round}
 .map-svg .track{fill:none;stroke:var(--tr);stroke-width:2.5;stroke-dasharray:8 5;stroke-linecap:round}
@@ -44,7 +45,7 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
 .row-sb{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .big{font:700 28px/1.1 system-ui;letter-spacing:-.01em}.big span{font:400 16px system-ui;color:var(--mu);letter-spacing:0}.big.md{font-size:20px}
 .m3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.m{background:var(--sf2);border:1px solid var(--ln);border-radius:12px;padding:8px 10px;white-space:nowrap;overflow:hidden}
+.m{background:var(--sf2);border-radius:12px;padding:8px 10px;white-space:nowrap;overflow:hidden}
 .m small{display:block;font:400 12px system-ui;color:var(--mu)}.m b{font:700 16px system-ui;letter-spacing:-.01em}
 .chip{display:inline-flex;align-items:center;gap:6px;font:600 12px system-ui;padding:4px 10px;border-radius:99px;white-space:nowrap}
 .chip:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
@@ -57,7 +58,7 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
 .center{text-align:center;color:var(--mu)}
 nav{height:64px;flex:none;display:grid;grid-template-columns:repeat(4,1fr);background:var(--sf);border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom)}
 nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:600 12px system-ui;color:var(--mu)}
-nav button.on{color:var(--br)}nav button.on .ic{background:var(--br2);border-radius:10px;width:44px;padding:2px 11px;box-sizing:content-box}
+nav button.on{color:var(--br)}nav button.on .ic{background:var(--br);color:var(--on-br);border-radius:10px;width:44px;padding:2px 11px;box-sizing:content-box}
 .scroll{flex:1;min-height:0;overflow:auto;padding:12px 16px 16px;display:flex;flex-direction:column;gap:12px;overscroll-behavior:contain}
 .card{background:var(--sf);border-radius:16px;padding:14px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:10px}
 .card.list{gap:0}
@@ -96,7 +97,7 @@ nav button.on{color:var(--br)}nav button.on .ic{background:var(--br2);border-rad
 #toast button{font:700 14px system-ui;color:var(--sf);text-decoration:underline;min-height:32px;padding:0 4px}
 @media (min-width:900px){body{max-width:480px;margin:0 auto;border-inline:1px solid var(--ln)}}
 
-.map-svg .pt.sel circle{fill:var(--gold);stroke:var(--ink);stroke-width:2.5}.map-svg .pt.sel text{fill:#13221c}
+.map-svg .pt.sel circle{fill:var(--br);stroke:var(--ptr);stroke-width:3}.map-svg .pt.sel text{fill:var(--on-br)}
 .fit{position:absolute;right:10px;bottom:10px;width:44px;height:44px;border-radius:12px;background:var(--sf);box-shadow:var(--sh);font-size:20px}
 .bal{position:absolute;left:10px;top:10px;max-width:70%;background:var(--sf);box-shadow:var(--sh);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--mu);pointer-events:none}
 .bal b{font:600 14px system-ui;color:var(--ink)}
@@ -129,7 +130,7 @@ nav button.on{color:var(--br)}nav button.on .ic{background:var(--br2);border-rad
 .blk{display:flex;flex-direction:column;gap:6px}
 /* 3.1 · medidas no mapa (U03) */
 .map-svg text{paint-order:stroke;stroke-linejoin:round}
-.map-svg .tid,.map-svg .med-t,.map-svg .med-p,.map-svg .ha,.map-svg .sel-l{stroke:var(--bg);stroke-width:4px}
+.map-svg .tid,.map-svg .med-t,.map-svg .med-p,.map-svg .ha,.map-svg .sel-l{stroke:var(--fd);stroke-width:4px}
 .map-svg .pt text{stroke:none}
 .map-svg .med-t{font:700 12px system-ui;fill:var(--tr)}.map-svg .med-p{font:600 12px system-ui;fill:var(--pt)}
 .map-svg .ha{font:600 12px system-ui;fill:var(--ink)}.map-svg .sel-l{font:700 13px system-ui;fill:var(--ink)}
@@ -154,14 +155,15 @@ nav button.on{color:var(--br)}nav button.on .ic{background:var(--br2);border-rad
 .map-svg .track.hi{stroke-width:5;stroke-dasharray:none}.map-svg .track.lo{opacity:.35}
 /* Sol (alto contraste para enxergar no sol) com a identidade SCHMIDT: topo verde da marca, cartões com borda forte,
    seleções preenchidas — nada some no branco */
-:root.sun header{background:var(--br);border-bottom:3px solid #c99a3e}:root.sun header .logo{color:#fff}
-:root.sun header .ib{color:#fff}:root.sun .lot{background:#fff;color:#000}
 :root.sun .card,:root.sun .sheet{border:2px solid #000}:root.sun .m{background:#fff;border:1.5px solid #000}
 :root.sun .seg{background:#fff;border:2px solid #000}:root.sun .seg button.on{background:var(--br);color:#fff}
 :root.sun nav{border-top:2px solid #000}:root.sun nav button{color:#000}:root.sun nav button.on .ic{background:var(--br);color:#fff}
 :root.sun .stp button{border-width:2px}:root.sun .tag{background:var(--br);color:#fff;padding:2px 8px;border-radius:8px}
 :root.sun .map-svg .lot{stroke-width:3}:root.sun .map-svg .track{stroke-width:3}
 :root.sun .leg,:root.sun .bal,:root.sun .mt{border:2px solid #000}
+header .ib{color:var(--hd-ink)}.lot small{color:#ffffffc7}
+:root.sun .lot{background:#fff;color:#000}:root.sun .lot small{color:#1d2b26}
+.map-svg .lot{stroke-width:2.5}
 </style></head>
 <body>
 <a class="skip" href="#view">Ir para o conteúdo</a>
@@ -5533,7 +5535,7 @@ function installMapa(app) {
       el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, hiTrack: !full && !guide ? app.hiTrack : null, focus: guide ? g.focus : null, others: cur.others || [], ...opts })
         + (full ? (info ? balloon() : V.legend(cur.field, P.figures(cur.sc), areas)) + V.mapTools(layers, moved(view))
           : guide && g.pos ? `<button class="fit" data-act="follow" aria-pressed="${!!g.follow}" aria-label="${g.follow ? 'Ver o lote inteiro' : 'Seguir minha posição'}">${g.follow ? '⤢' : '◎'}</button>`
-            : (moved(view) ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : '') + balloon());
+            : (moved(view) ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : ''));
       if (!el.dataset.g) {
         el.dataset.g = '1';
         const k2 = full ? 'full' : el.dataset.map === 'guide' ? 'guide' : 'small';

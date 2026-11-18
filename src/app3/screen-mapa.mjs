@@ -59,7 +59,7 @@ export function installMapa(app) {
       el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, hiTrack: !full && !guide ? app.hiTrack : null, focus: guide ? g.focus : null, others: cur.others || [], ...opts })
         + (full ? (info ? balloon() : V.legend(cur.field, P.figures(cur.sc), areas)) + V.mapTools(layers, moved(view))
           : guide && g.pos ? `<button class="fit" data-act="follow" aria-pressed="${!!g.follow}" aria-label="${g.follow ? 'Ver o lote inteiro' : 'Seguir minha posição'}">${g.follow ? '⤢' : '◎'}</button>`
-            : (moved(view) ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : '') + balloon());
+            : (moved(view) ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : ''));
       if (!el.dataset.g) {
         el.dataset.g = '1';
         const k2 = full ? 'full' : el.dataset.map === 'guide' ? 'guide' : 'small';

@@ -13,7 +13,7 @@ def lum(h):
     return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2]
 def cr(a,b): la,lb=sorted([lum(a),lum(b)],reverse=True); return (la+0.05)/(lb+0.05)
 pairs=[('ink','bg',4.5),('ink','sf',4.5),('mu','sf',4.5),('mu','bg',4.5),('mu','sf2',4.5),('br','sf',4.5),('br','bg',4.5),('on-br','br',4.5),('br','br2',4.5),
-('pt','bg',4.5),('pt','fd',4.5),('tr','bg',4.5),('tr','fd',4.5),('pti','ptf',4.5),('ptr','fd',3),('fl','fd',3),('tr','fd',3),('ok','oks',4.5),('al','als',4.5),('er','ers',4.5),('ink','br2',4.5)]
+('pt','bg',4.5),('pt','fd',4.5),('tr','bg',4.5),('tr','fd',4.5),('pti','ptf',4.5),('ptr','fd',3),('fl','fd',3),('tr','fd',3),('ok','oks',4.5),('al','als',4.5),('er','ers',4.5),('ink','br2',4.5),('hd-ink','hd',4.5),('pti','ptf',4.5),('ptr','fd',3),('fl','mapbg',3),('ink','mapbg',4.5),('pt','fd',4.5),('tr','fd',3),('ink','sf2',4.5),('br','sf2',4.5)]
 bad=0
 for name,t in [('claro',light),('escuro',dark),('sol',sun)]:
     for a,b,m in pairs:
