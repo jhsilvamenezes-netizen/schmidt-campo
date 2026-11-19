@@ -1,16 +1,17 @@
 {
-  "entrega": "3.18.0",
+  "entrega": "3.19.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-18",
-  "versaoDoApp": "3.18.0",
+  "versaoDoApp": "3.19.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "6bbf87efdfac169c7b5e94127d4cb55b11d4e0fbd74bb09cb0e1e3d78fcd0705",
-  "workerSha256": "5a9937867a65b7bbd6b394d7d89d82c706c508c216ac145869e1b2e68a88233e",
+  "htmlSha256": "2da183f717c015cedd79398942c312d81fbc058fc6452bed94f2fdd90eb33877",
+  "workerSha256": "03d302819f058bb6071046ce8c053ea0f662f72e9b0d8327ff56de669b2b3627",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "3.19.0: correções da autoanálise — velocidade pelo deslocamento em ~3 s (tremor do GPS parado não vira \"moto\"; troca moto/a pé só com 2 leituras); de moto, \"Pare aqui\" a 1,5 s do ponto (até 25 m) e a chegada no raio normal; regra do proprietário para tiro de 1 ponto (pequeno e irregular aceito; nos maiores só no bico): BE1 recebe sugestão de 1 ponto a mais que tira o tiro de 1 ponto do meio; fonte Inter com setas, ≥ ≤, ✓ e ⌃ ⌄ (44 KB); comparação de imagens também no CI pela estrutura da tela",
     "3.18.0: design 4.0 em prévia (Mais → Design 4.0) — tokens OKLCH com contraste WCAG 2 + APCA, componentes tonais com pílulas e elevação, vitrine; folha sobre o mapa com 3 alturas (baixa, meia, cheia) e alça arrastável; guia de moto com distância grande; rede de segurança: comparação de imagens (24 telas) e orçamento de tamanho; o design atual segue idêntico",
     "3.17.0: campo de moto e a pé (relato da equipe, ~70% moto) — velocidade pelo GPS, etiqueta \"Moto N km/h\" / \"A pé\", aviso de chegando ~8 s antes, raio de chegada cresce com a velocidade (1,5 s, até 25 m), tempo estimado até o ponto; \"Onde estou\" no Mapa acompanha cada movimento (antes só ao tocar); GPS parado não dá mais \"indisponível\" a cada 20 s",
     "3.16.0: chegada pela precisão do GPS (raio efetivo = maior entre 10 m e a precisão, até 15 m; acima de 10 m vem o aviso de conferir pelos passos); anel de progresso em volta da seta na guia; estudo das margens das pontas (meia margem segue a melhor nos 51 lotes)",
@@ -94,5 +95,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "6a10da0056ed18d2ea0566fbd06425a265f023f812cda6a88165b19fcc9ff974"
+  "motorSha256": "4cbf0b14bd6d5eb64116a08b8d54d31a5c25a4f043332dfbc7d0fa834c6e9555"
 }

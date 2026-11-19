@@ -70,6 +70,8 @@ function guideModelCore(route, sc, field, pos, now, session) {
   // 3.4: ao chegar, já diz o que vem depois (ponto seguinte e a distância andando no tiro)
   const after = route.points.find(p => p.seq === n.seq + 1);
   if (g.arrived) return { state: 'arrived', title: `Chegou ao ponto ${n.seq} de ${route.nPoints}`, big: `nº ${n.number}`, info: after ? `Depois: ponto ${after.seq} de ${route.nPoints}${Number.isFinite(after.deltaM) ? `, a ${num(after.deltaM)} m` : ''}` : 'Último ponto do tiro', warn: g.arrivalUncertain ? [`GPS impreciso (± ${num(pos.accuracyM)} m): confira pelos passos.`] : [], next: n };
+  // 3.19 · de moto, perto do ponto: pare aqui (a chegada vem depois, a pé ou parado no raio normal)
+  if (g.stopHere) return { state: 'stop', distM: g.distM, to: [n.x, n.y], title: `Pare aqui: ponto ${n.seq} de ${route.nPoints}`, big: `${num(g.distM)} m`, dir: `para o ${g.direction}`, azimuth: g.azimuthDeg, info: 'Pare a moto e vá até o ponto.', warn, next: n };
   const a = g.alvo;
   return { state: 'go', distM: entry ? null : a.distM, to: [a.x, a.y], title: entry ? 'Primeiro: vá até a entrada do tiro' : `Próximo: ${label}`, big: `${num(a.distM)} m`, dir: `para o ${a.direction}`, azimuth: a.azimuthDeg,
     info: g.trecho && !entry ? `Faltam ${num(Math.max(0, g.trecho.faltaM))} m andando no tiro${eta(Math.max(0, g.trecho.faltaM), pos.speedMps)}` : undefined, warn, next: n,

@@ -103,6 +103,19 @@ try {
     assert.ok(await p.locator('.gsheet.moto').count(), '4.0: folha da guia marcada como moto (números grandes)');
     assert.deepStrictEqual(errors, []); await ctx.close();
   }
+  { // 3.19 · GPS parado "tremendo" 3–4 m por leitura (precisão ± 5 m): continua "A pé", sem "Moto"
+    const cx = p1.x * 0.5 + p2.x * 0.5, cy = p1.y * 0.5 + p2.y * 0.5;
+    const { ctx, p, errors } = await open(cx, cy);
+    for (const [dx, dy] of [[3, 0], [0, 3], [-3, 1], [2, -2], [-1, 3], [3, 1]]) {
+      await p.waitForTimeout(1000);
+      const [lon, lat] = localToLonLat(cx + dx, cy + dy, f.centroidUTM); await ctx.setGeolocation({ longitude: lon, latitude: lat, accuracy: 5 });
+    }
+    await p.waitForTimeout(800);
+    const pill = await p.textContent('.navpill');
+    assert.doesNotMatch(pill, /Moto/, `parado com tremor do GPS não vira moto: ${pill}`);
+    assert.equal(await p.locator('.gsheet.moto').count(), 0);
+    assert.deepStrictEqual(errors, []); await ctx.close();
+  }
   { // 3.17 · "Onde estou" no Mapa acompanha o movimento sem tocar de novo
     const [lon, lat] = localToLonLat(p1.x + 5, p1.y, f.centroidUTM);
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block', geolocation: { longitude: lon, latitude: lat, accuracy: 5 }, permissions: ['geolocation'] });

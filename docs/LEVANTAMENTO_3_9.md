@@ -147,3 +147,14 @@ margem das pontas por lado (M7) e calibração em campo (trecho mínimo 60 m, ra
 | Aviso de chegando | De moto a 30 km/h (8 m/s), 30 m são ~4 s | Aviso a max(30 m, 8 s × velocidade) |
 | Raio de chegada | O GPS lê ~1×/s: a 8 m/s o ponto pode ficar entre duas leituras | Raio = maior entre 10 m, precisão do GPS (até 15 m) e 1,5 s × velocidade (até 25 m) |
 | Tempo até o ponto | — | "Faltam 171 m andando no tiro · ~20 s" em movimento |
+
+## 15. Feito na 3.19 — correções da autoanálise
+
+| Item | Problema | Correção | Prova |
+|---|---|---|---|
+| Velocidade falsa parado | Tremor de 3–6 m entre leituras virava "Moto 8 km/h" | Deslocamento medido em ~3 s (tremor não acumula), acima de 1,5 × a precisão (mín. 6 m); troca moto/a pé só com 2 leituras | Teste: 6 leituras tremendo → continua "A pé" (falhava antes) |
+| Chegada de moto a até 25 m | Raio crescia com a velocidade: "chegou" longe do ponto | Raio de chegada volta ao normal; de moto, a 1,5 s do ponto (até 25 m), "Pare aqui" com vibração longa | 51 lotes: a 20 m a 15 m/s = "pare"; a 8 m = chegou; a 30 m = a caminho |
+| Tiro de 1 ponto (regra do proprietário, 19/11) | Pequeno e irregular (RA9, RB9) aceito; nos maiores só no bico | BE1: 1 ponto a mais tira o tiro de 1 ponto do meio (95% 300 → 298 m, maior vazio igual). RB8: os 2 tiros curtos do meio vêm da forma do lote (recorte); evitar piora o maior vazio ≥ 16% — fica para decisão | Teste: sugestões só em BD5, BE1 e RB9 |
+| Comparação de imagens pulada no CI | Navegador do CI (141) ≠ local (153) | Compara também a estrutura da tela (caixas e cores de cada elemento), que não depende da versão | Pega 2 px a mais no espaçamento dos cartões em 6 telas |
+| Símbolos fora da fonte | → ≥ ✓ ⌃ ⌄ caíam na letra do aparelho | Inter com esses símbolos, sem variantes de letra (44 KB, menor que antes) | 24 telas idênticas |
+| Falhas raras de teste | Cópia de segurança (1 vez) e arraste da folha (1 vez) | Arraste: teste espera a animação; o app segue a folha nova se a tela redesenhar no meio. Cópia: não repetiu em 11 rodadas; o teste agora registra aviso e erros da tela | 6 rodadas seguidas verdes |

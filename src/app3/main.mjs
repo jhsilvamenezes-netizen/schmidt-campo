@@ -269,12 +269,15 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   });
   document.addEventListener('pointermove', e => {
     if (!drag) return;
+    // a tela pode ser redesenhada no meio do arraste (recomendação que chega do motor): segue com a folha nova
+    if (!drag.sheet.isConnected) { const s2 = $('.map.sm+.scroll'); if (!s2) { drag = null; return; } drag.sheet = s2; }
     const dy = e.clientY - drag.y0; if (Math.abs(dy) > 6) drag.moved = true;
     if (drag.moved) drag.sheet.style.setProperty('height', `${Math.max(120, Math.min(drag.H - 8, drag.h0 - dy))}px`);
   });
   document.addEventListener('pointerup', e => {
     if (!drag) return;
     const d = drag; drag = null; if (!d.moved) return;
+    if (!d.sheet.isConnected) d.sheet = $('.map.sm+.scroll') || d.sheet;
     const h = d.sheet.getBoundingClientRect().height, v = (d.y0 - e.clientY) / Math.max(1, performance.now() - d.t0); // px/ms, + = para cima
     const targets = { baixa: 0.34 * d.H, meia: 0.56 * d.H, cheia: d.H - 8 };
     let pick = Object.entries(targets).sort((a, b) => Math.abs(a[1] - h) - Math.abs(b[1] - h))[0][0];

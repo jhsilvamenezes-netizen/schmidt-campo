@@ -28,7 +28,7 @@ export function installPlano(app) {
     const k = app.hintKey(); if (!k || !improver) return null;
     const h = hints.get(k);
     if (!h) { const id = ++seq; hints.set(k, { id, r: undefined }); improver.postMessage({ kind: 'improve', id, field: app.cur.field, params: app.cur.params, edits: app.saved().editsByField?.[app.ui.key] ?? null, people: app.people() }); return null; }
-    const pl = h.plus, plus = pl ? { text: [pl.after.worst < pl.before.worst - 1 && `maior vazio ${num(pl.before.worst)} → ${num(pl.after.worst)} m`, pl.after.p95 < pl.before.p95 - 1 && `95% ${num(pl.before.p95)} → ${num(pl.after.p95)} m`].filter(Boolean).join(' · '), n: pl.after.n } : null;
+    const pl = h.plus, plus = pl ? { reason: pl.reason, text: [pl.reason === 'meio' && pl.after.mid < pl.before.mid && 'sem tiro de 1 ponto no meio do lote',pl.after.worst < pl.before.worst - 1 && `maior vazio ${num(pl.before.worst)} → ${num(pl.after.worst)} m`, pl.after.p95 < pl.before.p95 - 1 && `95% ${num(pl.before.p95)} → ${num(pl.after.p95)} m`].filter(Boolean).join(' · '), n: pl.after.n } : null;
     const r = h.r, parts = r?.edits ? [r.after.worst < r.before.worst - 1 && `maior vazio ${num(r.before.worst)} → ${num(r.after.worst)} m`, r.after.cv < r.before.cv - 0.004 && `áreas ${num(r.before.cv * 100)} → ${num(r.after.cv * 100)}%`].filter(Boolean) : [];
     return parts.length || plus ? { text: parts.join(' · '), r: parts.length ? r : null, plus } : null;
   };

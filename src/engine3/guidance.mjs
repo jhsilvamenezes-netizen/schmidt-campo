@@ -101,11 +101,12 @@ export function guide(route, pos, collected, monitor, nextPoint) {
   // 3.16 · o GPS não separa posições mais próximas que a sua precisão: com ± 13 m e raio de 10 m a pessoa podia estar no
   // ponto sem nunca "chegar". Raio efetivo = maior entre o raio de chegada e a precisão (até a precisão aceita, 15 m);
   // quando a precisão passa do raio, a chegada vem com o aviso de conferir pelos passos.
-  // 3.17 · de moto (≈ 8 m/s) o GPS lê 1× por segundo: entre duas leituras o ponto pode ficar para trás. O raio também
-  // cresce com a velocidade (1,5 s de deslocamento, até 25 m), para a chegada não passar despercebida.
+  // 3.19 · de moto o raio de chegada NÃO cresce (a amostra é no ponto): a 1,5 s do ponto (até 25 m) vem "pare aqui";
+  // a chegada continua pelo raio normal (ou pela precisão do GPS), depois de parar ou descer
   const acc = Number.isFinite(pos.accuracyM) ? pos.accuracyM : 0, spd = Number.isFinite(pos.speedMps) ? pos.speedMps : 0;
-  const radiusM = Math.max(monitor.arrivalRadiusM, Math.min(acc, monitor.gpsAccuracyMaxM), Math.min(25, spd * 1.5));
-  return { done: false, next, distM, azimuthDeg: az, direction: cardinal(az), arrived: distM <= radiusM && !stale, radiusM,
+  const radiusM = Math.max(monitor.arrivalRadiusM, Math.min(acc, monitor.gpsAccuracyMaxM));
+  const stopHere = spd >= 2.5 && distM > radiusM && distM <= Math.min(25, radiusM + spd * 1.5) && !stale;
+  return { done: false, next, distM, azimuthDeg: az, direction: cardinal(az), arrived: distM <= radiusM && !stale, radiusM, stopHere,
     arrivalUncertain: distM <= radiusM && (!accuracyOk || acc > monitor.arrivalRadiusM), accuracyOk, stale, lateralM, lado, voltaDir, offLine, alvo, trecho,
     collected: nCollected, total: route.points.length };
 }

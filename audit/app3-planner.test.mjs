@@ -105,10 +105,13 @@ test('Monitorar: estados da guia nos 51 lotes (sem GPS, chegada, a caminho, GPS 
     assert.notEqual(ar4.state, 'arrived', `${k} ± 4 m a 12 m não chegou`);
     assert.equal(ar13.state, 'arrived', `${k} ± 13 m a 12 m chegou`); assert.ok(ar13.warn.some(w => /confira pelos passos/.test(w)), k);
     assert.notEqual(guideModel(route, sc, f, at(p1.x - uy * 18, p1.y + ux * 18, 40), now, {}).state, 'arrived', `${k} raio no máximo 15 m`);
-    // 3.17 · de moto o raio cresce com a velocidade (1,5 s, até 25 m): a 20 m, a 15 m/s chegou; parado não
-    const moto = (v) => guideModel(route, sc, f, { ...at(p1.x - uy * 20, p1.y + ux * 20, 4), speedMps: v }, now, {});
-    assert.equal(moto(15).state, 'arrived', `${k} de moto chega a 20 m`); assert.notEqual(moto(0).state, 'arrived', `${k} parado a 20 m não`);
-    assert.notEqual(guideModel(route, sc, f, { ...at(p1.x - uy * 27, p1.y + ux * 27, 4), speedMps: 40 }, now, {}).state, 'arrived', `${k} raio de moto no máximo 25 m`);
+    // 3.19 · de moto o raio de chegada não cresce: a 20 m, a 15 m/s vem "pare aqui" (não "chegou"); parado, nem um nem outro;
+    // a 8 m chega normalmente; a 30 m de moto ainda é "a caminho"
+    const at2 = (d, v) => guideModel(route, sc, f, { ...at(p1.x - uy * d, p1.y + ux * d, 4), speedMps: v }, now, {});
+    assert.equal(at2(20, 15).state, 'stop', `${k} de moto a 20 m: pare aqui`); assert.match(at2(20, 15).title, /Pare aqui/);
+    assert.notEqual(at2(20, 0).state, 'arrived', `${k} parado a 20 m não chegou`); assert.notEqual(at2(20, 0).state, 'stop', k);
+    assert.equal(at2(8, 15).state, 'arrived', `${k} a 8 m chegou`);
+    assert.notEqual(at2(30, 15).state, 'stop', `${k} de moto a 30 m ainda a caminho`);
     const off = guideModel(route, sc, f, at(p1.x + 300, p1.y + 300), now, {});
     // fora da linha avisa quando já se está no tiro; indo para a entrada, só a seta (sem "volte para a esquerda")
     if (off.state === 'go' && !/entrada/.test(off.title)) assert.ok(off.warn.length >= 1, `${k} fora da linha avisa`);
@@ -239,8 +242,9 @@ test('3.15 · lote irregular: +1 ponto só onde o maior vazio passa de 1,2 × o 
     hit.push(f.code);
     assert.equal(r.after.n, r.before.n + 1, k);
     assert.ok(r.after.worst <= r.before.worst + 1, `${k}: maior vazio não piora`);
-    assert.ok(r.after.worst <= r.before.worst * 0.92 || r.after.p95 <= r.before.p95 * 0.92, `${k}: ganho ≥ 8%`);
+    assert.ok(r.reason === 'meio' ? r.after.mid < r.before.mid && r.after.p95 <= r.before.p95 + 1 : r.after.worst <= r.before.worst * 0.92 || r.after.p95 <= r.before.p95 * 0.92, `${k}: ganho`);
     assert.equal(P.plusOne(f, r.params, 5), null, `${k}: com o total escolhido não sugere de novo`);
   }
-  assert.deepEqual(hit.sort(), ['BD5', 'RB9']);
+  // 3.19 · BE1: 1 ponto a mais tira o tiro de 1 ponto do meio do lote sem piorar a cobertura
+  assert.deepEqual(hit.sort(), ['BD5', 'BE1', 'RB9']);
 });
