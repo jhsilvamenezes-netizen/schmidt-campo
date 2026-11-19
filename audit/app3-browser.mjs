@@ -63,6 +63,14 @@ try {
     await p.click('.res [data-term="Entre tiros"]'); await p.waitForSelector('.glos1');
     assert.match(await p.textContent('.glos1'), /Distância de lado de um tiro ao vizinho/);
     await p.click('.close');
+    // 3.13 (X3) · Voltar do celular fecha a janela aberta (e não sai do app); fechar pelo × não deixa entrada sobrando
+    const len0 = await p.evaluate(() => history.length);
+    await p.click('.res [data-term="95% do lote"]'); await p.waitForSelector('.glos1');
+    await p.evaluate(() => history.back()); await p.waitForFunction(() => !document.querySelector('#sheets .sheet'));
+    assert.ok(await p.locator('.res').count(), 'continua no Plano');
+    await p.click('.res [data-term="Entre pontos"]'); await p.waitForSelector('.glos1'); await p.click('.close');
+    await p.waitForFunction(() => !history.state?.sheet);
+    assert.ok(await p.evaluate(() => history.length) <= len0 + 2, 'sem acumular entradas');
     // 3.10: redesenhar o Plano (mudar pessoas, recomendação que chega do motor) mantém o tiro aberto
     await p.click('details.trk >> nth=2 >> summary');
     await p.click('[data-inc="people"]'); await p.click('[data-dec="people"]');

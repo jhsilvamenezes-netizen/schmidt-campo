@@ -110,7 +110,7 @@ ${findings.length ? findings.map(x => `<p class="ck ${x.level === 'info' ? 'info
 export const calculoBody = steps => steps.map(s => `<details class="ex"><summary>${esc(s.etapa)}</summary>${s.texto.map(t => `<p>${esc(t)}</p>`).join('')}</details>`).join('');
 
 /** Guia por GPS: escolha do tiro, seta, distância e avisos. Sem marcação de coleta. */
-export function monitorView({ lot = '', acc = null, tracks, trackId, flipped, active, model, steps, heading = null, voice = false, canSpeak = false }) {
+export function monitorView({ nextTrack = /** @type {any} */ (null), lot = '', acc = null, tracks, trackId, flipped, active, model, steps, heading = null, voice = false, canSpeak = false }) {
   const pick = `<div class="chips" role="group" aria-label="Tiro">${tracks.map(t => `<button class="chipb${t.id === trackId ? ' on' : ''}" data-track="${esc(t.id)}" aria-pressed="${t.id === trackId}">${esc(t.id)}${t.person ? `<small>${esc(t.person)}</small>` : ''}</button>`).join('')}</div>`;
   const head = `<section class="card"><h2 class="h">Tiro</h2>${pick}<div class="row-sb"><p class="mu">Sentido: ${flipped ? 'invertido' : 'do plano'}</p><button class="link" data-act="flip">Inverter</button></div></section>`;
   if (!active) return `<div class="map sm" data-map="guide"></div><div class="scroll">${head}<button class="btn p" data-act="gps-start">Iniciar guia</button>
@@ -128,7 +128,7 @@ export function monitorView({ lot = '', acc = null, tracks, trackId, flipped, ac
   return `<div class="map nav" data-map="guide"></div><div class="navpill"><b>${esc(lot)} · ${esc(trackId)}</b>${cur?.person ? `<span>${esc(cur.person)}</span>` : ''}${gps}</div><section class="sheet gsheet">${bar}
 <div class="guide ${m.state}" aria-live="polite">${arrow}<div class="gtxt"><p class="mu">${esc(m.title)}${pr ? ` <b class="cnt">${pr.done}/${pr.total}</b>` : ''}</p>${m.big ? `<p class="big">${esc(m.big)}${m.dir ? ` <span class="dir">${esc(m.dir)}</span>` : ''}</p>` : ''}${m.info ? `<p class="mu">${esc(m.info)}</p>` : ''}${rel === null ? '' : `<p class="mu sm" data-compass-label>${Number.isFinite(heading) ? 'seta pelo celular' : 'seta com o norte para cima'}</p>`}</div></div>
 ${(m.warn || []).map(w => `<p class="ck alerta">${esc(w)}</p>`).join('')}
-<div class="two gbtns">${canSpeak ? `<button class="btn" data-act="voice" aria-pressed="${voice}">${voice ? 'Voz ligada' : 'Ligar voz'}</button>` : `<button class="btn" data-act="flip">Inverter</button>`}<button class="btn stop" data-act="gps-stop">Parar guia</button></div></section>`;
+${nextTrack ? `<button class="btn p" data-act="next-track">Próximo tiro: ${esc(nextTrack.id)}${nextTrack.person ? ` · ${esc(nextTrack.person)}` : ''}</button>` : ''}<div class="two gbtns">${canSpeak ? `<button class="btn" data-act="voice" aria-pressed="${voice}">${voice ? 'Voz ligada' : 'Ligar voz'}</button>` : `<button class="btn" data-act="flip">Inverter</button>`}<button class="btn stop" data-act="gps-stop">Parar guia</button></div></section>`;
 }
 
 /** Versões anteriores do lote (mais recente primeiro). */

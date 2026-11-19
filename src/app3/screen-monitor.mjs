@@ -34,7 +34,15 @@ export function installMonitor(app) {
       try { window.navigator.vibrate?.([300, 100, 300, 100, 300]); } catch { /* sem vibração */ }
       say(`Chegou ao ponto ${model.next.seq}, número ${model.next.number}.`);
     }
-    return { lot: cur.field.code, acc: mon.pos?.accuracyM ?? null, tracks, trackId: mon.trackId, flipped: mon.flipped, active: mon.active, model, heading: mon.heading, voice: mon.voice, canSpeak: !!window.speechSynthesis, steps: route?.instructions || [], target: model?.next?.id ?? null };
+    // 3.13 (V3) · terminou o tiro: oferece o próximo tiro da mesma pessoa (equipe do Plano); sem equipe, o seguinte da lista
+    /** @type {any} */ let nextTrack = null;
+    if (model && route && (model.state === 'done' || (model.state === 'arrived' && model.next?.seq === route.nPoints))) {
+      const mine = (cur.split?.pessoas || []).find(p => p.tarefas.some(t => t.id === mon.trackId));
+      const order = mine ? mine.tarefas.map(t => t.id) : tracks.map(t => t.id), i = order.indexOf(mon.trackId);
+      const id = order[i + 1] ?? null, t = tracks.find(x => x.id === id);
+      if (t) nextTrack = t;
+    }
+    return { nextTrack, lot: cur.field.code, acc: mon.pos?.accuracyM ?? null, tracks, trackId: mon.trackId, flipped: mon.flipped, active: mon.active, model, heading: mon.heading, voice: mon.voice, canSpeak: !!window.speechSynthesis, steps: route?.instructions || [], target: model?.next?.id ?? null };
   }
   async function keepAwake(on) {
     try {
@@ -117,5 +125,7 @@ export function installMonitor(app) {
     voice: () => { mon.voice = !mon.voice; if (mon.voice) say('Voz ligada.'); app.render(); },
     follow: () => { mon.follow = !mon.follow; app.drawMaps(); },
     flip: () => { mon.flipped = !mon.flipped; mon.session = {}; app.render(); },
+    // 3.13 · segue para o próximo tiro sem parar a guia (sentido do plano, chegada e vibração zeradas)
+    'next-track': () => { const n = monitorData().nextTrack; if (!n) return; mon.trackId = n.id; mon.flipped = false; mon.session = {}; mon.arrivedId = null; mon.nearId = null; app.render(); },
   });
 }
