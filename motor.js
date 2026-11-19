@@ -3320,11 +3320,12 @@ const { teamPlan } = schmidtEngine2.team;
 const { buildRoute } = schmidtEngine2.guidance;
 const { exactCoverage } = schmidtEngine2.voronoi;
 const { pointInGeom } = schmidtEngine2.geometry;
+const { cumulative, pointAt } = schmidtEngine2.polyline;
 const { num, range, km, plural } = __m_app3_format;
 // 3.0 · aplicação: monta o plano de um lote com o motor 2, a recomendação, a conferência, a equipe e a área
 // descoberta. Sem DOM: testável no Node com os 51 lotes.
 
-const ENGINE_LABEL = '3.13.0';
+const ENGINE_LABEL = '3.14.0';
 const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
@@ -3587,31 +3588,57 @@ function minimaxEdits(field, params, edits = null, { maxEvals = 1200, minBorderM
     if (!u || p.s < Math.min(30, u.len / 2) || p.s > u.len - Math.min(30, u.len / 2)) return false;
     return list.every(q => q.id === p.id || q.unitId !== p.unitId || Math.abs(q.s - p.s) >= 60);
   };
+  /** Tenta deslizar o ponto `p` `d` metros no próprio tiro; aplica e devolve true se `wins` aprovar (mesmas travas sempre). */
+  const tryMove = (p, d, wins) => {
+    const r = moveSample({ ...sc, samples }, field, p.id, { deltaS: d });
+    if (!r.ok) return false;
+    const moved = r.samples.find(q => q.id === p.id), before = samples.find(q => q.id === p.id);
+    // a ordem no tiro não muda: o ponto não passa por cima do vizinho
+    if (!okPlace(r.samples, moved) || r.samples.some(q => q.unitId === moved.unitId && q.id !== moved.id && Math.sign(q.s - before.s) !== Math.sign(q.s - moved.s))) return false;
+    evals++;
+    const eM = edgeDistance(field, moved).m, eB = edgeDistance(field, before).m;
+    // nenhum ponto vai para dentro da bordadura (nem chega mais perto da borda se já estava dentro)
+    if (eM < minBorderM && eM < eB) return false;
+    const st = exactStats(field, r.samples);
+    if (!wins(st, eM, eB)) return false;
+    const p95 = p95of(r.samples);
+    if (p95 > start.p95 * 1.01) return false;
+    samples = r.samples; cur = { ...st, p95, border: borderOf(r.samples) }; improved = true;
+    return true;
+  };
   /** Uma etapa de busca: tenta deslizar cada ponto ±passo e aceita a primeira mudança que `wins` aprovar. */
   const pass = wins => {
     for (const step of [80, 40, 20]) {
       let again = true;
       while (again && evals < maxEvals) {
         again = false;
-        for (const p of samples) for (const d of [step, -step]) {
-          if (evals >= maxEvals) break;
-          const r = moveSample({ ...sc, samples }, field, p.id, { deltaS: d });
-          if (!r.ok) continue;
-          const moved = r.samples.find(q => q.id === p.id), before = samples.find(q => q.id === p.id);
-          // a ordem no tiro não muda: o ponto não passa por cima do vizinho
-          if (!okPlace(r.samples, moved) || r.samples.some(q => q.unitId === moved.unitId && q.id !== moved.id && Math.sign(q.s - before.s) !== Math.sign(q.s - moved.s))) continue;
-          evals++;
-          const eM = edgeDistance(field, moved).m, eB = edgeDistance(field, before).m;
-          // nenhum ponto vai para dentro da bordadura (nem chega mais perto da borda se já estava dentro)
-          if (eM < minBorderM && eM < eB) continue;
-          const st = exactStats(field, r.samples);
-          if (!wins(st, eM, eB)) continue;
-          const p95 = p95of(r.samples);
-          if (p95 > start.p95 * 1.01) continue;
-          samples = r.samples; cur = { ...st, p95, border: borderOf(r.samples) }; improved = again = true;
-          break;
+        for (const p of samples) {
+          for (const d of [step, -step]) { if (evals >= maxEvals) break; if (tryMove(p, d, wins)) { again = true; break; } }
+          if (again) break;
         }
       }
+    }
+  };
+  /** Centro de área de uma célula (anéis com sinal: buracos descontam). */
+  const centroid = rings => {
+    let A = 0, cx = 0, cy = 0;
+    for (const r of rings) for (let a = 0, b = r.length - 1; a < r.length; b = a++) { const [x0, y0] = r[b], [x1, y1] = r[a], c = x0 * y1 - x1 * y0; A += c; cx += (x0 + x1) * c; cy += (y0 + y1) * c; }
+    return Math.abs(A) < 1e-6 ? null : [cx / (3 * A), cy / (3 * A)];
+  };
+  const lloyd = wins => {
+    for (let it = 0; it < 12 && evals < maxEvals; it++) {
+      const cov = exactCoverage(field.geom, samples), ids = samples.map(q => q.id);
+      let moved = false;
+      ids.forEach((id, i) => {
+        const p = samples.find(q => q.id === id), c = cov.cells[i] && centroid(cov.cells[i].rings), u = p && units.get(p.unitId);
+        if (!c || !u || evals >= maxEvals) return;
+        const cum = cumulative(u.line), a = pointAt(u.line, Math.max(0, p.s - 1), cum), b = pointAt(u.line, Math.min(u.len, p.s + 1), cum), L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+        if (!L) return;
+        const d = Math.max(-80, Math.min(80, ((c[0] - p.x) * (b[0] - a[0]) + (c[1] - p.y) * (b[1] - a[1])) / L));
+        if (Math.abs(d) < 4) return;
+        if (tryMove(p, d, wins) || tryMove(p, d / 2, wins)) moved = true;
+      });
+      if (!moved) break;
     }
   };
   // 0º bordadura: ponto mais perto da borda que o mínimo desliza para dentro (pior vazio até +5%, áreas até +2 p.p.)
@@ -3621,6 +3648,9 @@ function minimaxEdits(field, params, edits = null, { maxEvals = 1200, minBorderM
   pass(st => st.worst < cur.worst - 1 && st.cv <= Math.max(start.cv, base.cv) + 0.01);
   const worstCap = cur.worst;
   pass(st => st.cv < cur.cv - 0.005 && st.worst <= worstCap + 1e-6);
+  // 3.14 · 3º Lloyd ao longo do tiro: cada ponto anda (no próprio tiro) em direção ao centro da sua área; sai do ótimo
+  // local dos passos fixos de 80/40/20 m. Mesmas travas; vale se as áreas ficam mais iguais sem crescer o pior vazio.
+  lloyd(st => st.cv < cur.cv - 0.002 && st.worst <= worstCap + 1e-6);
   if (!improved) return { edits: null, before: start, after: cur, evals };
   const out = samples.map(q => ({ id: q.id, x: q.x, y: q.y, unitId: q.unitId, s: q.s, manual: false, offTrack: false }));
   return { edits: { signature: paramsSignature(sc.params), samples: out }, before: start, after: cur, evals };
