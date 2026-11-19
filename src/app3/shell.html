@@ -10,10 +10,10 @@
 <div id="splash" aria-hidden="true"><img src="marca-logo.png" alt="" width="168" height="168"><b>SCHMIDT Campo</b><small>Planejamento de amostragem</small></div>
 <a class="skip" href="#view">Ir para o conteúdo</a>
 <header><span class="logo"><img src="marca-logo.png" alt="" width="38" height="38">SCHMIDT</span>
-<button class="lot" data-open="lote" aria-label="Escolher lote"><span id="lot-name">…</span><small id="lot-farm"></small><small aria-hidden="true">▾</small></button>
+<button class="lot" data-open="lote" id="lot-btn"><span id="lot-name">…</span> <small id="lot-farm"></small><span class="sr">, escolher lote</span><small aria-hidden="true">▾</small></button><h1 class="sr" id="titulo">SCHMIDT Campo</h1>
 <button class="ib" id="sol" aria-label="Sol: alto contraste"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true">__ICON_SOL__</svg></button>
 <button class="ib" data-open="menu" aria-label="Mais"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true">__ICON_MAIS__</svg></button></header>
-<main id="view" tabindex="-1"></main>
+<main id="view" tabindex="-1" aria-labelledby="titulo"></main>
 <nav aria-label="Telas">__NAV__</nav>
 <div id="sheets"></div><p id="toast" role="status" aria-live="polite"></p>
 <input id="plan-input" type="file" accept=".json,application/json" hidden><input id="backup-input" type="file" accept=".json,application/json" hidden>
