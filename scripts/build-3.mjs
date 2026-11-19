@@ -1,5 +1,6 @@
 // 3.2 · gera a página nova SÓ a partir de src/: motor próprio da 3.x (src/engine3) + tela (src/app3) + dados dos lotes.
 // Sem HTML da 1.31, sem trocas de texto. Saída: build/3/index.html (fora do Git; não vai ao link até a R5).
+import { cssTokens } from '../src/app3/tokens4.mjs';
 import { readFile, writeFile, mkdir, copyFile, access } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
@@ -71,7 +72,7 @@ export async function build3() {
   const safra = /<script id="safra-dados" type="application\/json">([\s\S]*?)<\/script>/.exec(current)?.[1];
   if (!safra) throw Error('Dados da safra não encontrados');
   const recs = await recsData(JSON.parse(fields).fields);
-  const [engine, app, css, shell] = [await bundleEngine('engine3'), await bundleApp(), await readFile(root + 'src/app3/styles.css', 'utf8'), await readFile(root + 'src/app3/shell.html', 'utf8')];
+  const [engine, app, css, shell] = [await bundleEngine('engine3'), await bundleApp(), (await readFile(root + 'src/app3/styles.css', 'utf8')) + cssTokens() + (await readFile(root + 'src/app3/styles-4.css', 'utf8')), await readFile(root + 'src/app3/shell.html', 'utf8')];
   for (const [n, t] of [['motor', engine], ['tela', app], ['dados', fields], ['safra', safra], ['recomendações', recs]]) if (/<\/script/i.test(t)) throw Error(`${n} contém </script>`);
   const nav = [['lotes', 'Lotes'], ['mapa', 'Mapa'], ['plano', 'Plano'], ['monitorar', 'Monitorar']]
     .map(([k, l]) => `<button data-tab="${k}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>${l}</button>`).join('');

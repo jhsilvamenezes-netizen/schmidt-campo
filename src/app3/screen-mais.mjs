@@ -98,8 +98,12 @@ export function installMais(app) {
     return true;
   });
   Object.assign(app.SHEETS, {
-    menu: () => app.openSheet('Mais', `<div class="brand"><img src="marca-logo.png" alt="SCHMIDT" width="88" height="88"><span><b>SCHMIDT Campo</b><small>Planejamento de amostragem · versão ${app.appVersion}</small></span></div>` + V.menuBody([['glossario', 'Glossário: o que cada medida quer dizer'], ['arquivos', 'Arquivos e fichas'], ['dados', 'Dados do lote'], ['calculo', 'Como foi calculado'], ['versoes', 'Versões anteriores'],
+    menu: () => app.openSheet('Mais', `<div class="brand"><img src="marca-logo.png" alt="SCHMIDT" width="88" height="88"><span><b>SCHMIDT Campo</b><small>Planejamento de amostragem · versão ${app.appVersion}</small></span></div>`
+      + `<button class="lrow" data-act="design4" role="switch" aria-checked="${app.isDesign4()}"><span><b>Design 4.0 (prévia)</b><small>o visual novo, para comparar; desliga a qualquer hora</small></span><i class="tg" aria-hidden="true"></i></button>`
+      + (app.isDesign4() ? '<button class="lnk" data-open="vitrine">Vitrine do design 4.0</button>' : '') + V.menuBody([['glossario', 'Glossário: o que cada medida quer dizer'], ['arquivos', 'Arquivos e fichas'], ['dados', 'Dados do lote'], ['calculo', 'Como foi calculado'], ['versoes', 'Versões anteriores'],
       ['copia', 'Cópia de segurança'], ['abrir', 'Abrir plano recebido']])),
+    // 4.0-b · vitrine: todos os componentes num lugar só, para revisar o design 4.0 sem procurar caso a caso
+    vitrine: () => app.openSheet('Vitrine do design 4.0', V.vitrineBody()),
     glossario: () => app.openSheet('Glossário', `<dl class="glos">${glossTerms().map(([t, d]) => `<dt>${esc(t)}</dt><dd>${esc(d)}</dd>`).join('')}</dl>`),
     todos: openAll,
     versoes: async () => { app.openSheet(`Versões · ${app.cur.field.code}`, '<p class="mu">…</p>'); const rows = await versions.list(ui.key); app.openSheet(`Versões · ${app.cur.field.code}`, V.versionsBody(rows)); },
@@ -109,6 +113,7 @@ export function installMais(app) {
     calculo: () => app.openSheet('Como foi calculado', V.calculoBody(explainScenario(app.cur.sc, app.cur.field))),
   });
   Object.assign(app.ACTIONS, {
+    design4: () => { const on = !app.isDesign4(); app.setDesign4(on); app.SHEETS.menu(); app.toast(on ? 'Design 4.0 ligado (prévia).' : 'Design 4.0 desligado.'); },
     async backup() {
       try { const b = await doBackup(); app.download(JSON.stringify(b), `schmidt_copia_${stamp()}.json`, 'application/json'); try { storage.setItem(LAST_BACKUP, String(Date.now())); } catch { /* só não lembra */ } app.toast('Cópia de segurança baixada.'); }
       catch (e) { app.toast(`Cópia não feita: ${/** @type {Error} */ (e).message}.`); }

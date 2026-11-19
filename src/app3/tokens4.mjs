@@ -34,18 +34,20 @@ export const PRIM = Object.freeze({
 
 // ---------- 2 · papéis (mesmos nomes de token da 3.x: o CSS dos componentes funciona nos dois designs) ----------
 const P = PRIM;
+/** Ponto do mapa: dourado vivo de propósito (a escala tira croma dos tons claros; o ponto precisa saltar no lote). */
+const PONTO = oklch(0.8, 0.165, 82);
 export const ROLES = Object.freeze({
   light: {
     bg: P.terra[50], sf: '#ffffff', sf2: P.terra[100], ink: P.terra[950], mu: P.terra[700], ln: P.terra[200],
     br: P.mata[700], br2: P.mata[100], 'on-br': '#ffffff', act: P.mata[700], 'on-act': '#ffffff', gold: P.ouro[500],
-    hd: P.mata[900], 'hd-ink': '#ffffff', mapbg: oklch(0.93, 0.02, HUES.mata), pt: P.ouro[700], tr: P.mata[700], ptf: P.ouro[300],
+    hd: P.mata[900], 'hd-ink': '#ffffff', mapbg: oklch(0.93, 0.02, HUES.mata), pt: P.ouro[700], tr: P.mata[700], ptf: PONTO,
     ptr: P.mata[900], pti: P.terra[950], fd: oklch(0.992, 0.006, HUES.terra), fl: P.mata[700],
     ok: P.mata[700], oks: P.mata[100], al: P.alerta[700], als: P.alerta[100], er: P.erro[600], ers: P.erro[50],
   },
   dark: {
     bg: oklch(0.17, 0.012, HUES.mata), sf: oklch(0.215, 0.014, HUES.mata), sf2: oklch(0.255, 0.016, HUES.mata), ink: P.terra[50], mu: P.terra[300], ln: oklch(0.33, 0.018, HUES.mata),
     br: P.mata[300], br2: oklch(0.3, 0.05, HUES.mata), 'on-br': P.mata[950], act: P.mata[600], 'on-act': '#ffffff', gold: P.ouro[400],
-    hd: oklch(0.2, 0.03, HUES.mata), 'hd-ink': '#ffffff', mapbg: oklch(0.2, 0.02, HUES.mata), pt: P.ouro[300], tr: P.mata[400], ptf: P.ouro[300],
+    hd: oklch(0.2, 0.03, HUES.mata), 'hd-ink': '#ffffff', mapbg: oklch(0.2, 0.02, HUES.mata), pt: P.ouro[300], tr: P.mata[400], ptf: PONTO,
     ptr: P.terra[50], pti: P.terra[950], fd: oklch(0.25, 0.025, HUES.mata), fl: P.mata[400],
     ok: P.mata[300], oks: oklch(0.29, 0.05, HUES.mata), al: P.alerta[300], als: oklch(0.3, 0.05, HUES.alerta), er: P.erro[300], ers: oklch(0.3, 0.06, HUES.erro),
   },

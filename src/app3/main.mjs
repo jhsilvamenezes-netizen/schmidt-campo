@@ -280,6 +280,11 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   const sun = on => { document.documentElement.classList.toggle('sun', on); $('#sol').setAttribute('aria-pressed', String(on)); requestAnimationFrame(() => app.drawMaps?.()); };
   $('#sol').addEventListener('click', () => { const on = !saved().sunMode; store.update({ sunMode: on }); sun(on); toast(on ? 'Sol: contraste alto para a luz do dia.' : 'Sol desligado.'); });
   sun(!!saved().sunMode);
+  // 4.0 · design novo em prévia, atrás de uma chave (Mais → Design 4.0): liga e desliga na hora, sem mexer no plano
+  const design4 = on => { if (on) document.documentElement.dataset.design = '4'; else delete document.documentElement.dataset.design; requestAnimationFrame(() => app.drawMaps?.()); };
+  app.isDesign4 = () => saved().design === '4';
+  app.setDesign4 = on => { store.update({ design: on ? '4' : null }); design4(on); render(); };
+  design4(app.isDesign4());
   new window.ResizeObserver(() => app.cur && app.drawMaps()).observe($('#view'));
   render();
   document.documentElement.dataset.ready = '1';
