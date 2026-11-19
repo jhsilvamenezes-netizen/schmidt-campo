@@ -171,12 +171,12 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
   if (border && !small) {
     for (const e of border.ends) {
       if (!e.at) continue;
-      const [ax, ay] = XY(e.x, e.y), [bx, by] = XY(e.at[0], e.at[1]), near = e.m < border.min, t = `${num(e.m)} m`;
-      s += `<path class="bd-l${near ? ' near' : ''}" d="M${f1(ax)},${f1(ay)}L${f1(bx)},${f1(by)}"/>`;
+      const [ax, ay] = XY(e.x, e.y), [bx, by] = XY(e.at[0], e.at[1]), near = e.m < border.min, low = e.m < (border.low ?? 0), t = `${num(e.m)} m`;
+      s += `<path class="bd-l${low ? ' low' : near ? ' near' : ''}" d="M${f1(ax)},${f1(ay)}L${f1(bx)},${f1(by)}"/>`;
       const p = sp.place([[(ax + bx) / 2, (ay + by) / 2 - 6, 'middle'], [(ax + bx) / 2 + 8, (ay + by) / 2 + 4, 'start'], [(ax + bx) / 2 - 8, (ay + by) / 2 + 4, 'end']], t, 'ha');
       // o ponto dentro da bordadura sempre mostra a distância (ao lado do ponto, se não couber no meio da linha)
       const q = p || (near ? { x: ax + r + 6, y: ay - r - 4, anc: 'start' } : null);
-      if (q) s += text(`bd-t${near ? ' near' : ''}`, q, t);
+      if (q) s += text(`bd-t${low ? ' low' : near ? ' near' : ''}`, q, t);
     }
   }
   // 3.3 (G2) · régua: linha entre dois pontos tocados e a distância no meio (fundo do lote atrás do número)

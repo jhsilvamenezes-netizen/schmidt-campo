@@ -46,8 +46,8 @@ export function mapTools(layers, zoomed, here = false, open = false, sum = null)
   if (!open || !sum) return btns;
   const row = (k, v, cls = '') => `<div class="lsum${cls}"><span>${k}</span><b>${v}</b></div>`;
   return btns + `<div class="lpanel" role="dialog" aria-label="Camadas e medidas"><p class="lh">${esc(sum.code)} · ${num(sum.ha, 1)} ha</p>
-${row('Entre tiros', esc(sum.entreTiros))}${row('Entre pontos', esc(sum.entrePontos.replace('–', ' a ')))}${sum.cada ? row('Cada ponto', `${sum.cada} ha`) : ''}${row('Maior vazio', `${num(sum.vazio)} m`)}${row('Mais perto da borda', `${num(sum.borda)} m · ponto ${num(sum.bordaPt)}`, sum.borda < sum.bordMin ? ' al' : '')}
-<p class="lh">Camadas</p>${sw('layer-medidas', 'Medidas no mapa', layers.medidas, 'entre tiros e entre pontos')}${sw('layer-areas', 'Área de cada ponto', layers.areas, 'e onde fica o maior vazio')}${sw('layer-borda', 'Bordadura', layers.borda, 'distância das pontas até a borda')}${sw('layer-grade', 'Grade em metros', layers.grade, 'um quadrado = a escala')}</div>`;
+${row('Entre tiros', esc(sum.entreTiros))}${row('Entre pontos', esc(sum.entrePontos.replace('–', ' a ')))}${sum.cada ? row('Cada ponto', `${sum.cada} ha`) : ''}${row('Maior vazio', `${num(sum.vazio)} m`)}${row('Mais perto da borda', `${num(sum.borda)} m · ponto ${num(sum.bordaPt)}`, sum.borda < sum.bordLow ? ' er' : sum.borda < sum.bordMin ? ' al' : '')}
+<p class="lh">Camadas</p>${sw('layer-medidas', 'Medidas no mapa', layers.medidas, 'entre tiros e entre pontos')}${sw('layer-areas', 'Área de cada ponto', layers.areas, 'e onde fica o maior vazio')}${sw('layer-borda', 'Bordadura', layers.borda, `pontas até a borda · ideal ${sum.bordMin} m, mínimo ${sum.bordLow} m`)}${sw('layer-grade', 'Grade em metros', layers.grade, 'um quadrado = a escala')}</div>`;
 }
 
 const stepper = (id, label, hint, value) => `<div class="step"><label for="${id}">${label}${hint ? `<small>${hint}</small>` : ''}</label><div class="stp">
@@ -64,7 +64,7 @@ export function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, bu
 <section class="card">${stepper('ha', 'Hectares por ponto', `mínimo ${num(sc.minPoints)} pontos`, haPerPoint)}<div class="presets" role="group" aria-label="Regras comuns">${[10, 15, 20, 25, 30].map(v => `<button data-ha-set="${v}" aria-pressed="${String(v) === String(haPerPoint)}">${v} ha</button>`).join('')}</div>${stepper('people', 'Pessoas', '', people)}
 <div class="seg" role="group" aria-label="Planejar"><button class="on" aria-pressed="true">Lote</button><button data-open="bloco" aria-pressed="false">Bloco</button></div></section>
 <section class="card"><div class="row-sb"><h2 class="h">${inUseIsRec ? 'Plano recomendado' : 'Plano em uso'}</h2>${inUseIsRec ? '<span class="tag">em uso</span>' : rec ? '<button class="link" data-use="rec">Usar recomendado</button>' : '<span class="mu">calculando o recomendado…</span>'}</div>
-${metrics(f)}<p class="mu">Caminhada ${esc(f.caminhada)}${f.tiros ? ` · ${km(sc.route.totalEstimatedM / f.tiros)} km por tiro` : ''}${border ? (border.near ? ` · <span class="warn">ponto ${num(border.n)} a ${num(border.minM)} m da borda</span>` : ` · borda a ${num(border.minM)} m ou mais`) : ''}</p>${busy ? '<p class="mu">Calculando…</p>' : ''}
+${metrics(f)}<p class="mu">Caminhada ${esc(f.caminhada)}${f.tiros ? ` · ${km(sc.route.totalEstimatedM / f.tiros)} km por tiro` : ''}${border ? (border.near ? ` · <span class="${border.low ? 'warn' : 'note'}">ponto ${num(border.n)} a ${num(border.minM)} m da borda</span>` : ` · borda a ${num(border.minM)} m ou mais`) : ''}</p>${busy ? '<p class="mu">Calculando…</p>' : ''}
 <div data-hint>${hintMarkup(hint)}</div></section>
 ${trackRows(rows, hiTrack)}
 ${checkAndTeam(list, split)}
@@ -79,8 +79,8 @@ const teamList = split => split.pessoas.map((p, i) => `<div class="li"><span cla
 export function checkAndTeam(list, split) {
   const ok = list.filter(c => c.level === 'ok').length, all = ok === list.length;
   const kms = split ? split.pessoas.map(p => p.m / 1000) : [];
-  return `<details class="card fold"><summary class="sumc"><span class="x"><b>${all ? 'Plano conferido' : 'Conferir o plano'}</b><small class="sub">${esc(list.filter(c => c.level !== 'ok').map(c => c.text).join(' · ') || list.map(c => c.text).slice(0, 2).join(' · '))}</small></span>${chip(all ? 'ok' : 'alerta', `${ok} de ${list.length}`)}</summary>${list.map(c => `<p class="ck ${c.level}">${esc(c.text)}</p>`).join('')}</details>`
-    + (split ? `<details class="card fold list"><summary class="sumc"><span class="x"><b>Equipe</b><small class="sub">${num(split.pessoas.length)} ${split.pessoas.length === 1 ? 'pessoa' : 'pessoas'} · ${num(Math.min(...kms), 1)} a ${num(Math.max(...kms), 1)} km cada</small></span></summary>${teamList(split)}</details>` : '');
+  return `<details class="card fold" data-k="conf"><summary class="sumc"><span class="x"><b>${all ? 'Plano conferido' : 'Conferir o plano'}</b><small class="sub">${esc(list.filter(c => c.level !== 'ok').map(c => c.text).join(' · ') || list.map(c => c.text).slice(0, 2).join(' · '))}</small></span>${chip(all ? 'ok' : 'alerta', `${ok} de ${list.length}`)}</summary>${list.map(c => `<p class="ck ${c.level}">${esc(c.text)}</p>`).join('')}</details>`
+    + (split ? `<details class="card fold list" data-k="equipe"><summary class="sumc"><span class="x"><b>Equipe</b><small class="sub">${num(split.pessoas.length)} ${split.pessoas.length === 1 ? 'pessoa' : 'pessoas'} · ${num(Math.min(...kms), 1)} a ${num(Math.max(...kms), 1)} km cada</small></span></summary>${teamList(split)}</details>` : '');
 }
 
 /** Folha "Arquivos e fichas" (menu): enviar o plano, fichas impressas, resumo e arquivos de GPS/SIG. */
@@ -157,7 +157,7 @@ function trackRows(rows, hiTrack) {
     const d = r.d, head = `<span class="id">${esc(r.trackId)}</span><span class="x">${num(r.lengthM)} m <small>· ${r.n === 1 ? '1 ponto' : `${num(r.n)} pontos`}</small></span><span class="r">${r.medianGapM ? `a cada ${num(r.medianGapM)} m` : r.n ? '1 ponto' : 'sem ponto'}</span>`;
     if (!d) return `<div class="li">${head}</div>`;
     const on = hiTrack === r.trackId;
-    return `<details class="trk"${on ? ' open' : ''}><summary class="li">${head}</summary><div class="trkb">
+    return `<details class="trk" data-k="trk:${esc(r.trackId)}"${on ? ' open' : ''}><summary class="li">${head}</summary><div class="trkb">
 ${d.parts.map((pt, i) => `${d.parts.length > 1 ? `<p class="mu sm">Parte ${i + 1} · ${num(pt.lengthM)} m</p>` : ''}<p class="mu sm">Entra a ${esc(pt.entra)} e anda para ${esc(pt.anda)}</p>${ruler(pt.steps)}`).join('')}
 ${d.neighbors.length ? `<p class="mu sm">${d.neighbors.length > 1 ? 'Tiros vizinhos' : 'Tiro vizinho'}: ${d.neighbors.map(nb => `${esc(nb.id)} a ${num(nb.m)} m`).join(' · ')} (de lado)</p>` : ''}
 <button class="link" data-hitrack="${esc(r.trackId)}" aria-pressed="${on}">${on ? 'Destacado no mapa' : 'Ver no mapa'}</button></div></details>`;

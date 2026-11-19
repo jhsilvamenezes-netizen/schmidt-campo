@@ -57,7 +57,7 @@ export function installMapa(app) {
   function summary(cur, areas, bd) {
     const f = P.figures(cur.sc), cada = areas ? (Math.abs(areas.maxHa - areas.minHa) < 0.05 ? num(areas.minHa, 1) : `${num(areas.minHa, 1)} a ${num(areas.maxHa, 1)}`) : null;
     return { code: cur.field.code, ha: cur.field.areaOfficialHa, entreTiros: f.entreTiros, entrePontos: f.entrePontos, cada, vazio: areas?.worstGapM ?? 0,
-      borda: bd?.minM ?? 0, bordaPt: bd?.min.number ?? 0, bordMin: P.BORDADURA_M };
+      borda: bd?.minM ?? 0, bordaPt: bd?.min.number ?? 0, bordMin: P.BORDADURA_M, bordLow: P.BORDA_MIN_M };
   }
   function drawMaps() {
     const cur = app.cur;
@@ -72,7 +72,7 @@ export function installMapa(app) {
       const ra = full && selectedPt && rulerPt ? cur.sc.samples.find(p => p.id === selectedPt) : null, rb = ra ? cur.sc.samples.find(p => p.id === rulerPt) : null;
       const ruler = ra && rb ? { a: [ra.x, ra.y], b: [rb.x, rb.y], m: Math.hypot(ra.x - rb.x, ra.y - rb.y), na: ra.number, nb: rb.number } : null;
       const bd = full ? P.borderStats(cur.field, cur.sc) : null;
-      const opts = full ? { measure, ruler, grid: layers.grade, border: layers.borda && bd ? { ends: bd.ends, min: P.BORDADURA_M } : null, pos: here, to: w ? [w.point.x, w.point.y] : null, focus: here && w && views.full === ID ? [[here.x, here.y], [w.point.x, w.point.y]] : null, pad: { t: info || ruler || w ? 116 : 44, r: 64, b: 56, l: 36 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
+      const opts = full ? { measure, ruler, grid: layers.grade, border: layers.borda && bd ? { ends: bd.ends, min: P.BORDADURA_M, low: P.BORDA_MIN_M } : null, pos: here, to: w ? [w.point.x, w.point.y] : null, focus: here && w && views.full === ID ? [[here.x, here.y], [w.point.x, w.point.y]] : null, pad: { t: info || ruler || w ? 116 : 44, r: 64, b: 56, l: 36 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
         reserve: [...(info || ruler || w ? [[0, 0, Math.min(W - 40, 330), 104]] : []), [W - 60, H - 170, W, H]] } : { pad: 22, grid: layers.grade };
       const g = guide ? app.guide() : null;
       const kind = full ? 'full' : guide ? 'guide' : 'small', view = guide && g.focus ? ID : views[kind];

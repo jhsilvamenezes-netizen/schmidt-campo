@@ -20,9 +20,18 @@ export function installMonitor(app) {
     const off = !!model?.warn?.some(w => /da linha|linha do|Passou do ponto/.test(w));
     if (off && !mon.offWarned) { try { window.navigator.vibrate?.([70, 60, 70, 60, 70]); } catch { /* sem vibração */ } say('Atenção: fora da linha.'); }
     mon.offWarned = off;
+    // 3.10 · chegando (a 3× o raio de chegada, 30 m no padrão): um toque curto de vibração, uma vez por ponto
+    const nearM = 3 * (cur.sc.params.monitor?.arrivalRadiusM ?? 10);
+    const dM = model?.distM ?? NaN;
+    if (model?.state === 'go' && Number.isFinite(dM) && dM <= nearM && model.next?.id !== mon.nearId) {
+      mon.nearId = model.next.id;
+      try { window.navigator.vibrate?.(150); } catch { /* sem vibração */ }
+      say(`Chegando ao ponto ${model.next.seq}: ${Math.round(dM)} metros.`);
+    }
     if (model?.state === 'arrived' && model.next?.id !== mon.arrivedId) {
       mon.arrivedId = model.next.id;
-      try { window.navigator.vibrate?.([200, 80, 200]); } catch { /* sem vibração */ }
+      // chegou: vibração longa e marcada (três pulsos), para sentir com o celular no bolso
+      try { window.navigator.vibrate?.([300, 100, 300, 100, 300]); } catch { /* sem vibração */ }
       say(`Chegou ao ponto ${model.next.seq}, número ${model.next.number}.`);
     }
     return { lot: cur.field.code, acc: mon.pos?.accuracyM ?? null, tracks, trackId: mon.trackId, flipped: mon.flipped, active: mon.active, model, heading: mon.heading, voice: mon.voice, canSpeak: !!window.speechSynthesis, steps: route?.instructions || [], target: model?.next?.id ?? null };
@@ -70,7 +79,7 @@ export function installMonitor(app) {
   function unwatch() { if (mon.watchId !== null) window.navigator.geolocation?.clearWatch(mon.watchId); mon.watchId = null; }
   function gpsStart() {
     if (!window.navigator.geolocation) { app.toast('Este aparelho não oferece GPS ao navegador.'); return; }
-    mon.active = true; mon.pos = null; mon.session = {}; mon.arrivedId = null;
+    mon.active = true; mon.pos = null; mon.session = {}; mon.arrivedId = null; mon.nearId = null;
     watch(); compassOn(); keepAwake(true); clearInterval(mon.ticker); mon.ticker = setInterval(() => { if (mon.active && ui.view === 'monitorar') app.render(); }, 5000);
     app.render();
   }
