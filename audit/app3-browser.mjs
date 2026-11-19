@@ -51,6 +51,9 @@ try {
     await p.click('[data-tab="plano"]'); await p.click('details.trk >> nth=1 >> summary');
     assert.match((await p.textContent('details.trk[open]')).replace(/\s+/g, ' '), /Entra a \S+ e anda para \S+.*borda.*m.*borda.*Tiros vizinhos: T1 a \d+ m · T3 a \d+ m/);
     await p.click('[data-hitrack="T2"]'); await p.waitForSelector('[data-map="small"] .track.hi');
+    // 3.5: a sugestão do motor chega do segundo plano sem redesenhar o Plano (o tiro aberto continua aberto)
+    await p.waitForSelector('[data-hint] .sug', { timeout: 20000 });
+    assert.equal(await p.locator('details.trk[open]').count(), 1, 'tiro aberto fechou quando a sugestão chegou');
     await p.click('[data-tab="mapa"]');
     // pessoas e opções
     await p.click('[data-tab="plano"]'); await p.click('[data-inc="people"]');
