@@ -122,7 +122,10 @@ export function monitorView({ nextTrack = /** @type {any} */ (null), lot = '', a
   // seta pequena ao lado da distância: o mapa (grande, acima) fica livre para contornar e se orientar
   // com bússola, a seta aponta para onde andar com o celular na mão; sem ela, norte para cima
   const rel = Number.isFinite(m.azimuth) ? (Number.isFinite(heading) ? (((m.azimuth - Number(heading)) % 360) + 360) % 360 : m.azimuth) : null;
-  const arrow = rel === null ? '' : `<svg class="arrow" viewBox="-30 -30 60 60" aria-hidden="true"><circle r="28"/><g data-az="${m.azimuth.toFixed(1)}" transform="rotate(${rel.toFixed(0)})"><path d="M0 -20L12 13L0 6L-12 13Z"/></g></svg>`;
+  // 3.16 · anel em volta da seta: quanto do trecho até o ponto já foi andado (cheio = chegando)
+  const C = 2 * Math.PI * 28, seg = Number.isFinite(m.seg) ? m.seg : null;
+  const ring = seg === null ? '' : `<circle class="ring" r="28" transform="rotate(-90)" stroke-dasharray="${(C * seg).toFixed(1)} ${C.toFixed(1)}"/>`;
+  const arrow = rel === null ? '' : `<svg class="arrow" viewBox="-32 -32 64 64" aria-hidden="true"><circle r="28"/>${ring}<g data-az="${m.azimuth.toFixed(1)}" transform="rotate(${rel.toFixed(0)})"><path d="M0 -20L12 13L0 6L-12 13Z"/></g></svg>`;
   // 3.4 · modo navegação: mapa em tela cheia (topo some), etiqueta do tiro e do GPS por cima do mapa, barra de progresso,
   // distância grande e botões grandes (luva, sol, uma mão)
   const pr = m.progress, gps = acc === null ? '' : `<span class="gps ${acc <= 5 ? 'ok' : acc <= 15 ? 'al' : 'er'}">GPS ± ${num(acc)} m</span>`;

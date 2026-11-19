@@ -1,16 +1,17 @@
 {
-  "entrega": "3.15.0",
+  "entrega": "3.16.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-18",
-  "versaoDoApp": "3.15.0",
+  "versaoDoApp": "3.16.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "f89f1dbe2144deaef26f5a664c4820cdc29f6ce185be91ae709edbb48a71e6b2",
-  "workerSha256": "a2dfcef6af29136ea60cf45e7420a4ce20a043bfe16ff5efbf71da3f7b46cf80",
+  "htmlSha256": "a656ba12b6686ab1f4bec9cdd66c3e83b75714d9a4068b39ec76906404a0e7ee",
+  "workerSha256": "7c98651d8ee2a67c1ed6d451f439730103274744c66eed18824baa589cf019e6",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "3.16.0: chegada pela precisão do GPS (raio efetivo = maior entre 10 m e a precisão, até 15 m; acima de 10 m vem o aviso de conferir pelos passos); anel de progresso em volta da seta na guia; estudo das margens das pontas (meia margem segue a melhor nos 51 lotes)",
     "3.15.0: lote irregular — sugestão de 1 ponto acima do mínimo quando o maior vazio passa de 1,2 × o lado ideal e o ganho é ≥ 8% (BD5 689 → 602 m; RB9 95% do lote 517 → 451 m), com Desfazer; fonte Inter embutida (a mesma letra em todo celular, sem internet; licença SIL OFL); \"calculando\" animado; mapa grande no Plano com um toque",
     "3.14.0: motor — etapa Lloyd ao longo do tiro na Sugestão do motor (pior vazio médio 355 → 354 m, variação das áreas 10,07% → 10,00%, nada piora); estudo dos limites em docs/LEVANTAMENTO_3_9.md §11",
     "3.13.0: Monitorar — \"Próximo tiro\" da mesma pessoa ao chegar ao último ponto, sem parar a guia; Voltar do celular fecha a janela aberta",
@@ -91,5 +92,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "23407cdbf65fb6a12753acbfc900f5393c3ba830c9434483c3cc34c0d920ece9"
+  "motorSha256": "42d150c077626bf39a858d1b3c0194904fa121dbbba69b94ddcb6f96f80d3e85"
 }

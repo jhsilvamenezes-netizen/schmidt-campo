@@ -128,3 +128,11 @@ margem das pontas por lado (M7) e calibração em campo (trecho mínimo 60 m, ra
 | Fonte | Inter embutida (`inter.woff2`, 48 KB, latino, licença SIL OFL em `docs/LICENCA_FONTE_INTER.txt`); guardada pelo service worker para uso sem internet |
 | Calculando | Barra que brilha no lugar do texto (lista de lotes, lote em uso, números da fazenda, recomendado) |
 | V2 | Plano: botão no canto do mapa para mapa grande (58% da tela) e de volta |
+
+## 13. Feito na 3.16 (com embasamento)
+
+| Item | Base técnica | Resultado |
+|---|---|---|
+| Chegada pela precisão do GPS (M6) | O GPS não separa posições mais próximas que a sua precisão; com ± 13 m e raio de 10 m a pessoa podia estar no ponto e nunca "chegar" | Raio efetivo = maior entre 10 m e a precisão (até 15 m, a precisão aceita). Acima de 10 m a chegada vem com "confira pelos passos". Teste novo falha no código antigo |
+| Margem das pontas (M7) | Medido nos 51 lotes: "margens iguais" piora (maior vazio médio 365 → 454 m, 95% 280 → 340 m); margem fixa de 41 a 150 m por lote não melhora nenhum lote sem piorar outra medida | Fica a meia margem atual |
+| Anel de progresso | Quanto do trecho até o ponto já foi andado, em volta da seta (leitura de relance, sem números) | Guia |
