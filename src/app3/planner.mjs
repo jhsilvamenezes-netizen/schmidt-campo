@@ -15,7 +15,7 @@ import { exactCoverage } from '../engine3/voronoi.mjs';
 import { pointInGeom } from '../engine3/geometry.mjs';
 import { num, range, km, plural } from './format.mjs';
 
-export const ENGINE_LABEL = '3.5.0';
+export const ENGINE_LABEL = '3.6.0';
 export const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;

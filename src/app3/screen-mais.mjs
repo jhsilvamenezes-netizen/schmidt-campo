@@ -72,7 +72,7 @@ export function installMais(app) {
   }
 
   Object.assign(app.SHEETS, {
-    menu: () => app.openSheet('Mais', V.menuBody([['arquivos', 'Arquivos e fichas'], ['dados', 'Dados do lote'], ['calculo', 'Como foi calculado'], ['versoes', 'Versões anteriores'],
+    menu: () => app.openSheet('Mais', `<div class="brand"><img src="marca-logo.png" alt="SCHMIDT" width="88" height="88"><span><b>SCHMIDT Campo</b><small>Planejamento de amostragem · versão ${app.appVersion}</small></span></div>` + V.menuBody([['arquivos', 'Arquivos e fichas'], ['dados', 'Dados do lote'], ['calculo', 'Como foi calculado'], ['versoes', 'Versões anteriores'],
       ['copia', 'Cópia de segurança'], ['abrir', 'Abrir plano recebido']])),
     todos: openAll,
     versoes: async () => { app.openSheet(`Versões · ${app.cur.field.code}`, '<p class="mu">…</p>'); const rows = await versions.list(ui.key); app.openSheet(`Versões · ${app.cur.field.code}`, V.versionsBody(rows)); },

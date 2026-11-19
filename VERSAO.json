@@ -1,16 +1,17 @@
 {
-  "entrega": "3.5.0",
+  "entrega": "3.6.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-18",
-  "versaoDoApp": "3.5.0",
+  "versaoDoApp": "3.6.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "4eb0eb42b0a7ecf283545ac233703e2bb795aa8804bbc903e616a31e78a58a13",
-  "workerSha256": "d3a19d96abb91a3dddcd2cbbdf81d56681921dc60b7bc1b057031cfc1e974056",
+  "htmlSha256": "f444af4db9046462f07d908caeac39046799c899ade58fd254afa492a0ef7386",
+  "workerSha256": "c052c01ff2000eb6ea0c219acc6e4d4c756467bbf2a496e3ac38ab0679f337d4",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "3.6.0: marca nova do proprietário (docs/marca-schmidt-original.png) — ícones do app (marca-180/192/512), marca.svg, logo do topo e logo completa no menu (marca-logo.png); paleta tirada da logo: verde-floresta #023628 (topo), verde #035F30 (ação, tiros), dourado #EDA603 (pontos) e #CF9206 (faixas), creme #F7F2E6/#FFFDF7 (fundo e cartões); escuro com verde cheio #0B7A3E nos botões; contraste 0 falhas nos 3 temas",
     "3.5.0 (melhorias por aba): Mapa — na camada Área, anel vermelho onde fica o maior vazio do lote, linha até o ponto mais perto e \"Maior vazio N m\" na legenda; Lotes — lotes com alerta com contorno âmbar no desenho da fazenda; Plano — atalhos de regra (10/15/20/25/30 ha) com um toque e Desfazer; Monitorar — ao sair da linha ou passar do ponto, três toques de vibração (e aviso por voz, se ligada), uma vez por saída",
     "3.4.0: modo navegação no Monitorar (topo some, mapa em tela cheia, etiqueta lote · tiro · pessoa · GPS ± m com cor, barra de progresso dos pontos, distância grande, botões grandes \"Ligar voz\" e \"Parar guia\"; ao chegar, mostra o ponto seguinte e a distância); sugestão do motor no Plano (a melhoria da distribuição é calculada em segundo plano e aparece pronta com o ganho; um toque aplica, com Desfazer); entrada suave do conteúdo ao trocar de aba (180 ms; desliga com \"reduzir movimento\")",
     "3.3.0: uma família de letra em todo o app (token --f; antes cada parte usava a do sistema) e escala única de 5 tamanhos (12/14/16/20/28) e 3 pesos (400/600/700) — antes 13 tamanhos e 6 pesos; espaçamentos numa grade de 4 px e 4 cantos (8/12/16/20); cor de ação própria (--act): no escuro, botões e seleções em verde cheio com letra branca (antes menta claro); régua no mapa (ponto escolhido + outro ponto = distância em linha reta); \"Melhorar a distribuição dos pontos\": 1º diminui o maior vazio, 2º iguala as áreas sem deixar o vazio crescer — 31 de 51 lotes melhoram (BD5 689 → 610 m; RA8 áreas 18% → 12%)",
@@ -81,5 +82,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "ba945a55b1433ad62d6249327d4ac964d9f7284cef518cad801553174bee76e8"
+  "motorSha256": "cca3c48faadde75e4f11e848604bd64a642d63e4118c4cb9eb976f90076f0eb1"
 }

@@ -4,8 +4,8 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f3f7f4",
-  "theme_color": "#17594a",
+  "background_color": "#f7f2e6",
+  "theme_color": "#023628",
   "icons": [
     {
       "src": "marca.svg",

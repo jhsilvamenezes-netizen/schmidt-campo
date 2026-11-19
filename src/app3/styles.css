@@ -2,13 +2,13 @@
 /* Paleta SCHMIDT (3.1): verde da marca (#0B5A50 do logo), dourado (#C99A3E) e branco, preenchidos. Topo verde com faixa
    dourada; mapa em fundo verde-sálvia com o lote claro; pontos dourados (número escuro, aro branco) sobre tiros verdes;
    ponto tocado em verde. Medidas "entre pontos" no dourado dos pontos; "entre tiros" no verde dos tiros. */
-:root{--f:"Inter","SF Pro Text","Segoe UI Variable","Segoe UI",Roboto,system-ui,-apple-system,sans-serif;--bg:#f3f4ef;--sf:#fff;--sf2:#f1f4ee;--ink:#111a16;--mu:#56635d;--ln:#e2e6de;--br:#0d5446;--br2:#e3efe8;--on-br:#fff;--act:#0d5446;--on-act:#fff;--gold:#b8892f;
---hd:#0b3f35;--hd-ink:#fff;--mapbg:#e1e9e0;--pt:#8a5a06;--tr:#0d5446;--ptf:#e3ae4b;--ptr:#0d5446;--pti:#111a16;--fd:#fbfcf8;--fl:#0d5446;
+:root{--f:"Inter","SF Pro Text","Segoe UI Variable","Segoe UI",Roboto,system-ui,-apple-system,sans-serif;--bg:#f7f2e6;--sf:#fffdf7;--sf2:#f5efe1;--ink:#10231a;--mu:#56604f;--ln:#e5dcc8;--br:#035f30;--br2:#e3efdf;--on-br:#fff;--act:#035f30;--on-act:#fff;--gold:#cf9206;
+--hd:#023628;--hd-ink:#fff;--mapbg:#e6e9d7;--pt:#9c6200;--tr:#035f30;--ptf:#eda603;--ptr:#023628;--pti:#10231a;--fd:#fffdf6;--fl:#035f30;
 --ok:#1b7a45;--oks:#dff1e6;--al:#8d5c08;--als:#fbefd6;--er:#b42318;--ers:#fdeceb;--sh:0 1px 0 #0d221a0a,0 8px 24px -12px #0d221a29;--focus:#1d5fd1;color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not(.sun){--bg:#090e0c;--sf:#111916;--sf2:#16211c;--ink:#eef3ef;--mu:#9aaba3;--ln:#1f2b26;--br:#7fd0ae;--br2:#17302a;--on-br:#04110b;--act:#1b7458;--on-act:#fff;--gold:#d6a957;
---hd:#0a2a23;--hd-ink:#fff;--mapbg:#0d1714;--pt:#e2b462;--tr:#5fbf9e;--ptf:#d9a441;--ptr:#f2f7f4;--pti:#13221c;--fd:#14231d;--fl:#5fbf9e;
+@media (prefers-color-scheme:dark){:root:not(.sun){--bg:#07130e;--sf:#0e1c16;--sf2:#13241c;--ink:#eef3ec;--mu:#a1b0a3;--ln:#1f3128;--br:#72d39c;--br2:#143023;--on-br:#04110b;--act:#0b7a3e;--on-act:#fff;--gold:#eda603;
+--hd:#01261c;--hd-ink:#fff;--mapbg:#0b1a13;--pt:#f0bb4a;--tr:#5fc48b;--ptf:#eda603;--ptr:#f2f7f4;--pti:#13221c;--fd:#10241b;--fl:#5fc48b;
 --ok:#7fd6a0;--oks:#16301f;--al:#f0c26a;--als:#33280f;--er:#ff8f85;--ers:#3a1714;--sh:0 1px 2px #0007;--focus:#8ab4ff;color-scheme:dark}}
-:root.sun{--act:#00422e;--on-act:#fff;--bg:#eef3ef;--sf:#fff;--sf2:#fff;--ink:#000;--mu:#1d2b26;--ln:#000;--br:#00422e;--br2:#d6eadf;--on-br:#fff;--gold:#b07a1a;--hd:#00422e;--hd-ink:#fff;--mapbg:#e2ede6;--pt:#6b4300;--tr:#00422e;--ptf:#e0a838;--ptr:#000;--pti:#000;--fd:#fff;--fl:#00422e;--sh:none}
+:root.sun{--act:#023628;--on-act:#fff;--bg:#eef3ef;--sf:#fff;--sf2:#fff;--ink:#000;--mu:#1d2b26;--ln:#000;--br:#023628;--br2:#d6eadf;--on-br:#fff;--gold:#b07a00;--hd:#023628;--hd-ink:#fff;--mapbg:#e2ede6;--pt:#6b4300;--tr:#023628;--ptf:#eda603;--ptr:#000;--pti:#000;--fd:#fff;--fl:#023628;--sh:none}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font:400 14px/1.4 var(--f);display:flex;flex-direction:column;overflow:hidden;-webkit-tap-highlight-color:transparent}
@@ -173,7 +173,7 @@ header .ib{color:var(--hd-ink)}.lot small{color:#ffffffc7}
 html{-webkit-text-size-adjust:100%}
 body{font-family:var(--f);font-feature-settings:"tnum" 1,"cv11" 1;letter-spacing:-.005em;-webkit-font-smoothing:antialiased}
 /* topo: verde profundo com faixa dourada fina; o lote é o título */
-header{height:58px;gap:4px;padding:0 8px 0 16px;background:linear-gradient(180deg,#0e4a3e,var(--hd));border-bottom:2px solid var(--gold);box-shadow:0 1px 0 #0003}
+header{height:58px;gap:4px;padding:0 8px 0 16px;background:linear-gradient(180deg,#044a33,var(--hd));border-bottom:2px solid var(--gold);box-shadow:0 1px 0 #0003}
 .logo{font:700 14px var(--f);letter-spacing:.18em}.logo svg{width:30px;height:30px}
 .lot{margin:0 auto 0 12px;flex-direction:column;align-items:flex-start;gap:0;padding:4px 12px 4px 12px;border-radius:12px;background:#ffffff14;border:1px solid #ffffff26;font:700 16px/1.15 var(--f);letter-spacing:-.01em;position:relative;padding-right:28px}
 .lot small{font:400 12px/1.2 var(--f);letter-spacing:0}.lot small[aria-hidden]{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px}
@@ -190,7 +190,7 @@ header{height:58px;gap:4px;padding:0 8px 0 16px;background:linear-gradient(180de
 .big{font:700 28px/1.05 var(--f);letter-spacing:-.025em}.big.md{font-size:20px;letter-spacing:-.02em}
 /* controles */
 .btn{min-height:52px;border-radius:12px;font:600 16px var(--f);letter-spacing:-.01em;border-color:var(--ln);transition:transform .08s,filter .15s}
-.btn.p{background:linear-gradient(180deg,#126150,var(--act));box-shadow:inset 0 1px 0 #ffffff26,0 6px 16px -8px #0d5446a6}
+.btn.p{background:linear-gradient(180deg,#0a7238,var(--act));box-shadow:inset 0 1px 0 #ffffff26,0 6px 16px -8px #035f30a6}
 .btn:active{transform:scale(.985)}
 .stp button{width:44px;height:44px;border-radius:12px;background:var(--sf2);border:1px solid var(--ln);font-weight:500}
 .stp input{font:700 20px var(--f);letter-spacing:-.02em}
@@ -229,7 +229,7 @@ main>.sheet{background:color-mix(in srgb,var(--sf) 94%,transparent);backdrop-fil
 .mt{border-radius:12px;font-weight:650}
 .ck:before{width:20px;height:20px}
 #toast:not(:empty){border-radius:12px;box-shadow:0 12px 30px -12px #0008}
-@media (prefers-color-scheme:dark){:root:not(.sun) header{background:linear-gradient(180deg,#0c3129,var(--hd))}:root:not(.sun) .btn.p{background:linear-gradient(180deg,#22896a,var(--act));box-shadow:inset 0 1px 0 #ffffff1f}}
+@media (prefers-color-scheme:dark){:root:not(.sun) header{background:linear-gradient(180deg,#023a29,var(--hd))}:root:not(.sun) .btn.p{background:linear-gradient(180deg,#14904b,var(--act));box-shadow:inset 0 1px 0 #ffffff1f}}
 :root.sun header{background:var(--hd)}:root.sun .btn.p{background:var(--br);box-shadow:none}:root.sun .map-svg .mgrid{stroke:#000;stroke-opacity:.18}:root.sun .map-svg .track{stroke-opacity:1}
 :root.sun .m3{border:2px solid #000}:root.sun .m{border-left:2px solid #000}:root.sun .m:first-child{border-left:0}:root.sun nav{background:#fff;backdrop-filter:none}
 :root.sun .li .id{border:1.5px solid #000;background:#fff}
@@ -283,3 +283,6 @@ main.tab-in>*:not(.map){animation:entra 180ms cubic-bezier(.2,.7,.2,1)}
 .presets button{min-height:40px;border-radius:12px;border:1px solid var(--ln);background:var(--sf2);font:600 14px var(--f);color:var(--ink)}
 .presets button[aria-pressed="true"]{background:var(--act);color:var(--on-act);border-color:var(--act)}
 :root.sun .presets button{border:2px solid #000;background:#fff}
+.brand{display:flex;align-items:center;gap:16px;padding:4px 0 12px;border-bottom:1px solid var(--ln);margin-bottom:4px}
+.brand img{width:88px;height:88px;border-radius:50%;box-shadow:0 0 0 3px var(--hd),0 8px 20px -10px #0008;background:var(--hd)}
+.brand b{display:block;font:700 20px var(--f);color:var(--ink)}.brand small{display:block;font:400 12px var(--f);color:var(--mu)}
