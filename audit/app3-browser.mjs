@@ -59,6 +59,10 @@ try {
     // 3.5: a sugestão do motor chega do segundo plano sem redesenhar o Plano (o tiro aberto continua aberto)
     await p.waitForSelector('[data-hint] .sug', { timeout: 20000 });
     assert.equal(await p.locator('details.trk[open]').count(), 1, 'tiro aberto fechou quando a sugestão chegou');
+    // 3.12 · tocar numa medida abre a frase do glossário
+    await p.click('.res [data-term="Entre tiros"]'); await p.waitForSelector('.glos1');
+    assert.match(await p.textContent('.glos1'), /Distância de lado de um tiro ao vizinho/);
+    await p.click('.close');
     // 3.10: redesenhar o Plano (mudar pessoas, recomendação que chega do motor) mantém o tiro aberto
     await p.click('details.trk >> nth=2 >> summary');
     await p.click('[data-inc="people"]'); await p.click('[data-dec="people"]');
@@ -103,6 +107,19 @@ try {
     await p.mouse.click(pt2.x + pt2.width / 2, pt2.y + pt2.height / 2); await p.waitForSelector('.map-svg .rul');
     assert.match(await p.textContent('.bal'), /^[\d.]+ m\s*do ponto \d+ ao ponto \d+/);
     await p.waitForTimeout(400); await p.mouse.click(box.x + 8, box.y + box.height - 90); await p.waitForFunction(() => !document.querySelector('.map-svg .rul'));
+    // 3.12 · tocar num tiro (fora dos pontos) mostra o tiro inteiro e o destaca; tocar fora limpa
+    const tp = await p.evaluate(() => {
+      const path = document.querySelector('[data-map="full"] .thit[data-trk]'), L = path.getTotalLength(), pts = [...document.querySelectorAll('[data-map="full"] .pt circle')];
+      // o ponto da linha mais longe de qualquer ponto amostral (para não tocar num ponto)
+      let best = null;
+      for (let i = 1; i < 40; i++) { const q = path.getPointAtLength((L * i) / 40), d = Math.min(...pts.map(c => Math.hypot(c.cx.baseVal.value - q.x, c.cy.baseVal.value - q.y))); if (!best || d > best.d) best = { q, d }; }
+      const m = path.getScreenCTM(), x = m.a * best.q.x + m.c * best.q.y + m.e, y = m.b * best.q.x + m.d * best.q.y + m.f;
+      return { x, y, id: path.dataset.trk };
+    });
+    await p.waitForTimeout(400); await p.mouse.click(tp.x, tp.y); await p.waitForSelector('[data-map="full"] .bal');
+    assert.match((await p.textContent('[data-map="full"] .bal')).replace(/\s+/g, ' '), new RegExp(`Tiro ${tp.id} · [\\d.]+ m.*pontos?.*entra a`));
+    assert.equal(await p.locator('[data-map="full"] .track.hi').count(), 1, 'tiro tocado destacado');
+    await p.waitForTimeout(400); await p.mouse.click(box.x + 8, box.y + box.height - 90); await p.waitForFunction(() => !document.querySelector('[data-map="full"] .bal'));
     // arquivos: plano (sem compartilhamento no navegador de teste → baixa) e CSV
     // 3.1: arquivos saíram da aba Enviar e foram para o menu (Arquivos e fichas)
     await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="arquivos"]');
@@ -149,6 +166,7 @@ try {
     assert.match(await p.textContent('.sheet'), /lotes com parâmetros próprios/);
     const reloaded = p.waitForEvent('load', { timeout: 15000 });
     await Promise.all([p.waitForEvent('download'), p.click('[data-act="restore-go"]')]);
+
     await reloaded; await ready(p);
     assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3'].haPerPoint), 15);
     // cópia alterada é recusada pelo hash
@@ -213,6 +231,20 @@ try {
     const second = await ctx.newPage(); await second.goto(url); await ready(second);
     await second.click('[data-tab="plano"]'); await second.click('[data-inc="people"]');
     await second.waitForFunction(() => /Outra janela do SCHMIDT está aberta/.test(document.getElementById('toast').textContent));
+    await second.close();
+    // 3.12 · versão nova publicada: o worker novo espera; aparece "Versão nova pronta · Atualizar"; o toque troca e recarrega
+    const { readFile: rf, writeFile: wf } = await import('node:fs/promises'), swPath = dir + 'sw.js', swOld = await rf(swPath, 'utf8');
+    try {
+      await wf(swPath, swOld + '// nova versão (teste)\n');
+      await p.evaluate(() => navigator.serviceWorker.getRegistration().then(r => r.update()));
+      await p.waitForSelector('#upd', { timeout: 15000 });
+      assert.match(await p.textContent('#upd'), /Versão nova pronta.*Atualizar/);
+      assert.equal(await p.textContent('#lot-name') !== '…', true, 'segue usando enquanto não toca');
+      await Promise.all([p.waitForEvent('load', { timeout: 15000 }), p.click('#upd')]);
+      await ready(p);
+      assert.equal(await p.locator('#upd').count(), 0, 'depois de atualizar o aviso some');
+      assert.match(await p.evaluate(() => navigator.serviceWorker.controller.scriptURL), /sw\.js$/);
+    } finally { await wf(swPath, swOld); }
     await ctx.close();
   }
   // R4.3 · Monitorar com GPS simulado: no ponto 1 do T1 → "Chegou"; 150 m antes → seta e distância

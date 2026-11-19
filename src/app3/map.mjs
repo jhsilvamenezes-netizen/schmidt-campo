@@ -3,7 +3,7 @@
 // trecho, área de cada ponto (célula exata) e, ao tocar num ponto, as distâncias dele aos vizinhos e à borda.
 // Todo texto passa por um único verificador de espaço: o que não cabe sem cobrir ponto, número ou outro texto
 // não é desenhado (nunca fica um em cima do outro).
-import { num } from './format.mjs';
+import { esc, num } from './format.mjs';
 
 const NICE = [50, 100, 200, 250, 500, 1000, 2000, 2500, 5000];
 /** Fonte de cada classe de texto (igual ao styles.css). Medida no próprio aparelho quando há tela (qualquer fonte de
@@ -132,6 +132,8 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
     // área de cada ponto: contornos das células por baixo dos tiros
     if (areas && !small) s += `<g class="cells">${areas.cells.map(c => `<path d="${c.rings.map(rg => `M${rg.map(P).join('L')}Z`).join('')}"/>`).join('')}</g>`;
     for (const u of sc.units) s += `<path class="track${hiTrack ? (u.trackId === hiTrack ? ' hi' : ' lo') : ''}" d="M${u.line.map(P).join('L')}"/>`;
+    // 3.12 · faixa invisível de toque sobre cada tiro (no mapa grande): tocar no tiro mostra o tiro inteiro
+    if (!small) for (const u of sc.units) s += `<path class="thit" data-trk="${esc(u.trackId)}" d="M${u.line.map(P).join('L')}"/>`;
     // ponto tocado primeiro: as distâncias dele têm prioridade sobre os demais textos
     if (info && !small) top = tocado(info, XY, sp, r);
     // nome do tiro na ponta esquerda; se não couber, na direita (nunca sob um ponto)

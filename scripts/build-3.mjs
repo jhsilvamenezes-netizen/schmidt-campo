@@ -12,7 +12,7 @@ export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', '
   'app3/advanced', 'app3/gestures', 'app3/monitor', 'app3/compass', 'persistence/backup-service', 'persistence/backup-format', 'platform/browser-backup-adapters', 'platform/browser-session-lock',
   'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/versions', 'app3/backup',
   'app3/screen-mapa', 'app3/screen-monitor', 'app3/screen-plano', 'app3/screen-enviar', 'app3/screen-mais', 'app3/screen-lotes', 'app3/screen-bloco', 'app3/main'];
-export const APP_VERSION = '3.11.0';
+export const APP_VERSION = '3.12.0';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
 /** Cada módulo no seu escopo; importações do motor viram o namespace schmidtEngine2. */
@@ -94,6 +94,8 @@ export async function build3() {
   const files = "const ARQUIVOS = ['./','index.html','manifest.webmanifest','icone.svg','icone-192.png','icone-512.png','icone-180.png'];";
   if (worker.split(files).length !== 2) throw Error('Lista de arquivos do service worker mudou');
   worker = worker.replace(files, "const ARQUIVOS = ['./','index.html','motor.js','app.webmanifest','marca.svg','marca-192.png','marca-512.png','marca-180.png','marca-logo.png'];");
+  // 3.12 · versão nova pronta: só troca quando a pessoa toca em "Atualizar" (o app manda a mensagem; nunca no meio da guia)
+  worker += "self.addEventListener('message',event=>{if(event.data&&event.data.type==='schmidt-atualizar')self.skipWaiting();});\n";
   await writeFile(root + 'build/3/sw.js', worker);
   const motor = await bundleWorker();
   await writeFile(root + 'build/3/motor.js', motor);

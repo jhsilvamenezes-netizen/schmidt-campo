@@ -58,7 +58,10 @@ test('CSS/HTML estáticos, dados e scripts auxiliares preservam a referência; P
   assert.match(read('legado/index.html').toString(),/<meta property="og:image" content="https:\/\/[^"]+icone-512\.png">/);
   const worker=read('sw.js').toString();
   assert.ok(worker.includes(createHash('sha256').update(read('index.html')).digest('hex')));
-  assert.doesNotMatch(worker,/self\.skipWaiting\s*\(/);
+  // 3.12: troca de versão só quando a pessoa toca em "Atualizar" (mensagem do app); nunca sozinha na instalação
+  const onAsk="self.addEventListener('message',event=>{if(event.data&&event.data.type==='schmidt-atualizar')self.skipWaiting();});";
+  assert.equal(worker.split(onAsk).length,2,'troca só a pedido');
+  assert.doesNotMatch(worker.replace(onAsk,''),/self\.skipWaiting\s*\(/);
   assert.match(worker,/cache:'reload'/);
 });
 for (const page of ['index.html','legado/index.html']) test(`CSP contém hashes corretos de todos os scripts executáveis, sem liberar inline: ${page}`, () => {

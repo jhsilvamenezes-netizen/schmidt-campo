@@ -12,7 +12,8 @@ export const ICONS = {
 };
 export const icon = name => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
 
-const metric = (label, value) => `<div class="m"><small>${label}</small><b>${esc(value)}</b></div>`;
+/** 3.12 · cada medida é um botão: tocar abre a frase do glossário (rótulo sublinhado em pontos indica que explica). */
+const metric = (label, value, term = label) => `<button class="m" data-term="${term}" aria-label="${label}: ${esc(value)}. O que é?"><small>${label}</small><b>${esc(value)}</b></button>`;
 export const metrics = f => `<div class="m3">${metric('Entre tiros', f.entreTiros)}${metric('Entre pontos', f.entrePontos)}${metric('95% do lote', f.p95)}</div>`;
 const chip = (level, text) => `<span class="chip ${level}">${esc(text)}</span>`;
 
@@ -44,9 +45,9 @@ export function mapTools(layers, zoomed, here = false, open = false, sum = null)
   const btns = `<div class="mtools v">${zoomed ? '<button class="mt" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : ''}<button class="mt" data-act="where" aria-label="Onde estou" aria-pressed="${here}">◎</button>`
     + `<button class="mt lyr" data-act="layers" aria-expanded="${open}" aria-label="Camadas e medidas">${LAYER_ICON}</button></div>`;
   if (!open || !sum) return btns;
-  const row = (k, v, cls = '') => `<div class="lsum${cls}"><span>${k}</span><b>${v}</b></div>`;
+  const row = (k, v, cls = '', term = k) => `<button class="lsum${cls}" data-term="${term}" aria-label="${k}: ${v}. O que é?"><span>${k}</span><b>${v}</b></button>`;
   return btns + `<div class="lpanel" role="dialog" aria-label="Camadas e medidas"><p class="lh">${esc(sum.code)} · ${num(sum.ha, 1)} ha</p>
-${row('Entre tiros', esc(sum.entreTiros))}${row('Entre pontos', esc(sum.entrePontos.replace('–', ' a ')))}${sum.cada ? row('Cada ponto', `${sum.cada} ha`) : ''}${row('Maior vazio', `${num(sum.vazio)} m`)}${row('Mais perto da borda', `${num(sum.borda)} m · ponto ${num(sum.bordaPt)}`, sum.borda < sum.bordLow ? ' er' : sum.borda < sum.bordMin ? ' al' : '')}
+${row('Entre tiros', esc(sum.entreTiros))}${row('Entre pontos', esc(sum.entrePontos.replace('–', ' a ')))}${sum.cada ? row('Cada ponto', `${sum.cada} ha`, '', 'Área de cada ponto') : ''}${row('Maior vazio', `${num(sum.vazio)} m`)}${row('Mais perto da borda', `${num(sum.borda)} m · ponto ${num(sum.bordaPt)}`, sum.borda < sum.bordLow ? ' er' : sum.borda < sum.bordMin ? ' al' : '', 'Bordadura')}
 <p class="lh">Camadas</p>${sw('layer-medidas', 'Medidas no mapa', layers.medidas, 'entre tiros e entre pontos')}${sw('layer-areas', 'Área de cada ponto', layers.areas, 'e onde fica o maior vazio')}${sw('layer-borda', 'Bordadura', layers.borda, `pontas até a borda · ideal ${sum.bordMin} m, mínimo ${sum.bordLow} m`)}${sw('layer-grade', 'Grade em metros', layers.grade, 'um quadrado = a escala')}</div>`;
 }
 

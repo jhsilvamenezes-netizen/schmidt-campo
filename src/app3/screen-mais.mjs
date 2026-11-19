@@ -71,28 +71,36 @@ export function installMais(app) {
     return makeBackup({ service: backupService, subtle: window.crypto.subtle, encodeBlob: toBase64, version: app.appVersion, engine: P.ENGINE_LABEL });
   }
 
+  // 3.9 · glossário: cada termo da tela em uma frase, com o número do lote em uso quando ajuda
+  function glossTerms() {
+    const cur = app.cur, f = cur ? P.figures(cur.sc) : null, a = cur ? P.pointAreas(cur.field, cur.sc) : null, bd = cur ? P.borderStats(cur.field, cur.sc) : null;
+    const terms = [
+      ['Tiro', 'Linha reta que a pessoa caminha dentro do lote, na direção das passadas da máquina. Cada pessoa anda o tiro inteiro.'],
+      ['Passada', `Largura da barra do pulverizador (36,48 m). Os tiros ficam a um número inteiro de passadas um do outro${f ? ` — aqui, ${f.entreTiros}` : ''}.`],
+      ['Ponto', 'Lugar onde se faz a amostra. O número do ponto segue a ordem de caminhada.'],
+      ['Entre tiros', `Distância de lado de um tiro ao vizinho${f ? ` (${f.entreTiros})` : ''}.`],
+      ['Entre pontos', `Distância andando no mesmo tiro de um ponto ao seguinte${f ? ` (${f.entrePontos})` : ''}.`],
+      ['Hectares por ponto', 'A regra: 1 ponto a cada tantos hectares, arredondando para cima. Dá o mínimo de pontos do lote.'],
+      ['95% do lote', `95% da área está a menos desta distância de um ponto${f ? ` (${f.p95})` : ''}. Quanto menor, melhor coberto.`],
+      ['Maior vazio', `O lugar do lote mais longe de qualquer ponto${a ? ` (${num(a.worstGapM)} m)` : ''}. Ligue a camada Área no mapa para ver onde fica.`],
+      ['Área de cada ponto', `Parte do lote mais perto de cada ponto${a ? ` (${num(a.minHa, 1)} a ${num(a.maxHa, 1)} ha)` : ''}. Quanto mais iguais, mais equilibrada a amostragem.`],
+      ['Bordadura', `Faixa junto à borda do lote feita no plantio (~${P.BORDADURA_M} m). O ideal é o ponto ficar a ${P.BORDADURA_M} m ou mais da borda; abaixo de ${P.BORDA_MIN_M} m o app alerta. Lote estreito ou irregular pode não permitir${bd ? `; aqui o ponto mais perto está a ${num(bd.minM)} m` : ''}.`],
+      ['Sugestão do motor', 'Melhoria calculada em segundo plano: afasta da borda, diminui o maior vazio e iguala as áreas, sem piorar a cobertura. Tem Desfazer.'],
+      ['Simulação', 'Os pontos são planejados no app; a posição final é a que a equipe marcar em campo.'],
+    ];
+    return terms;
+  }
+  // 3.12 · "?" das medidas (Plano e painel do mapa): a frase do termo, com atalho para o glossário inteiro
+  app.clicks.push(t => {
+    if (!t.dataset.term) return false;
+    const d = glossTerms().find(([n]) => n === t.dataset.term);
+    if (d) app.openSheet(d[0], `<p class="glos1">${esc(d[1])}</p><button class="lnk" data-open="glossario">Ver o glossário inteiro</button>`);
+    return true;
+  });
   Object.assign(app.SHEETS, {
     menu: () => app.openSheet('Mais', `<div class="brand"><img src="marca-logo.png" alt="SCHMIDT" width="88" height="88"><span><b>SCHMIDT Campo</b><small>Planejamento de amostragem · versão ${app.appVersion}</small></span></div>` + V.menuBody([['glossario', 'Glossário: o que cada medida quer dizer'], ['arquivos', 'Arquivos e fichas'], ['dados', 'Dados do lote'], ['calculo', 'Como foi calculado'], ['versoes', 'Versões anteriores'],
       ['copia', 'Cópia de segurança'], ['abrir', 'Abrir plano recebido']])),
-    // 3.9 · glossário: cada termo da tela em uma frase, com o número do lote em uso quando ajuda
-    glossario: () => {
-      const cur = app.cur, f = cur ? P.figures(cur.sc) : null, a = cur ? P.pointAreas(cur.field, cur.sc) : null, bd = cur ? P.borderStats(cur.field, cur.sc) : null;
-      const terms = [
-        ['Tiro', 'Linha reta que a pessoa caminha dentro do lote, na direção das passadas da máquina. Cada pessoa anda o tiro inteiro.'],
-        ['Passada', `Largura da barra do pulverizador (36,48 m). Os tiros ficam a um número inteiro de passadas um do outro${f ? ` — aqui, ${f.entreTiros}` : ''}.`],
-        ['Ponto', 'Lugar onde se faz a amostra. O número do ponto segue a ordem de caminhada.'],
-        ['Entre tiros', `Distância de lado de um tiro ao vizinho${f ? ` (${f.entreTiros})` : ''}.`],
-        ['Entre pontos', `Distância andando no mesmo tiro de um ponto ao seguinte${f ? ` (${f.entrePontos})` : ''}.`],
-        ['Hectares por ponto', 'A regra: 1 ponto a cada tantos hectares, arredondando para cima. Dá o mínimo de pontos do lote.'],
-        ['95% do lote', `95% da área está a menos desta distância de um ponto${f ? ` (${f.p95})` : ''}. Quanto menor, melhor coberto.`],
-        ['Maior vazio', `O lugar do lote mais longe de qualquer ponto${a ? ` (${num(a.worstGapM)} m)` : ''}. Ligue a camada Área no mapa para ver onde fica.`],
-        ['Área de cada ponto', `Parte do lote mais perto de cada ponto${a ? ` (${num(a.minHa, 1)} a ${num(a.maxHa, 1)} ha)` : ''}. Quanto mais iguais, mais equilibrada a amostragem.`],
-        ['Bordadura', `Faixa junto à borda do lote feita no plantio (~${P.BORDADURA_M} m). O ideal é o ponto ficar a ${P.BORDADURA_M} m ou mais da borda; abaixo de ${P.BORDA_MIN_M} m o app alerta. Lote estreito ou irregular pode não permitir${bd ? `; aqui o ponto mais perto está a ${num(bd.minM)} m` : ''}.`],
-        ['Sugestão do motor', 'Melhoria calculada em segundo plano: afasta da borda, diminui o maior vazio e iguala as áreas, sem piorar a cobertura. Tem Desfazer.'],
-        ['Simulação', 'Os pontos são planejados no app; a posição final é a que a equipe marcar em campo.'],
-      ];
-      app.openSheet('Glossário', `<dl class="glos">${terms.map(([t, d]) => `<dt>${esc(t)}</dt><dd>${esc(d)}</dd>`).join('')}</dl>`);
-    },
+    glossario: () => app.openSheet('Glossário', `<dl class="glos">${glossTerms().map(([t, d]) => `<dt>${esc(t)}</dt><dd>${esc(d)}</dd>`).join('')}</dl>`),
     todos: openAll,
     versoes: async () => { app.openSheet(`Versões · ${app.cur.field.code}`, '<p class="mu">…</p>'); const rows = await versions.list(ui.key); app.openSheet(`Versões · ${app.cur.field.code}`, V.versionsBody(rows)); },
     copia: () => app.openSheet('Cópia de segurança', V.backupBody('', lastBackup())),
@@ -112,9 +120,10 @@ export function installMais(app) {
       try {
         const b = pendingRestore;
         if (!backupService) return;
+        app.freeze(); // o estado da memória é o de antes: não pode voltar a ser gravado
         await backupService.restore({ data: b.dados, images: b.imagens.map(i => ({ key: i.chave, rec: { blob: fromBase64(i.base64, i.tipo), name: i.nome, world: i.world, width: i.largura, height: i.altura, crs: i.crs } })), history: b.historico || [], legacy: !!b.legado });
         app.toast('Restaurado. Abrindo de novo…'); setTimeout(() => window.location.reload(), 600);
-      } catch (e) { app.toast(`Falha ao restaurar: ${/** @type {Error} */ (e).message}.`); }
+      } catch (e) { app.freeze(false); app.toast(`Falha ao restaurar: ${/** @type {Error} */ (e).message}.`); }
     },
   });
   app.clicks.push(t => {
