@@ -81,9 +81,16 @@ try {
     const box = await p.locator('[data-map="full"]').boundingBox();
     await p.mouse.dblclick(box.x + box.width / 2, box.y + box.height / 2); await p.waitForSelector('[data-map="full"] [data-act="fit"]');
     await p.click('[data-map="full"] [data-act="fit"]'); await p.waitForFunction(() => !document.querySelector('[data-act="fit"]'));
+    // tocar fora limpa a escolha (o 1º toque do duplo toque pode ter escolhido um ponto)
+    await p.waitForTimeout(400); await p.mouse.click(box.x + 8, box.y + box.height - 90); await p.waitForTimeout(400);
     const pt = await p.locator('.map-svg .pt').first().boundingBox();
     await p.mouse.click(pt.x + pt.width / 2, pt.y + pt.height / 2); await p.waitForSelector('.bal');
     assert.match(await p.textContent('.bal'), /Ponto \d+ · T\d/);
+    // 3.3 · régua: com um ponto escolhido, tocar em outro mostra a distância em linha reta
+    await p.waitForTimeout(400); const pt2 = await p.locator('.map-svg .pt').last().boundingBox();
+    await p.mouse.click(pt2.x + pt2.width / 2, pt2.y + pt2.height / 2); await p.waitForSelector('.map-svg .rul');
+    assert.match(await p.textContent('.bal'), /^[\d.]+ m\s*do ponto \d+ ao ponto \d+/);
+    await p.waitForTimeout(400); await p.mouse.click(box.x + 8, box.y + box.height - 90); await p.waitForFunction(() => !document.querySelector('.map-svg .rul'));
     // arquivos: plano (sem compartilhamento no navegador de teste → baixa) e CSV
     // 3.1: arquivos saíram da aba Enviar e foram para o menu (Arquivos e fichas)
     await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="arquivos"]');
