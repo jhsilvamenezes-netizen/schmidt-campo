@@ -245,7 +245,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     $('#lot-farm').textContent = c.field.farm;
     $('#titulo').textContent = `SCHMIDT Campo · ${c.field.code} · ${({ lotes: 'Lotes', mapa: 'Mapa', plano: 'Plano', monitorar: 'Monitorar' })[ui.view] || ''}`;
     for (const a of document.querySelectorAll('[data-tab]')) { const on = a.dataset.tab === ui.view; a.classList.toggle('on', on); a.setAttribute('aria-current', on ? 'page' : 'false'); }
-    main.dataset.view = ui.view;
+    main.dataset.view = ui.view; app.applySnap?.();
     if (ui.view === 'mapa') main.innerHTML = V.mapaView(c);
     else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), hiTrack: app.hiTrack, bigMap: !!app.planBig, hint: c.block ? null : app.hint?.(), border: (b => (b ? { minM: b.minM, n: b.min.number, near: b.minM < P.BORDADURA_M, low: b.minM < P.BORDA_MIN_M } : null))(P.borderStats(c.field, c.sc)),
       rows: c.sc.trackRows.map(r => ({ ...r, d: c.block ? null : (c.details ??= new Map()).get(r.trackId) ?? c.details.set(r.trackId, P.trackDetail(c.field, c.sc, r.trackId)).get(r.trackId) })) });
@@ -253,6 +253,38 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     else main.innerHTML = V.monitorView(app.monitorData());
     requestAnimationFrame(app.drawMaps);
   }
+
+  // 4.0-c · folha sobre o mapa com 3 alturas (baixa, meia, cheia), só no design 4.0: arrastar pela alça escolhe a mais
+  // perto (ou segue o gesto rápido); tocar na alça alterna. O mapa redesenha o lote acima da folha.
+  const SNAPS = ['baixa', 'meia', 'cheia'];
+  app.snap = 'meia';
+  const applySnap = () => { const m = $('#view'); if (app.isDesign4?.()) m.dataset.snap = app.snap; else delete m.dataset.snap; };
+  const afterSnap = () => setTimeout(() => app.drawMaps?.(), 300);
+  app.ACTIONS['sheet-cycle'] = () => { app.snap = SNAPS[(SNAPS.indexOf(app.snap) + 1) % SNAPS.length]; applySnap(); afterSnap(); };
+  /** @type {any} */ let drag = null;
+  document.addEventListener('pointerdown', e => {
+    const g = e.target.closest?.('.grabber'); if (!g || !app.isDesign4?.()) return;
+    const sheet = g.closest('.scroll'), host = $('#view').getBoundingClientRect();
+    drag = { sheet, y0: e.clientY, h0: sheet.getBoundingClientRect().height, H: host.height, t0: performance.now(), moved: false };
+  });
+  document.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const dy = e.clientY - drag.y0; if (Math.abs(dy) > 6) drag.moved = true;
+    if (drag.moved) drag.sheet.style.setProperty('height', `${Math.max(120, Math.min(drag.H - 8, drag.h0 - dy))}px`);
+  });
+  document.addEventListener('pointerup', e => {
+    if (!drag) return;
+    const d = drag; drag = null; if (!d.moved) return;
+    const h = d.sheet.getBoundingClientRect().height, v = (d.y0 - e.clientY) / Math.max(1, performance.now() - d.t0); // px/ms, + = para cima
+    const targets = { baixa: 0.34 * d.H, meia: 0.56 * d.H, cheia: d.H - 8 };
+    let pick = Object.entries(targets).sort((a, b) => Math.abs(a[1] - h) - Math.abs(b[1] - h))[0][0];
+    if (Math.abs(v) > 0.6) pick = SNAPS[Math.max(0, Math.min(2, SNAPS.indexOf(app.snap) + (v > 0 ? 1 : -1)))]; // gesto rápido: próxima altura
+    d.sheet.style.removeProperty('height'); app.snap = pick; applySnap(); afterSnap();
+    // o arraste não vira clique na alça (só o clique que vem logo em seguida, se vier)
+    const eat = ev => { ev.stopPropagation(); ev.preventDefault(); };
+    document.addEventListener('click', eat, { capture: true, once: true }); setTimeout(() => document.removeEventListener('click', eat, { capture: true }), 350);
+  });
+  app.applySnap = applySnap;
 
   // cada tela registra o que é seu
   installBloco(app); installMapa(app); installMonitor(app); installPlano(app); installEnviar(app); installMais(app); installLotes(app);
@@ -280,6 +312,11 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   const sun = on => { document.documentElement.classList.toggle('sun', on); $('#sol').setAttribute('aria-pressed', String(on)); requestAnimationFrame(() => app.drawMaps?.()); };
   $('#sol').addEventListener('click', () => { const on = !saved().sunMode; store.update({ sunMode: on }); sun(on); toast(on ? 'Sol: contraste alto para a luz do dia.' : 'Sol desligado.'); });
   sun(!!saved().sunMode);
+  // 4.0 · design novo em prévia, atrás de uma chave (Mais → Design 4.0): liga e desliga na hora, sem mexer no plano
+  const design4 = on => { if (on) document.documentElement.dataset.design = '4'; else delete document.documentElement.dataset.design; requestAnimationFrame(() => app.drawMaps?.()); };
+  app.isDesign4 = () => saved().design === '4';
+  app.setDesign4 = on => { store.update({ design: on ? '4' : null }); design4(on); render(); };
+  design4(app.isDesign4());
   new window.ResizeObserver(() => app.cur && app.drawMaps()).observe($('#view'));
   render();
   document.documentElement.dataset.ready = '1';

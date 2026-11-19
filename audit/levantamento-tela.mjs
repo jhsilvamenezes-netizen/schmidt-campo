@@ -11,6 +11,8 @@ const server = createServer(async (q, r) => { try { const f = q.url === '/' ? 'i
 await new Promise(r => server.listen(0, '127.0.0.1', r));
 const b = await chromium.launch(); const out = {};
 const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'pt-BR', bypassCSP: true });
+// 4.0: DESIGN=4 liga o design novo antes de abrir
+if (process.env.DESIGN === '4') await ctx.addInitScript(() => { try { localStorage.setItem('monitoramento.v03', JSON.stringify({ design: '4' })); } catch { /* sem armazenamento */ } });
 const p = await ctx.newPage();
 const t0 = Date.now(); await p.goto(`http://127.0.0.1:${server.address().port}/`); await p.waitForFunction(() => document.documentElement.dataset.ready === '1'); out.abrirMs = Date.now() - t0;
 await p.click('button.lot'); await p.click('[data-lot="Bananal|BD3"]');

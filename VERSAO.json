@@ -1,16 +1,17 @@
 {
-  "entrega": "3.17.0",
+  "entrega": "3.18.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-18",
-  "versaoDoApp": "3.17.0",
+  "versaoDoApp": "3.18.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "41766b4649a0a1f03c9d0d3b20c2715c47300c61e226cf707c5ad15051f5439b",
-  "workerSha256": "cf529c73870f16b30ac11caa8e1340396da0e641e8760d4351518114546dd4fb",
+  "htmlSha256": "6bbf87efdfac169c7b5e94127d4cb55b11d4e0fbd74bb09cb0e1e3d78fcd0705",
+  "workerSha256": "5a9937867a65b7bbd6b394d7d89d82c706c508c216ac145869e1b2e68a88233e",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "3.18.0: design 4.0 em prévia (Mais → Design 4.0) — tokens OKLCH com contraste WCAG 2 + APCA, componentes tonais com pílulas e elevação, vitrine; folha sobre o mapa com 3 alturas (baixa, meia, cheia) e alça arrastável; guia de moto com distância grande; rede de segurança: comparação de imagens (24 telas) e orçamento de tamanho; o design atual segue idêntico",
     "3.17.0: campo de moto e a pé (relato da equipe, ~70% moto) — velocidade pelo GPS, etiqueta \"Moto N km/h\" / \"A pé\", aviso de chegando ~8 s antes, raio de chegada cresce com a velocidade (1,5 s, até 25 m), tempo estimado até o ponto; \"Onde estou\" no Mapa acompanha cada movimento (antes só ao tocar); GPS parado não dá mais \"indisponível\" a cada 20 s",
     "3.16.0: chegada pela precisão do GPS (raio efetivo = maior entre 10 m e a precisão, até 15 m; acima de 10 m vem o aviso de conferir pelos passos); anel de progresso em volta da seta na guia; estudo das margens das pontas (meia margem segue a melhor nos 51 lotes)",
     "3.15.0: lote irregular — sugestão de 1 ponto acima do mínimo quando o maior vazio passa de 1,2 × o lado ideal e o ganho é ≥ 8% (BD5 689 → 602 m; RB9 95% do lote 517 → 451 m), com Desfazer; fonte Inter embutida (a mesma letra em todo celular, sem internet; licença SIL OFL); \"calculando\" animado; mapa grande no Plano com um toque",
@@ -93,5 +94,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "847e654c6bb0c60e98759b86603095449192008e9d5f0fdb88e210ab358d3d21"
+  "motorSha256": "6a10da0056ed18d2ea0566fbd06425a265f023f812cda6a88165b19fcc9ff974"
 }

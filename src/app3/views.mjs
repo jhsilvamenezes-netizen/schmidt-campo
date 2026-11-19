@@ -10,10 +10,12 @@ export const ICONS = {
   sol: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   mais: '<circle cx="5" cy="12" r="1.6" class="fill"/><circle cx="12" cy="12" r="1.6" class="fill"/><circle cx="19" cy="12" r="1.6" class="fill"/>',
 };
+/** 4.0-c · alça da folha (só aparece no design 4.0): toque alterna a altura; arrastar escolhe baixa, meia ou cheia. */
+export const GRAB = '<button class="grabber" type="button" data-act="sheet-cycle" aria-label="Mudar a altura do painel"></button>';
 export const icon = name => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
 
 /** 3.12 · cada medida é um botão: tocar abre a frase do glossário (rótulo sublinhado em pontos indica que explica). */
-const metric = (label, value, term = label) => `<button class="m" data-term="${term}" aria-label="${label}: ${esc(value)}. O que é?"><small>${label}</small><b>${esc(value)}</b></button>`;
+const metric = (label, value, term = label) => `<button class="m" data-term="${term}"><small>${label}</small> <b>${esc(value)}</b></button>`;
 export const metrics = f => `<div class="m3">${metric('Entre tiros', f.entreTiros)}${metric('Entre pontos', f.entrePontos)}${metric('95% do lote', f.p95)}</div>`;
 const chip = (level, text) => `<span class="chip ${level}">${esc(text)}</span>`;
 
@@ -45,7 +47,7 @@ export function mapTools(layers, zoomed, here = false, open = false, sum = null)
   const btns = `<div class="mtools v">${zoomed ? '<button class="mt" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : ''}<button class="mt" data-act="where" aria-label="Onde estou" aria-pressed="${here}">◎</button>`
     + `<button class="mt lyr" data-act="layers" aria-expanded="${open}" aria-label="Camadas e medidas">${LAYER_ICON}</button></div>`;
   if (!open || !sum) return btns;
-  const row = (k, v, cls = '', term = k) => `<button class="lsum${cls}" data-term="${term}" aria-label="${k}: ${v}. O que é?"><span>${k}</span><b>${v}</b></button>`;
+  const row = (k, v, cls = '', term = k) => `<button class="lsum${cls}" data-term="${term}"><span>${k}</span> <b>${v}</b></button>`;
   return btns + `<div class="lpanel" role="dialog" aria-label="Camadas e medidas"><p class="lh">${esc(sum.code)} · ${num(sum.ha, 1)} ha</p>
 ${row('Entre tiros', esc(sum.entreTiros))}${row('Entre pontos', esc(sum.entrePontos.replace('–', ' a ')))}${sum.cada ? row('Cada ponto', `${sum.cada} ha`, '', 'Área de cada ponto') : ''}${row('Maior vazio', `${num(sum.vazio)} m`)}${row('Mais perto da borda', `${num(sum.borda)} m · ponto ${num(sum.bordaPt)}`, sum.borda < sum.bordLow ? ' er' : sum.borda < sum.bordMin ? ' al' : '', 'Bordadura')}
 <p class="lh">Camadas</p>${sw('layer-medidas', 'Medidas no mapa', layers.medidas, 'entre tiros e entre pontos')}${sw('layer-areas', 'Área de cada ponto', layers.areas, 'e onde fica o maior vazio')}${sw('layer-borda', 'Bordadura', layers.borda, `pontas até a borda · ideal ${sum.bordMin} m, mínimo ${sum.bordLow} m`)}${sw('layer-grade', 'Grade em metros', layers.grade, 'um quadrado = a escala')}</div>`;
@@ -63,7 +65,7 @@ export const hintMarkup = hint => (hint?.r ? `<button class="sug" data-act="mini
 export function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, block, hiTrack = null, list = [], split = null, hint = null, border = null, bigMap = false }) {
   if (block) return blockPlanoView({ f, sc, rows, block });
   const alts = (rec?.alternatives || []).filter(a => a);
-  return `<div class="map sm${bigMap ? ' big' : ''}" data-map="small"></div><div class="scroll">
+  return `<div class="map sm${bigMap ? ' big' : ''}" data-map="small"></div><div class="scroll">${GRAB}
 <section class="card res"><div class="row-sb"><h2 class="h">${inUseIsRec ? 'Plano recomendado' : 'Plano em uso'}</h2>${inUseIsRec ? '<span class="tag">em uso</span>' : rec ? '<button class="link" data-use="rec">Usar recomendado</button>' : '<span class="mu sk">calculando o recomendado…</span>'}</div>
 <p class="big">${num(f.pontos)} pontos <span>· ${num(f.tiros)} tiros</span></p>${metrics(f)}<p class="mu">Caminhada ${esc(f.caminhada)}${f.tiros ? ` · ${km(sc.route.totalEstimatedM / f.tiros)} km por tiro` : ''}${border ? (border.near ? ` · <span class="${border.low ? 'warn' : 'note'}">ponto ${num(border.n)} a ${num(border.minM)} m da borda</span>` : ` · borda ≥ ${num(border.minM)} m`) : ''}</p>${busy ? '<p class="mu"><span class="sk">Calculando…</span></p>' : ''}
 <div data-hint>${hintMarkup(hint)}</div></section>
@@ -115,7 +117,7 @@ export const calculoBody = steps => steps.map(s => `<details class="ex"><summary
 export function monitorView({ nextTrack = /** @type {any} */ (null), speed = /** @type {number|null} */ (null), lot = '', acc = null, tracks, trackId, flipped, active, model, steps, heading = null, voice = false, canSpeak = false }) {
   const pick = `<div class="chips" role="group" aria-label="Tiro">${tracks.map(t => `<button class="chipb${t.id === trackId ? ' on' : ''}" data-track="${esc(t.id)}" aria-pressed="${t.id === trackId}">${esc(t.id)}${t.person ? `<small>${esc(t.person)}</small>` : ''}</button>`).join('')}</div>`;
   const head = `<section class="card"><h2 class="h">Tiro</h2>${pick}<div class="row-sb"><p class="mu">Sentido: ${flipped ? 'invertido' : 'do plano'}</p><button class="link" data-act="flip">Inverter</button></div></section>`;
-  if (!active) return `<div class="map sm" data-map="guide"></div><div class="scroll">${head}<button class="btn p" data-act="gps-start">Iniciar guia</button>
+  if (!active) return `<div class="map sm" data-map="guide"></div><div class="scroll">${GRAB}${head}<button class="btn p" data-act="gps-start">Iniciar guia</button>
 <section class="card list"><h2 class="h">Sem o guia</h2><button class="lnk" data-act="gpx-track"><span>GPX do ${esc(trackId || 'tiro')}<small>para outro app de GPS</small></span></button>
 <details class="ex trk"><summary class="sumc">Roteiro sem GPS</summary>${steps.map(t => `<p>${esc(t)}</p>`).join('')}</details></section></div>`;
   const cur = tracks.find(t => t.id === trackId), m = model;
@@ -132,7 +134,7 @@ export function monitorView({ nextTrack = /** @type {any} */ (null), speed = /**
   // 3.17 · de moto ou a pé (pela velocidade); de moto mostra km/h
   const v = Number(speed), modo = speed !== null && Number.isFinite(v) ? (v >= 2.5 ? `<span class="modo">Moto ${num(v * 3.6)} km/h</span>` : '<span class="modo">A pé</span>') : '';
   const bar = pr ? `<div class="prog" role="img" aria-label="${pr.done} de ${pr.total} pontos">${Array.from({ length: pr.total }, (_, i) => `<i class="${i < pr.done ? 'd' : i === pr.done ? 'n' : ''}"></i>`).join('')}</div>` : '';
-  return `<div class="map nav" data-map="guide"></div><div class="navpill"><b>${esc(lot)} · ${esc(trackId)}</b>${cur?.person ? `<span>${esc(cur.person)}</span>` : ''}${modo}${gps}</div><section class="sheet gsheet">${bar}
+  return `<div class="map nav" data-map="guide"></div><div class="navpill"><b>${esc(lot)} · ${esc(trackId)}</b>${cur?.person ? `<span>${esc(cur.person)}</span>` : ''}${modo}${gps}</div><section class="sheet gsheet${speed !== null && Number(speed) >= 2.5 ? ' moto' : ''}">${bar}
 <div class="guide ${m.state}" aria-live="polite">${arrow}<div class="gtxt"><p class="mu">${esc(m.title)}${pr ? ` <b class="cnt">${pr.done}/${pr.total}</b>` : ''}</p>${m.big ? `<p class="big">${esc(m.big)}${m.dir ? ` <span class="dir">${esc(m.dir)}</span>` : ''}</p>` : ''}${m.info ? `<p class="mu">${esc(m.info)}</p>` : ''}${rel === null ? '' : `<p class="mu sm" data-compass-label>${Number.isFinite(heading) ? 'seta pelo celular' : 'seta com o norte para cima'}</p>`}</div></div>
 ${(m.warn || []).map(w => `<p class="ck alerta">${esc(w)}</p>`).join('')}
 ${nextTrack ? `<button class="btn p" data-act="next-track">Próximo tiro: ${esc(nextTrack.id)}${nextTrack.person ? ` · ${esc(nextTrack.person)}` : ''}</button>` : ''}<div class="two gbtns">${canSpeak ? `<button class="btn" data-act="voice" aria-pressed="${voice}">${voice ? 'Voz ligada' : 'Ligar voz'}</button>` : `<button class="btn" data-act="flip">Inverter</button>`}<button class="btn stop" data-act="gps-stop">Parar guia</button></div></section>`;
@@ -176,7 +178,7 @@ ${d.neighbors.length ? `<p class="mu sm">${d.neighbors.length > 1 ? 'Tiros vizin
 const tracksList = rows => `<section class="card list"><h2 class="h">Tiros</h2>${rows.map(r => `<div class="li"><span class="id">${esc(r.trackId)}</span><span class="x">${num(r.lengthM)} m <small>· ${r.n === 1 ? '1 ponto' : `${num(r.n)} pontos`}</small></span><span class="r">${r.medianGapM ? `a cada ${num(r.medianGapM)} m` : r.n ? '1 ponto' : 'sem ponto'}</span></div>`).join('')}</section>`;
 
 function blockPlanoView({ f, sc, rows, block }) {
-  return `<div class="map sm" data-map="small"></div><div class="scroll">
+  return `<div class="map sm" data-map="small"></div><div class="scroll">${GRAB}
 <section class="card"><div class="row-sb"><h2 class="h">Bloco ${esc(block.title)}</h2><button class="link" data-act="block-leave">Sair do bloco</button></div>
 <div class="chips">${block.members.map(m => `<button class="chipb${m.on ? ' on' : ''}" data-lot="${esc(m.key)}" aria-pressed="${m.on}">${esc(m.code)}<small>${num(m.pontos)} pontos</small></button>`).join('')}</div>
 <p class="mu">Tiros na mesma grade: ${num(block.passes)} passadas da barra (${num(block.spacingM)} m), mesma direção e mesmo ponto A.</p></section>
@@ -197,4 +199,20 @@ export function blockPickBody(groups, prepared, busy) {
 ${prepared.alternatives.map((a, i) => [a, i]).sort((x, y) => Number(y[0].chosen) - Number(x[0].chosen)).map(([a, i]) => { const m = a.summary; return `<div class="li"><span class="x">${num(m.passes)} passadas · ${num(m.tracks)} tiros · ${num(m.points)} pontos${m.added ? ` (+${num(m.added)})` : ''}${a.chosen ? ' <b>· recomendada</b>' : ''}<br><small>${m.coverageTradeoff ? `perde cobertura em ${esc(m.worstCode)} (${pct(m.worstRatio)})` : m.worstRatio > 1 + 1e-6 ? `cobertura mantida (diferença de ${pct(m.worstRatio)} em ${esc(m.worstCode)})` : 'cobertura igual ou melhor em todos'}</small></span>${m.coverageTradeoff ? '' : `<button class="use" data-block-use="${i}">Usar</button>`}</div>`; }).join('')}`;
   }
   return groups.length ? groups.map((g, i) => `<button class="lnk" data-block="${i}">${esc(g.title)}</button>`).join('') : '<p class="mu">Este lote não tem vizinho com a mesma referência A/B.</p>';
+}
+
+/** 4.0-b · vitrine dos componentes (estados lado a lado), só para revisar o design. */
+export function vitrineBody() {
+  const sw = ['bg', 'sf', 'sf2', 'ln', 'mu', 'ink', 'br2', 'br', 'act', 'hd', 'gold', 'ptf', 'pt', 'oks', 'ok', 'als', 'al', 'ers', 'er', 'mapbg', 'fd', 'tr'];
+  return `<p class="eyebrow">Cores (tokens)</p><div class="vt-sw">${sw.map(k => `<span class="vt-c vt-${k}"><i></i>${k}</span>`).join('')}</div>
+<p class="eyebrow">Números</p><p class="big">24 pontos <span>· 5 tiros</span></p>${metrics({ entreTiros: '438 m', entrePontos: '438–515 m', p95: '< 261 m' })}
+<p class="eyebrow">Ações</p><button class="btn p" type="button">Ação principal</button><div class="two"><button class="btn" type="button">Secundária</button><button class="btn stop" type="button">Parar</button></div>
+<div class="seg" role="group" aria-label="Exemplo"><button class="on" type="button" aria-pressed="true">Lote</button><button type="button" aria-pressed="false">Bloco</button></div>
+<div class="presets" role="group" aria-label="Exemplo"><button type="button" aria-pressed="false">10 ha</button><button type="button" aria-pressed="true">20 ha</button><button type="button" aria-pressed="false">30 ha</button></div>
+<div class="chips"><button class="chipb on" type="button" aria-pressed="true">T1<small>Pessoa 1</small></button><button class="chipb" type="button" aria-pressed="false">T2<small>Pessoa 2</small></button></div>
+<p class="eyebrow">Estados</p><p><span class="chip ok">Sem alertas</span> <span class="chip alerta">2 alertas</span> <span class="chip erro">1 erro</span> <span class="tag">em uso</span></p>
+<p class="ck ok">Pontos fora da bordadura</p><p class="ck alerta">Ponto 21 a 11 m da borda</p><p class="ck erro">Faltam 2 pontos</p>
+<button class="sug" type="button"><span class="x"><b>Sugestão do motor</b><small class="sub">maior vazio 391 → 345 m</small></span><span class="go">Aplicar</span></button>
+<p class="eyebrow">Lista</p><div class="li"><span class="id">T1</span><span class="x">1.990 m <small>· 4 pontos</small></span><span class="r">a cada 498 m</span></div>
+<p class="mu"><span class="sk">calculando…</span></p>`;
 }

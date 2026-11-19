@@ -100,6 +100,7 @@ try {
     }
     await p.waitForFunction(() => /Moto \d+ km\/h/.test(document.querySelector('.navpill')?.textContent || ''), null, { timeout: 15000 });
     assert.match(await p.textContent('.gsheet'), /~\d+ s/, 'tempo estimado até o ponto');
+    assert.ok(await p.locator('.gsheet.moto').count(), '4.0: folha da guia marcada como moto (números grandes)');
     assert.deepStrictEqual(errors, []); await ctx.close();
   }
   { // 3.17 · "Onde estou" no Mapa acompanha o movimento sem tocar de novo
