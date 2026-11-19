@@ -3324,7 +3324,7 @@ const { num, range, km, plural } = __m_app3_format;
 // 3.0 · aplicação: monta o plano de um lote com o motor 2, a recomendação, a conferência, a equipe e a área
 // descoberta. Sem DOM: testável no Node com os 51 lotes.
 
-const ENGINE_LABEL = '3.3.0';
+const ENGINE_LABEL = '3.4.0';
 const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
@@ -3621,5 +3621,5 @@ function whereAmI(field, sc, pos) {
 return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BALANCE,balanceStats,balanceAreas,balanceSteps,planInUse,uncovered,checks,figures,team,summaryText,pointAreas,pointInfo,optimizeEdits,minimaxEdits,friendly,tryPlan,trackDetail,whereAmI,DEFAULT_PARAMS,paramsSignature});
 })();
 const P=__m_app3_planner;
-self.onmessage=e=>{const {id,field,base,people,fitTeam}=e.data;let rec=null,error=null;try{rec=P.recommend(field,base,people,fitTeam);}catch(x){error=String((x&&x.message)||x);}self.postMessage({id,rec,error});};
+self.onmessage=e=>{if(e.data&&e.data.kind==='improve'){const {id,field,params,edits}=e.data;let r=null;try{r=P.minimaxEdits(field,params,edits);}catch(x){r=null;}self.postMessage({id,kind:'improve',r});return;}const {id,field,base,people,fitTeam}=e.data;let rec=null,error=null;try{rec=P.recommend(field,base,people,fitTeam);}catch(x){error=String((x&&x.message)||x);}self.postMessage({id,rec,error});};
 })();

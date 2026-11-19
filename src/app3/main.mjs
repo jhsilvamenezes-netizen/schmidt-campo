@@ -201,7 +201,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     for (const a of document.querySelectorAll('[data-tab]')) { const on = a.dataset.tab === ui.view; a.classList.toggle('on', on); a.setAttribute('aria-current', on ? 'page' : 'false'); }
     main.dataset.view = ui.view;
     if (ui.view === 'mapa') main.innerHTML = V.mapaView(c);
-    else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), hiTrack: app.hiTrack,
+    else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), hiTrack: app.hiTrack, hint: c.block ? null : app.hint?.(),
       rows: c.sc.trackRows.map(r => ({ ...r, d: c.block ? null : (c.details ??= new Map()).get(r.trackId) ?? c.details.set(r.trackId, P.trackDetail(c.field, c.sc, r.trackId)).get(r.trackId) })) });
     else if (ui.view === 'lotes') main.innerHTML = app.lotesView();
     else main.innerHTML = V.monitorView(app.monitorData());
@@ -212,11 +212,15 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   installBloco(app); installMapa(app); installMonitor(app); installPlano(app); installEnviar(app); installMais(app); installLotes(app);
 
   // ---------- eventos (um ouvinte por tipo; cada tela responde pelos seus botões e campos) ----------
+  let tabTimer = 0;
   document.addEventListener('click', e => {
     const t = e.target.closest('button,a,[data-close]');
     if (!t) return;
-    if (t.dataset.tab) { ui.view = t.dataset.tab; render(); return; }
-    if (t.dataset.go) { ui.view = t.dataset.go; render(); return; }
+    // 3.4: troca de aba com entrada suave do conteúdo (180 ms, só na troca; "reduzir movimento" desliga no CSS). A tela é
+    // montada na hora: a animação é só de entrada, não atrasa nada
+    const go = v => { const changed = ui.view !== v; ui.view = v; render(); if (changed) { const m = $('#view'); m.classList.remove('tab-in'); void m.offsetWidth; m.classList.add('tab-in'); clearTimeout(tabTimer); tabTimer = setTimeout(() => m.classList.remove('tab-in'), 220); } };
+    if (t.dataset.tab) { go(t.dataset.tab); return; }
+    if (t.dataset.go) { go(t.dataset.go); return; }
     if (t.dataset.open) { app.SHEETS[t.dataset.open]?.(); return; }
     if (t.hasAttribute('data-toast')) { const a = toastAction; $('#toast').innerHTML = ''; toastAction = null; a?.run(); return; }
     for (const h of app.clicks) if (h(t)) return;
