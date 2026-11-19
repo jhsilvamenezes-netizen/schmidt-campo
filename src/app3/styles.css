@@ -274,3 +274,12 @@ body:has(.map.nav) header{display:none}
 main.tab-in>*:not(.map){animation:entra 180ms cubic-bezier(.2,.7,.2,1)}
 @keyframes entra{from{opacity:0;transform:translateY(8px)}}
 @media (prefers-reduced-motion:reduce){main.tab-in>*{animation:none}}
+/* 3.5 · maior vazio no mapa (camada Área) */
+.map-svg .vz{fill:none;stroke:var(--er);stroke-width:2.5;stroke-dasharray:3 3}.map-svg .vz-l{fill:none;stroke:var(--er);stroke-width:1.5;stroke-dasharray:4 4}
+.map-svg .vz-t{font:700 12px var(--f);fill:var(--er);stroke:var(--fd);stroke-width:4px;paint-order:stroke;stroke-linejoin:round}
+.sw.v{width:10px;height:10px;border:2px dashed var(--er);border-radius:50%}
+.map-svg .flot.al{stroke:var(--al);stroke-width:2.5}
+.presets{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:-4px}
+.presets button{min-height:40px;border-radius:12px;border:1px solid var(--ln);background:var(--sf2);font:600 14px var(--f);color:var(--ink)}
+.presets button[aria-pressed="true"]{background:var(--act);color:var(--on-act);border-color:var(--act)}
+:root.sun .presets button{border:2px solid #000;background:#fff}

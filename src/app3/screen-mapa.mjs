@@ -65,12 +65,12 @@ export function installMapa(app) {
       const w = full && here ? P.whereAmI(cur.field, cur.sc, here) : null;
       const ra = full && selectedPt && rulerPt ? cur.sc.samples.find(p => p.id === selectedPt) : null, rb = ra ? cur.sc.samples.find(p => p.id === rulerPt) : null;
       const ruler = ra && rb ? { a: [ra.x, ra.y], b: [rb.x, rb.y], m: Math.hypot(ra.x - rb.x, ra.y - rb.y), na: ra.number, nb: rb.number } : null;
-      const opts = full ? { measure, ruler, pos: here, to: w ? [w.point.x, w.point.y] : null, focus: here && w && views.full === ID ? [[here.x, here.y], [w.point.x, w.point.y]] : null, pad: { t: 112, r: 30, b: 64, l: 40 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
-        reserve: [[0, 0, info ? Math.min(W - 40, 330) : Math.min(W * 0.66, 252), 104], [W - 214, H - 60, W, H]] } : { pad: 22 };
+      const opts = full ? { measure, ruler, pos: here, to: w ? [w.point.x, w.point.y] : null, focus: here && w && views.full === ID ? [[here.x, here.y], [w.point.x, w.point.y]] : null, pad: { t: layers.areas ? 146 : 112, r: 30, b: 64, l: 40 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
+        reserve: [[0, 0, info ? Math.min(W - 40, 330) : Math.min(W * 0.66, 252), layers.areas && !info ? 140 : 104], [W - 214, H - 60, W, H]] } : { pad: 22 };
       const g = guide ? app.guide() : null;
       const kind = full ? 'full' : guide ? 'guide' : 'small', view = guide && g.focus ? ID : views[kind];
       el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, hiTrack: !full && !guide ? app.hiTrack : null, focus: guide ? g.focus : null, others: cur.others || [], ...opts })
-        + (full ? (ruler ? `<div class="bal" role="status"><b>${num(ruler.m)} m</b><span>do ponto ${num(ruler.na)} ao ponto ${num(ruler.nb)} (em linha reta)</span><span>Toque fora para limpar</span></div>` : info ? balloon() : w ? hereCard(w) : V.legend(cur.field, P.figures(cur.sc), areas)) + V.mapTools(layers, moved(view), !!here)
+        + (full ? (ruler ? `<div class="bal" role="status"><b>${num(ruler.m)} m</b><span>do ponto ${num(ruler.na)} ao ponto ${num(ruler.nb)} (em linha reta)</span><span>Toque fora para limpar</span></div>` : info ? balloon() : w ? hereCard(w) : V.legend(cur.field, P.figures(cur.sc), areas, layers.areas)) + V.mapTools(layers, moved(view), !!here)
           : guide && g.pos ? `<button class="fit" data-act="follow" aria-pressed="${!!g.follow}" aria-label="${g.follow ? 'Ver o lote inteiro' : 'Seguir minha posição'}">${g.follow ? '⤢' : '◎'}</button>`
             : (moved(view) ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : ''));
       if (!el.dataset.g) {

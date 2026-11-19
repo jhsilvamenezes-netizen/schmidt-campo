@@ -152,6 +152,13 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
           [at[0] + d, at[1] + d + 9, 'start'], [at[0] - d, at[1] + d + 9, 'end'], [at[0] + r + 4, at[1] + 4, 'start'], [at[0] - r - 4, at[1] + 4, 'end']], t, 'ha');
         if (p) labels += text('ha', p, t);
       }
+      // 3.5 · onde fica o maior vazio do lote: anel no lugar e linha até o ponto mais perto, com a distância
+      if (areas.worstAt && areas.worstPt) {
+        const [vx, vy] = XY(areas.worstAt[0], areas.worstAt[1]), [qx, qy] = XY(areas.worstPt.x, areas.worstPt.y), t = `maior vazio ${num(areas.worstGapM)} m`;
+        s += `<path class="vz-l" d="M${f1(vx)},${f1(vy)}L${f1(qx)},${f1(qy)}"/><circle class="vz" cx="${f1(vx)}" cy="${f1(vy)}" r="9"/>`;
+        const p = sp.place([[vx, vy - 14, 'middle'], [vx, vy + 24, 'middle'], [vx + 14, vy + 4, 'start'], [vx - 14, vy + 4, 'end']], t, 'ha');
+        if (p) labels += text('vz-t', p, t);
+      }
     }
     s += labels;
     for (const p of sc.samples) {
