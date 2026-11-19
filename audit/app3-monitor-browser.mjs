@@ -70,6 +70,26 @@ try {
     await p.waitForFunction(() => window.__vib.some(v => Array.isArray(v) && v.length === 5), null, { timeout: 15000 });
     assert.deepStrictEqual(errors, []); await ctx.close();
   }
+  { // 3.13 (V3) · ao chegar ao último ponto do tiro: "Próximo tiro" da mesma pessoa (1 pessoa = todos os tiros), sem parar a guia
+    const sc1 = P.planInUse(f, P.recommend(f, {}, 1, false).chosen.params, null), r1 = buildRoute(sc1, f, 'T1');
+    const ids = P.team(sc1, 1).pessoas[0].tarefas.map(t => t.id), want = ids[ids.indexOf('T1') + 1];
+    assert.ok(want, 'uma pessoa tem mais de um tiro');
+    const [lon0, lat0] = localToLonLat(r1.points[0].x, r1.points[0].y, f.centroidUTM);
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block', geolocation: { longitude: lon0, latitude: lat0, accuracy: 5 }, permissions: ['geolocation'] });
+    const p = await ctx.newPage(), errors = []; p.on('pageerror', e => errors.push(e.message));
+    await p.goto(`http://127.0.0.1:${server.address().port}/`); await p.evaluate(() => localStorage.setItem('monitoramento.v03', JSON.stringify({ fieldKey: 'Bananal|BC1', quickMonitors: 1 }))); await p.reload();
+    await p.waitForSelector('[data-map="full"] .pt'); await p.click('[data-tab="monitorar"]'); await p.click('[data-track="T1"]'); await p.click('[data-act="gps-start"]');
+    for (const pt of r1.points) {
+      const [lon, lat] = localToLonLat(pt.x, pt.y, f.centroidUTM); await ctx.setGeolocation({ longitude: lon, latitude: lat, accuracy: 5 });
+      await p.waitForFunction(n => new RegExp(`Chegou ao ponto ${n} de`).test(document.querySelector('.gsheet')?.textContent || ''), pt.seq, { timeout: 15000 });
+      if (pt.seq < r1.nPoints) assert.equal(await p.locator('[data-act="next-track"]').count(), 0, 'só no fim do tiro');
+    }
+    assert.match(await p.textContent('[data-act="next-track"]'), new RegExp(`Próximo tiro: ${want}\\b`));
+    await p.click('[data-act="next-track"]');
+    await p.waitForFunction(id => new RegExp(`· ${id}`).test(document.querySelector('.navpill')?.textContent || ''), want);
+    assert.ok(await p.locator('[data-act="gps-stop"]').count(), 'guia segue ligada');
+    assert.deepStrictEqual(errors, []); await ctx.close();
+  }
   { // "Onde estou" no Mapa e GPX só do tiro escolhido
     const [lon, lat] = localToLonLat(p1.x + 5, p1.y, f.centroidUTM);
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block', acceptDownloads: true, geolocation: { longitude: lon, latitude: lat, accuracy: 5 }, permissions: ['geolocation'] });
@@ -87,5 +107,5 @@ try {
     assert.match(gpx, /<gpx/); assert.equal((gpx.match(/<wpt/g) || []).length, route.points.length, 'um ponto de passagem por ponto do tiro');
     assert.deepStrictEqual(errors, []); await ctx.close();
   }
-  console.log('Monitorar: entrada do tiro de longe, mapa grande com linha ao alvo, seta pequena, bússola, seguir, onde estou e GPX do tiro ok');
+  console.log('Monitorar: próximo tiro ao terminar, entrada do tiro de longe, mapa grande com linha ao alvo, seta pequena, bússola, seguir, onde estou e GPX do tiro ok');
 } finally { await browser.close(); server.close(); }

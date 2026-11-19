@@ -138,6 +138,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     setTimeout(run, 0);
   }
   const host = $('#sheets');
+  let ignorePop = 0;
   /** Contexto comum: cada tela (screen-*.mjs) lê daqui e registra as suas folhas, ações e eventos. */
   /** @type {any} */ const app = {
     document, window, fields, keys, ui, store, storage, persistent, session, safra, appVersion, host, versions: createVersions(window.indexedDB),
@@ -147,8 +148,16 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     recNow: (field, base, key = ui.key) => recFor(field, base, key) ?? P.recommendBase(field, base, people(), saved().fitTeam),
     peekRec: (field, base, key = ui.key) => recCache.get(`${key}|${JSON.stringify(base)}|${people()}|${!!saved().fitTeam}`),
     SHEETS: {}, ACTIONS: {}, clicks: [], changes: [], inputs: [], onLotChange: [], onCloseSheet: [],
-    openSheet: (title, body) => { host.innerHTML = V.sheet(title, body); host.querySelector('.close')?.focus(); },
-    closeSheet: () => { host.innerHTML = ''; for (const f of app.onCloseSheet) f(); },
+    // 3.13 (X3) · janela aberta ocupa uma entrada no histórico: o Voltar do celular fecha a janela em vez de sair do app
+    openSheet: (title, body) => {
+      if (!host.innerHTML) { try { window.history.pushState({ sheet: 1 }, ''); } catch { /* sem histórico: fecha só pelo ×/Esc */ } }
+      host.innerHTML = V.sheet(title, body); host.querySelector('.close')?.focus();
+    },
+    closeSheet: (fromBack = false) => {
+      const was = !!host.innerHTML;
+      host.innerHTML = ''; for (const f of app.onCloseSheet) f();
+      if (was && !fromBack && window.history.state?.sheet) { ignorePop++; window.history.back(); }
+    },
     clearInvalid: () => { warnedInvalid = null; },
     /** Para de gravar até recarregar (usado ao restaurar uma cópia). */
     freeze: (on = true) => { frozen = on; clearTimeout(versionTimer); },
@@ -267,6 +276,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   document.addEventListener('change', e => { for (const h of app.changes) if (h(e.target)) return; });
   document.addEventListener('input', e => { for (const h of app.inputs) if (h(e.target)) return; });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && host.innerHTML) app.closeSheet(); });
+  window.addEventListener('popstate', () => { if (ignorePop) { ignorePop--; return; } if (host.innerHTML) app.closeSheet(true); });
   const sun = on => { document.documentElement.classList.toggle('sun', on); $('#sol').setAttribute('aria-pressed', String(on)); requestAnimationFrame(() => app.drawMaps?.()); };
   $('#sol').addEventListener('click', () => { const on = !saved().sunMode; store.update({ sunMode: on }); sun(on); toast(on ? 'Sol: contraste alto para a luz do dia.' : 'Sol desligado.'); });
   sun(!!saved().sunMode);
