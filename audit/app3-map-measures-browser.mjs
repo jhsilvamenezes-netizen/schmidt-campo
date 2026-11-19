@@ -27,7 +27,7 @@ const inspect = () => {
   const over = (a, b) => Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0) > 0.5 && Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0) > 0.5;
   const hitsCircle = (a, c) => Math.hypot(c.x - Math.max(a.x0, Math.min(c.x, a.x1)), c.y - Math.max(a.y0, Math.min(c.y, a.y1))) < c.r - 0.5;
   const ownCircle = (a, c) => a.c === 'num' && Math.abs((a.x0 + a.x1) / 2 - c.x) < 1 && Math.abs((a.y0 + a.y1) / 2 - c.y) < 4;
-  const overlays = [...document.querySelectorAll('[data-map="full"] .leg, [data-map="full"] .bal, [data-map="full"] .mtools')].map(e => { const b = e.getBoundingClientRect(); return { x0: b.left - host.left, y0: b.top - host.top, x1: b.right - host.left, y1: b.bottom - host.top, t: e.className }; });
+  const overlays = [...document.querySelectorAll('[data-map="full"] .leg, [data-map="full"] .bal, [data-map="full"] .mtools, [data-map="full"] .lpanel')].map(e => { const b = e.getBoundingClientRect(); return { x0: b.left - host.left, y0: b.top - host.top, x1: b.right - host.left, y1: b.bottom - host.top, t: e.className }; });
   const scale = svg.querySelector('.scale').getBBox(), sm = svg.querySelector('.scale').transform.baseVal[0].matrix;
   overlays.push({ x0: scale.x + sm.e, y0: scale.y + sm.f, x1: scale.x + sm.e + scale.width, y1: scale.y + sm.f + scale.height, t: 'escala' });
   const visible = a => a.x1 > 0 && a.x0 < W && a.y1 > 0 && a.y0 < H;
@@ -44,7 +44,7 @@ const inspect = () => {
   const numFont = Math.min(...[...svg.querySelectorAll('.pt text')].map(t => parseFloat(getComputedStyle(t).fontSize)));
   const count = c => svg.querySelectorAll(c).length;
   return { bad, touching, numFont, cotaT: count('.cota-t'), medT: count('.med-t'), medP: count('.med-p'), ha: count('.ha'), cells: count('.cells path'), sel: count('.sel-m path'), selL: count('.sel-l'),
-    legend: (document.querySelector('[data-map="full"] .leg')?.textContent || '').replace(/\s+/g, ' '), tracks: new Set([...svg.querySelectorAll('.tid')].map(t => t.textContent)).size };
+    legend: (document.querySelector('[data-map="full"] .lpanel')?.textContent || '').replace(/\s+/g, ' '), tracks: new Set([...svg.querySelectorAll('.tid')].map(t => t.textContent)).size };
 };
 
 const sizes = [[360, 780], [390, 844], [412, 915]], report = { lotes: keys.length, problemas: [], semCotaTiros: [], semMedidaPontos: [], pontosEncostados: [], toqueSemTexto: [], haRotulos: [] };
@@ -58,15 +58,18 @@ try {
       await p.reload(); await p.waitForFunction(() => document.documentElement.dataset.ready === '1');
       await p.waitForSelector('[data-map="full"] .map-svg .pt');
       const m = await p.evaluate(inspect), tag = `${w}px ${k}`;
+      // 3.8: medidas no painel de camadas (abre e fecha pelo botão do canto)
+      await p.click('[data-act="layers"]'); await p.waitForSelector('.lpanel'); m.legend = await p.evaluate(() => document.querySelector('.lpanel').textContent.replace(/\s+/g, ' '));
+      await p.click('[data-act="layers"]'); await p.waitForFunction(() => !document.querySelector('.lpanel'));
       for (const b of m.bad) report.problemas.push(`${tag} · medidas · ${b}`);
       assert.ok(m.numFont >= 12, `${tag}: número do ponto com ${m.numFont} px`);
-      assert.match(m.legend, /Entre tiros/); assert.match(m.legend, /Entre pontos/); assert.match(m.legend, /Cada ponto .* ha/);
+      assert.match(m.legend, /Entre tiros/); assert.match(m.legend, /Entre pontos/); assert.match(m.legend, /Cada ponto\s*.* ha/);
       const nTracks = await p.evaluate(() => document.querySelectorAll('[data-map="full"] .track').length);
       if (nTracks > 1 && !m.cotaT) report.semCotaTiros.push(tag);
       if (!m.medP) report.semMedidaPontos.push(tag);
       if (m.touching) report.pontosEncostados.push(`${tag}: ${m.touching}`);
       // camada "Área": células e ha sem sobreposição
-      await p.click('[data-act="layer-areas"]'); await p.waitForSelector('[data-map="full"] .cells path');
+      await p.click('[data-act="layers"]'); await p.click('[data-act="layer-areas"]'); await p.click('[data-act="layers"]'); await p.waitForSelector('[data-map="full"] .cells path');
       const a = await p.evaluate(inspect);
       for (const b of a.bad) report.problemas.push(`${tag} · área · ${b}`);
       assert.ok(a.cells > 0, `${tag}: área de cada ponto`);

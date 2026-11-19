@@ -15,7 +15,7 @@ import { exactCoverage } from '../engine3/voronoi.mjs';
 import { pointInGeom } from '../engine3/geometry.mjs';
 import { num, range, km, plural } from './format.mjs';
 
-export const ENGINE_LABEL = '3.7.0';
+export const ENGINE_LABEL = '3.8.0';
 export const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
@@ -39,6 +39,10 @@ export function recommend(field, base, people, fitTeam) {
   const rec = recommendBase(field, base, people, fitTeam);
   return rec ? balanceAreas(field, base, rec) : rec;
 }
+
+/** Bordadura mínima desejada entre ponto e borda do lote. Valor inicial (a confirmar em campo), usado para avisar e pela
+ *  "Sugestão do motor", que afasta da borda os pontos mais perto que isto, deslizando-os no próprio tiro. */
+export const BORDADURA_M = 30;
 
 /** Limites do equilíbrio (A5): a cobertura nunca piora além disto. */
 export const BALANCE = Object.freeze({ p95: 1.03, km: 1.10, spread: 1 });
@@ -81,7 +85,8 @@ export function* balanceSteps(field, base, rec) {
   const now = balanceStats(field, { ...base, ...cp });
   if (!now) return rec;
   const k0 = Math.round(cp.trackSpacingM / BOOM);
-  /** @type {any} */ let best = { params: cp, ...now };
+  const bordOk = sc => borderStats(field, sc).minM >= BORDADURA_M;
+  /** @type {any} */ let best = { params: cp, ...now, bOk: bordOk(now.sc) };
   for (let k = Math.max(3, k0 - BALANCE.spread); k <= k0 + BALANCE.spread; k++) for (let ph = 0; ph < k; ph++) {
     const params = { ...cp, trackSpacingM: Math.round((k * BOOM + 0.01) * 100) / 100, trackPhaseM: Math.round(ph * BOOM * 100) / 100 };
     if (params.trackSpacingM === cp.trackSpacingM && params.trackPhaseM === cp.trackPhaseM) continue;
@@ -91,7 +96,9 @@ export function* balanceSteps(field, base, rec) {
     if (onesOf(field, { ...base, ...params }) > now.ones) continue;
     const c = balanceStats(field, { ...base, ...params });
     if (!c || c.p95 > now.p95 * BALANCE.p95 || c.worst > now.worst + 1e-6 || c.ones > now.ones || c.km > now.km * BALANCE.km) continue;
-    if (c.cv < best.cv - 1e-9) best = { params, ...c };
+    // 3.8: bordadura como desempate — com áreas quase iguais (até +0,5 p.p.), vale o plano sem ponto colado na borda
+    const bOk = bordOk(c.sc);
+    if (bOk === best.bOk ? c.cv < best.cv - 1e-9 : (bOk && c.cv <= best.cv + 0.005)) best = { params, ...c, bOk };
   }
   if (best.params === cp) return rec;
   const pct = v => `${num(v * 100)}%`;
@@ -179,18 +186,45 @@ export function pointAreas(field, sc) {
 }
 
 /** Informação de um ponto tocado no mapa: tiro, vizinhos no mesmo trecho (andando) e distância à borda do lote. */
+/** Distância em linha reta de um ponto até a borda do lote (bordadura) e o lugar da borda mais perto. */
+export function edgeDistance(field, p) {
+  let m = Infinity;
+  /** @type {number[]|null} */ let at = null;
+  for (const pg of field.geom) for (const ring of pg) for (let j = 1; j < ring.length; j++) {
+    const [ax, ay] = ring[j - 1], [bx, by] = ring[j], ex = bx - ax, ey = by - ay, L2 = ex * ex + ey * ey;
+    const t = L2 ? Math.max(0, Math.min(1, ((p.x - ax) * ex + (p.y - ay) * ey) / L2)) : 0, d = Math.hypot(p.x - ax - t * ex, p.y - ay - t * ey);
+    if (d < m) { m = d; at = [ax + t * ex, ay + t * ey]; }
+  }
+  return { m, at };
+}
+
+const borderCache = new WeakMap();
+/**
+ * 3.8 · bordadura: distância de cada ponto até a borda; o ponto mais perto da borda (o que mais pede atenção) e,
+ * em cada tiro, o 1º e o último ponto (os das pontas), que são os que ficam perto da bordadura.
+ */
+export function borderStats(field, sc) {
+  if (!sc?.samples.length) return null;
+  let b = borderCache.get(sc);
+  if (!b) {
+    const all = sc.samples.map(p => ({ id: p.id, number: p.number, trackId: p.trackId, x: p.x, y: p.y, ...edgeDistance(field, p) }));
+    const byUnit = new Map();
+    for (const p of sc.samples) if (p.unitId && Number.isFinite(p.s)) { const l = byUnit.get(p.unitId) || []; l.push(p); byUnit.set(p.unitId, l); }
+    const endIds = new Set();
+    for (const l of byUnit.values()) { l.sort((a, c) => a.s - c.s); endIds.add(l[0].id); endIds.add(l[l.length - 1].id); }
+    const ends = all.filter(p => endIds.has(p.id)), min = all.reduce((a, c) => (c.m < a.m ? c : a));
+    b = { minM: min.m, min, ends, endsMinM: Math.min(...ends.map(p => p.m)), endsMaxM: Math.max(...ends.map(p => p.m)) };
+    borderCache.set(sc, b);
+  }
+  return b;
+}
+
 export function pointInfo(field, sc, id) {
   const p = sc.samples.find(s => s.id === id);
   if (!p) return null;
   const same = sc.samples.filter(s => s.unitId === p.unitId && !s.offTrack && Number.isFinite(s.s)).sort((a, b) => a.s - b.s), i = same.indexOf(p);
   const prev = i > 0 ? p.s - same[i - 1].s : null, next = i >= 0 && i < same.length - 1 ? same[i + 1].s - p.s : null;
-  let edge = Infinity;
-  /** @type {number[]|null} */ let edgeAt = null;
-  for (const pg of field.geom) for (const ring of pg) for (let j = 1; j < ring.length; j++) {
-    const [ax, ay] = ring[j - 1], [bx, by] = ring[j], ex = bx - ax, ey = by - ay, L2 = ex * ex + ey * ey;
-    const t = L2 ? Math.max(0, Math.min(1, ((p.x - ax) * ex + (p.y - ay) * ey) / L2)) : 0, d = Math.hypot(p.x - ax - t * ex, p.y - ay - t * ey);
-    if (d < edge) { edge = d; edgeAt = [ax + t * ex, ay + t * ey]; }
-  }
+  const { m: edge, at: edgeAt } = edgeDistance(field, p);
   // ponto mais perto em cada tiro vizinho (em linha reta)
   const order = sc.selected.filter(t => Number.isFinite(t.offsetM)).sort((a, b) => a.offsetM - b.offsetM).map(t => t.id), k = order.indexOf(p.trackId);
   const across = [order[k - 1], order[k + 1]].filter(Boolean).map(tid => {
@@ -226,11 +260,12 @@ export function optimizeEdits(field, params) {
  * sem trocar a ordem dos pontos no tiro (mínimo de 60 m entre vizinhos) e sem encostar na ponta do tiro (≥ 30 m).
  * Mesmos pontos, mesmos tiros; devolve um ajuste gravável ou null se não melhorou.
  */
-export function minimaxEdits(field, params, edits = null, { maxEvals = 900 } = {}) {
+export function minimaxEdits(field, params, edits = null, { maxEvals = 1200, minBorderM = BORDADURA_M } = {}) {
   let sc = planInUse(field, params, edits);
   if (sc.samples.length < 2 || sc.samples.some(p => p.offTrack)) return { edits: null };
   const grid = coverageGrid(field.geom, sc.coverage.fineStepM ?? 20), p95of = smp => quickP95(grid, smp).p95;
-  const start = { ...exactStats(field, sc.samples), p95: p95of(sc.samples) };
+  const borderOf = list => Math.min(...list.map(q => edgeDistance(field, q).m));
+  const start = { ...exactStats(field, sc.samples), p95: p95of(sc.samples), border: borderOf(sc.samples) };
   let cur = start, samples = sc.samples, evals = 0, improved = false;
   const units = new Map(sc.units.map(u => [u.id, u]));
   const okPlace = (list, p) => {
@@ -252,18 +287,24 @@ export function minimaxEdits(field, params, edits = null, { maxEvals = 900 } = {
           // a ordem no tiro não muda: o ponto não passa por cima do vizinho
           if (!okPlace(r.samples, moved) || r.samples.some(q => q.unitId === moved.unitId && q.id !== moved.id && Math.sign(q.s - before.s) !== Math.sign(q.s - moved.s))) continue;
           evals++;
+          const eM = edgeDistance(field, moved).m, eB = edgeDistance(field, before).m;
+          // nenhum ponto vai para dentro da bordadura (nem chega mais perto da borda se já estava dentro)
+          if (eM < minBorderM && eM < eB) continue;
           const st = exactStats(field, r.samples);
-          if (!wins(st)) continue;
+          if (!wins(st, eM, eB)) continue;
           const p95 = p95of(r.samples);
           if (p95 > start.p95 * 1.01) continue;
-          samples = r.samples; cur = { ...st, p95 }; improved = again = true;
+          samples = r.samples; cur = { ...st, p95, border: borderOf(r.samples) }; improved = again = true;
           break;
         }
       }
     }
   };
+  // 0º bordadura: ponto mais perto da borda que o mínimo desliza para dentro (pior vazio até +5%, áreas até +2 p.p.)
+  pass((st, eM, eB) => eB < minBorderM && eM > eB + 1 && st.worst <= start.worst * 1.05 && st.cv <= start.cv + 0.02);
+  const base = cur;
   // 1º o pior vazio (minimax); 2º, sem deixar o pior vazio voltar a crescer, áreas por ponto mais iguais (lotes pequenos)
-  pass(st => st.worst < cur.worst - 1 && st.cv <= start.cv + 0.01);
+  pass(st => st.worst < cur.worst - 1 && st.cv <= Math.max(start.cv, base.cv) + 0.01);
   const worstCap = cur.worst;
   pass(st => st.cv < cur.cv - 0.005 && st.worst <= worstCap + 1e-6);
   if (!improved) return { edits: null, before: start, after: cur, evals };

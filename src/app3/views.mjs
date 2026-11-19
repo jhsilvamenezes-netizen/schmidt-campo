@@ -35,9 +35,20 @@ export function legend(field, f, areas, showGap = false) {
 ${ha ? `<span><i class="sw a" aria-hidden="true"></i>Cada ponto <b>${ha} ha</b></span>` : ''}${showGap && areas?.worstGapM ? `<span><i class="sw v" aria-hidden="true"></i>Maior vazio <b>${num(areas.worstGapM)} m</b></span>` : ''}</div>`;
 }
 
-/** Botões do mapa: camadas (medidas, área de cada ponto) e enquadrar. */
-export const mapTools = (layers, zoomed, here = false) => `<div class="mtools">${zoomed ? '<button class="mt" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : ''}
-<button class="mt" data-act="where" aria-label="Onde estou" aria-pressed="${here}">◎</button><button class="mt" data-act="layer-medidas" aria-pressed="${!!layers.medidas}">Medidas</button><button class="mt" data-act="layer-areas" aria-pressed="${!!layers.areas}" aria-label="Área de cada ponto">Área</button></div>`;
+/** 3.8 · ferramentas do mapa num canto: enquadrar, onde estou e o botão de camadas (abre o painel). Sem quadro fixo de
+ *  medidas sobre o mapa: elas ficam no painel e no Plano. */
+const LAYER_ICON = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 17.5l9 5 9-5" opacity=".55"/></svg>';
+const sw = (act, label, on, hint = '') => `<button class="lrow" data-act="${act}" role="switch" aria-checked="${!!on}"><span><b>${label}</b>${hint ? `<small>${hint}</small>` : ''}</span><i class="tg" aria-hidden="true"></i></button>`;
+/** @param {any} layers @param {boolean} zoomed @param {boolean} [here] @param {boolean} [open] @param {any} [sum] */
+export function mapTools(layers, zoomed, here = false, open = false, sum = null) {
+  const btns = `<div class="mtools v">${zoomed ? '<button class="mt" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : ''}<button class="mt" data-act="where" aria-label="Onde estou" aria-pressed="${here}">◎</button>`
+    + `<button class="mt lyr" data-act="layers" aria-expanded="${open}" aria-label="Camadas e medidas">${LAYER_ICON}</button></div>`;
+  if (!open || !sum) return btns;
+  const row = (k, v, cls = '') => `<div class="lsum${cls}"><span>${k}</span><b>${v}</b></div>`;
+  return btns + `<div class="lpanel" role="dialog" aria-label="Camadas e medidas"><p class="lh">${esc(sum.code)} · ${num(sum.ha, 1)} ha</p>
+${row('Entre tiros', esc(sum.entreTiros))}${row('Entre pontos', esc(sum.entrePontos.replace('–', ' a ')))}${sum.cada ? row('Cada ponto', `${sum.cada} ha`) : ''}${row('Maior vazio', `${num(sum.vazio)} m`)}${row('Mais perto da borda', `${num(sum.borda)} m · ponto ${num(sum.bordaPt)}`, sum.borda < sum.bordMin ? ' al' : '')}
+<p class="lh">Camadas</p>${sw('layer-medidas', 'Medidas no mapa', layers.medidas, 'entre tiros e entre pontos')}${sw('layer-areas', 'Área de cada ponto', layers.areas, 'e onde fica o maior vazio')}${sw('layer-borda', 'Bordadura', layers.borda, 'distância das pontas até a borda')}${sw('layer-grade', 'Grade em metros', layers.grade, 'um quadrado = a escala')}</div>`;
+}
 
 const stepper = (id, label, hint, value) => `<div class="step"><label for="${id}">${label}${hint ? `<small>${hint}</small>` : ''}</label><div class="stp">
 <button data-dec="${id}" aria-label="Diminuir ${label.toLowerCase()}">−</button><input id="${id}" inputmode="numeric" value="${esc(value)}"><button data-inc="${id}" aria-label="Aumentar ${label.toLowerCase()}">+</button></div></div>`;
@@ -46,14 +57,14 @@ const stepper = (id, label, hint, value) => `<div class="step"><label for="${id}
 export const hintMarkup = hint => (hint ? `<button class="sug" data-act="minimax"><span class="x"><b>Sugestão do motor</b><small class="sub">${esc(hint.text)}</small></span><span class="go">Aplicar</span></button>` : '<button class="lnk" data-act="minimax">Melhorar a distribuição dos pontos</button>');
 
 /** @param {any} o */
-export function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, block, hiTrack = null, list = [], split = null, hint = null }) {
+export function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, block, hiTrack = null, list = [], split = null, hint = null, border = null }) {
   if (block) return blockPlanoView({ f, sc, rows, block });
   const alts = (rec?.alternatives || []).filter(a => a);
   return `<div class="map sm" data-map="small"></div><div class="scroll">
 <section class="card">${stepper('ha', 'Hectares por ponto', `mínimo ${num(sc.minPoints)} pontos`, haPerPoint)}<div class="presets" role="group" aria-label="Regras comuns">${[10, 15, 20, 25, 30].map(v => `<button data-ha-set="${v}" aria-pressed="${String(v) === String(haPerPoint)}">${v} ha</button>`).join('')}</div>${stepper('people', 'Pessoas', '', people)}
 <div class="seg" role="group" aria-label="Planejar"><button class="on" aria-pressed="true">Lote</button><button data-open="bloco" aria-pressed="false">Bloco</button></div></section>
 <section class="card"><div class="row-sb"><h2 class="h">${inUseIsRec ? 'Plano recomendado' : 'Plano em uso'}</h2>${inUseIsRec ? '<span class="tag">em uso</span>' : rec ? '<button class="link" data-use="rec">Usar recomendado</button>' : '<span class="mu">calculando o recomendado…</span>'}</div>
-${metrics(f)}<p class="mu">Caminhada ${esc(f.caminhada)}${f.tiros ? ` · ${km(sc.route.totalEstimatedM / f.tiros)} km por tiro` : ''}</p>${busy ? '<p class="mu">Calculando…</p>' : ''}
+${metrics(f)}<p class="mu">Caminhada ${esc(f.caminhada)}${f.tiros ? ` · ${km(sc.route.totalEstimatedM / f.tiros)} km por tiro` : ''}${border ? (border.near ? ` · <span class="warn">ponto ${num(border.n)} a ${num(border.minM)} m da borda</span>` : ` · borda a ${num(border.minM)} m ou mais`) : ''}</p>${busy ? '<p class="mu">Calculando…</p>' : ''}
 <div data-hint>${hintMarkup(hint)}</div></section>
 ${trackRows(rows, hiTrack)}
 ${checkAndTeam(list, split)}

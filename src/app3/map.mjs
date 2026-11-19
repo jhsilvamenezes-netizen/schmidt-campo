@@ -73,9 +73,9 @@ function cota(cls, a, b) {
 /** Marcação SVG do lote ajustada a w × h px. `small` = mapa do Plano/guia (sem medidas).
  * @param {any} field @param {any} sc @param {number} w @param {number} h
  * @param {{pad?:number|{t:number,r:number,b:number,l:number}, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null,
- *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null, hiTrack?:string|null, ruler?:{a:number[],b:number[],m:number}|null}} [opts] */
+ *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null, hiTrack?:string|null, ruler?:{a:number[],b:number[],m:number}|null, grid?:boolean, border?:any}} [opts] */
 export function mapMarkup(field, sc, w, h, opts = {}) {
-  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null, hiTrack = null, ruler = null } = opts;
+  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null, hiTrack = null, ruler = null, grid = true, border = null } = opts;
   const pad = typeof pad0 === 'number' ? { t: pad0, r: pad0, b: pad0, l: pad0 } : pad0;
   // Outros lotes (bloco): levados ao referencial do lote atual pela diferença dos centroides UTM.
   const shift = o => [o.field.centroidUTM[0] - field.centroidUTM[0], o.field.centroidUTM[1] - field.centroidUTM[1]];
@@ -116,7 +116,7 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
       for (let gx = ax; gx <= bx; gx += len) { const X = XY(gx, 0)[0]; g += `M${f1(X)} 0V${h}`; }
       for (let gy = ay; gy <= by; gy += len) { const Y = XY(0, gy)[1]; g += `M0 ${f1(Y)}H${w}`; }
     }
-    if (g) s += `<path class="mgrid" d="${g}"/>`;
+    if (g && grid) s += `<path class="mgrid" d="${g}"/>`;
   }
   s += s0 + `<path class="lot" d="${ring}" fill-rule="evenodd"/>`;
   let top = '';
@@ -167,6 +167,18 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
     }
   }
   s += top;
+  // 3.8 · bordadura: das pontas de cada tiro até a borda mais perto, com a distância (âmbar se dentro da bordadura)
+  if (border && !small) {
+    for (const e of border.ends) {
+      if (!e.at) continue;
+      const [ax, ay] = XY(e.x, e.y), [bx, by] = XY(e.at[0], e.at[1]), near = e.m < border.min, t = `${num(e.m)} m`;
+      s += `<path class="bd-l${near ? ' near' : ''}" d="M${f1(ax)},${f1(ay)}L${f1(bx)},${f1(by)}"/>`;
+      const p = sp.place([[(ax + bx) / 2, (ay + by) / 2 - 6, 'middle'], [(ax + bx) / 2 + 8, (ay + by) / 2 + 4, 'start'], [(ax + bx) / 2 - 8, (ay + by) / 2 + 4, 'end']], t, 'ha');
+      // o ponto dentro da bordadura sempre mostra a distância (ao lado do ponto, se não couber no meio da linha)
+      const q = p || (near ? { x: ax + r + 6, y: ay - r - 4, anc: 'start' } : null);
+      if (q) s += text(`bd-t${near ? ' near' : ''}`, q, t);
+    }
+  }
   // 3.3 (G2) · régua: linha entre dois pontos tocados e a distância no meio (fundo do lote atrás do número)
   if (ruler) {
     const [a, b] = [XY(ruler.a[0], ruler.a[1]), XY(ruler.b[0], ruler.b[1])], mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
