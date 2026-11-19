@@ -1,6 +1,6 @@
 // 3.0 · aplicação: monta o plano de um lote com o motor 2, a recomendação, a conferência, a equipe e a área
 // descoberta. Sem DOM: testável no Node com os 51 lotes.
-import { buildScenario, withMetrics } from '../engine3/scenario.mjs';
+import { buildScenario, planScenario, withMetrics } from '../engine3/scenario.mjs';
 import { assertParams, sanitizeParams } from '../engine3/paramCatalog.mjs';
 import { buildWarnings } from '../engine3/diagnostics.mjs';
 import { assessField } from '../engine3/dataQuality.mjs';
@@ -15,7 +15,7 @@ import { exactCoverage } from '../engine3/voronoi.mjs';
 import { pointInGeom } from '../engine3/geometry.mjs';
 import { num, range, km, plural } from './format.mjs';
 
-export const ENGINE_LABEL = '3.6.0';
+export const ENGINE_LABEL = '3.7.0';
 export const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
@@ -43,6 +43,14 @@ export function recommend(field, base, people, fitTeam) {
 /** Limites do equilíbrio (A5): a cobertura nunca piora além disto. */
 export const BALANCE = Object.freeze({ p95: 1.03, km: 1.10, spread: 1 });
 const BOOM = 36.48;
+
+/** Tiros com só 1 ponto no plano simples (sem cobertura nem equilíbrio); Infinity se o plano não fecha. */
+function onesOf(field, params) {
+  let c; try { c = planScenario(field, params, deps); } catch { return Infinity; }
+  const per = new Map(); for (const p of c.samples) per.set(p.trackId, (per.get(p.trackId) || 0) + 1);
+  let ones = 0; for (const v of per.values()) if (v === 1) ones++;
+  return ones;
+}
 
 /** Mede um plano: cobertura (95% e pior vazio exato), variação da área de cada ponto, tiros de 1 ponto, caminhada. */
 export function balanceStats(field, params) {
@@ -78,6 +86,9 @@ export function* balanceSteps(field, base, rec) {
     const params = { ...cp, trackSpacingM: Math.round((k * BOOM + 0.01) * 100) / 100, trackPhaseM: Math.round(ph * BOOM * 100) / 100 };
     if (params.trackSpacingM === cp.trackSpacingM && params.trackPhaseM === cp.trackPhaseM) continue;
     yield;
+    // 3.7 · triagem barata (35× mais rápida): o equilíbrio não muda quantos pontos cada tiro tem, então o nº de tiros de
+    // 1 ponto já se sabe pelo plano simples; quem cria tiro de 1 ponto a mais nem chega ao cálculo completo (mesmo resultado)
+    if (onesOf(field, { ...base, ...params }) > now.ones) continue;
     const c = balanceStats(field, { ...base, ...params });
     if (!c || c.p95 > now.p95 * BALANCE.p95 || c.worst > now.worst + 1e-6 || c.ones > now.ones || c.km > now.km * BALANCE.km) continue;
     if (c.cv < best.cv - 1e-9) best = { params, ...c };

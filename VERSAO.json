@@ -1,16 +1,17 @@
 {
-  "entrega": "3.6.0",
+  "entrega": "3.7.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-18",
-  "versaoDoApp": "3.6.0",
+  "versaoDoApp": "3.7.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "40ce6a4477a0ef1fa12c672c70483596b8d943eee6128a945756b00bef476b09",
-  "workerSha256": "a8a9726d25830e09ebd78f65953d1f093d0bab6ae5882aaa55409e190fecd094",
+  "htmlSha256": "bcb0673c68be806d04e65f4bd70674779fb7de129599001c5b97c10af88b5545",
+  "workerSha256": "e4b3f7067cf0f316262a02226da904bc856e91994f2c79448c6ae7624a119707",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "3.7.0: logo do proprietário (imagem) no topo e tela de abertura com a logo grande enquanto o app carrega; motor: triagem barata no equilíbrio (o nº de tiros de 1 ponto já se sabe pelo plano simples, 35× mais rápido) — equilíbrio 7,9 → 6,9 s nos 51 lotes, mesmo resultado; revisão de todos os parâmetros com padrão, função, calibração e gargalos em docs/PARAMETROS_3_7.md",
     "3.6.0: marca nova do proprietário (docs/marca-schmidt-original.png) — ícones do app (marca-180/192/512), marca.svg, logo do topo e logo completa no menu (marca-logo.png); paleta tirada da logo: verde-floresta #023628 (topo), verde #035F30 (ação, tiros), dourado #EDA603 (pontos) e #CF9206 (faixas), creme #F7F2E6/#FFFDF7 (fundo e cartões); escuro com verde cheio #0B7A3E nos botões; contraste 0 falhas nos 3 temas",
     "3.5.0 (melhorias por aba): Mapa — na camada Área, anel vermelho onde fica o maior vazio do lote, linha até o ponto mais perto e \"Maior vazio N m\" na legenda; Lotes — lotes com alerta com contorno âmbar no desenho da fazenda; Plano — atalhos de regra (10/15/20/25/30 ha) com um toque e Desfazer; Monitorar — ao sair da linha ou passar do ponto, três toques de vibração (e aviso por voz, se ligada), uma vez por saída",
     "3.4.0: modo navegação no Monitorar (topo some, mapa em tela cheia, etiqueta lote · tiro · pessoa · GPS ± m com cor, barra de progresso dos pontos, distância grande, botões grandes \"Ligar voz\" e \"Parar guia\"; ao chegar, mostra o ponto seguinte e a distância); sugestão do motor no Plano (a melhoria da distribuição é calculada em segundo plano e aparece pronta com o ganho; um toque aplica, com Desfazer); entrada suave do conteúdo ao trocar de aba (180 ms; desliga com \"reduzir movimento\")",
@@ -82,5 +83,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "cca3c48faadde75e4f11e848604bd64a642d63e4118c4cb9eb976f90076f0eb1"
+  "motorSha256": "adee6e546e27c242ca747a6b384466a0b0c5832663cf834116f0117acc3cba4e"
 }
