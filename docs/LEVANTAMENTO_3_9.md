@@ -104,3 +104,18 @@ Evidências: `docs/evidencias-3-1/3.11-*.png` (antes, claro, escuro, Sol, telas 
 | V3 | Ao chegar ao último ponto do tiro, "Próximo tiro: T3 · Pessoa 1" (o próximo da mesma pessoa na equipe do Plano); a guia continua ligada |
 | X3 | O Voltar do celular fecha a janela aberta (menu, glossário, ajustes…) em vez de sair do app |
 | M3 (medido, não feito) | RB9 (3 pontos, 7 a 30 ha por ponto) não melhora deslizando os pontos no tiro: falta tiro numa parte do lote. Precisa mexer nos tiros (espaçamento e fase) junto com M1/M2 numa rodada própria do motor |
+
+## 11. Estudo do motor — 3.14 (51 lotes, 20 ha por ponto, 5 pessoas)
+
+| Ideia testada | Resultado | Entrou? |
+|---|---|---|
+| Espaçamento ±3 passadas e todas as fases, sem piorar nada (95%, áreas, tiros de 1 ponto, caminhada) | 0 lotes melhoram: a recomendação atual já é o melhor desse conjunto | — |
+| O mesmo, aceitando 95% até +1% e áreas até +1 p.p. para baixar o pior vazio ≥ 5% | 2 lotes (RA1 366 → 344 m, RC1 369 → 341 m) | Não (ganho pequeno, custo em todos) |
+| Menos tiros de 1 ponto por espaçamento/fase (±3 passadas) | 9 → 9: vêm da forma do lote (proprietário aceita) | — |
+| "Sugestão do motor" com mais tentativas (1.200 → 4.000) | Igual: o método de passos fixos trava num ótimo local | — |
+| **Lloyd ao longo do tiro** (cada ponto anda no próprio tiro em direção ao centro da sua área) | Pior vazio médio 355 → 354 m; variação das áreas 10,07% → 10,00%; nada piora; +10% de tempo | **Sim** |
+| Pares de pontos perto do maior vazio | Pior vazio −1 m, mas áreas mais desiguais (10,00% → 10,15%) | Não |
+
+Conclusão: com tiros retos nas passadas da barra e o mínimo de pontos, o motor está perto do limite desta estrutura.
+Ganhos maiores agora dependem de decisões do proprietário: pontos acima do mínimo em lotes irregulares (RB9, BD5),
+margem das pontas por lado (M7) e calibração em campo (trecho mínimo 60 m, raio de chegada).
