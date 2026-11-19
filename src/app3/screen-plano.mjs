@@ -1,6 +1,7 @@
 // 3.1 (U02) · tela Plano: hectares por ponto, pessoas, recomendado e outras opções, ajustes avançados.
 import * as P from './planner.mjs';
 import { num } from './format.mjs';
+import { hintMarkup } from './views.mjs';
 import { advancedForm, applyField } from './advanced.mjs';
 
 /** @param {any} app */
@@ -20,7 +21,7 @@ export function installPlano(app) {
   // o Plano mostra o ganho pronto ("maior vazio 689 → 610 m") e um toque aplica, com Desfazer
   const hints = new Map();
   /** @type {any} */ let improver = null, seq = 0;
-  try { if (app.window.Worker) { improver = new app.window.Worker('motor.js'); improver.onmessage = e => { const d = e.data || {}; if (d.kind !== 'improve') return; for (const [k, v] of hints) if (v.id === d.id) { hints.set(k, { id: d.id, r: d.r }); if (app.ui.view === 'plano' && app.hintKey?.() === k) app.render(); } }; improver.onerror = () => { improver = null; }; } } catch { improver = null; }
+  try { if (app.window.Worker) { improver = new app.window.Worker('motor.js'); improver.onmessage = e => { const d = e.data || {}; if (d.kind !== 'improve') return; for (const [k, v] of hints) if (v.id === d.id) { hints.set(k, { id: d.id, r: d.r }); if (app.ui.view === 'plano' && app.hintKey?.() === k) { const box = document.querySelector('[data-hint]'); if (box) box.innerHTML = hintMarkup(app.hint()); } } }; improver.onerror = () => { improver = null; }; } } catch { improver = null; }
   app.hintKey = () => { const cur = app.cur; return cur && !cur.block ? `${app.ui.key}|${JSON.stringify(cur.params)}|${JSON.stringify(app.saved().editsByField?.[app.ui.key] ?? null)}` : null; };
   /** Ganho pronto para o plano em uso (ou null enquanto calcula / se não há ganho). */
   app.hint = () => {
@@ -36,6 +37,8 @@ export function installPlano(app) {
     const cur = app.cur;
     // U04: destaca o tiro no mapa do Plano (tocar de novo tira o destaque)
     if (t.dataset.hitrack) { app.hiTrack = app.hiTrack === t.dataset.hitrack ? null : t.dataset.hitrack; t.setAttribute('aria-pressed', String(app.hiTrack === t.dataset.hitrack)); t.textContent = app.hiTrack ? 'Destacado no mapa' : 'Ver no mapa'; app.drawMaps(); return true; }
+    // 3.5 · regra comum com um toque (mesmo caminho do campo "Hectares por ponto")
+    if (t.dataset.haSet) { const inp = document.querySelector('#ha'); if (inp) { inp.value = t.dataset.haSet; inp.dispatchEvent(new Event('change', { bubbles: true })); } return true; }
     if (t.dataset.set) { advancedChange(t.dataset.set, t.dataset.v); return true; }
     if (t.dataset.alt) { const a = cur.rec.alternatives.filter(Boolean)[+t.dataset.alt]; if (a) app.setParams({ ...cur.base, ...a.params }, `Usando ${a.m.tiros} tiros · ${a.m.pontos} pontos`, null); return true; }
     if (t.dataset.use === 'rec') { app.setParams({ ...cur.base, ...cur.rec.chosen.params }, 'Usando o plano recomendado', null); return true; }

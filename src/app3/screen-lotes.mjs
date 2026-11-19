@@ -38,7 +38,7 @@ export function installLotes(app) {
     let polys = '', labels = '';
     for (const k of ks) {
       const rings = shapeOf(k), on = k === ui.key, [cx, cy] = fields[k].centroidUTM;
-      polys += `<path class="flot${on ? ' on' : ''}" data-pick="${esc(k)}" d="${rings.map(rg => `M${rg.map(P).join('L')}Z`).join('')}"/>`;
+      polys += `<path class="flot${on ? ' on' : ''}${ready.get(k)?.alerts ? ' al' : ''}" data-pick="${esc(k)}" d="${rings.map(rg => `M${rg.map(P).join('L')}Z`).join('')}"/>`;
       const [lx, ly] = P([cx, cy]).split(' ');
       labels += `<text class="fcode${on ? ' on' : ''}" x="${lx}" y="${(+ly + 4).toFixed(1)}">${esc(fields[k].code)}</text>`;
     }
@@ -108,6 +108,7 @@ export function installLotes(app) {
         if (tot) tot.innerHTML = totals(farmKeys(farm));
       }
       if (ks.some(k => !ready.has(k))) setTimeout(step, 0);
+      else if (changed) drawFarm(); // contorno âmbar nos lotes com alerta, quando todos estão calculados
     };
     setTimeout(step, 0);
   }

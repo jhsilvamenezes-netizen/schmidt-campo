@@ -3324,7 +3324,7 @@ const { num, range, km, plural } = __m_app3_format;
 // 3.0 · aplicação: monta o plano de um lote com o motor 2, a recomendação, a conferência, a equipe e a área
 // descoberta. Sem DOM: testável no Node com os 51 lotes.
 
-const ENGINE_LABEL = '3.4.0';
+const ENGINE_LABEL = '3.6.0';
 const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
@@ -3469,7 +3469,7 @@ function pointAreas(field, sc) {
     const cov = exactCoverage(field.geom, sc.samples);
     const cells = cov.cells.map((c, i) => ({ id: sc.samples[i].id, ha: c.areaM2 / 1e4, rings: c.rings }));
     const has = cells.map(c => c.ha);
-    a = { cells, minHa: Math.min(...has), maxHa: Math.max(...has), worstGapM: cov.worstGapM };
+    a = { cells, minHa: Math.min(...has), maxHa: Math.max(...has), worstGapM: cov.worstGapM, worstAt: cov.worstAt, worstPt: cov.worstIndex >= 0 ? sc.samples[cov.worstIndex] : null };
     areaCache.set(sc, a);
   }
   return a;

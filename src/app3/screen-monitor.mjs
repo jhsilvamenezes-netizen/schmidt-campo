@@ -16,6 +16,10 @@ export function installMonitor(app) {
     if (!tracks.some(t => t.id === mon.trackId)) mon.trackId = tracks[0]?.id ?? null;
     const route = mon.trackId ? routeFor(sc, cur.field, mon.trackId, mon.flipped) : null;
     const model = route && mon.active ? guideModel(route, sc, cur.field, mon.pos, Date.now(), mon.session) : null;
+    // 3.5 · fora da linha (ou passou do ponto): três toques curtos de vibração, uma vez por saída — sem olhar a tela
+    const off = !!model?.warn?.some(w => /da linha|linha do|Passou do ponto/.test(w));
+    if (off && !mon.offWarned) { try { window.navigator.vibrate?.([70, 60, 70, 60, 70]); } catch { /* sem vibração */ } say('Atenção: fora da linha.'); }
+    mon.offWarned = off;
     if (model?.state === 'arrived' && model.next?.id !== mon.arrivedId) {
       mon.arrivedId = model.next.id;
       try { window.navigator.vibrate?.([200, 80, 200]); } catch { /* sem vibração */ }

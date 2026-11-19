@@ -27,12 +27,12 @@ export const mapaView = ({ f, sc }) => `<div class="map" data-map="full"></div>
 <p class="mu">95% do lote ${esc(f.p95)} · caminhada ${esc(f.caminhada)}</p><button class="btn p" data-go="plano">Ver plano</button></section>`;
 
 /** Legenda do mapa (como na 2.5): cada medida com a marca da sua cor no desenho. */
-export function legend(field, f, areas) {
+export function legend(field, f, areas, showGap = false) {
   const ha = areas ? (Math.abs(areas.maxHa - areas.minHa) < 0.05 ? `${num(areas.minHa, 1)}` : `${num(areas.minHa, 1)} a ${num(areas.maxHa, 1)}`) : null;
   return `<div class="leg"><b>${esc(field.code)} · ${num(field.areaOfficialHa, 1)} ha</b>
 <span><i class="sw t" aria-hidden="true"></i>Entre tiros <b>${esc(f.entreTiros)}</b></span>
 <span><i class="sw p" aria-hidden="true"></i>Entre pontos <b>${esc(f.entrePontos.replace('–', ' a '))}</b></span>
-${ha ? `<span><i class="sw a" aria-hidden="true"></i>Cada ponto <b>${ha} ha</b></span>` : ''}</div>`;
+${ha ? `<span><i class="sw a" aria-hidden="true"></i>Cada ponto <b>${ha} ha</b></span>` : ''}${showGap && areas?.worstGapM ? `<span><i class="sw v" aria-hidden="true"></i>Maior vazio <b>${num(areas.worstGapM)} m</b></span>` : ''}</div>`;
 }
 
 /** Botões do mapa: camadas (medidas, área de cada ponto) e enquadrar. */
@@ -42,16 +42,19 @@ export const mapTools = (layers, zoomed, here = false) => `<div class="mtools">$
 const stepper = (id, label, hint, value) => `<div class="step"><label for="${id}">${label}${hint ? `<small>${hint}</small>` : ''}</label><div class="stp">
 <button data-dec="${id}" aria-label="Diminuir ${label.toLowerCase()}">−</button><input id="${id}" inputmode="numeric" value="${esc(value)}"><button data-inc="${id}" aria-label="Aumentar ${label.toLowerCase()}">+</button></div></div>`;
 
+/** Sugestão do motor pronta (ganho e "Aplicar") ou o botão para calcular na hora. Também trocada sozinha, sem redesenhar a tela. */
+export const hintMarkup = hint => (hint ? `<button class="sug" data-act="minimax"><span class="x"><b>Sugestão do motor</b><small class="sub">${esc(hint.text)}</small></span><span class="go">Aplicar</span></button>` : '<button class="lnk" data-act="minimax">Melhorar a distribuição dos pontos</button>');
+
 /** @param {any} o */
 export function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, block, hiTrack = null, list = [], split = null, hint = null }) {
   if (block) return blockPlanoView({ f, sc, rows, block });
   const alts = (rec?.alternatives || []).filter(a => a);
   return `<div class="map sm" data-map="small"></div><div class="scroll">
-<section class="card">${stepper('ha', 'Hectares por ponto', `mínimo ${num(sc.minPoints)} pontos`, haPerPoint)}${stepper('people', 'Pessoas', '', people)}
+<section class="card">${stepper('ha', 'Hectares por ponto', `mínimo ${num(sc.minPoints)} pontos`, haPerPoint)}<div class="presets" role="group" aria-label="Regras comuns">${[10, 15, 20, 25, 30].map(v => `<button data-ha-set="${v}" aria-pressed="${String(v) === String(haPerPoint)}">${v} ha</button>`).join('')}</div>${stepper('people', 'Pessoas', '', people)}
 <div class="seg" role="group" aria-label="Planejar"><button class="on" aria-pressed="true">Lote</button><button data-open="bloco" aria-pressed="false">Bloco</button></div></section>
 <section class="card"><div class="row-sb"><h2 class="h">${inUseIsRec ? 'Plano recomendado' : 'Plano em uso'}</h2>${inUseIsRec ? '<span class="tag">em uso</span>' : rec ? '<button class="link" data-use="rec">Usar recomendado</button>' : '<span class="mu">calculando o recomendado…</span>'}</div>
 ${metrics(f)}<p class="mu">Caminhada ${esc(f.caminhada)}${f.tiros ? ` · ${km(sc.route.totalEstimatedM / f.tiros)} km por tiro` : ''}</p>${busy ? '<p class="mu">Calculando…</p>' : ''}
-${hint ? `<button class="sug" data-act="minimax"><span class="x"><b>Sugestão do motor</b><small class="sub">${esc(hint.text)}</small></span><span class="go">Aplicar</span></button>` : '<button class="lnk" data-act="minimax">Melhorar a distribuição dos pontos</button>'}</section>
+<div data-hint>${hintMarkup(hint)}</div></section>
 ${trackRows(rows, hiTrack)}
 ${checkAndTeam(list, split)}
 <section class="card list"><h2 class="h">Outras opções</h2>${alts.length ? alts.map((a, i) => `<div class="li"><span class="x">${num(a.m.tiros)} tiros · ${num(a.m.pontos)} pontos<br><small>95% &lt; ${num(a.m.p95M)} m · ${num(a.m.caminhadaKm, 1)} km${a.id === 'equipe' ? ' · igual por pessoa' : ''}</small></span><button class="use" data-alt="${i}">Usar</button></div>`).join('') : '<p class="mu">Sem outra opção melhor.</p>'}

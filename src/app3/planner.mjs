@@ -15,7 +15,7 @@ import { exactCoverage } from '../engine3/voronoi.mjs';
 import { pointInGeom } from '../engine3/geometry.mjs';
 import { num, range, km, plural } from './format.mjs';
 
-export const ENGINE_LABEL = '3.4.0';
+export const ENGINE_LABEL = '3.6.0';
 export const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
@@ -161,7 +161,7 @@ export function pointAreas(field, sc) {
     const cov = exactCoverage(field.geom, sc.samples);
     const cells = cov.cells.map((c, i) => ({ id: sc.samples[i].id, ha: c.areaM2 / 1e4, rings: c.rings }));
     const has = cells.map(c => c.ha);
-    a = { cells, minHa: Math.min(...has), maxHa: Math.max(...has), worstGapM: cov.worstGapM };
+    a = { cells, minHa: Math.min(...has), maxHa: Math.max(...has), worstGapM: cov.worstGapM, worstAt: cov.worstAt, worstPt: cov.worstIndex >= 0 ? sc.samples[cov.worstIndex] : null };
     areaCache.set(sc, a);
   }
   return a;

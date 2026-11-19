@@ -12,7 +12,7 @@ export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', '
   'app3/advanced', 'app3/gestures', 'app3/monitor', 'app3/compass', 'persistence/backup-service', 'persistence/backup-format', 'platform/browser-backup-adapters', 'platform/browser-session-lock',
   'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/versions', 'app3/backup',
   'app3/screen-mapa', 'app3/screen-monitor', 'app3/screen-plano', 'app3/screen-enviar', 'app3/screen-mais', 'app3/screen-lotes', 'app3/screen-bloco', 'app3/main'];
-export const APP_VERSION = '3.4.0';
+export const APP_VERSION = '3.6.0';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
 /** Cada módulo no seu escopo; importações do motor viram o namespace schmidtEngine2. */
@@ -83,7 +83,7 @@ export async function build3() {
   await mkdir(root + 'build/3', { recursive: true });
   await writeFile(root + 'build/3/index.html', html);
   // marca da 3.0 em arquivos próprios: os ícones da raiz (icone*) são da 2.5/APK e ficam intactos
-  for (const f of ['marca.svg', 'app.webmanifest', 'marca-192.png', 'marca-512.png', 'marca-180.png']) await copyFile(root + f, root + 'build/3/' + f);
+  for (const f of ['marca.svg', 'app.webmanifest', 'marca-192.png', 'marca-512.png', 'marca-180.png', 'marca-logo.png']) await copyFile(root + f, root + 'build/3/' + f);
   // service worker: mesmo modelo da 2.x (cache conferido pelo SHA-256 da página; sem troca no meio do uso)
   const tpl = await readFile(root + 'src/platform/service-worker.js', 'utf8'), digest = createHash('sha256').update(html).digest('hex');
   let worker = tpl.replace('__SCHMIDT_CACHE__', `schmidt-3-${digest.slice(0, 10)}`).replace('__SCHMIDT_INDEX_SHA256__', digest);
@@ -93,7 +93,7 @@ export async function build3() {
   worker = worker.replace(hook, hook + "if(new URL(request.url).pathname.includes('/legado/'))return;");
   const files = "const ARQUIVOS = ['./','index.html','manifest.webmanifest','icone.svg','icone-192.png','icone-512.png','icone-180.png'];";
   if (worker.split(files).length !== 2) throw Error('Lista de arquivos do service worker mudou');
-  worker = worker.replace(files, "const ARQUIVOS = ['./','index.html','motor.js','app.webmanifest','marca.svg','marca-192.png','marca-512.png','marca-180.png'];");
+  worker = worker.replace(files, "const ARQUIVOS = ['./','index.html','motor.js','app.webmanifest','marca.svg','marca-192.png','marca-512.png','marca-180.png','marca-logo.png'];");
   await writeFile(root + 'build/3/sw.js', worker);
   const motor = await bundleWorker();
   await writeFile(root + 'build/3/motor.js', motor);
