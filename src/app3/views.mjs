@@ -79,8 +79,8 @@ const teamList = split => split.pessoas.map((p, i) => `<div class="li"><span cla
 export function checkAndTeam(list, split) {
   const ok = list.filter(c => c.level === 'ok').length, all = ok === list.length;
   const kms = split ? split.pessoas.map(p => p.m / 1000) : [];
-  return `<details class="card fold"><summary class="sumc"><span class="x"><b>${all ? 'Plano conferido' : 'Conferir o plano'}</b><small class="sub">${esc(list.filter(c => c.level !== 'ok').map(c => c.text).join(' · ') || list.map(c => c.text).slice(0, 2).join(' · '))}</small></span>${chip(all ? 'ok' : 'alerta', `${ok} de ${list.length}`)}</summary>${list.map(c => `<p class="ck ${c.level}">${esc(c.text)}</p>`).join('')}</details>`
-    + (split ? `<details class="card fold list"><summary class="sumc"><span class="x"><b>Equipe</b><small class="sub">${num(split.pessoas.length)} ${split.pessoas.length === 1 ? 'pessoa' : 'pessoas'} · ${num(Math.min(...kms), 1)} a ${num(Math.max(...kms), 1)} km cada</small></span></summary>${teamList(split)}</details>` : '');
+  return `<details class="card fold" data-k="conf"><summary class="sumc"><span class="x"><b>${all ? 'Plano conferido' : 'Conferir o plano'}</b><small class="sub">${esc(list.filter(c => c.level !== 'ok').map(c => c.text).join(' · ') || list.map(c => c.text).slice(0, 2).join(' · '))}</small></span>${chip(all ? 'ok' : 'alerta', `${ok} de ${list.length}`)}</summary>${list.map(c => `<p class="ck ${c.level}">${esc(c.text)}</p>`).join('')}</details>`
+    + (split ? `<details class="card fold list" data-k="equipe"><summary class="sumc"><span class="x"><b>Equipe</b><small class="sub">${num(split.pessoas.length)} ${split.pessoas.length === 1 ? 'pessoa' : 'pessoas'} · ${num(Math.min(...kms), 1)} a ${num(Math.max(...kms), 1)} km cada</small></span></summary>${teamList(split)}</details>` : '');
 }
 
 /** Folha "Arquivos e fichas" (menu): enviar o plano, fichas impressas, resumo e arquivos de GPS/SIG. */
@@ -157,7 +157,7 @@ function trackRows(rows, hiTrack) {
     const d = r.d, head = `<span class="id">${esc(r.trackId)}</span><span class="x">${num(r.lengthM)} m <small>· ${r.n === 1 ? '1 ponto' : `${num(r.n)} pontos`}</small></span><span class="r">${r.medianGapM ? `a cada ${num(r.medianGapM)} m` : r.n ? '1 ponto' : 'sem ponto'}</span>`;
     if (!d) return `<div class="li">${head}</div>`;
     const on = hiTrack === r.trackId;
-    return `<details class="trk"${on ? ' open' : ''}><summary class="li">${head}</summary><div class="trkb">
+    return `<details class="trk" data-k="trk:${esc(r.trackId)}"${on ? ' open' : ''}><summary class="li">${head}</summary><div class="trkb">
 ${d.parts.map((pt, i) => `${d.parts.length > 1 ? `<p class="mu sm">Parte ${i + 1} · ${num(pt.lengthM)} m</p>` : ''}<p class="mu sm">Entra a ${esc(pt.entra)} e anda para ${esc(pt.anda)}</p>${ruler(pt.steps)}`).join('')}
 ${d.neighbors.length ? `<p class="mu sm">${d.neighbors.length > 1 ? 'Tiros vizinhos' : 'Tiro vizinho'}: ${d.neighbors.map(nb => `${esc(nb.id)} a ${num(nb.m)} m`).join(' · ')} (de lado)</p>` : ''}
 <button class="link" data-hitrack="${esc(r.trackId)}" aria-pressed="${on}">${on ? 'Destacado no mapa' : 'Ver no mapa'}</button></div></details>`;

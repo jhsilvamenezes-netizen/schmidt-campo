@@ -59,6 +59,10 @@ try {
     // 3.5: a sugestão do motor chega do segundo plano sem redesenhar o Plano (o tiro aberto continua aberto)
     await p.waitForSelector('[data-hint] .sug', { timeout: 20000 });
     assert.equal(await p.locator('details.trk[open]').count(), 1, 'tiro aberto fechou quando a sugestão chegou');
+    // 3.10: redesenhar o Plano (mudar pessoas, recomendação que chega do motor) mantém o tiro aberto
+    await p.click('details.trk >> nth=2 >> summary');
+    await p.click('[data-inc="people"]'); await p.click('[data-dec="people"]');
+    assert.ok(await p.locator('details.trk >> nth=2').evaluate(d => d.open), 'tiro aberto fechou ao redesenhar o Plano');
     await p.click('[data-tab="mapa"]');
     // pessoas e opções
     await p.click('[data-tab="plano"]'); await p.click('[data-inc="people"]');

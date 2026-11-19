@@ -192,7 +192,16 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   }
   function render() {
     const main = $('#view');
-    try { draw(main); } catch (e) {
+    // Redesenhar a mesma aba não fecha o que a pessoa abriu nem perde a rolagem (tiro aberto, Conferir, Equipe).
+    const same = main.dataset.view === ui.view, sc = main.querySelector('.scroll');
+    const keep = same ? { open: [...main.querySelectorAll('details[data-k][open]')].map(d => d.dataset.k), top: sc ? sc.scrollTop : 0 } : null;
+    try {
+      draw(main);
+      if (keep) {
+        for (const d of main.querySelectorAll('details[data-k]')) if (keep.open.includes(d.dataset.k)) d.open = true;
+        const s2 = main.querySelector('.scroll'); if (s2 && keep.top) s2.scrollTop = keep.top;
+      }
+    } catch (e) {
       // Nunca tela em branco: mostra o problema e uma saída (lote recomendado).
       app.cur = null; memo = null;
       main.innerHTML = `<div class="scroll"><section class="card"><h2 class="big md">Não foi possível montar este plano</h2><p class="mu">${esc(P.friendly(e))}</p>

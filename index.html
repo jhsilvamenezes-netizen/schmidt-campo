@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-eMQcetHYiplS/CsU7XMhQQpYsTZjm1ji/f9OZPxQ4Jw=' 'sha256-c/yT68v4mnTp4gODjsnPetkRaNoukVNT/Ch8eRYXhNU='; style-src 'sha256-szmj87C7Ip6509FlUFdikgwqUq8N5rPCdbYhrD4UAiI='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-eMQcetHYiplS/CsU7XMhQQpYsTZjm1ji/f9OZPxQ4Jw=' 'sha256-M1eHv0wCliEg51ybsqZSfk0ju2MeqkZ645fnaoqvGTc='; style-src 'sha256-szmj87C7Ip6509FlUFdikgwqUq8N5rPCdbYhrD4UAiI='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#023628" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#01261c" media="(prefers-color-scheme: dark)">
 <title>SCHMIDT Campo</title>
 <link rel="icon" href="marca.svg"><link rel="apple-touch-icon" href="marca-180.png"><link rel="manifest" href="app.webmanifest">
@@ -4612,8 +4612,8 @@ const teamList = split => split.pessoas.map((p, i) => `<div class="li"><span cla
 function checkAndTeam(list, split) {
   const ok = list.filter(c => c.level === 'ok').length, all = ok === list.length;
   const kms = split ? split.pessoas.map(p => p.m / 1000) : [];
-  return `<details class="card fold"><summary class="sumc"><span class="x"><b>${all ? 'Plano conferido' : 'Conferir o plano'}</b><small class="sub">${esc(list.filter(c => c.level !== 'ok').map(c => c.text).join(' · ') || list.map(c => c.text).slice(0, 2).join(' · '))}</small></span>${chip(all ? 'ok' : 'alerta', `${ok} de ${list.length}`)}</summary>${list.map(c => `<p class="ck ${c.level}">${esc(c.text)}</p>`).join('')}</details>`
-    + (split ? `<details class="card fold list"><summary class="sumc"><span class="x"><b>Equipe</b><small class="sub">${num(split.pessoas.length)} ${split.pessoas.length === 1 ? 'pessoa' : 'pessoas'} · ${num(Math.min(...kms), 1)} a ${num(Math.max(...kms), 1)} km cada</small></span></summary>${teamList(split)}</details>` : '');
+  return `<details class="card fold" data-k="conf"><summary class="sumc"><span class="x"><b>${all ? 'Plano conferido' : 'Conferir o plano'}</b><small class="sub">${esc(list.filter(c => c.level !== 'ok').map(c => c.text).join(' · ') || list.map(c => c.text).slice(0, 2).join(' · '))}</small></span>${chip(all ? 'ok' : 'alerta', `${ok} de ${list.length}`)}</summary>${list.map(c => `<p class="ck ${c.level}">${esc(c.text)}</p>`).join('')}</details>`
+    + (split ? `<details class="card fold list" data-k="equipe"><summary class="sumc"><span class="x"><b>Equipe</b><small class="sub">${num(split.pessoas.length)} ${split.pessoas.length === 1 ? 'pessoa' : 'pessoas'} · ${num(Math.min(...kms), 1)} a ${num(Math.max(...kms), 1)} km cada</small></span></summary>${teamList(split)}</details>` : '');
 }
 
 /** Folha "Arquivos e fichas" (menu): enviar o plano, fichas impressas, resumo e arquivos de GPS/SIG. */
@@ -4690,7 +4690,7 @@ function trackRows(rows, hiTrack) {
     const d = r.d, head = `<span class="id">${esc(r.trackId)}</span><span class="x">${num(r.lengthM)} m <small>· ${r.n === 1 ? '1 ponto' : `${num(r.n)} pontos`}</small></span><span class="r">${r.medianGapM ? `a cada ${num(r.medianGapM)} m` : r.n ? '1 ponto' : 'sem ponto'}</span>`;
     if (!d) return `<div class="li">${head}</div>`;
     const on = hiTrack === r.trackId;
-    return `<details class="trk"${on ? ' open' : ''}><summary class="li">${head}</summary><div class="trkb">
+    return `<details class="trk" data-k="trk:${esc(r.trackId)}"${on ? ' open' : ''}><summary class="li">${head}</summary><div class="trkb">
 ${d.parts.map((pt, i) => `${d.parts.length > 1 ? `<p class="mu sm">Parte ${i + 1} · ${num(pt.lengthM)} m</p>` : ''}<p class="mu sm">Entra a ${esc(pt.entra)} e anda para ${esc(pt.anda)}</p>${ruler(pt.steps)}`).join('')}
 ${d.neighbors.length ? `<p class="mu sm">${d.neighbors.length > 1 ? 'Tiros vizinhos' : 'Tiro vizinho'}: ${d.neighbors.map(nb => `${esc(nb.id)} a ${num(nb.m)} m`).join(' · ')} (de lado)</p>` : ''}
 <button class="link" data-hitrack="${esc(r.trackId)}" aria-pressed="${on}">${on ? 'Destacado no mapa' : 'Ver no mapa'}</button></div></details>`;
@@ -6878,7 +6878,16 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   }
   function render() {
     const main = $('#view');
-    try { draw(main); } catch (e) {
+    // Redesenhar a mesma aba não fecha o que a pessoa abriu nem perde a rolagem (tiro aberto, Conferir, Equipe).
+    const same = main.dataset.view === ui.view, sc = main.querySelector('.scroll');
+    const keep = same ? { open: [...main.querySelectorAll('details[data-k][open]')].map(d => d.dataset.k), top: sc ? sc.scrollTop : 0 } : null;
+    try {
+      draw(main);
+      if (keep) {
+        for (const d of main.querySelectorAll('details[data-k]')) if (keep.open.includes(d.dataset.k)) d.open = true;
+        const s2 = main.querySelector('.scroll'); if (s2 && keep.top) s2.scrollTop = keep.top;
+      }
+    } catch (e) {
       // Nunca tela em branco: mostra o problema e uma saída (lote recomendado).
       app.cur = null; memo = null;
       main.innerHTML = `<div class="scroll"><section class="card"><h2 class="big md">Não foi possível montar este plano</h2><p class="mu">${esc(P.friendly(e))}</p>
