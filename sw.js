@@ -1,6 +1,6 @@
 // Atualização controlada: esta versão espera as abas da anterior fecharem.
-const CACHE = 'schmidt-3-aec7f40821';
-const INDEX_SHA256 = 'aec7f40821e8340e9f8893b5d934762b534198963bd2172db811f75e28f21ec0';
+const CACHE = 'schmidt-3-54f4a99fce';
+const INDEX_SHA256 = '54f4a99fce05160c268346994ed468c3900e0060a6ec2e2efd62916c5d22ef8c';
 const ARQUIVOS = ['./','index.html','motor.js','app.webmanifest','marca.svg','marca-192.png','marca-512.png','marca-180.png','marca-logo.png'];
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{

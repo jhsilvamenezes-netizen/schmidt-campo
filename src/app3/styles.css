@@ -308,3 +308,14 @@ html[data-ready="1"] #splash{opacity:0;visibility:hidden}
 .map-svg .bd-t{font:600 12px var(--f);fill:var(--mu);stroke:var(--fd);stroke-width:4px;paint-order:stroke;stroke-linejoin:round}.map-svg .bd-t.near{fill:var(--al);font-weight:700}
 .warn{color:var(--al);font-weight:600}
 :root.sun .lpanel{border:2px solid #000;background:#fff;backdrop-filter:none}
+/* 3.9 · acessibilidade e toque: título só para leitor de tela; alvos de toque ≥ 44 px (luva, sol) */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ib{width:44px;height:44px}.lot{min-height:44px}
+.presets button{min-height:44px}
+.link{min-height:44px;padding:8px 4px}
+.badge{min-height:44px;display:inline-flex;align-items:center}
+.sumc{min-height:44px}.fold>summary{min-height:44px}
+.seg button{min-height:44px}
+.skip:focus{min-height:44px;display:flex;align-items:center}
+.glos{display:flex;flex-direction:column;gap:4px}.glos dt{font:700 14px var(--f);color:var(--br);margin-top:8px}.glos dd{margin:0;color:var(--ink);font:400 14px/1.45 var(--f)}
+.use{min-height:44px}

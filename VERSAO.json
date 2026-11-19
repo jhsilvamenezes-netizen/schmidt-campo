@@ -1,16 +1,17 @@
 {
-  "entrega": "3.8.0",
+  "entrega": "3.9.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-18",
-  "versaoDoApp": "3.8.0",
+  "versaoDoApp": "3.9.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "aec7f40821e8340e9f8893b5d934762b534198963bd2172db811f75e28f21ec0",
-  "workerSha256": "3aceeedae7fcc57c2e2053debccc6250aef9022c3ef338f2865270a1204f0241",
+  "htmlSha256": "54f4a99fce05160c268346994ed468c3900e0060a6ec2e2efd62916c5d22ef8c",
+  "workerSha256": "7230c27af17ec2e7b6b148606cc5ed73b4eb26e8e4c291ea85fd3fc468e16bcb",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "3.9.0: levantamento completo (docs/LEVANTAMENTO_3_9.md) e itens A: acessibilidade 0 falhas (axe) em todas as abas — título principal e nome do botão do lote igual ao texto; alvos de toque ≥ 44 px (topo, atalhos de regra, Inverter, Usar, selo, Roteiro, Lote/Bloco) — de 37 para 0 fora o link oculto; Glossário no menu com cada termo em uma frase e os números do lote aberto",
     "3.8.0: mapa limpo — sem quadro fixo de medidas; ferramentas empilhadas no canto e botão de camadas que abre um painel com as medidas do plano (entre tiros, entre pontos, cada ponto, maior vazio, mais perto da borda) e chaves: medidas, área de cada ponto, bordadura, grade em metros; bordadura (30 m, valor inicial a confirmar): distância de cada ponto até a borda no motor, desempate no equilíbrio (até +0,5 p.p. de variação) — pontos na bordadura 3 → 1 lote (só BC3, pela forma), aviso na conferência e no Plano (\"ponto 21 a 11 m da borda\"), camada Bordadura no mapa e 1ª etapa da \"Sugestão do motor\" afastando da borda; tiros um pouco mais marcados no mapa",
     "3.7.0: logo do proprietário (imagem) no topo e tela de abertura com a logo grande enquanto o app carrega; motor: triagem barata no equilíbrio (o nº de tiros de 1 ponto já se sabe pelo plano simples, 35× mais rápido) — equilíbrio 7,9 → 6,9 s nos 51 lotes, mesmo resultado; revisão de todos os parâmetros com padrão, função, calibração e gargalos em docs/PARAMETROS_3_7.md",
     "3.6.0: marca nova do proprietário (docs/marca-schmidt-original.png) — ícones do app (marca-180/192/512), marca.svg, logo do topo e logo completa no menu (marca-logo.png); paleta tirada da logo: verde-floresta #023628 (topo), verde #035F30 (ação, tiros), dourado #EDA603 (pontos) e #CF9206 (faixas), creme #F7F2E6/#FFFDF7 (fundo e cartões); escuro com verde cheio #0B7A3E nos botões; contraste 0 falhas nos 3 temas",
@@ -84,5 +85,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "375fac1b01fcbb0b9e788d12849a6c2784b8a5e1b3a6a783154525ff1c8482d4"
+  "motorSha256": "22630a0d11626b018c321d99d17640a448fc1732d89336532820e2e39d8ef61b"
 }
