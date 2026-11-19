@@ -139,7 +139,7 @@ test('U08 · bússola: rumo do iPhone e do Android, tela deitada, suavização p
   assert.equal(arrowAngle(135, null), 135, 'sem bússola: norte para cima');
 });
 
-test('U17 · áreas equilibradas nos 51 lotes: variação mediana ≤ 8%, sem piorar a cobertura (A1 + A5)', () => {
+test('U17 · áreas equilibradas nos 51 lotes: variação mediana ≤ 8,5% e bordadura, sem piorar a cobertura (A1 + A5)', () => {
   const rows = keys.map(k => {
     const f = fields[k], b0 = P.balanceStats(f, P.recommendBase(f, {}, 5, false).chosen.params), r = P.recommend(f, {}, 5, false), b1 = P.balanceStats(f, r.chosen.params);
     assert.ok(b1.p95 <= b0.p95 * P.BALANCE.p95 + 1e-9, `${k}: 95% do lote ${b0.p95} → ${b1.p95}`);
@@ -151,7 +151,11 @@ test('U17 · áreas equilibradas nos 51 lotes: variação mediana ≤ 8%, sem pi
     return { b0, b1 };
   });
   const med = a => [...a].sort((x, y) => x - y)[a.length >> 1];
-  assert.ok(med(rows.map(r => r.b1.cv)) <= 0.08, `variação mediana ${med(rows.map(r => r.b1.cv))}`);
+  // 3.8: a bordadura entrou como desempate (até +0,5 p.p. de variação): mediana 7,7% → 8,1%, em troca de tirar da
+  // bordadura (< 30 m da borda) os pontos de RB7 (9 m) e RB9 (17 m); só BC3 fica (forma do lote, sem opção)
+  assert.ok(med(rows.map(r => r.b1.cv)) <= 0.085, `variação mediana ${med(rows.map(r => r.b1.cv))}`);
+  const near = keys.filter(k => P.borderStats(fields[k], rows[keys.indexOf(k)].b1.sc).minM < P.BORDADURA_M).map(k => fields[k].code);
+  assert.deepStrictEqual(near, ['BC3'], `pontos na bordadura: ${near}`);
   assert.ok(med(rows.map(r => r.b1.cv)) < med(rows.map(r => r.b0.cv)));
 });
 
@@ -187,9 +191,12 @@ test('3.3 · melhorar a distribuição: nos 51 lotes nunca piora (pior vazio, 95
     const f = fields[k], params = P.recommend(f, {}, 5).chosen.params, r = P.minimaxEdits(f, params);
     if (!r.edits) continue;
     improved++;
-    assert.ok(r.after.worst <= r.before.worst + 1e-6 && (r.after.worst < r.before.worst - 1 || r.after.cv < r.before.cv - 0.004), `${k}: melhora`);
+    // 3.8: a 1ª etapa afasta da borda (bordadura) pontos a menos de 30 m, aceitando pior vazio até +5%
+    const bord = r.after.border > r.before.border + 0.5 && r.before.border < P.BORDADURA_M;
+    assert.ok(r.after.worst <= r.before.worst * (bord ? 1.05 : 1) + 1e-6 && (bord || r.after.worst < r.before.worst - 1 || r.after.cv < r.before.cv - 0.004), `${k}: melhora`);
+    assert.ok(r.after.border >= Math.min(r.before.border, P.BORDADURA_M) - 1e-6, `${k}: nenhum ponto vai para a bordadura`);
     assert.ok(r.after.p95 <= r.before.p95 * 1.01 + 1e-9, `${k}: 95%`);
-    assert.ok(r.after.cv <= r.before.cv + 0.01 + 1e-9, `${k}: áreas`);
+    assert.ok(r.after.cv <= r.before.cv + 0.02 + 1e-9, `${k}: áreas`);
     // o ajuste gravado reabre com os mesmos pontos, cada um no seu tiro
     const sc = P.planInUse(f, params, r.edits), base = P.planInUse(f, params, null);
     assert.equal(sc.samples.length, base.samples.length, k);

@@ -39,7 +39,12 @@ try {
     await p.click('[data-tab="mapa"]');
     assert.match(await p.textContent('.sheet'), /24 pontos.*5 tiros.*< 261 m.*12,7 km/s);
     // legenda do mapa (como na 2.5): medidas com a marca da cor do desenho
-    assert.match((await p.textContent('.leg')).replace(/\s+/g, ' '), /BD3 · 469,9 ha Entre tiros 438 m Entre pontos 438 a 515 m Cada ponto 15,8 a 24,2 ha/);
+    // 3.8: sem quadro fixo sobre o mapa; as medidas ficam no painel de camadas (botão no canto) e no Plano
+    assert.equal(await p.locator('[data-map="full"] .leg').count(), 0);
+    await p.click('[data-act="layers"]'); await p.waitForSelector('.lpanel');
+    assert.match((await p.textContent('.lpanel')).replace(/\s+/g, ' '), /BD3 · 469,9 ha\s*Entre tiros\s*438 m\s*Entre pontos\s*438 a 515 m\s*Cada ponto\s*15,8 a 24,2 ha\s*Maior vazio\s*\d+ m\s*Mais perto da borda\s*\d+ m · ponto \d+/);
+    await p.click('[data-act="layer-borda"]'); await p.waitForSelector('[data-map="full"] .bd-l');
+    await p.click('[data-act="layer-borda"]'); await p.click('[data-act="layers"]'); await p.waitForFunction(() => !document.querySelector('.lpanel'));
     await p.waitForFunction(() => document.querySelectorAll('.map-svg .pt').length === 24, null, { timeout: 5000 });
     // regra 20 → 10 ha por ponto: recalcula e grava; recarregar mantém
     await p.click('[data-tab="plano"]'); await p.fill('#ha', '10'); await p.dispatchEvent('#ha', 'change');
