@@ -74,3 +74,16 @@ Legenda de prioridade: **A** = fazer já · **B** = próxima rodada · **C** = d
 2. **3.10:** V2, V4, M4, C1, C2.
 3. **3.11:** M1, M2, M3, V3, D2.
 4. **Com o proprietário:** M5 (bordadura), M6 (raio de chegada), V5.
+
+## 8. Feito na 3.11 — visual "Mata e Ouro"
+
+| Item | O que mudou |
+|---|---|
+| C1 | `styles.css` reescrito numa folha só, por seção (base, topo, conteúdo, controles, listas, menu, folhas, mapa, Lotes, Monitorar, Sol, impressão); 342 → 283 linhas, sem seletor redefinido em camadas |
+| C2 | Sombras e vidro viram tokens (`--sh1/2/3`, `--glass`); paleta revista com contraste ≥ 4,5 (claro, escuro e Sol) |
+| Estrutura | Folha arredondada que sobe sobre o mapa (Lotes, Plano, Monitorar); menu de baixo flutuante com cápsula no item ativo; títulos de seção em versalete com ponto dourado |
+| Plano | Resultado primeiro (pontos, tiros, medidas e sugestão do motor), regra depois |
+| Lotes | Lote em uso no topo; escolha da fazenda dentro do cartão da fazenda |
+| Monitorar | "Iniciar guia" como ação única; GPX e roteiro sem GPS juntos em "Sem o guia" |
+
+Evidências: `docs/evidencias-3-1/3.11-*.png` (antes, claro, escuro, Sol, telas inteiras).

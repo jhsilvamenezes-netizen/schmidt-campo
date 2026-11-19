@@ -73,10 +73,11 @@ function cota(cls, a, b) {
 /** Marcação SVG do lote ajustada a w × h px. `small` = mapa do Plano/guia (sem medidas).
  * @param {any} field @param {any} sc @param {number} w @param {number} h
  * @param {{pad?:number|{t:number,r:number,b:number,l:number}, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null,
- *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null, hiTrack?:string|null, ruler?:{a:number[],b:number[],m:number}|null, grid?:boolean, border?:any}} [opts] */
+ *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null, hiTrack?:string|null, ruler?:{a:number[],b:number[],m:number}|null, grid?:boolean, border?:any, under?:number}} [opts] */
 export function mapMarkup(field, sc, w, h, opts = {}) {
-  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null, hiTrack = null, ruler = null, grid = true, border = null } = opts;
-  const pad = typeof pad0 === 'number' ? { t: pad0, r: pad0, b: pad0, l: pad0 } : pad0;
+  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null, hiTrack = null, ruler = null, grid = true, border = null, under = 0 } = opts;
+  // `under`: faixa de baixo coberta pela folha que sobe sobre o mapa (3.11); o lote e a escala ficam acima dela
+  const pad = { ...(typeof pad0 === 'number' ? { t: pad0, r: pad0, b: pad0, l: pad0 } : pad0) }; pad.b += under;
   // Outros lotes (bloco): levados ao referencial do lote atual pela diferença dos centroides UTM.
   const shift = o => [o.field.centroidUTM[0] - field.centroidUTM[0], o.field.centroidUTM[1] - field.centroidUTM[1]];
   const extra = others.map(o => ({ ...o, d: shift(o) }));
@@ -89,13 +90,13 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
   const ox = pad.l + (iw - k * (x1 - x0)) / 2, oy = pad.b + (ih - k * (y1 - y0)) / 2;
   const XY = (x, y) => [view.x + view.k * (ox + k * (x - x0)), view.y + view.k * (h - oy - k * (y - y0))];
   const P = ([x, y]) => XY(x, y).map(f1).join(',');
-  const kk = k * view.k, sp = space(w, h, measure);
+  const kk = k * view.k, sp = space(w, h - under, measure);
   let r = small ? 9.5 : 11.5;
   const numY = 4.2;
   for (const b of reserve) sp.boxes.push(b);
   // escala e norte ocupam o seu canto
   const target = (w * 0.3) / kk, len = NICE.reduce((b, v) => (Math.abs(v - target) < Math.abs(b - target) ? v : b), NICE[0]), L = len * kk;
-  sp.boxes.push([6, h - 40, 22 + Math.max(L, 48), h - 4], [w - 34, 4, w - 4, 52]);
+  sp.boxes.push([6, h - 40 - under, 22 + Math.max(L, 48), h - 4 - under], [w - 34, 4, w - 4, 52]);
 
   let s0 = '';
   for (const o of extra) {
@@ -192,7 +193,7 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
     if (Number.isFinite(heading)) s += `<path class="cone" transform="translate(${f1(px)} ${f1(py)}) rotate(${Number(heading).toFixed(0)})" d="M0 0L-11 -26A28 28 0 0 1 11 -26Z"/>`;
     s += `<circle class="me" cx="${f1(px)}" cy="${f1(py)}" r="7"/>`;
   }
-  s += `<g class="scale" transform="translate(14 ${h - 14})"><path d="M0 -6V0H${f1(L)}V-6"/><text x="0" y="-10">${num(len)} m</text></g>`;
+  s += `<g class="scale" transform="translate(14 ${h - 14 - under})"><path d="M0 -6V0H${f1(L)}V-6"/><text x="0" y="-10">${num(len)} m</text></g>`;
   s += `<g class="north" transform="translate(${w - 18} 16)"><text x="0" y="8">N</text><path d="M0 14V30M-4 19L0 14L4 19"/></g>`;
   return s + '</svg>';
 }

@@ -32,8 +32,10 @@ export function installLotes(app) {
     const ks = farmKeys(farm);
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     for (const k of ks) for (const ring of shapeOf(k)) for (const [x, y] of ring) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
-    const pad = 18, s = Math.min((W - 2 * pad) / (x1 - x0), (H - 2 * pad) / (y1 - y0));
-    const ox = (W - s * (x1 - x0)) / 2, oy = (H - s * (y1 - y0)) / 2;
+    // 3.11: a folha de baixo sobe sobre o mapa (`--under`); a fazenda e a escala ficam acima dela
+    const under = parseFloat(document.defaultView.getComputedStyle(el).getPropertyValue('--under')) || 0, Hv = H - under;
+    const pad = 18, s = Math.min((W - 2 * pad) / (x1 - x0), (Hv - 2 * pad) / (y1 - y0));
+    const ox = (W - s * (x1 - x0)) / 2, oy = (Hv - s * (y1 - y0)) / 2;
     const P = ([x, y]) => `${(ox + (x - x0) * s).toFixed(1)} ${(oy + (y1 - y) * s).toFixed(1)}`;
     let polys = '', labels = '';
     for (const k of ks) {
@@ -49,7 +51,7 @@ export function installLotes(app) {
     for (let gx = Math.floor(x0 / len) * len; gx <= x1 + len; gx += len) { const X = P([gx, 0]).split(' ')[0]; grid += `M${X} ${(oy - len * s).toFixed(1)}V${(H - oy + len * s).toFixed(1)}`; }
     for (let gy = Math.floor(y0 / len) * len; gy <= y1 + len; gy += len) { const Y = P([0, gy]).split(' ')[1]; grid += `M${(ox - len * s).toFixed(1)} ${Y}H${(W - ox + len * s).toFixed(1)}`; }
     el.innerHTML = `<svg class="map-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Lotes da fazenda ${esc(farm)}"><g transform="translate(${view.x.toFixed(1)} ${view.y.toFixed(1)}) scale(${view.k.toFixed(3)})"><path class="mgrid" vector-effect="non-scaling-stroke" d="${grid}"/>${polys}${labels}</g>
-<g class="scale" transform="translate(14 ${H - 14})"><path d="M0 -6V0H${L.toFixed(1)}V-6"/><text x="0" y="-10">${num(len)} m</text></g><g class="north" transform="translate(${W - 18} 16)"><text x="0" y="8">N</text><path d="M0 14V30M-4 19L0 14L4 19"/></g></svg>`
+<g class="scale" transform="translate(14 ${Hv - 14})"><path d="M0 -6V0H${L.toFixed(1)}V-6"/><text x="0" y="-10">${num(len)} m</text></g><g class="north" transform="translate(${W - 18} 16)"><text x="0" y="8">N</text><path d="M0 14V30M-4 19L0 14L4 19"/></g></svg>`
       + (view !== ID ? '<button class="fit" data-act="farm-fit" aria-label="Enquadrar a fazenda">⤢</button>' : '');
     if (!el.dataset.g) {
       el.dataset.g = '1';
@@ -90,7 +92,7 @@ export function installLotes(app) {
       + `${r ? (r.alerts ? `<span class="chip alerta">${r.alerts} ${r.alerts === 1 ? 'alerta' : 'alertas'}</span>` : '<span class="chip ok">Sem alertas</span>') : ''}</div>`
       + `<p class="mu">${r ? `${num(r.pontos)} pontos · ${num(r.tiros)} tiros · 95% do lote &lt; ${num(r.p95)} m` : 'Calculando o plano…'}</p>`
       + '<div class="two"><button class="btn p" data-go="mapa">Abrir no mapa</button><button class="btn" data-go="plano">Plano</button></div></section>' : '';
-    return `<div class="map sm farm" data-farm></div><div class="scroll">${seg}${sel}<section class="card"><h2 class="h">Fazenda ${esc(farm)}</h2><div data-tot>${totals(ks)}</div></section>
+    return `<div class="map sm farm" data-farm></div><div class="scroll">${sel}<section class="card"><h2 class="h">Fazenda ${esc(farm)}</h2>${seg}<div data-tot>${totals(ks)}</div></section>
 <section class="card list"><h2 class="h">Lotes</h2><div data-rows>${ks.map(rowHtml).join('')}</div></section></div>`;
   };
 

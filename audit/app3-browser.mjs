@@ -87,7 +87,7 @@ try {
     assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3'].trackSpacingM), 300);
     await p.click('[data-set="pointMode"][data-v="por_tiro"]'); await p.waitForSelector('[name="pointsPerTrack"]', { timeout: 5000 });
     await p.click('[data-act="restore"]'); await p.keyboard.press('Escape');
-    assert.match(await p.textContent('.card'), /Hectares/);
+    assert.match(await p.textContent('.card.regra'), /Hectares/);
     // gestos: duplo toque amplia (aparece "enquadrar"), enquadrar volta; tocar num ponto mostra o balão
     await p.click('[data-tab="mapa"]'); await p.waitForSelector('.map-svg .pt');
     const box = await p.locator('[data-map="full"]').boundingBox();

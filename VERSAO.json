@@ -1,12 +1,12 @@
 {
-  "entrega": "3.10.0",
+  "entrega": "3.11.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-18",
-  "versaoDoApp": "3.10.0",
+  "versaoDoApp": "3.11.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "033fe0f9c9b99bc25a94bf30a3968c3c01693f5972eca7905148da5cc8896cdb",
-  "workerSha256": "9c34c538c00ae779bd0785d474c09b79daaef93e19f0104fe94f750f9bb5158f",
+  "htmlSha256": "1a58be6aec56c77887601ed57d90c5dbb61fe9dc8660bafe2d916e3ff76232d4",
+  "workerSha256": "6c8ddc9510581348d96bec6a4ab174d1295e1af690349754adc73ccf422d2cd9",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
@@ -86,5 +86,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "9ac6f42f53b92a9db1307b442bc9bf58a576465e031518ee95fcf17cd6d0d993"
+  "motorSha256": "63ca658015886ff12af23fddd8fd1b55daa8d9241b262a91cb34f0df57738556"
 }
