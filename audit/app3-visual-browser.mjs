@@ -3,8 +3,8 @@
 // a fonte embutida carregada e com os cálculos em segundo plano terminados, para a foto ser estável.
 // Uso: node app3-visual-browser.mjs            → compara
 //      node app3-visual-browser.mjs --update   → grava novas referências (só quando a mudança visual é intencional)
-// Duas comparações: (1) pixels, quando o navegador é a mesma versão da referência (visual/meta.json); (2) estrutura da
-// tela (posição, tamanho e cores de cada elemento visível), que não depende da versão do navegador — é o que vale no CI.
+// Duas comparações: (1) com o navegador da referência (visual/meta.json): pixels e estrutura completa (posição, tamanho
+// e cores de cada elemento visível); (2) com outra versão (o CI): lista de elementos e cores. Nas duas: a página não rola de lado e não pula ao abrir.
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
@@ -42,14 +42,16 @@ const layoutOf = p => p.evaluate(() => {
   }
   return out;
 });
-/** Diferenças de estrutura: elementos a mais/a menos, caixa mudada > 4 px, cor diferente. */
+/** Diferenças de estrutura: elementos a mais/a menos, cor diferente e, com o mesmo navegador, caixa mudada > 4 px.
+ * Entre versões diferentes do navegador o texto mede diferente com a mesma fonte (Chromium 141 × 153: ~8%), então a
+ * caixa exata não é comparável; no lugar dela vale "a página não rola de lado" (conferido em toda tela). */
 function layoutDiff(a, b) {
   const bad = [];
   if (a.length !== b.length) bad.push(`elementos ${b.length} → ${a.length}`);
   for (let i = 0; i < Math.min(a.length, b.length); i++) {
     const [ta, ...ra] = a[i], [tb, ...rb] = b[i];
     if (ta !== tb) { bad.push(`${i}: ${tb} → ${ta}`); continue; }
-    if (ra.slice(0, 4).some((v, j) => Math.abs(v - rb[j]) > 4)) bad.push(`${ta} caixa ${rb.slice(0, 4)} → ${ra.slice(0, 4)}`);
+    if (PIXELS && ra.slice(0, 4).some((v, j) => Math.abs(v - rb[j]) > 4)) bad.push(`${ta} caixa ${rb.slice(0, 4)} → ${ra.slice(0, 4)}`);
     if (ra[4] !== rb[4] || ra[5] !== rb[5]) bad.push(`${ta} cor ${rb[4]}/${rb[5]} → ${ra[4]}/${ra[5]}`);
   }
   return bad;
@@ -93,6 +95,8 @@ try {
       await p.evaluate(() => { const t = document.getElementById('toast'); if (t) t.innerHTML = ''; });
       const name = `${tab}-${s.theme}-${s.w}${s.v4 ? '-v4' : ''}.png`, shot = await p.screenshot(), lay = await layoutOf(p), lname = name.replace('.png', '.estrutura.json');
       if (UPDATE || !existsSync(OUT + name) || !existsSync(OUT + lname)) { await writeFile(OUT + name, shot); await writeFile(OUT + lname, JSON.stringify(lay)); wrote.push(name); continue; }
+      const wide = await p.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+      if (wide > 1) bad.push(`${name}: a página rola de lado (${wide} px)`);
       const ld = layoutDiff(lay, JSON.parse(await readFile(OUT + lname, 'utf8')));
       if (ld.length) bad.push(`${name}: estrutura ${ld.length} diferença(s), ex.: ${ld.slice(0, 3).join(' | ')}`);
       if (PIXELS) {
