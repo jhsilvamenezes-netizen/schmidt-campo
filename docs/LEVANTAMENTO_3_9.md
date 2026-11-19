@@ -119,3 +119,12 @@ Evidências: `docs/evidencias-3-1/3.11-*.png` (antes, claro, escuro, Sol, telas 
 Conclusão: com tiros retos nas passadas da barra e o mínimo de pontos, o motor está perto do limite desta estrutura.
 Ganhos maiores agora dependem de decisões do proprietário: pontos acima do mínimo em lotes irregulares (RB9, BD5),
 margem das pontas por lado (M7) e calibração em campo (trecho mínimo 60 m, raio de chegada).
+
+## 12. Feito na 3.15
+
+| Item | O que mudou |
+|---|---|
+| +1 ponto (decisão do proprietário, 19/11) | Lote irregular (maior vazio > 1,2 × lado ideal) com ganho ≥ 8%: sugestão "Lote irregular: N pontos (1 a mais) · Usar", com Desfazer. Nos 51 lotes: BD5 (maior vazio 689 → 602 m) e RB9 (95% do lote 517 → 451 m) |
+| Fonte | Inter embutida (`inter.woff2`, 48 KB, latino, licença SIL OFL em `docs/LICENCA_FONTE_INTER.txt`); guardada pelo service worker para uso sem internet |
+| Calculando | Barra que brilha no lugar do texto (lista de lotes, lote em uso, números da fazenda, recomendado) |
+| V2 | Plano: botão no canto do mapa para mapa grande (58% da tela) e de volta |

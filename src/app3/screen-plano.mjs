@@ -21,16 +21,16 @@ export function installPlano(app) {
   // o Plano mostra o ganho pronto ("maior vazio 689 → 610 m") e um toque aplica, com Desfazer
   const hints = new Map();
   /** @type {any} */ let improver = null, seq = 0;
-  try { if (app.window.Worker) { improver = new app.window.Worker('motor.js'); improver.onmessage = e => { const d = e.data || {}; if (d.kind !== 'improve') return; for (const [k, v] of hints) if (v.id === d.id) { hints.set(k, { id: d.id, r: d.r }); if (app.ui.view === 'plano' && app.hintKey?.() === k) { const box = document.querySelector('[data-hint]'); if (box) box.innerHTML = hintMarkup(app.hint()); } } }; improver.onerror = () => { improver = null; }; } } catch { improver = null; }
+  try { if (app.window.Worker) { improver = new app.window.Worker('motor.js'); improver.onmessage = e => { const d = e.data || {}; if (d.kind !== 'improve') return; for (const [k, v] of hints) if (v.id === d.id) { hints.set(k, { id: d.id, r: d.r, plus: d.plus || null }); if (app.ui.view === 'plano' && app.hintKey?.() === k) { const box = document.querySelector('[data-hint]'); if (box) box.innerHTML = hintMarkup(app.hint()); } } }; improver.onerror = () => { improver = null; }; } } catch { improver = null; }
   app.hintKey = () => { const cur = app.cur; return cur && !cur.block ? `${app.ui.key}|${JSON.stringify(cur.params)}|${JSON.stringify(app.saved().editsByField?.[app.ui.key] ?? null)}` : null; };
   /** Ganho pronto para o plano em uso (ou null enquanto calcula / se não há ganho). */
   app.hint = () => {
     const k = app.hintKey(); if (!k || !improver) return null;
     const h = hints.get(k);
-    if (!h) { const id = ++seq; hints.set(k, { id, r: undefined }); improver.postMessage({ kind: 'improve', id, field: app.cur.field, params: app.cur.params, edits: app.saved().editsByField?.[app.ui.key] ?? null }); return null; }
-    if (!h.r?.edits) return null;
-    const r = h.r, parts = [r.after.worst < r.before.worst - 1 && `maior vazio ${num(r.before.worst)} → ${num(r.after.worst)} m`, r.after.cv < r.before.cv - 0.004 && `áreas ${num(r.before.cv * 100)} → ${num(r.after.cv * 100)}%`].filter(Boolean);
-    return parts.length ? { text: parts.join(' · '), r } : null;
+    if (!h) { const id = ++seq; hints.set(k, { id, r: undefined }); improver.postMessage({ kind: 'improve', id, field: app.cur.field, params: app.cur.params, edits: app.saved().editsByField?.[app.ui.key] ?? null, people: app.people() }); return null; }
+    const pl = h.plus, plus = pl ? { text: [pl.after.worst < pl.before.worst - 1 && `maior vazio ${num(pl.before.worst)} → ${num(pl.after.worst)} m`, pl.after.p95 < pl.before.p95 - 1 && `95% ${num(pl.before.p95)} → ${num(pl.after.p95)} m`].filter(Boolean).join(' · '), n: pl.after.n } : null;
+    const r = h.r, parts = r?.edits ? [r.after.worst < r.before.worst - 1 && `maior vazio ${num(r.before.worst)} → ${num(r.after.worst)} m`, r.after.cv < r.before.cv - 0.004 && `áreas ${num(r.before.cv * 100)} → ${num(r.after.cv * 100)}%`].filter(Boolean) : [];
+    return parts.length || plus ? { text: parts.join(' · '), r: parts.length ? r : null, plus } : null;
   };
   app.SHEETS.ajustes = () => app.openSheet('Ajustes avançados', advancedForm(app.cur.params, app.cur.sc, app.saved().fitTeam));
   app.clicks.push(t => {
@@ -88,6 +88,12 @@ export function installPlano(app) {
       const parts = [r.after.worst < r.before.worst - 1 && `maior vazio ${num(r.before.worst)} → ${num(r.after.worst)} m`,
         r.after.cv < r.before.cv - 0.004 && `áreas ${num(r.before.cv * 100)} → ${num(r.after.cv * 100)}% de variação`].filter(Boolean);
       app.setParams(cur.params, parts.join(' · ') || 'Distribuição melhorada', r.edits);
+    },
+    // 3.15 · lote irregular: 1 ponto acima do mínimo (com Desfazer)
+    plus1() {
+      const pl = hints.get(app.hintKey())?.plus ?? P.plusOne(app.cur.field, app.cur.params, app.people());
+      if (!pl) { app.toast('Neste lote, 1 ponto a mais não melhora o bastante.'); return; }
+      app.setParams(pl.params, `${pl.after.n} pontos (1 acima do mínimo): maior vazio ${num(pl.before.worst)} → ${num(pl.after.worst)} m`, null);
     },
     optimize() {
       const cur = app.cur, r = P.optimizeEdits(cur.field, cur.params);
