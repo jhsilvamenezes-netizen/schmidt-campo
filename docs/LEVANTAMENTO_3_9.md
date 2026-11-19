@@ -79,7 +79,7 @@ Legenda de prioridade: **A** = fazer já · **B** = próxima rodada · **C** = d
 
 | Item | O que mudou |
 |---|---|
-| C1 | `styles.css` reescrito numa folha só, por seção (base, topo, conteúdo, controles, listas, menu, folhas, mapa, Lotes, Monitorar, Sol, impressão); 342 → 238 linhas, sem seletor redefinido em camadas |
+| C1 | `styles.css` reescrito numa folha só, por seção (base, topo, conteúdo, controles, listas, menu, folhas, mapa, Lotes, Monitorar, Sol, impressão); 342 → 283 linhas, sem seletor redefinido em camadas |
 | C2 | Sombras e vidro viram tokens (`--sh1/2/3`, `--glass`); paleta revista com contraste ≥ 4,5 (claro, escuro e Sol) |
 | Estrutura | Folha arredondada que sobe sobre o mapa (Lotes, Plano, Monitorar); menu de baixo flutuante com cápsula no item ativo; títulos de seção em versalete com ponto dourado |
 | Plano | Resultado primeiro (pontos, tiros, medidas e sugestão do motor), regra depois |
