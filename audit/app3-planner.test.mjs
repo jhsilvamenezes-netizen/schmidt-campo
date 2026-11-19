@@ -105,6 +105,10 @@ test('Monitorar: estados da guia nos 51 lotes (sem GPS, chegada, a caminho, GPS 
     assert.notEqual(ar4.state, 'arrived', `${k} ± 4 m a 12 m não chegou`);
     assert.equal(ar13.state, 'arrived', `${k} ± 13 m a 12 m chegou`); assert.ok(ar13.warn.some(w => /confira pelos passos/.test(w)), k);
     assert.notEqual(guideModel(route, sc, f, at(p1.x - uy * 18, p1.y + ux * 18, 40), now, {}).state, 'arrived', `${k} raio no máximo 15 m`);
+    // 3.17 · de moto o raio cresce com a velocidade (1,5 s, até 25 m): a 20 m, a 15 m/s chegou; parado não
+    const moto = (v) => guideModel(route, sc, f, { ...at(p1.x - uy * 20, p1.y + ux * 20, 4), speedMps: v }, now, {});
+    assert.equal(moto(15).state, 'arrived', `${k} de moto chega a 20 m`); assert.notEqual(moto(0).state, 'arrived', `${k} parado a 20 m não`);
+    assert.notEqual(guideModel(route, sc, f, { ...at(p1.x - uy * 27, p1.y + ux * 27, 4), speedMps: 40 }, now, {}).state, 'arrived', `${k} raio de moto no máximo 25 m`);
     const off = guideModel(route, sc, f, at(p1.x + 300, p1.y + 300), now, {});
     // fora da linha avisa quando já se está no tiro; indo para a entrada, só a seta (sem "volte para a esquerda")
     if (off.state === 'go' && !/entrada/.test(off.title)) assert.ok(off.warn.length >= 1, `${k} fora da linha avisa`);

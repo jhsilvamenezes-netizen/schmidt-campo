@@ -21,7 +21,8 @@ export function installMonitor(app) {
     if (off && !mon.offWarned) { try { window.navigator.vibrate?.([70, 60, 70, 60, 70]); } catch { /* sem vibração */ } say('Atenção: fora da linha.'); }
     mon.offWarned = off;
     // 3.10 · chegando (a 3× o raio de chegada, 30 m no padrão): um toque curto de vibração, uma vez por ponto
-    const nearM = 3 * (cur.sc.params.monitor?.arrivalRadiusM ?? 10);
+    // de moto, o aviso vem ~8 s antes (a 30 km/h, ~67 m); a pé, a 30 m
+    const nearM = Math.max(3 * (cur.sc.params.monitor?.arrivalRadiusM ?? 10), 8 * (mon.pos?.speedMps ?? 0));
     const dM = model?.distM ?? NaN;
     if (model?.state === 'go' && Number.isFinite(dM) && dM <= nearM && model.next?.id !== mon.nearId) {
       mon.nearId = model.next.id;
@@ -42,7 +43,7 @@ export function installMonitor(app) {
       const id = order[i + 1] ?? null, t = tracks.find(x => x.id === id);
       if (t) nextTrack = t;
     }
-    return { nextTrack, lot: cur.field.code, acc: mon.pos?.accuracyM ?? null, tracks, trackId: mon.trackId, flipped: mon.flipped, active: mon.active, model, heading: mon.heading, voice: mon.voice, canSpeak: !!window.speechSynthesis, steps: route?.instructions || [], target: model?.next?.id ?? null };
+    return { nextTrack, speed: mon.pos ? (Date.now() - mon.pos.at > 5000 ? 0 : mon.pos.speedMps ?? null) : null, lot: cur.field.code, acc: mon.pos?.accuracyM ?? null, tracks, trackId: mon.trackId, flipped: mon.flipped, active: mon.active, model, heading: mon.heading, voice: mon.voice, canSpeak: !!window.speechSynthesis, steps: route?.instructions || [], target: model?.next?.id ?? null };
   }
   async function keepAwake(on) {
     try {
@@ -77,12 +78,21 @@ export function installMonitor(app) {
     mon.compass = false; mon.heading = null;
   }
 
+  /** 3.17 · velocidade suavizada (m/s): a do GPS quando existe; senão distância ÷ tempo entre leituras (0,5 a 15 s). */
+  function speedOf(prev, pos) {
+    let v = pos.speedMps;
+    if (!Number.isFinite(v) && prev) { const dt = (pos.at - prev.at) / 1000; if (dt >= 0.5 && dt <= 15) v = Math.hypot(pos.x - prev.x, pos.y - prev.y) / dt; }
+    if (!Number.isFinite(v)) return prev?.speedMps ?? null;
+    return Number.isFinite(prev?.speedMps) ? 0.5 * prev.speedMps + 0.5 * v : v;
+  }
   function watch() {
     const geo = window.navigator.geolocation;
     mon.watchId = geo.watchPosition(position => {
       const pos = fixToPos(position, app.cur.field, mon.pos?.at ?? 0, Date.now());
-      if (pos) { mon.pos = pos; if (ui.view === 'monitorar') app.render(); }
-    }, err => { app.toast(err.code === 1 ? 'Permita a localização para usar a guia.' : 'GPS indisponível agora.'); }, { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
+      if (pos) { pos.speedMps = speedOf(mon.pos, pos); mon.pos = pos; if (ui.view === 'monitorar') app.render(); }
+      // 3.17 · parado no ponto (coletando), o GPS não manda leitura nova: antes vinha "GPS indisponível" a cada 20 s.
+      // Sem tempo-limite; leitura velha já aparece como "GPS sem atualização há N s" (guia)
+    }, err => { if (err.code === 1) app.toast('Permita a localização para usar a guia.'); else if (!mon.pos) app.toast('Sem sinal do GPS ainda: fique a céu aberto.'); }, { enableHighAccuracy: true, maximumAge: 0 });
   }
   function unwatch() { if (mon.watchId !== null) window.navigator.geolocation?.clearWatch(mon.watchId); mon.watchId = null; }
   function gpsStart() {

@@ -136,3 +136,14 @@ margem das pontas por lado (M7) e calibração em campo (trecho mínimo 60 m, ra
 | Chegada pela precisão do GPS (M6) | O GPS não separa posições mais próximas que a sua precisão; com ± 13 m e raio de 10 m a pessoa podia estar no ponto e nunca "chegar" | Raio efetivo = maior entre 10 m e a precisão (até 15 m, a precisão aceita). Acima de 10 m a chegada vem com "confira pelos passos". Teste novo falha no código antigo |
 | Margem das pontas (M7) | Medido nos 51 lotes: "margens iguais" piora (maior vazio médio 365 → 454 m, 95% 280 → 340 m); margem fixa de 41 a 150 m por lote não melhora nenhum lote sem piorar outra medida | Fica a meia margem atual |
 | Anel de progresso | Quanto do trecho até o ponto já foi andado, em volta da seta (leitura de relance, sem números) | Guia |
+
+## 14. Feito na 3.17 — moto e a pé (relato da equipe: ~70% moto, ~30% a pé)
+
+| Item | Base técnica | O que mudou |
+|---|---|---|
+| Posição no Mapa só mudava ao tocar no ◎ | O "Onde estou" pedia a posição uma vez (getCurrentPosition) | Acompanha cada leitura do GPS (watchPosition) até tocar de novo; para ao sair do Mapa, trocar de lote ou apagar a tela |
+| "GPS indisponível" a cada 20 s parado | Parado, o navegador só manda leitura quando a posição muda; o tempo-limite de 20 s virava erro | Sem tempo-limite; só "localização negada" interrompe. Leitura velha segue como "GPS sem atualização" |
+| Velocidade | Velocidade do próprio GPS; sem ela, distância ÷ tempo entre leituras (0,5–15 s), suavizada | "Moto N km/h" (≥ 2,5 m/s ≈ 9 km/h) ou "A pé" na etiqueta da guia; parado > 5 s volta para "A pé" |
+| Aviso de chegando | De moto a 30 km/h (8 m/s), 30 m são ~4 s | Aviso a max(30 m, 8 s × velocidade) |
+| Raio de chegada | O GPS lê ~1×/s: a 8 m/s o ponto pode ficar entre duas leituras | Raio = maior entre 10 m, precisão do GPS (até 15 m) e 1,5 s × velocidade (até 25 m) |
+| Tempo até o ponto | — | "Faltam 171 m andando no tiro · ~20 s" em movimento |

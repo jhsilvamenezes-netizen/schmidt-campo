@@ -1,16 +1,17 @@
 {
-  "entrega": "3.16.0",
+  "entrega": "3.17.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-18",
-  "versaoDoApp": "3.16.0",
+  "versaoDoApp": "3.17.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "a656ba12b6686ab1f4bec9cdd66c3e83b75714d9a4068b39ec76906404a0e7ee",
-  "workerSha256": "7c98651d8ee2a67c1ed6d451f439730103274744c66eed18824baa589cf019e6",
+  "htmlSha256": "41766b4649a0a1f03c9d0d3b20c2715c47300c61e226cf707c5ad15051f5439b",
+  "workerSha256": "cf529c73870f16b30ac11caa8e1340396da0e641e8760d4351518114546dd4fb",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "3.17.0: campo de moto e a pé (relato da equipe, ~70% moto) — velocidade pelo GPS, etiqueta \"Moto N km/h\" / \"A pé\", aviso de chegando ~8 s antes, raio de chegada cresce com a velocidade (1,5 s, até 25 m), tempo estimado até o ponto; \"Onde estou\" no Mapa acompanha cada movimento (antes só ao tocar); GPS parado não dá mais \"indisponível\" a cada 20 s",
     "3.16.0: chegada pela precisão do GPS (raio efetivo = maior entre 10 m e a precisão, até 15 m; acima de 10 m vem o aviso de conferir pelos passos); anel de progresso em volta da seta na guia; estudo das margens das pontas (meia margem segue a melhor nos 51 lotes)",
     "3.15.0: lote irregular — sugestão de 1 ponto acima do mínimo quando o maior vazio passa de 1,2 × o lado ideal e o ganho é ≥ 8% (BD5 689 → 602 m; RB9 95% do lote 517 → 451 m), com Desfazer; fonte Inter embutida (a mesma letra em todo celular, sem internet; licença SIL OFL); \"calculando\" animado; mapa grande no Plano com um toque",
     "3.14.0: motor — etapa Lloyd ao longo do tiro na Sugestão do motor (pior vazio médio 355 → 354 m, variação das áreas 10,07% → 10,00%, nada piora); estudo dos limites em docs/LEVANTAMENTO_3_9.md §11",
@@ -92,5 +93,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "42d150c077626bf39a858d1b3c0194904fa121dbbba69b94ddcb6f96f80d3e85"
+  "motorSha256": "847e654c6bb0c60e98759b86603095449192008e9d5f0fdb88e210ab358d3d21"
 }

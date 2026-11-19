@@ -21,6 +21,8 @@ export function installMapa(app) {
   /** @type {string|null} */ let selTrack = null;
   /** "Onde estou": última posição pedida no Mapa (só enquanto o lote não muda) */
   /** @type {any} */ let here = null;
+  /** 3.17 · id do acompanhamento contínuo do GPS no Mapa (null = parado) */
+  /** @type {any} */ let hereWatch = null;
   let layers = { medidas: true, areas: false, borda: false, grade: true }, panel = false;
   try { const l = JSON.parse(storage.getItem(LAYERS_KEY) || '{}'); layers = { medidas: l.medidas !== false, areas: l.areas === true, borda: l.borda === true, grade: l.grade !== false }; } catch { /* padrão */ }
 
@@ -77,6 +79,7 @@ export function installMapa(app) {
       borda: bd?.minM ?? 0, bordaPt: bd?.min.number ?? 0, bordMin: P.BORDADURA_M, bordLow: P.BORDA_MIN_M };
   }
   function drawMaps() {
+    if (hereWatch !== null && app.ui.view !== 'mapa') stopHere(); // saiu do Mapa: para de acompanhar (bateria)
     const cur = app.cur;
     if (!cur) return;
     for (const el of document.querySelectorAll('[data-map]')) {
@@ -123,21 +126,33 @@ export function installMapa(app) {
     drawMaps();
   }
 
+  function stopHere() { if (hereWatch !== null) app.window.navigator.geolocation?.clearWatch(hereWatch); hereWatch = null; here = null; }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && hereWatch !== null) stopHere(); });
   app.drawMaps = drawMaps;
-  app.onLotChange.push(() => { panel = false; here = null; views.full = views.small = views.guide = ID; selectedPt = null; rulerPt = null; selTrack = null; app.hiTrack = null; });
+  app.onLotChange.push(() => { panel = false; stopHere(); views.full = views.small = views.guide = ID; selectedPt = null; rulerPt = null; selTrack = null; app.hiTrack = null; });
   Object.assign(app.ACTIONS, {
     fit: () => { views.full = views.small = views.guide = ID; drawMaps(); },
     'plan-grow': () => { app.planBig = !app.planBig; views.small = ID; app.render(); },
+    // 3.17 · "Onde estou" acompanha cada movimento (antes pedia a posição uma vez só): liga e desliga no ◎; para
+    // sozinho ao sair do Mapa, ao trocar de lote e com a tela apagada (bateria)
     where() {
-      if (here) { here = null; drawMaps(); return; }   // tocar de novo tira
+      if (here || hereWatch !== null) { stopHere(); drawMaps(); return; }   // tocar de novo tira
       const geo = app.window.navigator.geolocation;
       if (!geo) { app.toast('Este aparelho não oferece GPS ao navegador.'); return; }
       app.toast('Buscando sua posição…');
-      geo.getCurrentPosition(position => {
-        const pos = fixToPos(position, app.cur.field, 0, Date.now());
-        if (!pos) { app.toast('Posição do GPS imprecisa ou antiga: tente a céu aberto.'); return; }
-        here = pos; selectedPt = null; views.full = ID; drawMaps(); app.toast('Posição encontrada. Toque em ◎ de novo para tirar.');
-      }, err => app.toast(err.code === 1 ? 'Permita a localização para ver onde você está.' : 'GPS indisponível agora.'), { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 });
+      let first = true;
+      hereWatch = geo.watchPosition(position => {
+        const pos = fixToPos(position, app.cur.field, here?.at ?? 0, Date.now());
+        if (!pos) { if (first) app.toast('Posição do GPS imprecisa ou antiga: tente a céu aberto.'); return; }
+        here = pos; if (first) { selectedPt = null; views.full = ID; app.toast('Acompanhando sua posição. Toque em ◎ para parar.'); }
+        first = false;
+        if (app.ui.view === 'mapa') drawMaps();
+      }, err => {
+        // parado, o GPS só manda leitura quando muda: "tempo esgotado" ou "sem sinal" não param o acompanhamento;
+        // só a localização negada para
+        if (err.code === 1) { app.toast('Permita a localização para ver onde você está.'); stopHere(); drawMaps(); }
+        else if (first) app.toast('Sem sinal do GPS ainda: continue a céu aberto.');
+      }, { enableHighAccuracy: true, maximumAge: 0 });
     },
     'layer-medidas': () => toggleLayer('medidas'),
     'layer-areas': () => toggleLayer('areas'),
