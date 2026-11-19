@@ -10,6 +10,8 @@ export const ICONS = {
   sol: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   mais: '<circle cx="5" cy="12" r="1.6" class="fill"/><circle cx="12" cy="12" r="1.6" class="fill"/><circle cx="19" cy="12" r="1.6" class="fill"/>',
 };
+/** 4.0-c · alça da folha (só aparece no design 4.0): toque alterna a altura; arrastar escolhe baixa, meia ou cheia. */
+export const GRAB = '<button class="grabber" type="button" data-act="sheet-cycle" aria-label="Mudar a altura do painel"></button>';
 export const icon = name => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
 
 /** 3.12 · cada medida é um botão: tocar abre a frase do glossário (rótulo sublinhado em pontos indica que explica). */
@@ -63,7 +65,7 @@ export const hintMarkup = hint => (hint?.r ? `<button class="sug" data-act="mini
 export function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, block, hiTrack = null, list = [], split = null, hint = null, border = null, bigMap = false }) {
   if (block) return blockPlanoView({ f, sc, rows, block });
   const alts = (rec?.alternatives || []).filter(a => a);
-  return `<div class="map sm${bigMap ? ' big' : ''}" data-map="small"></div><div class="scroll">
+  return `<div class="map sm${bigMap ? ' big' : ''}" data-map="small"></div><div class="scroll">${GRAB}
 <section class="card res"><div class="row-sb"><h2 class="h">${inUseIsRec ? 'Plano recomendado' : 'Plano em uso'}</h2>${inUseIsRec ? '<span class="tag">em uso</span>' : rec ? '<button class="link" data-use="rec">Usar recomendado</button>' : '<span class="mu sk">calculando o recomendado…</span>'}</div>
 <p class="big">${num(f.pontos)} pontos <span>· ${num(f.tiros)} tiros</span></p>${metrics(f)}<p class="mu">Caminhada ${esc(f.caminhada)}${f.tiros ? ` · ${km(sc.route.totalEstimatedM / f.tiros)} km por tiro` : ''}${border ? (border.near ? ` · <span class="${border.low ? 'warn' : 'note'}">ponto ${num(border.n)} a ${num(border.minM)} m da borda</span>` : ` · borda ≥ ${num(border.minM)} m`) : ''}</p>${busy ? '<p class="mu"><span class="sk">Calculando…</span></p>' : ''}
 <div data-hint>${hintMarkup(hint)}</div></section>
@@ -115,7 +117,7 @@ export const calculoBody = steps => steps.map(s => `<details class="ex"><summary
 export function monitorView({ nextTrack = /** @type {any} */ (null), speed = /** @type {number|null} */ (null), lot = '', acc = null, tracks, trackId, flipped, active, model, steps, heading = null, voice = false, canSpeak = false }) {
   const pick = `<div class="chips" role="group" aria-label="Tiro">${tracks.map(t => `<button class="chipb${t.id === trackId ? ' on' : ''}" data-track="${esc(t.id)}" aria-pressed="${t.id === trackId}">${esc(t.id)}${t.person ? `<small>${esc(t.person)}</small>` : ''}</button>`).join('')}</div>`;
   const head = `<section class="card"><h2 class="h">Tiro</h2>${pick}<div class="row-sb"><p class="mu">Sentido: ${flipped ? 'invertido' : 'do plano'}</p><button class="link" data-act="flip">Inverter</button></div></section>`;
-  if (!active) return `<div class="map sm" data-map="guide"></div><div class="scroll">${head}<button class="btn p" data-act="gps-start">Iniciar guia</button>
+  if (!active) return `<div class="map sm" data-map="guide"></div><div class="scroll">${GRAB}${head}<button class="btn p" data-act="gps-start">Iniciar guia</button>
 <section class="card list"><h2 class="h">Sem o guia</h2><button class="lnk" data-act="gpx-track"><span>GPX do ${esc(trackId || 'tiro')}<small>para outro app de GPS</small></span></button>
 <details class="ex trk"><summary class="sumc">Roteiro sem GPS</summary>${steps.map(t => `<p>${esc(t)}</p>`).join('')}</details></section></div>`;
   const cur = tracks.find(t => t.id === trackId), m = model;
@@ -132,7 +134,7 @@ export function monitorView({ nextTrack = /** @type {any} */ (null), speed = /**
   // 3.17 · de moto ou a pé (pela velocidade); de moto mostra km/h
   const v = Number(speed), modo = speed !== null && Number.isFinite(v) ? (v >= 2.5 ? `<span class="modo">Moto ${num(v * 3.6)} km/h</span>` : '<span class="modo">A pé</span>') : '';
   const bar = pr ? `<div class="prog" role="img" aria-label="${pr.done} de ${pr.total} pontos">${Array.from({ length: pr.total }, (_, i) => `<i class="${i < pr.done ? 'd' : i === pr.done ? 'n' : ''}"></i>`).join('')}</div>` : '';
-  return `<div class="map nav" data-map="guide"></div><div class="navpill"><b>${esc(lot)} · ${esc(trackId)}</b>${cur?.person ? `<span>${esc(cur.person)}</span>` : ''}${modo}${gps}</div><section class="sheet gsheet">${bar}
+  return `<div class="map nav" data-map="guide"></div><div class="navpill"><b>${esc(lot)} · ${esc(trackId)}</b>${cur?.person ? `<span>${esc(cur.person)}</span>` : ''}${modo}${gps}</div><section class="sheet gsheet${speed !== null && Number(speed) >= 2.5 ? ' moto' : ''}">${bar}
 <div class="guide ${m.state}" aria-live="polite">${arrow}<div class="gtxt"><p class="mu">${esc(m.title)}${pr ? ` <b class="cnt">${pr.done}/${pr.total}</b>` : ''}</p>${m.big ? `<p class="big">${esc(m.big)}${m.dir ? ` <span class="dir">${esc(m.dir)}</span>` : ''}</p>` : ''}${m.info ? `<p class="mu">${esc(m.info)}</p>` : ''}${rel === null ? '' : `<p class="mu sm" data-compass-label>${Number.isFinite(heading) ? 'seta pelo celular' : 'seta com o norte para cima'}</p>`}</div></div>
 ${(m.warn || []).map(w => `<p class="ck alerta">${esc(w)}</p>`).join('')}
 ${nextTrack ? `<button class="btn p" data-act="next-track">Próximo tiro: ${esc(nextTrack.id)}${nextTrack.person ? ` · ${esc(nextTrack.person)}` : ''}</button>` : ''}<div class="two gbtns">${canSpeak ? `<button class="btn" data-act="voice" aria-pressed="${voice}">${voice ? 'Voz ligada' : 'Ligar voz'}</button>` : `<button class="btn" data-act="flip">Inverter</button>`}<button class="btn stop" data-act="gps-stop">Parar guia</button></div></section>`;
@@ -176,7 +178,7 @@ ${d.neighbors.length ? `<p class="mu sm">${d.neighbors.length > 1 ? 'Tiros vizin
 const tracksList = rows => `<section class="card list"><h2 class="h">Tiros</h2>${rows.map(r => `<div class="li"><span class="id">${esc(r.trackId)}</span><span class="x">${num(r.lengthM)} m <small>· ${r.n === 1 ? '1 ponto' : `${num(r.n)} pontos`}</small></span><span class="r">${r.medianGapM ? `a cada ${num(r.medianGapM)} m` : r.n ? '1 ponto' : 'sem ponto'}</span></div>`).join('')}</section>`;
 
 function blockPlanoView({ f, sc, rows, block }) {
-  return `<div class="map sm" data-map="small"></div><div class="scroll">
+  return `<div class="map sm" data-map="small"></div><div class="scroll">${GRAB}
 <section class="card"><div class="row-sb"><h2 class="h">Bloco ${esc(block.title)}</h2><button class="link" data-act="block-leave">Sair do bloco</button></div>
 <div class="chips">${block.members.map(m => `<button class="chipb${m.on ? ' on' : ''}" data-lot="${esc(m.key)}" aria-pressed="${m.on}">${esc(m.code)}<small>${num(m.pontos)} pontos</small></button>`).join('')}</div>
 <p class="mu">Tiros na mesma grade: ${num(block.passes)} passadas da barra (${num(block.spacingM)} m), mesma direção e mesmo ponto A.</p></section>

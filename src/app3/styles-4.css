@@ -61,6 +61,23 @@
 [data-design="4"] .mt,[data-design="4"] .fit{border-radius:16px;border:0;box-shadow:var(--e2)}
 [data-design="4"] .bal,[data-design="4"] .leg,[data-design="4"] .lpanel{border:0;box-shadow:var(--e3)}
 
+/* 4.0-c · folha sobre o mapa inteiro, 3 alturas (baixa 34%, meia 56%, cheia); a alça é um botão de verdade */
+[data-design="4"] main>.map.sm{position:absolute;inset:0;height:auto;min-height:0;margin:0}
+[data-design="4"] main>.map.sm+.scroll{position:absolute;left:0;right:0;bottom:0;height:56%;padding-top:4px;transition:height .28s cubic-bezier(.2,.8,.2,1);box-shadow:var(--e3)}
+[data-design="4"] main[data-snap="baixa"]>.map.sm+.scroll{height:34%}
+[data-design="4"] main[data-snap="cheia"]>.map.sm+.scroll{height:calc(100% - 8px)}
+[data-design="4"] .map.sm+.scroll:before{content:none}
+[data-design="4"] .grabber{display:block;flex:none;align-self:center;width:88px;height:44px;margin:-10px auto -12px;position:relative;touch-action:none;cursor:grab}
+[data-design="4"] .grabber:after{content:"";position:absolute;left:26px;right:26px;top:16px;height:5px;border-radius:3px;background:var(--ln)}
+[data-design="4"] .map.sm .fit.grow{display:none}
+@media (prefers-reduced-motion:reduce){[data-design="4"] main>.map.sm+.scroll{transition:none}}
+
+/* 4.0-c · guia de moto (≥ 9 km/h): distância enorme, seta maior, só o essencial */
+[data-design="4"] .gsheet.moto .guide .big{font-size:clamp(56px,16vw,72px);letter-spacing:-.04em}
+[data-design="4"] .gsheet.moto .arrow{width:92px;height:92px}
+[data-design="4"] .gsheet.moto .guide .mu.sm,[data-design="4"] .gsheet.moto .guide .dir{display:none}
+[data-design="4"] .gsheet.moto .guide>.gtxt>.mu:first-child{font-size:16px;font-weight:650;color:var(--ink)}
+
 /* Sol por cima do 4.0: bordas pretas voltam */
 :root.sun[data-design="4"] .card,:root.sun[data-design="4"] .btn,:root.sun[data-design="4"] .seg,:root.sun[data-design="4"] nav{border:2px solid #000;box-shadow:none}
 

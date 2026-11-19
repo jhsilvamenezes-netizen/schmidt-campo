@@ -281,11 +281,24 @@ try {
     const p = await ctx.newPage(), errors = []; p.on('pageerror', e => errors.push(e.message));
     await p.goto(url); await ready(p);
     assert.equal(await p.evaluate(() => document.documentElement.dataset.design ?? null), null, 'padrão: design atual');
+    assert.equal(await p.locator('.grabber:visible').count(), 0, 'no design atual a alça não aparece');
     await p.click('[data-open="menu"]'); await p.click('[data-act="design4"]');
     await p.waitForFunction(() => document.documentElement.dataset.design === '4');
     assert.equal(await p.getAttribute('[data-act="design4"]', 'aria-checked'), 'true');
     await p.click('[data-open="vitrine"]'); await p.waitForSelector('.vt-sw');
     assert.ok(await p.locator('.vt-c').count() >= 20, 'vitrine com as cores');
+    await p.click('.close');
+    // 4.0-c · folha de 3 alturas no Plano: tocar na alça alterna; arrastar para cima vai para "cheia"; o mapa fica atrás
+    await p.click('[data-tab="plano"]'); await p.waitForSelector('.grabber');
+    const hOf = () => p.evaluate(() => document.querySelector('.map.sm+.scroll').getBoundingClientRect().height);
+    const h0 = await hOf();
+    await p.click('.grabber'); await p.waitForFunction(() => document.querySelector('#view').dataset.snap === 'cheia');
+    await p.waitForTimeout(400); const h1 = await hOf(); assert.ok(h1 > h0 + 100, `cheia maior (${h0} → ${h1})`);
+    await p.click('.grabber'); await p.waitForFunction(() => document.querySelector('#view').dataset.snap === 'baixa');
+    const g = await p.locator('.grabber').boundingBox();
+    await p.mouse.move(g.x + g.width / 2, g.y + g.height / 2); await p.mouse.down(); await p.mouse.move(g.x + g.width / 2, g.y - 200, { steps: 8 }); await p.mouse.up();
+    await p.waitForFunction(() => ['meia', 'cheia'].includes(document.querySelector('#view').dataset.snap));
+    assert.ok(await p.evaluate(() => getComputedStyle(document.querySelector('.map.sm')).position === 'absolute'), 'mapa atrás da folha');
     await p.reload(); await ready(p);
     assert.equal(await p.evaluate(() => document.documentElement.dataset.design), '4', 'fica ligado ao reabrir');
     await p.click('[data-open="menu"]'); await p.click('[data-act="design4"]');

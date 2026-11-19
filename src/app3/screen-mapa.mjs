@@ -94,7 +94,9 @@ export function installMapa(app) {
       const bd = full ? P.borderStats(cur.field, cur.sc) : null;
       const opts = full ? { measure, ruler, grid: layers.grade, border: layers.borda && bd ? { ends: bd.ends, min: P.BORDADURA_M, low: P.BORDA_MIN_M } : null, pos: here, to: w ? [w.point.x, w.point.y] : null, focus: here && w && views.full === ID ? [[here.x, here.y], [w.point.x, w.point.y]] : null, pad: { t: info || ruler || w || selTrack ? 116 : 44, r: 64, b: 56, l: 36 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
         reserve: [...(info || ruler || w || selTrack ? [[0, 0, Math.min(W - 40, 330), 104]] : []), [W - 60, H - 170, W, H]] } : { pad: 22, grid: layers.grade };
-      const g = guide ? app.guide() : null, under = parseFloat(document.defaultView.getComputedStyle(el).getPropertyValue('--under')) || 0;
+      // 4.0-c · com a folha por cima do mapa inteiro, a faixa coberta é a altura da folha
+      const sheet4 = app.isDesign4?.() && el.classList.contains('sm') && el.nextElementSibling?.classList.contains('scroll') ? el.nextElementSibling.getBoundingClientRect().height : 0;
+      const g = guide ? app.guide() : null, under = sheet4 || parseFloat(document.defaultView.getComputedStyle(el).getPropertyValue('--under')) || 0;
       const kind = full ? 'full' : guide ? 'guide' : 'small', view = guide && g.focus ? ID : views[kind];
       el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, hiTrack: full ? selTrack : !guide ? app.hiTrack : null, focus: guide ? g.focus : null, others: cur.others || [], under, ...opts })
         + (full ? (ruler ? `<div class="bal" role="status"><b>${num(ruler.m)} m</b><span>do ponto ${num(ruler.na)} ao ponto ${num(ruler.nb)} (em linha reta)</span><span>Toque fora para limpar</span></div>` : info ? balloon() : selTrack ? trackCard() : w ? hereCard(w) : '')

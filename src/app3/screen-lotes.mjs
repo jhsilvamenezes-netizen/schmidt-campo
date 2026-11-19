@@ -2,6 +2,7 @@
 // em uso em destaque, números da fazenda e a lista de lotes com o plano de cada um. Tocar num lote escolhe o lote.
 import { attachGestures } from './gestures.mjs';
 import { esc, num } from './format.mjs';
+import * as V from './views.mjs';
 
 /** @param {any} app */
 export function installLotes(app) {
@@ -33,7 +34,8 @@ export function installLotes(app) {
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     for (const k of ks) for (const ring of shapeOf(k)) for (const [x, y] of ring) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
     // 3.11: a folha de baixo sobe sobre o mapa (`--under`); a fazenda e a escala ficam acima dela
-    const under = parseFloat(document.defaultView.getComputedStyle(el).getPropertyValue('--under')) || 0, Hv = H - under;
+    const sheet4 = app.isDesign4?.() && el.nextElementSibling?.classList.contains('scroll') ? el.nextElementSibling.getBoundingClientRect().height : 0;
+    const under = sheet4 || parseFloat(document.defaultView.getComputedStyle(el).getPropertyValue('--under')) || 0, Hv = H - under;
     const pad = 18, s = Math.min((W - 2 * pad) / (x1 - x0), (Hv - 2 * pad) / (y1 - y0));
     const ox = (W - s * (x1 - x0)) / 2, oy = (Hv - s * (y1 - y0)) / 2;
     const P = ([x, y]) => `${(ox + (x - x0) * s).toFixed(1)} ${(oy + (y1 - y) * s).toFixed(1)}`;
@@ -92,7 +94,7 @@ export function installLotes(app) {
       + `${r ? (r.alerts ? `<span class="chip alerta">${r.alerts} ${r.alerts === 1 ? 'alerta' : 'alertas'}</span>` : '<span class="chip ok">Sem alertas</span>') : ''}</div>`
       + `<p class="mu">${r ? `${num(r.pontos)} pontos · ${num(r.tiros)} tiros · 95% do lote &lt; ${num(r.p95)} m` : '<span class="sk">Calculando o plano…</span>'}</p>`
       + '<div class="two"><button class="btn p" data-go="mapa">Abrir no mapa</button><button class="btn" data-go="plano">Plano</button></div></section>' : '';
-    return `<div class="map sm farm" data-farm></div><div class="scroll">${sel}<section class="card"><h2 class="h">Fazenda ${esc(farm)}</h2>${seg}<div data-tot>${totals(ks)}</div></section>
+    return `<div class="map sm farm" data-farm></div><div class="scroll">${V.GRAB}${sel}<section class="card"><h2 class="h">Fazenda ${esc(farm)}</h2>${seg}<div data-tot>${totals(ks)}</div></section>
 <section class="card list"><h2 class="h">Lotes</h2><div data-rows>${ks.map(rowHtml).join('')}</div></section></div>`;
   };
 
