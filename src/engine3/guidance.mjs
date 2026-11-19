@@ -98,8 +98,12 @@ export function guide(route, pos, collected, monitor, nextPoint) {
     trecho = { desde: prev ? { tipo: 'ponto', seq: prev.seq } : { tipo: 'entrada' }, totalM: total, andadoM: Math.min(total, Math.max(0, along - from)),
       faltaM: Math.max(0, left), passouM: left < -monitor.arrivalRadiusM ? -left : 0 };
   }
-  return { done: false, next, distM, azimuthDeg: az, direction: cardinal(az), arrived: distM <= monitor.arrivalRadiusM && !stale,
-    arrivalUncertain: distM <= monitor.arrivalRadiusM && !accuracyOk, accuracyOk, stale, lateralM, lado, voltaDir, offLine, alvo, trecho,
+  // 3.16 · o GPS não separa posições mais próximas que a sua precisão: com ± 13 m e raio de 10 m a pessoa podia estar no
+  // ponto sem nunca "chegar". Raio efetivo = maior entre o raio de chegada e a precisão (até a precisão aceita, 15 m);
+  // quando a precisão passa do raio, a chegada vem com o aviso de conferir pelos passos.
+  const acc = Number.isFinite(pos.accuracyM) ? pos.accuracyM : 0, radiusM = Math.max(monitor.arrivalRadiusM, Math.min(acc, monitor.gpsAccuracyMaxM));
+  return { done: false, next, distM, azimuthDeg: az, direction: cardinal(az), arrived: distM <= radiusM && !stale, radiusM,
+    arrivalUncertain: distM <= radiusM && (!accuracyOk || acc > monitor.arrivalRadiusM), accuracyOk, stale, lateralM, lado, voltaDir, offLine, alvo, trecho,
     collected: nCollected, total: route.points.length };
 }
 

@@ -99,6 +99,12 @@ test('Monitorar: estados da guia nos 51 lotes (sem GPS, chegada, a caminho, GPS 
     const mid = guideModel(route, sc, f, at((p1.x + p2.x) / 2, (p1.y + p2.y) / 2), now, {});
     assert.equal(mid.state, 'go', k); assert.match(mid.title, /Ponto 2/); assert.ok(Number.isFinite(mid.azimuth));
     assert.equal(guideModel(route, sc, f, at(p1.x, p1.y, 4, 60000), now, {}).state, 'stale', k);
+    // 3.16 · chegada pela precisão do GPS: a 12 m do ponto, ± 4 m ainda não chegou; ± 13 m chegou, com aviso de conferir
+    const ux = (p2.x - p1.x) / Math.hypot(p2.x - p1.x, p2.y - p1.y), uy = (p2.y - p1.y) / Math.hypot(p2.x - p1.x, p2.y - p1.y);
+    const ar4 = guideModel(route, sc, f, at(p1.x - uy * 12, p1.y + ux * 12, 4), now, {}), ar13 = guideModel(route, sc, f, at(p1.x - uy * 12, p1.y + ux * 12, 13), now, {});
+    assert.notEqual(ar4.state, 'arrived', `${k} ± 4 m a 12 m não chegou`);
+    assert.equal(ar13.state, 'arrived', `${k} ± 13 m a 12 m chegou`); assert.ok(ar13.warn.some(w => /confira pelos passos/.test(w)), k);
+    assert.notEqual(guideModel(route, sc, f, at(p1.x - uy * 18, p1.y + ux * 18, 40), now, {}).state, 'arrived', `${k} raio no máximo 15 m`);
     const off = guideModel(route, sc, f, at(p1.x + 300, p1.y + 300), now, {});
     // fora da linha avisa quando já se está no tiro; indo para a entrada, só a seta (sem "volte para a esquerda")
     if (off.state === 'go' && !/entrada/.test(off.title)) assert.ok(off.warn.length >= 1, `${k} fora da linha avisa`);

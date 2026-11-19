@@ -21,7 +21,7 @@ export function fixToPos(position, field, lastTimestamp, now) {
 
 /**
  * Modelo da tela da guia. `session` = memória da sessão (objeto mutável do chamador, ver schmidtGuideSession).
- * @returns {{state:string, title:string, distM?:number|null, progress?:any, big?:string, dir?:string, azimuth?:number, warn?:string[], next?:any, info?:string, to?:number[]}}
+ * @returns {{state:string, title:string, distM?:number|null, seg?:number|null, progress?:any, big?:string, dir?:string, azimuth?:number, warn?:string[], next?:any, info?:string, to?:number[]}}
  */
 export function guideModel(route, sc, field, pos, now, session) {
   const m = guideModelCore(route, sc, field, pos, now, session);
@@ -60,5 +60,7 @@ function guideModelCore(route, sc, field, pos, now, session) {
   if (g.arrived) return { state: 'arrived', title: `Chegou ao ponto ${n.seq} de ${route.nPoints}`, big: `nº ${n.number}`, info: after ? `Depois: ponto ${after.seq} de ${route.nPoints}${Number.isFinite(after.deltaM) ? `, a ${num(after.deltaM)} m` : ''}` : 'Último ponto do tiro', warn: g.arrivalUncertain ? [`GPS impreciso (± ${num(pos.accuracyM)} m): confira pelos passos.`] : [], next: n };
   const a = g.alvo;
   return { state: 'go', distM: entry ? null : a.distM, to: [a.x, a.y], title: entry ? 'Primeiro: vá até a entrada do tiro' : `Próximo: ${label}`, big: `${num(a.distM)} m`, dir: `para o ${a.direction}`, azimuth: a.azimuthDeg,
-    info: g.trecho && !entry ? `Faltam ${num(Math.max(0, g.trecho.faltaM))} m andando no tiro` : undefined, warn, next: n };
+    info: g.trecho && !entry ? `Faltam ${num(Math.max(0, g.trecho.faltaM))} m andando no tiro` : undefined, warn, next: n,
+    // 3.16 · quanto do trecho até o ponto já foi andado (0–1), para o anel em volta da seta
+    seg: g.trecho && !entry && g.trecho.totalM > 0 ? Math.max(0, Math.min(1, g.trecho.andadoM / g.trecho.totalM)) : null };
 }
