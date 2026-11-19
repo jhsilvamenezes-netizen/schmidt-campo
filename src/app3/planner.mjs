@@ -16,7 +16,7 @@ import { pointInGeom } from '../engine3/geometry.mjs';
 import { cumulative, pointAt } from '../engine3/polyline.mjs';
 import { num, range, km, plural } from './format.mjs';
 
-export const ENGINE_LABEL = '3.14.0';
+export const ENGINE_LABEL = '3.15.0';
 export const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
@@ -346,6 +346,25 @@ export function minimaxEdits(field, params, edits = null, { maxEvals = 1200, min
   if (!improved) return { edits: null, before: start, after: cur, evals };
   const out = samples.map(q => ({ id: q.id, x: q.x, y: q.y, unitId: q.unitId, s: q.s, manual: false, offTrack: false }));
   return { edits: { signature: paramsSignature(sc.params), samples: out }, before: start, after: cur, evals };
+}
+
+/**
+ * 3.15 · lote irregular: sugere 1 ponto acima do mínimo quando isso encurta de verdade o maior vazio ou o "95% do lote"
+ * (decisão do proprietário, 19/11). Só quando o maior vazio já passa de 1,2 × o lado ideal (lote irregular), o total
+ * não foi escolhido à mão e o ganho é de pelo menos 8%. Devolve {params, before, after} ou null.
+ */
+export const PLUS_ONE = Object.freeze({ irregular: 1.2, gain: 0.08 });
+export function plusOne(field, params, people = 5) {
+  if (!params || Number.isFinite(params.totalPoints)) return null;
+  const now = balanceStats(field, params);
+  if (!now) return null;
+  const n = now.sc.samples.length;
+  if (n !== now.sc.minPoints || now.worst < PLUS_ONE.irregular * Math.sqrt((field.areaOfficialHa * 1e4) / n)) return null;
+  let rec, b;
+  try { rec = recommend(field, { ...baseOf(params), totalPoints: n + 1 }, people, false); b = balanceStats(field, { ...rec.chosen.params, totalPoints: n + 1 }); } catch { return null; }
+  if (!b || b.sc.samples.length !== n + 1 || b.worst > now.worst + 1) return null;
+  if (b.worst > now.worst * (1 - PLUS_ONE.gain) && b.p95 > now.p95 * (1 - PLUS_ONE.gain)) return null;
+  return { params: { ...rec.chosen.params, totalPoints: n + 1 }, before: { n, worst: now.worst, p95: now.p95 }, after: { n: n + 1, worst: b.worst, p95: b.p95 } };
 }
 
 /** Mensagem curta para quem usa, a partir do erro do motor. */

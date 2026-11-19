@@ -69,14 +69,14 @@ export function installLotes(app) {
   const rowHtml = k => {
     const f = fields[k], r = ready.get(k), on = k === ui.key;
     return `<button class="li lotrow${on ? ' on' : ''}" data-pick="${esc(k)}" aria-pressed="${on}"><span class="id">${esc(f.code)}</span><span class="x"><b>${num(f.areaOfficialHa, 1)} ha</b>`
-      + `<small class="sub">${r ? `${num(r.pontos)} pontos · ${num(r.tiros)} tiros · 95% &lt; ${num(r.p95)} m` : 'calculando…'}</small></span>`
+      + `<small class="sub">${r ? `${num(r.pontos)} pontos · ${num(r.tiros)} tiros · 95% &lt; ${num(r.p95)} m` : '<span class="sk">calculando…</span>'}</small></span>`
       + `<span class="r">${r ? (r.alerts ? `<span class="chip alerta">${r.alerts}</span>` : '<span class="chip ok">ok</span>') : ''}</span></button>`;
   };
   function totals(ks) {
     const ha = ks.reduce((a, k) => a + fields[k].areaOfficialHa, 0), done = ks.filter(k => ready.has(k));
     const pts = done.reduce((a, k) => a + ready.get(k).pontos, 0), alerts = done.reduce((a, k) => a + (ready.get(k).alerts ? 1 : 0), 0);
     return `<div class="m3"><div class="m"><small>Lotes</small><b>${num(ks.length)}</b></div><div class="m"><small>Área</small><b>${num(ha)} ha</b></div>`
-      + `<div class="m"><small>Pontos</small><b>${done.length === ks.length ? num(pts) : '…'}</b></div></div>`
+      + `<div class="m"><small>Pontos</small><b>${done.length === ks.length ? num(pts) : '<span class="sk">…</span>'}</b></div></div>`
       + `<p class="mu sm">${done.length === ks.length ? (alerts ? `${alerts} ${alerts === 1 ? 'lote' : 'lotes'} com alerta` : 'Todos os lotes sem alerta') : `Calculando ${done.length} de ${ks.length} lotes…`}</p>`;
   }
 
@@ -90,7 +90,7 @@ export function installLotes(app) {
     const seg = `<div class="seg${fs.length > 2 ? ' s3' : ''}" role="group" aria-label="Fazenda">${fs.map(x => `<button data-farm-pick="${esc(x)}" class="${x === farm ? 'on' : ''}" aria-pressed="${x === farm}">${esc(x)}</button>`).join('')}</div>`;
     const sel = f.farm === farm ? `<section class="card hero"><div class="row-sb"><div><p class="eyebrow">Lote em uso</p><p class="big">${esc(f.code)} <span>· ${num(f.areaOfficialHa, 1)} ha</span></p></div>`
       + `${r ? (r.alerts ? `<span class="chip alerta">${r.alerts} ${r.alerts === 1 ? 'alerta' : 'alertas'}</span>` : '<span class="chip ok">Sem alertas</span>') : ''}</div>`
-      + `<p class="mu">${r ? `${num(r.pontos)} pontos · ${num(r.tiros)} tiros · 95% do lote &lt; ${num(r.p95)} m` : 'Calculando o plano…'}</p>`
+      + `<p class="mu">${r ? `${num(r.pontos)} pontos · ${num(r.tiros)} tiros · 95% do lote &lt; ${num(r.p95)} m` : '<span class="sk">Calculando o plano…</span>'}</p>`
       + '<div class="two"><button class="btn p" data-go="mapa">Abrir no mapa</button><button class="btn" data-go="plano">Plano</button></div></section>' : '';
     return `<div class="map sm farm" data-farm></div><div class="scroll">${sel}<section class="card"><h2 class="h">Fazenda ${esc(farm)}</h2>${seg}<div data-tot>${totals(ks)}</div></section>
 <section class="card list"><h2 class="h">Lotes</h2><div data-rows>${ks.map(rowHtml).join('')}</div></section></div>`;

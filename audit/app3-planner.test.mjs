@@ -220,3 +220,17 @@ test('3.2 · "Buscar distribuição melhor" não aceita piorar o pior vazio nem 
     assert.ok(after.worstGapM <= before.worstGapM + 1, `${k}: pior vazio ${before.worstGapM} → ${after.worstGapM}`);
   }
 });
+
+test('3.15 · lote irregular: +1 ponto só onde o maior vazio passa de 1,2 × o lado ideal e o ganho é ≥ 8% (BD5, RB9)', () => {
+  const hit = [];
+  for (const k of keys) {
+    const f = fields[k], cp = P.recommend(f, {}, 5, false).chosen.params, r = P.plusOne(f, cp, 5);
+    if (!r) continue;
+    hit.push(f.code);
+    assert.equal(r.after.n, r.before.n + 1, k);
+    assert.ok(r.after.worst <= r.before.worst + 1, `${k}: maior vazio não piora`);
+    assert.ok(r.after.worst <= r.before.worst * 0.92 || r.after.p95 <= r.before.p95 * 0.92, `${k}: ganho ≥ 8%`);
+    assert.equal(P.plusOne(f, r.params, 5), null, `${k}: com o total escolhido não sugere de novo`);
+  }
+  assert.deepEqual(hit.sort(), ['BD5', 'RB9']);
+});

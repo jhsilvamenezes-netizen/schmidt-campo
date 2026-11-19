@@ -12,7 +12,7 @@ export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', '
   'app3/advanced', 'app3/gestures', 'app3/monitor', 'app3/compass', 'persistence/backup-service', 'persistence/backup-format', 'platform/browser-backup-adapters', 'platform/browser-session-lock',
   'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/versions', 'app3/backup',
   'app3/screen-mapa', 'app3/screen-monitor', 'app3/screen-plano', 'app3/screen-enviar', 'app3/screen-mais', 'app3/screen-lotes', 'app3/screen-bloco', 'app3/main'];
-export const APP_VERSION = '3.14.0';
+export const APP_VERSION = '3.15.0';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
 /** Cada módulo no seu escopo; importações do motor viram o namespace schmidtEngine2. */
@@ -48,7 +48,7 @@ const bundleApp = () => bundleModules(APP_MODULES, `${ident('app3/main')}.startA
 /** U17/A6 · motor em segundo plano (Web Worker): recomendação equilibrada sem travar a tela. Mesmo código da tela. */
 export const WORKER_MODULES = ['app3/format', 'app3/planner'];
 const bundleWorker = async () => `${await bundleEngine('engine3')}\n${await bundleModules(WORKER_MODULES, `const P=${ident('app3/planner')};
-self.onmessage=e=>{if(e.data&&e.data.kind==='improve'){const {id,field,params,edits}=e.data;let r=null;try{r=P.minimaxEdits(field,params,edits);}catch(x){r=null;}self.postMessage({id,kind:'improve',r});return;}const {id,field,base,people,fitTeam}=e.data;let rec=null,error=null;try{rec=P.recommend(field,base,people,fitTeam);}catch(x){error=String((x&&x.message)||x);}self.postMessage({id,rec,error});};`)}`;
+self.onmessage=e=>{if(e.data&&e.data.kind==='improve'){const {id,field,params,edits,people}=e.data;let r=null,plus=null;try{r=P.minimaxEdits(field,params,edits);}catch(x){r=null;}try{plus=edits?null:P.plusOne(field,params,people);}catch(x){plus=null;}self.postMessage({id,kind:'improve',r,plus});return;}const {id,field,base,people,fitTeam}=e.data;let rec=null,error=null;try{rec=P.recommend(field,base,people,fitTeam);}catch(x){error=String((x&&x.message)||x);}self.postMessage({id,rec,error});};`)}`;
 
 /** U05 · recomendação de cada lote para a regra padrão (5 pessoas, sem limitar à equipe), calculada aqui com o mesmo
  * motor da tela: o celular abre e troca de lote sem refazer essa busca (como os presets embutidos da 2.5). */
@@ -83,7 +83,7 @@ export async function build3() {
   await mkdir(root + 'build/3', { recursive: true });
   await writeFile(root + 'build/3/index.html', html);
   // marca da 3.0 em arquivos próprios: os ícones da raiz (icone*) são da 2.5/APK e ficam intactos
-  for (const f of ['marca.svg', 'app.webmanifest', 'marca-192.png', 'marca-512.png', 'marca-180.png', 'marca-logo.png']) await copyFile(root + f, root + 'build/3/' + f);
+  for (const f of ['marca.svg', 'app.webmanifest', 'marca-192.png', 'marca-512.png', 'marca-180.png', 'marca-logo.png', 'inter.woff2']) await copyFile(root + f, root + 'build/3/' + f);
   // service worker: mesmo modelo da 2.x (cache conferido pelo SHA-256 da página; sem troca no meio do uso)
   const tpl = await readFile(root + 'src/platform/service-worker.js', 'utf8'), digest = createHash('sha256').update(html).digest('hex');
   let worker = tpl.replace('__SCHMIDT_CACHE__', `schmidt-3-${digest.slice(0, 10)}`).replace('__SCHMIDT_INDEX_SHA256__', digest);
@@ -93,7 +93,7 @@ export async function build3() {
   worker = worker.replace(hook, hook + "if(new URL(request.url).pathname.includes('/legado/'))return;");
   const files = "const ARQUIVOS = ['./','index.html','manifest.webmanifest','icone.svg','icone-192.png','icone-512.png','icone-180.png'];";
   if (worker.split(files).length !== 2) throw Error('Lista de arquivos do service worker mudou');
-  worker = worker.replace(files, "const ARQUIVOS = ['./','index.html','motor.js','app.webmanifest','marca.svg','marca-192.png','marca-512.png','marca-180.png','marca-logo.png'];");
+  worker = worker.replace(files, "const ARQUIVOS = ['./','index.html','motor.js','app.webmanifest','marca.svg','marca-192.png','marca-512.png','marca-180.png','marca-logo.png','inter.woff2'];");
   // 3.12 · versão nova pronta: só troca quando a pessoa toca em "Atualizar" (o app manda a mensagem; nunca no meio da guia)
   worker += "self.addEventListener('message',event=>{if(event.data&&event.data.type==='schmidt-atualizar')self.skipWaiting();});\n";
   await writeFile(root + 'build/3/sw.js', worker);

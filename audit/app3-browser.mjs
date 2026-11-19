@@ -255,6 +255,26 @@ try {
     } finally { await wf(swPath, swOld); }
     await ctx.close();
   }
+  // 3.15 · fonte embutida carregada; mapa grande no Plano; lote irregular (RB9) com sugestão de 1 ponto a mais
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'pt-BR', serviceWorkers: 'block' });
+    const p = await ctx.newPage(), errors = []; p.on('pageerror', e => errors.push(e.message));
+    await p.goto(url); await ready(p);
+    await p.evaluate(() => document.fonts.ready);
+    assert.ok(await p.evaluate(() => document.fonts.check('16px Inter') && [...document.fonts].some(f => f.family.replace(/"/g, '') === 'Inter' && f.status === 'loaded')), 'Inter carregada');
+    await p.click('button.lot'); await p.click('[data-lot="Rio de Janeiro|RB9"]'); await p.click('[data-tab="plano"]');
+    const h0 = await p.evaluate(() => document.querySelector('[data-map="small"]').getBoundingClientRect().height);
+    await p.click('[data-act="plan-grow"]'); await p.waitForSelector('.map.sm.big [data-act="plan-grow"][aria-pressed="true"]');
+    const h1 = await p.evaluate(() => document.querySelector('[data-map="small"]').getBoundingClientRect().height);
+    assert.ok(h1 > h0 * 1.5, `mapa maior (${h0} → ${h1})`);
+    await p.click('[data-act="plan-grow"]'); await p.waitForSelector('.map.sm:not(.big)');
+    await p.waitForSelector('[data-act="plus1"]', { timeout: 30000 });
+    assert.match(await p.textContent('[data-act="plus1"]'), /Lote irregular: 4 pontos \(1 a mais\)/);
+    await p.click('[data-act="plus1"]');
+    await p.waitForFunction(() => /^4 pontos/.test(document.querySelector('.res .big')?.textContent || ''));
+    assert.match(await p.textContent('#toast'), /4 pontos \(1 acima do mínimo\)/);
+    assert.deepStrictEqual(errors, []); await ctx.close();
+  }
   // R4.3 · Monitorar com GPS simulado: no ponto 1 do T1 → "Chegou"; 150 m antes → seta e distância
   {
     const fields = await loadFields(), f = fields['Bananal|BD3'], rec = P.recommend(f, {}, 5, false), sc = P.planInUse(f, rec.chosen.params, null);

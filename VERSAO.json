@@ -1,16 +1,21 @@
 {
-  "entrega": "3.14.0",
+  "entrega": "3.15.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-18",
-  "versaoDoApp": "3.14.0",
+  "versaoDoApp": "3.15.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "91307b8da05de5967d58dc48bacb581c10c7441c736d05304cc67656c4bd72ef",
-  "workerSha256": "2d27f62bf88ae3749d2129070f4860b32621880454cfcf4dd2beb5e6c2720df8",
+  "htmlSha256": "f89f1dbe2144deaef26f5a664c4820cdc29f6ce185be91ae709edbb48a71e6b2",
+  "workerSha256": "a2dfcef6af29136ea60cf45e7420a4ce20a043bfe16ff5efbf71da3f7b46cf80",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "3.15.0: lote irregular — sugestão de 1 ponto acima do mínimo quando o maior vazio passa de 1,2 × o lado ideal e o ganho é ≥ 8% (BD5 689 → 602 m; RB9 95% do lote 517 → 451 m), com Desfazer; fonte Inter embutida (a mesma letra em todo celular, sem internet; licença SIL OFL); \"calculando\" animado; mapa grande no Plano com um toque",
+    "3.14.0: motor — etapa Lloyd ao longo do tiro na Sugestão do motor (pior vazio médio 355 → 354 m, variação das áreas 10,07% → 10,00%, nada piora); estudo dos limites em docs/LEVANTAMENTO_3_9.md §11",
+    "3.13.0: Monitorar — \"Próximo tiro\" da mesma pessoa ao chegar ao último ponto, sem parar a guia; Voltar do celular fecha a janela aberta",
+    "3.12.0: versão nova com botão Atualizar no topo (nunca troca sozinho); tocar num tiro no Mapa mostra o tiro inteiro; medidas que se explicam (glossário); restaurar cópia congela gravações até recarregar",
+    "3.11.0: visual \"Mata e Ouro\" — paleta revista, folha de estilo única, folha que sobe sobre o mapa, menu flutuante; Plano com o resultado primeiro",
     "3.10.0: bordadura do proprietário — ideal 41 m (bordadura do plantio), mínimo 15 m: o motor sobe de faixa custando até +0,5 p.p. de variação e só desce da faixa ideal se as áreas ficarem 2 p.p. mais iguais (abaixo de 15 m: só BC3, pela forma; 15–41 m: 5 lotes; mediana da variação 8,1%); avisos, painel e camada do mapa em duas faixas (âmbar 15–41 m, vermelho < 15 m); Monitorar: toque curto de vibração ao chegar perto do ponto (3× o raio, 30 m) e três pulsos ao chegar; refino visual do modo normal (textura de plantio no topo, luz no fundo, cartões com profundidade, números em verde da marca, friso dourado no botão principal, pílula na aba ativa, vinheta no mapa)",
     "3.9.0: levantamento completo (docs/LEVANTAMENTO_3_9.md) e itens A: acessibilidade 0 falhas (axe) em todas as abas — título principal e nome do botão do lote igual ao texto; alvos de toque ≥ 44 px (topo, atalhos de regra, Inverter, Usar, selo, Roteiro, Lote/Bloco) — de 37 para 0 fora o link oculto; Glossário no menu com cada termo em uma frase e os números do lote aberto",
     "3.8.0: mapa limpo — sem quadro fixo de medidas; ferramentas empilhadas no canto e botão de camadas que abre um painel com as medidas do plano (entre tiros, entre pontos, cada ponto, maior vazio, mais perto da borda) e chaves: medidas, área de cada ponto, bordadura, grade em metros; bordadura (30 m, valor inicial a confirmar): distância de cada ponto até a borda no motor, desempate no equilíbrio (até +0,5 p.p. de variação) — pontos na bordadura 3 → 1 lote (só BC3, pela forma), aviso na conferência e no Plano (\"ponto 21 a 11 m da borda\"), camada Bordadura no mapa e 1ª etapa da \"Sugestão do motor\" afastando da borda; tiros um pouco mais marcados no mapa",
@@ -86,5 +91,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "6c7574826ca8a47b09292cfc234eda00a998e749e2abfa6a6fb51b295602cc2a"
+  "motorSha256": "23407cdbf65fb6a12753acbfc900f5393c3ba830c9434483c3cc34c0d920ece9"
 }
