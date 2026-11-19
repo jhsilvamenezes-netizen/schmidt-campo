@@ -16,6 +16,21 @@ export function installPlano(app) {
     app.setParams(r.params, 'Ajuste aplicado'); setTimeout(reopenAdvanced, 0);
   }
 
+  // 3.4 · sugestão do motor: a melhoria da distribuição é calculada em segundo plano (motor.js) para o plano em uso;
+  // o Plano mostra o ganho pronto ("maior vazio 689 → 610 m") e um toque aplica, com Desfazer
+  const hints = new Map();
+  /** @type {any} */ let improver = null, seq = 0;
+  try { if (app.window.Worker) { improver = new app.window.Worker('motor.js'); improver.onmessage = e => { const d = e.data || {}; if (d.kind !== 'improve') return; for (const [k, v] of hints) if (v.id === d.id) { hints.set(k, { id: d.id, r: d.r }); if (app.ui.view === 'plano' && app.hintKey?.() === k) app.render(); } }; improver.onerror = () => { improver = null; }; } } catch { improver = null; }
+  app.hintKey = () => { const cur = app.cur; return cur && !cur.block ? `${app.ui.key}|${JSON.stringify(cur.params)}|${JSON.stringify(app.saved().editsByField?.[app.ui.key] ?? null)}` : null; };
+  /** Ganho pronto para o plano em uso (ou null enquanto calcula / se não há ganho). */
+  app.hint = () => {
+    const k = app.hintKey(); if (!k || !improver) return null;
+    const h = hints.get(k);
+    if (!h) { const id = ++seq; hints.set(k, { id, r: undefined }); improver.postMessage({ kind: 'improve', id, field: app.cur.field, params: app.cur.params, edits: app.saved().editsByField?.[app.ui.key] ?? null }); return null; }
+    if (!h.r?.edits) return null;
+    const r = h.r, parts = [r.after.worst < r.before.worst - 1 && `maior vazio ${num(r.before.worst)} → ${num(r.after.worst)} m`, r.after.cv < r.before.cv - 0.004 && `áreas ${num(r.before.cv * 100)} → ${num(r.after.cv * 100)}%`].filter(Boolean);
+    return parts.length ? { text: parts.join(' · '), r } : null;
+  };
   app.SHEETS.ajustes = () => app.openSheet('Ajustes avançados', advancedForm(app.cur.params, app.cur.sc, app.saved().fitTeam));
   app.clicks.push(t => {
     const cur = app.cur;
@@ -64,7 +79,8 @@ export function installPlano(app) {
     },
     // 3.2 · minimax: desliza os pontos no próprio tiro para encurtar o maior vazio (sem piorar o resto); com Desfazer
     minimax() {
-      const cur = app.cur, edits = app.saved().editsByField?.[app.ui.key] ?? null, r = P.minimaxEdits(cur.field, cur.params, edits);
+      const cur = app.cur, edits = app.saved().editsByField?.[app.ui.key] ?? null, ready = hints.get(app.hintKey())?.r;
+      const r = ready !== undefined && ready !== null ? ready : P.minimaxEdits(cur.field, cur.params, edits);
       if (!r.edits) { app.toast('A distribuição já é a melhor possível sem piorar a cobertura.'); return; }
       const parts = [r.after.worst < r.before.worst - 1 && `maior vazio ${num(r.before.worst)} → ${num(r.after.worst)} m`,
         r.after.cv < r.before.cv - 0.004 && `áreas ${num(r.before.cv * 100)} → ${num(r.after.cv * 100)}% de variação`].filter(Boolean);

@@ -21,7 +21,7 @@ export function installMonitor(app) {
       try { window.navigator.vibrate?.([200, 80, 200]); } catch { /* sem vibração */ }
       say(`Chegou ao ponto ${model.next.seq}, número ${model.next.number}.`);
     }
-    return { tracks, trackId: mon.trackId, flipped: mon.flipped, active: mon.active, model, heading: mon.heading, voice: mon.voice, canSpeak: !!window.speechSynthesis, steps: route?.instructions || [], target: model?.next?.id ?? null };
+    return { lot: cur.field.code, acc: mon.pos?.accuracyM ?? null, tracks, trackId: mon.trackId, flipped: mon.flipped, active: mon.active, model, heading: mon.heading, voice: mon.voice, canSpeak: !!window.speechSynthesis, steps: route?.instructions || [], target: model?.next?.id ?? null };
   }
   async function keepAwake(on) {
     try {

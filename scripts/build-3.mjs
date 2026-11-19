@@ -12,7 +12,7 @@ export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', '
   'app3/advanced', 'app3/gestures', 'app3/monitor', 'app3/compass', 'persistence/backup-service', 'persistence/backup-format', 'platform/browser-backup-adapters', 'platform/browser-session-lock',
   'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/versions', 'app3/backup',
   'app3/screen-mapa', 'app3/screen-monitor', 'app3/screen-plano', 'app3/screen-enviar', 'app3/screen-mais', 'app3/screen-lotes', 'app3/screen-bloco', 'app3/main'];
-export const APP_VERSION = '3.3.0';
+export const APP_VERSION = '3.4.0';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
 /** Cada módulo no seu escopo; importações do motor viram o namespace schmidtEngine2. */
@@ -48,7 +48,7 @@ const bundleApp = () => bundleModules(APP_MODULES, `${ident('app3/main')}.startA
 /** U17/A6 · motor em segundo plano (Web Worker): recomendação equilibrada sem travar a tela. Mesmo código da tela. */
 export const WORKER_MODULES = ['app3/format', 'app3/planner'];
 const bundleWorker = async () => `${await bundleEngine('engine3')}\n${await bundleModules(WORKER_MODULES, `const P=${ident('app3/planner')};
-self.onmessage=e=>{const {id,field,base,people,fitTeam}=e.data;let rec=null,error=null;try{rec=P.recommend(field,base,people,fitTeam);}catch(x){error=String((x&&x.message)||x);}self.postMessage({id,rec,error});};`)}`;
+self.onmessage=e=>{if(e.data&&e.data.kind==='improve'){const {id,field,params,edits}=e.data;let r=null;try{r=P.minimaxEdits(field,params,edits);}catch(x){r=null;}self.postMessage({id,kind:'improve',r});return;}const {id,field,base,people,fitTeam}=e.data;let rec=null,error=null;try{rec=P.recommend(field,base,people,fitTeam);}catch(x){error=String((x&&x.message)||x);}self.postMessage({id,rec,error});};`)}`;
 
 /** U05 · recomendação de cada lote para a regra padrão (5 pessoas, sem limitar à equipe), calculada aqui com o mesmo
  * motor da tela: o celular abre e troca de lote sem refazer essa busca (como os presets embutidos da 2.5). */

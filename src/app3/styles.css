@@ -254,3 +254,23 @@ main>.sheet{background:color-mix(in srgb,var(--sf) 94%,transparent);backdrop-fil
 :root.sun .map-svg .flot{stroke:#000;stroke-width:1.5}
 .map-svg .rul{fill:none;stroke:var(--ink);stroke-width:2.5;stroke-dasharray:6 4;stroke-linecap:round}
 .map-svg .rul-t{font:700 14px var(--f);fill:var(--ink);stroke:var(--fd);stroke-width:4px;paint-order:stroke;stroke-linejoin:round}
+/* 3.4 · modo navegação (guia ativa): topo some, mapa ocupa a tela, etiqueta flutuante, progresso e botões grandes */
+body:has(.map.nav) header{display:none}
+.map.nav{flex:1}
+.navpill{position:absolute;left:12px;top:calc(12px + env(safe-area-inset-top));z-index:2;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:99px;background:color-mix(in srgb,var(--hd) 94%,transparent);color:var(--hd-ink);font:600 14px var(--f);box-shadow:0 8px 24px -12px #000a;pointer-events:none;max-width:calc(100% - 80px)}
+.navpill span{font:400 12px var(--f);opacity:.85}
+.navpill .gps{padding:2px 8px;border-radius:99px;font:700 12px var(--f);opacity:1}.gps.ok{background:var(--oks);color:var(--ok)}.gps.al{background:var(--als);color:var(--al)}.gps.er{background:var(--ers);color:var(--er)}
+.prog{display:flex;gap:4px}.prog i{flex:1;height:6px;border-radius:3px;background:var(--ln)}.prog i.d{background:var(--gold)}.prog i.n{background:var(--act)}
+.gsheet .guide .big{font:700 40px/1.05 var(--f);letter-spacing:-.03em}.gsheet .guide .dir{font:600 16px var(--f)}
+.cnt{font:700 12px var(--f);color:var(--ink);background:var(--sf2);border:1px solid var(--ln);border-radius:99px;padding:0 8px;margin-left:4px}
+.gbtns .btn{min-height:56px}.btn.stop{color:var(--er);border-color:color-mix(in srgb,var(--er) 40%,var(--ln))}
+.btn[aria-pressed="true"]{background:var(--br2);border-color:var(--br);color:var(--br)}
+:root.sun .navpill{border:2px solid #000}:root.sun .prog i{border:1px solid #000}
+.sug{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px;border-radius:12px;background:color-mix(in srgb,var(--gold) 14%,var(--sf));border:1px solid color-mix(in srgb,var(--gold) 45%,var(--ln))}
+.sug .x{flex:1;min-width:0}.sug b{font:600 14px var(--f)}.sug .sub{display:block;color:var(--mu);font-size:12px}
+.sug .go{font:700 14px var(--f);color:var(--on-act);background:var(--act);padding:8px 12px;border-radius:12px}
+:root.sun .sug{border:2px solid #000;background:#fff}
+/* 3.4 · entrada suave do conteúdo ao trocar de aba (só na troca) */
+main.tab-in>*:not(.map){animation:entra 180ms cubic-bezier(.2,.7,.2,1)}
+@keyframes entra{from{opacity:0;transform:translateY(8px)}}
+@media (prefers-reduced-motion:reduce){main.tab-in>*{animation:none}}

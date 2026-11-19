@@ -1,16 +1,17 @@
 {
-  "entrega": "3.3.0",
+  "entrega": "3.4.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-18",
-  "versaoDoApp": "3.3.0",
+  "versaoDoApp": "3.4.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "7381e7f99a8985c46b061a048d855532248ead9c4ecc99f549a8b0b39974c9c9",
-  "workerSha256": "538fd4284ae95b888dc074c10d75b8bfa2b947de2a957310ffbd04da4037649d",
+  "htmlSha256": "7e6ddc14c339c6ef34f819cbe1c114787e41488744fa1b8163711a960447df3a",
+  "workerSha256": "2b3485643824649ed80aac101572150bf482040710f43e041f7fb11dbbed5e54",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "3.4.0: modo navegação no Monitorar (topo some, mapa em tela cheia, etiqueta lote · tiro · pessoa · GPS ± m com cor, barra de progresso dos pontos, distância grande, botões grandes \"Ligar voz\" e \"Parar guia\"; ao chegar, mostra o ponto seguinte e a distância); sugestão do motor no Plano (a melhoria da distribuição é calculada em segundo plano e aparece pronta com o ganho; um toque aplica, com Desfazer); entrada suave do conteúdo ao trocar de aba (180 ms; desliga com \"reduzir movimento\")",
     "3.3.0: uma família de letra em todo o app (token --f; antes cada parte usava a do sistema) e escala única de 5 tamanhos (12/14/16/20/28) e 3 pesos (400/600/700) — antes 13 tamanhos e 6 pesos; espaçamentos numa grade de 4 px e 4 cantos (8/12/16/20); cor de ação própria (--act): no escuro, botões e seleções em verde cheio com letra branca (antes menta claro); régua no mapa (ponto escolhido + outro ponto = distância em linha reta); \"Melhorar a distribuição dos pontos\": 1º diminui o maior vazio, 2º iguala as áreas sem deixar o vazio crescer — 31 de 51 lotes melhoram (BD5 689 → 610 m; RA8 áreas 18% → 12%)",
     "3.2.0: motor próprio da 3.x (src/engine3; a 2.5 segue no motor congelado); \"Reduzir o maior vazio\" no Plano (desliza os pontos no próprio tiro: 19 de 51 lotes melhoram, BD5 689 → 610 m, média 364 → 352 m, 95% do lote no máximo 1% pior, áreas no máximo +1 p.p.); \"Buscar distribuição melhor\" não aceita mais piorar o pior vazio nem a igualdade das áreas (piorava 27 de 34 lotes); grade do mapa em metros (um quadrado = a barra de escala), também na aba Lotes; contas repetidas do motor guardadas (-18% de tempo); auditoria em docs/AUDITORIA_3_2.md",
     "3.1.0: redesenho \"instrumento de campo\" (fundo papel, cartões com fio fino, números tabulares lado a lado, títulos com traço dourado, mapa como carta com grade fina, tiros contínuos, pontos menores, menu de baixo fosco com traço dourado, lote como título no topo); aba Enviar substituída por Lotes (fazenda desenhada na posição real, lote em uso em destaque, números da fazenda e plano de cada lote; tocar escolhe o lote); conferência e equipe dobráveis no Plano; arquivos e fichas no menu",
@@ -79,5 +80,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "0c3e6aa7041e46cb9ffba01036590639e8a2712b40ca4cca65996570a7f0617d"
+  "motorSha256": "a01d0675744285e15aca965a98201fcd7d5a32a7696a6004100d09cbef95ab2e"
 }
