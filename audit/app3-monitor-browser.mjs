@@ -90,6 +90,32 @@ try {
     assert.ok(await p.locator('[data-act="gps-stop"]').count(), 'guia segue ligada');
     assert.deepStrictEqual(errors, []); await ctx.close();
   }
+  { // 3.17 · velocidade: duas leituras 12 m em ~1 s → "Moto … km/h" na etiqueta; parado → "A pé"
+    const { ctx, p, errors } = await open(p1.x * 0.5 + p2.x * 0.5, p1.y * 0.5 + p2.y * 0.5);
+    const L = Math.hypot(p2.x - p1.x, p2.y - p1.y), ux = (p2.x - p1.x) / L, uy = (p2.y - p1.y) / L;
+    for (let i = 1; i <= 3; i++) {
+      await p.waitForTimeout(1000);
+      const [lon, lat] = localToLonLat(p1.x * 0.5 + p2.x * 0.5 + ux * 12 * i, p1.y * 0.5 + p2.y * 0.5 + uy * 12 * i, f.centroidUTM);
+      await ctx.setGeolocation({ longitude: lon, latitude: lat, accuracy: 5 });
+    }
+    await p.waitForFunction(() => /Moto \d+ km\/h/.test(document.querySelector('.navpill')?.textContent || ''), null, { timeout: 15000 });
+    assert.match(await p.textContent('.gsheet'), /~\d+ s/, 'tempo estimado até o ponto');
+    assert.deepStrictEqual(errors, []); await ctx.close();
+  }
+  { // 3.17 · "Onde estou" no Mapa acompanha o movimento sem tocar de novo
+    const [lon, lat] = localToLonLat(p1.x + 5, p1.y, f.centroidUTM);
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block', geolocation: { longitude: lon, latitude: lat, accuracy: 5 }, permissions: ['geolocation'] });
+    const p = await ctx.newPage(), errors = []; p.on('pageerror', e => errors.push(e.message));
+    await p.goto(`http://127.0.0.1:${server.address().port}/`); await p.evaluate(() => localStorage.setItem('monitoramento.v03', JSON.stringify({ fieldKey: 'Bananal|BC1' }))); await p.reload();
+    await p.waitForSelector('[data-map="full"] .pt'); await p.click('[data-act="where"]');
+    await p.waitForFunction(() => /nº \d+ \(T1\)/.test(document.querySelector('[data-map="full"] .bal')?.textContent || ''), null, { timeout: 15000 });
+    const before = await p.textContent('[data-map="full"] .bal');
+    const [lon2, lat2] = localToLonLat(p2.x + 5, p2.y, f.centroidUTM); await ctx.setGeolocation({ longitude: lon2, latitude: lat2, accuracy: 5 });
+    await p.waitForFunction(b => (document.querySelector('[data-map="full"] .bal')?.textContent || '') !== b, before, { timeout: 15000 });
+    const near = +/ponto mais perto: nº \d+ \(T1\) a (\d+) m/.exec((await p.textContent('[data-map="full"] .bal')).replace(/\s+/g, ' '))[1];
+    assert.ok(near <= 10, `segue a posição nova (ponto mais perto a ${near} m)`);
+    assert.deepStrictEqual(errors, []); await ctx.close();
+  }
   { // "Onde estou" no Mapa e GPX só do tiro escolhido
     const [lon, lat] = localToLonLat(p1.x + 5, p1.y, f.centroidUTM);
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block', acceptDownloads: true, geolocation: { longitude: lon, latitude: lat, accuracy: 5 }, permissions: ['geolocation'] });

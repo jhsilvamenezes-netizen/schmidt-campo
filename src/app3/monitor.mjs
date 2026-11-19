@@ -16,7 +16,9 @@ export function fixToPos(position, field, lastTimestamp, now) {
   const fix = validateSchmidtGPSFix(position, { now, lastTimestamp });
   if (!fix) return null;
   const [x, y] = lonLatToLocal(fix.coords.longitude, fix.coords.latitude, field.centroidUTM);
-  return { x, y, accuracyM: fix.coords.accuracy, at: fix.timestamp };
+  // 3.17 · velocidade do próprio GPS (m/s), quando o aparelho informa; senão a tela calcula pela distância entre leituras
+  const sp = fix.coords.speed;
+  return { x, y, accuracyM: fix.coords.accuracy, at: fix.timestamp, speedMps: Number.isFinite(sp) && sp >= 0 ? sp : null };
 }
 
 /**
@@ -29,6 +31,16 @@ export function guideModel(route, sc, field, pos, now, session) {
   if (m.next) m.progress = { done: m.next.seq - (m.state === 'arrived' ? 0 : 1), total: route.nPoints };
   return m;
 }
+
+/** 3.17 · de moto ou a pé, pela velocidade (≥ 2,5 m/s ≈ 9 km/h: moto; parado ou andando: a pé). */
+export const MOTO_MPS = 2.5;
+export const modeOf = speedMps => (Number.isFinite(speedMps) && speedMps >= MOTO_MPS ? 'moto' : 'pe');
+/** Tempo até o ponto na velocidade atual (só em movimento). */
+const eta = (m, speedMps) => {
+  if (!Number.isFinite(speedMps) || speedMps < 0.8 || !(m > 0)) return '';
+  const s = m / speedMps;
+  return s < 60 ? ` · ~${num(Math.max(5, Math.round(s / 5) * 5))} s` : ` · ~${num(Math.round(s / 60))} min`;
+};
 
 /** @returns {any} */
 function guideModelCore(route, sc, field, pos, now, session) {
@@ -60,7 +72,7 @@ function guideModelCore(route, sc, field, pos, now, session) {
   if (g.arrived) return { state: 'arrived', title: `Chegou ao ponto ${n.seq} de ${route.nPoints}`, big: `nº ${n.number}`, info: after ? `Depois: ponto ${after.seq} de ${route.nPoints}${Number.isFinite(after.deltaM) ? `, a ${num(after.deltaM)} m` : ''}` : 'Último ponto do tiro', warn: g.arrivalUncertain ? [`GPS impreciso (± ${num(pos.accuracyM)} m): confira pelos passos.`] : [], next: n };
   const a = g.alvo;
   return { state: 'go', distM: entry ? null : a.distM, to: [a.x, a.y], title: entry ? 'Primeiro: vá até a entrada do tiro' : `Próximo: ${label}`, big: `${num(a.distM)} m`, dir: `para o ${a.direction}`, azimuth: a.azimuthDeg,
-    info: g.trecho && !entry ? `Faltam ${num(Math.max(0, g.trecho.faltaM))} m andando no tiro` : undefined, warn, next: n,
+    info: g.trecho && !entry ? `Faltam ${num(Math.max(0, g.trecho.faltaM))} m andando no tiro${eta(Math.max(0, g.trecho.faltaM), pos.speedMps)}` : undefined, warn, next: n,
     // 3.16 · quanto do trecho até o ponto já foi andado (0–1), para o anel em volta da seta
     seg: g.trecho && !entry && g.trecho.totalM > 0 ? Math.max(0, Math.min(1, g.trecho.andadoM / g.trecho.totalM)) : null };
 }
