@@ -25,12 +25,29 @@ export async function startApp(opts) {
   return app;
 }
 
+/** 3.12 · versão nova: o service worker novo fica esperando (nunca troca sozinho no meio do uso). Quando ele está pronto,
+ *  aparece "Atualizar" no topo (no lugar da palavra SCHMIDT) e um aviso; um toque troca e recarrega. Escondido durante a guia (CSS). */
 function registerWorker(window, toast) {
   const sw = window.navigator.serviceWorker;
   if (!sw || !/^https?:$/.test(window.location.protocol)) return;
-  const had = !!sw.controller;
-  sw.register('sw.js').catch(() => { /* sem service worker: funciona só com internet */ });
-  sw.addEventListener('controllerchange', () => { if (had) toast('Nova versão instalada.', { label: 'Recarregar', run: () => window.location.reload() }); });
+  const doc = window.document, had = !!sw.controller;
+  let asked = false;
+  const offer = (/** @type {any} */ waiting) => {
+    if (!waiting || !sw.controller || doc.getElementById('upd')) return;
+    const b = doc.createElement('button'); b.id = 'upd'; b.type = 'button';
+    b.innerHTML = '<span class="sr">Versão nova pronta: </span><b>Atualizar</b>';
+    b.addEventListener('click', () => { asked = true; b.disabled = true; b.querySelector('b').textContent = 'Atualizando…'; waiting.postMessage({ type: 'schmidt-atualizar' }); });
+    doc.querySelector('header .logo')?.after(b);
+    toast('Versão nova pronta. Toque em Atualizar no topo quando puder.');
+  };
+  sw.register('sw.js').then((/** @type {any} */ reg) => {
+    offer(reg.waiting);
+    reg.addEventListener('updatefound', () => { const nw = reg.installing; nw?.addEventListener('statechange', () => { if (nw.state === 'installed') offer(nw); }); });
+  }).catch(() => { /* sem service worker: funciona só com internet */ });
+  sw.addEventListener('controllerchange', () => {
+    if (asked) window.location.reload();
+    else if (had) toast('Nova versão instalada.', { label: 'Recarregar', run: () => window.location.reload() });
+  });
 }
 
 /** @param {{document:any, window:any, fields:any, appVersion:string, safra?:any, recs?:any, session:any}} opts */
@@ -39,8 +56,11 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   let blockedShown = false;
   // C2: sem armazenamento (modo privado restrito) o app abre igual, só não guarda depois de fechar.
   const { storage, persistent } = safeStorage(() => window.localStorage);
-  const store = createStore(storage, { canWrite: () => session.canWrite(),
-    onBlocked: () => { if (!blockedShown) { blockedShown = true; toast(session.writeError().userMessage); } },
+  // 3.12: depois de restaurar uma cópia, nada mais grava até o app recarregar (uma recomendação que chegasse do motor
+  // nesse meio-tempo gravaria por cima o estado antigo que ainda está na memória)
+  let frozen = false;
+  const store = createStore(storage, { canWrite: () => !frozen && session.canWrite(),
+    onBlocked: () => { if (!frozen && !blockedShown) { blockedShown = true; toast(session.writeError().userMessage); } },
     // C3: não finge que gravou
     onFail: () => toast('Não foi possível gravar neste aparelho (memória cheia ou bloqueada). Nada foi alterado.') });
   const keys = Object.keys(fields).sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true }));
@@ -130,6 +150,8 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     openSheet: (title, body) => { host.innerHTML = V.sheet(title, body); host.querySelector('.close')?.focus(); },
     closeSheet: () => { host.innerHTML = ''; for (const f of app.onCloseSheet) f(); },
     clearInvalid: () => { warnedInvalid = null; },
+    /** Para de gravar até recarregar (usado ao restaurar uma cópia). */
+    freeze: (on = true) => { frozen = on; clearTimeout(versionTimer); },
     download(text, name, type) {
       const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name;
       document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);

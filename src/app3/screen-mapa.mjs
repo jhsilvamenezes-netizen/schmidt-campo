@@ -17,6 +17,8 @@ export function installMapa(app) {
   /** @type {string|null} */ let selectedPt = null;
   /** régua: segundo ponto tocado com um ponto já escolhido */
   /** @type {string|null} */ let rulerPt = null;
+  /** 3.12 · tiro tocado no Mapa (mostra o tiro inteiro) */
+  /** @type {string|null} */ let selTrack = null;
   /** "Onde estou": última posição pedida no Mapa (só enquanto o lote não muda) */
   /** @type {any} */ let here = null;
   let layers = { medidas: true, areas: false, borda: false, grade: true }, panel = false;
@@ -48,6 +50,18 @@ export function installMapa(app) {
     return `<div class="bal" role="status"><b>Ponto ${num(i.number)} · ${esc(i.trackId)}</b>${parts ? `<span><i class="sw p" aria-hidden="true"></i>${parts} (andando)</span>` : ''}${across ? `<span><i class="sw t sel" aria-hidden="true"></i>vizinhos: ${across}</span>` : ''}<span><i class="sw b" aria-hidden="true"></i>borda a ${num(i.edgeM)} m${ha ? ` · área ${num(ha.ha, 1)} ha` : ''}</span></div>`;
   }
 
+  /** 3.12 · tiro tocado: comprimento, pontos, intervalo, por onde entrar e vizinhos (os mesmos dados do Plano). */
+  function trackCard() {
+    const cur = app.cur, d = /** @type {any} */ (selTrack && P.trackDetail(cur.field, cur.sc, selTrack));
+    if (!d) return '';
+    const row = cur.sc.trackRows.find(r => r.trackId === selTrack), p0 = d.parts[0];
+    const gap = row?.medianGapM ? ` · a cada ${num(row.medianGapM)} m` : '';
+    const nb = d.neighbors.map(n => `${esc(n.id)} a ${num(n.m)} m`).join(' · ');
+    return `<div class="bal" role="status"><b>Tiro ${esc(d.id)} · ${num(d.lengthM)} m</b><span><i class="sw p" aria-hidden="true"></i>${d.n === 1 ? '1 ponto' : `${num(d.n)} pontos`}${gap}</span>`
+      + (p0 ? `<span>entra a ${esc(p0.entra)} e anda para ${esc(p0.anda)}${d.parts.length > 1 ? ` · ${d.parts.length} partes` : ''}</span>` : '')
+      + (nb ? `<span><i class="sw t sel" aria-hidden="true"></i>vizinhos: ${nb}</span>` : '') + '</div>';
+  }
+
   /** Cartão do "onde estou": onde a pessoa está em relação ao lote, ao tiro e ao ponto mais perto. */
   function hereCard(w) {
     const where = w.inside ? `Dentro de ${esc(app.cur.field.code)} · borda a ${num(w.edgeM)} m` : `Fora de ${esc(app.cur.field.code)} · a ${num(w.edgeM)} m da borda`;
@@ -72,12 +86,12 @@ export function installMapa(app) {
       const ra = full && selectedPt && rulerPt ? cur.sc.samples.find(p => p.id === selectedPt) : null, rb = ra ? cur.sc.samples.find(p => p.id === rulerPt) : null;
       const ruler = ra && rb ? { a: [ra.x, ra.y], b: [rb.x, rb.y], m: Math.hypot(ra.x - rb.x, ra.y - rb.y), na: ra.number, nb: rb.number } : null;
       const bd = full ? P.borderStats(cur.field, cur.sc) : null;
-      const opts = full ? { measure, ruler, grid: layers.grade, border: layers.borda && bd ? { ends: bd.ends, min: P.BORDADURA_M, low: P.BORDA_MIN_M } : null, pos: here, to: w ? [w.point.x, w.point.y] : null, focus: here && w && views.full === ID ? [[here.x, here.y], [w.point.x, w.point.y]] : null, pad: { t: info || ruler || w ? 116 : 44, r: 64, b: 56, l: 36 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
-        reserve: [...(info || ruler || w ? [[0, 0, Math.min(W - 40, 330), 104]] : []), [W - 60, H - 170, W, H]] } : { pad: 22, grid: layers.grade };
+      const opts = full ? { measure, ruler, grid: layers.grade, border: layers.borda && bd ? { ends: bd.ends, min: P.BORDADURA_M, low: P.BORDA_MIN_M } : null, pos: here, to: w ? [w.point.x, w.point.y] : null, focus: here && w && views.full === ID ? [[here.x, here.y], [w.point.x, w.point.y]] : null, pad: { t: info || ruler || w || selTrack ? 116 : 44, r: 64, b: 56, l: 36 }, measures: layers.medidas, areas: layers.areas ? areas : null, info,
+        reserve: [...(info || ruler || w || selTrack ? [[0, 0, Math.min(W - 40, 330), 104]] : []), [W - 60, H - 170, W, H]] } : { pad: 22, grid: layers.grade };
       const g = guide ? app.guide() : null, under = parseFloat(document.defaultView.getComputedStyle(el).getPropertyValue('--under')) || 0;
       const kind = full ? 'full' : guide ? 'guide' : 'small', view = guide && g.focus ? ID : views[kind];
-      el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, hiTrack: !full && !guide ? app.hiTrack : null, focus: guide ? g.focus : null, others: cur.others || [], under, ...opts })
-        + (full ? (ruler ? `<div class="bal" role="status"><b>${num(ruler.m)} m</b><span>do ponto ${num(ruler.na)} ao ponto ${num(ruler.nb)} (em linha reta)</span><span>Toque fora para limpar</span></div>` : info ? balloon() : w ? hereCard(w) : '')
+      el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, hiTrack: full ? selTrack : !guide ? app.hiTrack : null, focus: guide ? g.focus : null, others: cur.others || [], under, ...opts })
+        + (full ? (ruler ? `<div class="bal" role="status"><b>${num(ruler.m)} m</b><span>do ponto ${num(ruler.na)} ao ponto ${num(ruler.nb)} (em linha reta)</span><span>Toque fora para limpar</span></div>` : info ? balloon() : selTrack ? trackCard() : w ? hereCard(w) : '')
           + V.mapTools(layers, moved(view), !!here, panel, panel ? summary(cur, areas, bd) : null)
           : guide && g.pos ? `<button class="fit" data-act="follow" aria-pressed="${!!g.follow}" aria-label="${g.follow ? 'Ver o lote inteiro' : 'Seguir minha posição'}">${g.follow ? '⤢' : '◎'}</button>`
             : (moved(view) ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : ''));
@@ -87,11 +101,12 @@ export function installMapa(app) {
         attachGestures(el, { getView: () => views[k2], setView: v => { views[k2] = v; }, onChange: () => requestAnimationFrame(drawMaps),
           onTap: target => {
             if (target.closest?.('.lpanel')) return; // toque dentro do painel não mexe no mapa
-            const t = target.closest?.('[data-pt]'), id = t ? t.dataset.pt : null;
+            const t = target.closest?.('[data-pt]'), id = t ? t.dataset.pt : null, trk = !id && k2 === 'full' ? target.closest?.('[data-trk]')?.dataset.trk ?? null : null;
             // com um ponto escolhido, tocar em outro mede a distância entre os dois (régua); tocar fora limpa
             if (k2 === 'full' && panel) { panel = false; drawMaps(); return; } // tocar no mapa fecha o painel
             if (k2 === 'full' && id && selectedPt && id !== selectedPt && !rulerPt) rulerPt = id;
             else { selectedPt = id; rulerPt = null; }
+            selTrack = trk && trk !== selTrack ? trk : null; // tocar no mesmo tiro de novo (ou fora) limpa
             drawMaps();
           } });
       }
@@ -104,7 +119,7 @@ export function installMapa(app) {
   }
 
   app.drawMaps = drawMaps;
-  app.onLotChange.push(() => { panel = false; here = null; views.full = views.small = views.guide = ID; selectedPt = null; rulerPt = null; app.hiTrack = null; });
+  app.onLotChange.push(() => { panel = false; here = null; views.full = views.small = views.guide = ID; selectedPt = null; rulerPt = null; selTrack = null; app.hiTrack = null; });
   Object.assign(app.ACTIONS, {
     fit: () => { views.full = views.small = views.guide = ID; drawMaps(); },
     where() {

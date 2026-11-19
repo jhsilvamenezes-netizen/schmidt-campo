@@ -65,6 +65,10 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
 .m3{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);gap:8px}
 .m{background:var(--sf2);border:1px solid color-mix(in srgb,var(--ln) 70%,transparent);border-radius:14px;padding:12px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .m small{display:block;font:600 12px var(--f);color:var(--mu);margin-bottom:4px}
+button.m{position:relative;text-align:left;min-height:52px;transition:background .15s}button.m:active{background:var(--br2)}
+button.m small{text-decoration:underline dotted color-mix(in srgb,var(--mu) 70%,transparent);text-underline-offset:3px}
+button.lsum:after{content:"?";position:absolute;top:8px;right:8px;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font:700 12px/1 var(--f);color:var(--mu);background:color-mix(in srgb,var(--ln) 70%,transparent)}
+.glos1{font:400 16px/1.5 var(--f);color:var(--ink);padding:4px 0 8px}
 .m b{font:700 min(17px,4.4vw) var(--f);letter-spacing:-.02em;color:var(--br)}
 .warn{color:var(--al);font-weight:600}.note{color:var(--mu);font-weight:600}
 
@@ -176,6 +180,13 @@ main>.sheet{background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-
 #splash b{font:700 20px var(--f);letter-spacing:.14em;margin-top:8px}#splash small{font:400 14px var(--f);opacity:.8}
 html[data-ready="1"] #splash{opacity:0;visibility:hidden}
 
+/* 3.12 · versão nova pronta: botão dourado no topo, no lugar da palavra SCHMIDT (some na guia, junto com o topo) */
+header:has(#upd) .logo{font-size:0;gap:0}
+#upd{flex:none;min-height:44px;padding:0 4px;display:flex;align-items:center;animation:upd-in .3s cubic-bezier(.2,.7,.2,1)}
+#upd b{padding:8px 14px;border-radius:99px;background:var(--gold);color:#1b1300;font:700 14px var(--f);box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 30%,transparent)}
+@keyframes upd-in{from{opacity:0;transform:scale(.9)}}
+:root.sun #upd b{border:2px solid #000;box-shadow:none}
+
 /* ===== mapa ===== */
 .map{flex:1;min-height:0;position:relative;touch-action:none;overflow:hidden;user-select:none;background:var(--mapbg) radial-gradient(90% 70% at 50% 42%,transparent 55%,color-mix(in srgb,var(--fl) 9%,transparent))}
 .map-svg{display:block;width:100%;height:100%}
@@ -185,6 +196,7 @@ html[data-ready="1"] #splash{opacity:0;visibility:hidden}
 .map-svg .lot.other{fill:var(--bg);stroke:var(--mu);stroke-width:1.5;stroke-dasharray:4 3;filter:none}
 .map-svg .track{fill:none;stroke:var(--tr);stroke-width:2;stroke-opacity:.72;stroke-linecap:round}
 .map-svg .track.hi{stroke-opacity:1;stroke-width:4;stroke-dasharray:none}.map-svg .track.lo{opacity:.35}
+.map-svg .thit{fill:none;stroke:#000;stroke-opacity:0;stroke-width:28;stroke-linecap:round;pointer-events:stroke;cursor:pointer}
 .map-svg .track.other{stroke:var(--mu);stroke-width:1.5;opacity:.7}
 .map-svg .tid{font:700 12px var(--f);fill:var(--mu);stroke:var(--fd);stroke-width:4px}
 .map-svg .pt circle{fill:var(--ptf);stroke:var(--ptr);stroke-width:1.75;filter:drop-shadow(0 1px 1.5px #0b2f2340)}
@@ -223,7 +235,7 @@ html[data-ready="1"] #splash{opacity:0;visibility:hidden}
 .mt.lyr{display:grid;place-items:center;padding:0}.mt.lyr .ic{width:22px;height:22px}
 .lpanel{position:absolute;right:64px;bottom:12px;width:min(78vw,300px);max-height:calc(100% - 24px);overflow:auto;z-index:3;padding:12px 14px;display:flex;flex-direction:column;gap:4px;border-radius:20px;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid color-mix(in srgb,var(--ln) 85%,transparent);box-shadow:var(--sh3)}
 .lpanel .lh{font:700 12px var(--f);letter-spacing:.08em;text-transform:uppercase;color:var(--mu);margin:8px 0 2px}.lpanel .lh:first-child{font:700 16px var(--f);letter-spacing:-.01em;text-transform:none;color:var(--ink);margin-top:0}
-.lsum{display:flex;justify-content:space-between;gap:8px;font:400 14px var(--f);padding:6px 0;border-bottom:1px solid var(--ln)}.lsum b{font-weight:600;color:var(--br)}.lsum.al b{color:var(--al)}.lsum.er b{color:var(--er)}
+.lsum{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;min-height:44px;font:400 14px var(--f);padding:6px 28px 6px 0;border-bottom:1px solid var(--ln);text-align:left;position:relative}button.lsum:after{top:50%;right:2px;margin-top:-8px}.lsum b{font-weight:600;color:var(--br)}.lsum.al b{color:var(--al)}.lsum.er b{color:var(--er)}
 .lrow{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:52px;text-align:left;padding:8px 0}
 .lrow b{display:block;font:600 14px var(--f)}.lrow small{display:block;font:400 12px var(--f);color:var(--mu)}
 .bal,.leg{position:absolute;left:12px;top:12px;max-width:70%;display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:16px;background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid color-mix(in srgb,var(--ln) 85%,transparent);box-shadow:var(--sh2);font-size:12px;color:var(--mu);pointer-events:none;z-index:2}
