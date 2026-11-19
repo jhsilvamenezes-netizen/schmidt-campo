@@ -1,6 +1,7 @@
 // 3.1 (U02) · tela Plano: hectares por ponto, pessoas, recomendado e outras opções, ajustes avançados.
 import * as P from './planner.mjs';
 import { num } from './format.mjs';
+import { hintMarkup } from './views.mjs';
 import { advancedForm, applyField } from './advanced.mjs';
 
 /** @param {any} app */
@@ -20,7 +21,7 @@ export function installPlano(app) {
   // o Plano mostra o ganho pronto ("maior vazio 689 → 610 m") e um toque aplica, com Desfazer
   const hints = new Map();
   /** @type {any} */ let improver = null, seq = 0;
-  try { if (app.window.Worker) { improver = new app.window.Worker('motor.js'); improver.onmessage = e => { const d = e.data || {}; if (d.kind !== 'improve') return; for (const [k, v] of hints) if (v.id === d.id) { hints.set(k, { id: d.id, r: d.r }); if (app.ui.view === 'plano' && app.hintKey?.() === k) app.render(); } }; improver.onerror = () => { improver = null; }; } } catch { improver = null; }
+  try { if (app.window.Worker) { improver = new app.window.Worker('motor.js'); improver.onmessage = e => { const d = e.data || {}; if (d.kind !== 'improve') return; for (const [k, v] of hints) if (v.id === d.id) { hints.set(k, { id: d.id, r: d.r }); if (app.ui.view === 'plano' && app.hintKey?.() === k) { const box = document.querySelector('[data-hint]'); if (box) box.innerHTML = hintMarkup(app.hint()); } } }; improver.onerror = () => { improver = null; }; } } catch { improver = null; }
   app.hintKey = () => { const cur = app.cur; return cur && !cur.block ? `${app.ui.key}|${JSON.stringify(cur.params)}|${JSON.stringify(app.saved().editsByField?.[app.ui.key] ?? null)}` : null; };
   /** Ganho pronto para o plano em uso (ou null enquanto calcula / se não há ganho). */
   app.hint = () => {

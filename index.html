@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-eMQcetHYiplS/CsU7XMhQQpYsTZjm1ji/f9OZPxQ4Jw=' 'sha256-FN71IJJDhOv0/TXiliTc8PuYF2suw5sNNJyY3Rvwvok='; style-src 'sha256-CyTl+3LK+ypQ+08KueHXLtoHCAH3WNummABISKXka48='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-eMQcetHYiplS/CsU7XMhQQpYsTZjm1ji/f9OZPxQ4Jw=' 'sha256-cBn8fSIeMFTRUtjWy+2RiAr59XAv0BM7MaW0M59MYo8='; style-src 'sha256-CyTl+3LK+ypQ+08KueHXLtoHCAH3WNummABISKXka48='; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#17594a" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c1512" media="(prefers-color-scheme: dark)">
 <title>SCHMIDT Campo</title>
 <link rel="icon" href="marca.svg"><link rel="apple-touch-icon" href="marca-180.png"><link rel="manifest" href="app.webmanifest">
@@ -4447,6 +4447,9 @@ const mapTools = (layers, zoomed, here = false) => `<div class="mtools">${zoomed
 const stepper = (id, label, hint, value) => `<div class="step"><label for="${id}">${label}${hint ? `<small>${hint}</small>` : ''}</label><div class="stp">
 <button data-dec="${id}" aria-label="Diminuir ${label.toLowerCase()}">−</button><input id="${id}" inputmode="numeric" value="${esc(value)}"><button data-inc="${id}" aria-label="Aumentar ${label.toLowerCase()}">+</button></div></div>`;
 
+/** Sugestão do motor pronta (ganho e "Aplicar") ou o botão para calcular na hora. Também trocada sozinha, sem redesenhar a tela. */
+const hintMarkup = hint => (hint ? `<button class="sug" data-act="minimax"><span class="x"><b>Sugestão do motor</b><small class="sub">${esc(hint.text)}</small></span><span class="go">Aplicar</span></button>` : '<button class="lnk" data-act="minimax">Melhorar a distribuição dos pontos</button>');
+
 /** @param {any} o */
 function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, block, hiTrack = null, list = [], split = null, hint = null }) {
   if (block) return blockPlanoView({ f, sc, rows, block });
@@ -4456,7 +4459,7 @@ function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, blo
 <div class="seg" role="group" aria-label="Planejar"><button class="on" aria-pressed="true">Lote</button><button data-open="bloco" aria-pressed="false">Bloco</button></div></section>
 <section class="card"><div class="row-sb"><h2 class="h">${inUseIsRec ? 'Plano recomendado' : 'Plano em uso'}</h2>${inUseIsRec ? '<span class="tag">em uso</span>' : rec ? '<button class="link" data-use="rec">Usar recomendado</button>' : '<span class="mu">calculando o recomendado…</span>'}</div>
 ${metrics(f)}<p class="mu">Caminhada ${esc(f.caminhada)}${f.tiros ? ` · ${km(sc.route.totalEstimatedM / f.tiros)} km por tiro` : ''}</p>${busy ? '<p class="mu">Calculando…</p>' : ''}
-${hint ? `<button class="sug" data-act="minimax"><span class="x"><b>Sugestão do motor</b><small class="sub">${esc(hint.text)}</small></span><span class="go">Aplicar</span></button>` : '<button class="lnk" data-act="minimax">Melhorar a distribuição dos pontos</button>'}</section>
+<div data-hint>${hintMarkup(hint)}</div></section>
 ${trackRows(rows, hiTrack)}
 ${checkAndTeam(list, split)}
 <section class="card list"><h2 class="h">Outras opções</h2>${alts.length ? alts.map((a, i) => `<div class="li"><span class="x">${num(a.m.tiros)} tiros · ${num(a.m.pontos)} pontos<br><small>95% &lt; ${num(a.m.p95M)} m · ${num(a.m.caminhadaKm, 1)} km${a.id === 'equipe' ? ' · igual por pessoa' : ''}</small></span><button class="use" data-alt="${i}">Usar</button></div>`).join('') : '<p class="mu">Sem outra opção melhor.</p>'}
@@ -4581,7 +4584,7 @@ ${prepared.alternatives.map((a, i) => [a, i]).sort((x, y) => Number(y[0].chosen)
   return groups.length ? groups.map((g, i) => `<button class="lnk" data-block="${i}">${esc(g.title)}</button>`).join('') : '<p class="mu">Este lote não tem vizinho com a mesma referência A/B.</p>';
 }
 
-return Object.freeze({ICONS,icon,metrics,badge,mapaView,legend,mapTools,planoView,checkAndTeam,arquivosBody,sheet,menuBody,dadosBody,calculoBody,monitorView,versionsBody,backupBody,restoreConfirm,allLotsBody,fichasMarkup,blockPickBody});
+return Object.freeze({ICONS,icon,metrics,badge,mapaView,legend,mapTools,hintMarkup,planoView,checkAndTeam,arquivosBody,sheet,menuBody,dadosBody,calculoBody,monitorView,versionsBody,backupBody,restoreConfirm,allLotsBody,fichasMarkup,blockPickBody});
 })();
 // src/app3/advanced.mjs
 const __m_app3_advanced=(()=>{
@@ -6026,6 +6029,7 @@ return Object.freeze({installMonitor});
 const __m_app3_screen_plano=(()=>{
 const P = __m_app3_planner;
 const { num } = __m_app3_format;
+const { hintMarkup } = __m_app3_views;
 const { advancedForm, applyField } = __m_app3_advanced;
 // 3.1 (U02) · tela Plano: hectares por ponto, pessoas, recomendado e outras opções, ajustes avançados.
 
@@ -6046,7 +6050,7 @@ function installPlano(app) {
   // o Plano mostra o ganho pronto ("maior vazio 689 → 610 m") e um toque aplica, com Desfazer
   const hints = new Map();
   /** @type {any} */ let improver = null, seq = 0;
-  try { if (app.window.Worker) { improver = new app.window.Worker('motor.js'); improver.onmessage = e => { const d = e.data || {}; if (d.kind !== 'improve') return; for (const [k, v] of hints) if (v.id === d.id) { hints.set(k, { id: d.id, r: d.r }); if (app.ui.view === 'plano' && app.hintKey?.() === k) app.render(); } }; improver.onerror = () => { improver = null; }; } } catch { improver = null; }
+  try { if (app.window.Worker) { improver = new app.window.Worker('motor.js'); improver.onmessage = e => { const d = e.data || {}; if (d.kind !== 'improve') return; for (const [k, v] of hints) if (v.id === d.id) { hints.set(k, { id: d.id, r: d.r }); if (app.ui.view === 'plano' && app.hintKey?.() === k) { const box = document.querySelector('[data-hint]'); if (box) box.innerHTML = hintMarkup(app.hint()); } } }; improver.onerror = () => { improver = null; }; } } catch { improver = null; }
   app.hintKey = () => { const cur = app.cur; return cur && !cur.block ? `${app.ui.key}|${JSON.stringify(cur.params)}|${JSON.stringify(app.saved().editsByField?.[app.ui.key] ?? null)}` : null; };
   /** Ganho pronto para o plano em uso (ou null enquanto calcula / se não há ganho). */
   app.hint = () => {
