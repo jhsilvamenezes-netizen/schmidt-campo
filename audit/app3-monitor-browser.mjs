@@ -90,10 +90,12 @@ try {
     assert.ok(await p.locator('[data-act="gps-stop"]').count(), 'guia segue ligada');
     assert.deepStrictEqual(errors, []); await ctx.close();
   }
-  { // 3.17 · velocidade: duas leituras 12 m em ~1 s → "Moto … km/h" na etiqueta; parado → "A pé"
+  { // 3.17 · velocidade: leituras a cada ~1 s andando 12 m → "Moto … km/h" na etiqueta. 3.19: a velocidade é medida
+    // numa janela de ~3 s e a troca para moto pede 2 leituras seguidas, então o trajeto simulado tem 6 leituras (como uma
+    // moto de verdade, que manda leitura o tempo todo)
     const { ctx, p, errors } = await open(p1.x * 0.5 + p2.x * 0.5, p1.y * 0.5 + p2.y * 0.5);
     const L = Math.hypot(p2.x - p1.x, p2.y - p1.y), ux = (p2.x - p1.x) / L, uy = (p2.y - p1.y) / L;
-    for (let i = 1; i <= 3; i++) {
+    for (let i = 1; i <= 6; i++) {
       await p.waitForTimeout(1000);
       const [lon, lat] = localToLonLat(p1.x * 0.5 + p2.x * 0.5 + ux * 12 * i, p1.y * 0.5 + p2.y * 0.5 + uy * 12 * i, f.centroidUTM);
       await ctx.setGeolocation({ longitude: lon, latitude: lat, accuracy: 5 });
