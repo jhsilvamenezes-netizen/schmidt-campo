@@ -154,8 +154,11 @@ test('U17 · áreas equilibradas nos 51 lotes: variação mediana ≤ 8,5% e bor
   // 3.8: a bordadura entrou como desempate (até +0,5 p.p. de variação): mediana 7,7% → 8,1%, em troca de tirar da
   // bordadura (< 30 m da borda) os pontos de RB7 (9 m) e RB9 (17 m); só BC3 fica (forma do lote, sem opção)
   assert.ok(med(rows.map(r => r.b1.cv)) <= 0.085, `variação mediana ${med(rows.map(r => r.b1.cv))}`);
-  const near = keys.filter(k => P.borderStats(fields[k], rows[keys.indexOf(k)].b1.sc).minM < P.BORDADURA_M).map(k => fields[k].code);
-  assert.deepStrictEqual(near, ['BC3'], `pontos na bordadura: ${near}`);
+  // 3.10: bordadura do plantio 41 m (ideal) e mínimo 15 m — abaixo do mínimo só BC3 (forma do lote, sem opção)
+  const low = keys.filter(k => P.borderStats(fields[k], rows[keys.indexOf(k)].b1.sc).minM < P.BORDA_MIN_M).map(k => fields[k].code);
+  assert.deepStrictEqual(low, ['BC3'], `pontos a menos de ${P.BORDA_MIN_M} m da borda: ${low}`);
+  const inside = keys.filter(k => P.borderStats(fields[k], rows[keys.indexOf(k)].b1.sc).minM < P.BORDADURA_M).length;
+  assert.ok(inside <= 5, `lotes com ponto dentro da bordadura do plantio: ${inside}`);
   assert.ok(med(rows.map(r => r.b1.cv)) < med(rows.map(r => r.b0.cv)));
 });
 

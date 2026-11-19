@@ -57,6 +57,19 @@ try {
     assert.match(t, /Próximo: Ponto 2/); assert.match(t, /Faltam \d+ m andando no tiro/);
     assert.deepStrictEqual(errors, []); await ctx.close();
   }
+  { // 3.10 · vibração: a 20 m do ponto 2 (dentro de 3× o raio de chegada) um toque curto; no ponto, três pulsos
+    const L = Math.hypot(p2.x - p1.x, p2.y - p1.y), ux = (p2.x - p1.x) / L, uy = (p2.y - p1.y) / L;
+    const [lon, lat] = localToLonLat(p2.x - ux * 20, p2.y - uy * 20, f.centroidUTM);
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block', geolocation: { longitude: lon, latitude: lat, accuracy: 5 }, permissions: ['geolocation'] });
+    await ctx.addInitScript(() => { window.__vib = []; navigator.vibrate = v => { window.__vib.push(v); return true; }; });
+    const p = await ctx.newPage(), errors = []; p.on('pageerror', e => errors.push(e.message));
+    await p.goto(`http://127.0.0.1:${server.address().port}/`); await p.evaluate(() => localStorage.setItem('monitoramento.v03', JSON.stringify({ fieldKey: 'Bananal|BC1' }))); await p.reload();
+    await p.waitForSelector('[data-map="full"] .pt'); await p.click('[data-tab="monitorar"]'); await p.click('[data-act="gps-start"]');
+    await p.waitForFunction(() => window.__vib.some(v => v === 150), null, { timeout: 15000 });
+    const [lon2, lat2] = localToLonLat(p2.x, p2.y, f.centroidUTM); await ctx.setGeolocation({ longitude: lon2, latitude: lat2, accuracy: 5 });
+    await p.waitForFunction(() => window.__vib.some(v => Array.isArray(v) && v.length === 5), null, { timeout: 15000 });
+    assert.deepStrictEqual(errors, []); await ctx.close();
+  }
   { // "Onde estou" no Mapa e GPX só do tiro escolhido
     const [lon, lat] = localToLonLat(p1.x + 5, p1.y, f.centroidUTM);
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block', acceptDownloads: true, geolocation: { longitude: lon, latitude: lat, accuracy: 5 }, permissions: ['geolocation'] });

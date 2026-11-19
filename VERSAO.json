@@ -1,16 +1,17 @@
 {
-  "entrega": "3.9.0",
+  "entrega": "3.10.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-18",
-  "versaoDoApp": "3.9.0",
+  "versaoDoApp": "3.10.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "54f4a99fce05160c268346994ed468c3900e0060a6ec2e2efd62916c5d22ef8c",
-  "workerSha256": "7230c27af17ec2e7b6b148606cc5ed73b4eb26e8e4c291ea85fd3fc468e16bcb",
+  "htmlSha256": "5637717c9d8a2a03cc83a703db05224ba358bfe48b9a5b617a18e58bc9318bf9",
+  "workerSha256": "4687b9ccaf81fd1ccef7ee0c070d97e3d5db9dd33efc503df9bb8e13e3879b3c",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "3.10.0: bordadura do proprietário — ideal 41 m (bordadura do plantio), mínimo 15 m: o motor sobe de faixa custando até +0,5 p.p. de variação e só desce da faixa ideal se as áreas ficarem 2 p.p. mais iguais (abaixo de 15 m: só BC3, pela forma; 15–41 m: 5 lotes; mediana da variação 8,1%); avisos, painel e camada do mapa em duas faixas (âmbar 15–41 m, vermelho < 15 m); Monitorar: toque curto de vibração ao chegar perto do ponto (3× o raio, 30 m) e três pulsos ao chegar; refino visual do modo normal (textura de plantio no topo, luz no fundo, cartões com profundidade, números em verde da marca, friso dourado no botão principal, pílula na aba ativa, vinheta no mapa)",
     "3.9.0: levantamento completo (docs/LEVANTAMENTO_3_9.md) e itens A: acessibilidade 0 falhas (axe) em todas as abas — título principal e nome do botão do lote igual ao texto; alvos de toque ≥ 44 px (topo, atalhos de regra, Inverter, Usar, selo, Roteiro, Lote/Bloco) — de 37 para 0 fora o link oculto; Glossário no menu com cada termo em uma frase e os números do lote aberto",
     "3.8.0: mapa limpo — sem quadro fixo de medidas; ferramentas empilhadas no canto e botão de camadas que abre um painel com as medidas do plano (entre tiros, entre pontos, cada ponto, maior vazio, mais perto da borda) e chaves: medidas, área de cada ponto, bordadura, grade em metros; bordadura (30 m, valor inicial a confirmar): distância de cada ponto até a borda no motor, desempate no equilíbrio (até +0,5 p.p. de variação) — pontos na bordadura 3 → 1 lote (só BC3, pela forma), aviso na conferência e no Plano (\"ponto 21 a 11 m da borda\"), camada Bordadura no mapa e 1ª etapa da \"Sugestão do motor\" afastando da borda; tiros um pouco mais marcados no mapa",
     "3.7.0: logo do proprietário (imagem) no topo e tela de abertura com a logo grande enquanto o app carrega; motor: triagem barata no equilíbrio (o nº de tiros de 1 ponto já se sabe pelo plano simples, 35× mais rápido) — equilíbrio 7,9 → 6,9 s nos 51 lotes, mesmo resultado; revisão de todos os parâmetros com padrão, função, calibração e gargalos em docs/PARAMETROS_3_7.md",
@@ -85,5 +86,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "22630a0d11626b018c321d99d17640a448fc1732d89336532820e2e39d8ef61b"
+  "motorSha256": "9ac6f42f53b92a9db1307b442bc9bf58a576465e031518ee95fcf17cd6d0d993"
 }

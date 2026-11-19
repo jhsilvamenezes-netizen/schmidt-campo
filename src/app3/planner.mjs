@@ -15,7 +15,7 @@ import { exactCoverage } from '../engine3/voronoi.mjs';
 import { pointInGeom } from '../engine3/geometry.mjs';
 import { num, range, km, plural } from './format.mjs';
 
-export const ENGINE_LABEL = '3.9.0';
+export const ENGINE_LABEL = '3.10.0';
 export const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
@@ -40,9 +40,12 @@ export function recommend(field, base, people, fitTeam) {
   return rec ? balanceAreas(field, base, rec) : rec;
 }
 
-/** Bordadura mínima desejada entre ponto e borda do lote. Valor inicial (a confirmar em campo), usado para avisar e pela
- *  "Sugestão do motor", que afasta da borda os pontos mais perto que isto, deslizando-os no próprio tiro. */
-export const BORDADURA_M = 30;
+/** Bordadura (definida pelo proprietário, 19/11): a bordadura do plantio é de ~41 m — ponto a 41 m ou mais da borda é o
+ *  ideal; abaixo de 15 m é alerta. Lote estreito, pequeno ou de forma irregular pode não permitir: o app avisa, não força. */
+export const BORDADURA_M = 41;
+export const BORDA_MIN_M = 15;
+/** Faixa da bordadura de um plano: 2 = todos os pontos a ≥ 41 m · 1 = algum entre 15 e 41 m · 0 = algum a < 15 m. */
+export const bordaFaixa = m => (m >= BORDADURA_M ? 2 : m >= BORDA_MIN_M ? 1 : 0);
 
 /** Limites do equilíbrio (A5): a cobertura nunca piora além disto. */
 export const BALANCE = Object.freeze({ p95: 1.03, km: 1.10, spread: 1 });
@@ -85,8 +88,8 @@ export function* balanceSteps(field, base, rec) {
   const now = balanceStats(field, { ...base, ...cp });
   if (!now) return rec;
   const k0 = Math.round(cp.trackSpacingM / BOOM);
-  const bordOk = sc => borderStats(field, sc).minM >= BORDADURA_M;
-  /** @type {any} */ let best = { params: cp, ...now, bOk: bordOk(now.sc) };
+  const faixa = sc => bordaFaixa(borderStats(field, sc).minM);
+  /** @type {any} */ let best = { params: cp, ...now, bf: faixa(now.sc) };
   for (let k = Math.max(3, k0 - BALANCE.spread); k <= k0 + BALANCE.spread; k++) for (let ph = 0; ph < k; ph++) {
     const params = { ...cp, trackSpacingM: Math.round((k * BOOM + 0.01) * 100) / 100, trackPhaseM: Math.round(ph * BOOM * 100) / 100 };
     if (params.trackSpacingM === cp.trackSpacingM && params.trackPhaseM === cp.trackPhaseM) continue;
@@ -97,8 +100,11 @@ export function* balanceSteps(field, base, rec) {
     const c = balanceStats(field, { ...base, ...params });
     if (!c || c.p95 > now.p95 * BALANCE.p95 || c.worst > now.worst + 1e-6 || c.ones > now.ones || c.km > now.km * BALANCE.km) continue;
     // 3.8: bordadura como desempate — com áreas quase iguais (até +0,5 p.p.), vale o plano sem ponto colado na borda
-    const bOk = bordOk(c.sc);
-    if (bOk === best.bOk ? c.cv < best.cv - 1e-9 : (bOk && c.cv <= best.cv + 0.005)) best = { params, ...c, bOk };
+    const bf = faixa(c.sc);
+    // subir de faixa custa até +0,5 p.p. de variação; descer da faixa ideal (≥ 41 m) para 15–41 m só se as áreas ficarem
+    // ≥ 2 p.p. mais iguais; abaixo de 15 m nunca é escolhido por igualdade de áreas
+    const better = bf === best.bf ? c.cv < best.cv - 1e-9 : bf > best.bf ? c.cv <= best.cv + 0.005 : (bf >= 1 && c.cv < best.cv - 0.02);
+    if (better) best = { params, ...c, bf };
   }
   if (best.params === cp) return rec;
   const pct = v => `${num(v * 100)}%`;

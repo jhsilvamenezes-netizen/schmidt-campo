@@ -319,3 +319,24 @@ html[data-ready="1"] #splash{opacity:0;visibility:hidden}
 .skip:focus{min-height:44px;display:flex;align-items:center}
 .glos{display:flex;flex-direction:column;gap:4px}.glos dt{font:700 14px var(--f);color:var(--br);margin-top:8px}.glos dd{margin:0;color:var(--ink);font:400 14px/1.45 var(--f)}
 .use{min-height:44px}
+.note{color:var(--mu);font-weight:600}.lsum.er b{color:var(--er)}
+.map-svg .bd-l.low{stroke:var(--er);stroke-width:2.5}.map-svg .bd-t.low{fill:var(--er);font-weight:700}
+/* ===== 3.10 · refino visual (modo normal) =====
+   Topo com textura sutil de linhas de plantio; fundo creme com luz suave no alto; cartões com fio e sombra macia
+   (camada de profundidade); números do plano em verde da marca; botão principal com friso dourado; menu de baixo
+   com pílula no item ativo; mapa com vinheta leve que dá foco ao lote. Mesmos tokens no claro e no escuro. */
+header{background-image:repeating-linear-gradient(115deg,#ffffff07 0 2px,transparent 2px 14px),linear-gradient(180deg,#05523a,var(--hd))}
+body{background:radial-gradient(120% 60% at 50% -10%,color-mix(in srgb,var(--gold) 10%,var(--bg)),var(--bg) 60%) fixed,var(--bg)}
+.card{background:linear-gradient(180deg,var(--sf),color-mix(in srgb,var(--sf) 92%,var(--bg)));box-shadow:0 1px 0 #ffffff80 inset,0 12px 28px -22px #0d221a59}
+.m3{background:linear-gradient(180deg,color-mix(in srgb,var(--br2) 70%,var(--sf)),var(--sf2))}
+.m b{color:var(--br)}
+.big{color:var(--ink)}.sheet .big{color:var(--br)}
+.btn.p{box-shadow:inset 0 -3px 0 color-mix(in srgb,var(--gold) 55%,transparent),inset 0 1px 0 #ffffff26,0 8px 20px -10px #035f3099}
+nav button.on .ic{background:var(--br2);color:var(--br);width:52px;height:30px;padding:3px 14px;border-radius:15px;box-sizing:border-box}
+.map{background-image:radial-gradient(90% 70% at 50% 45%,transparent 55%,color-mix(in srgb,var(--fl) 8%,transparent))}
+.h:before{width:4px;height:16px;background:linear-gradient(180deg,var(--gold),color-mix(in srgb,var(--gold) 60%,var(--br)))}
+.chip.ok{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ok) 25%,transparent)}
+.li .id{background:linear-gradient(180deg,var(--sf),var(--sf2))}
+@media (prefers-color-scheme:dark){:root:not(.sun) header{background-image:repeating-linear-gradient(115deg,#ffffff05 0 2px,transparent 2px 14px),linear-gradient(180deg,#023a29,var(--hd))}
+:root:not(.sun) .card{box-shadow:0 1px 0 #ffffff0d inset,0 12px 28px -22px #000}}
+:root.sun header{background-image:none}:root.sun body{background:var(--bg)}:root.sun .card,:root.sun .m3{background:#fff}:root.sun .map{background-image:none}

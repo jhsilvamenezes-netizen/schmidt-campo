@@ -160,7 +160,9 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     const blind = P.uncovered(field, sc), list = P.checks(sc, people(), blind), split = P.team(sc, people());
     // 3.8 · bordadura na conferência: o ponto mais perto da borda (atenção se a menos do mínimo)
     const bd = P.borderStats(field, sc);
-    if (bd) list.push(bd.minM < P.BORDADURA_M ? { level: 'alerta', text: `Ponto ${bd.min.number} (${bd.min.trackId}) a ${num(bd.minM)} m da borda` } : { level: 'ok', text: `Pontos a ${num(bd.minM)} m ou mais da borda` });
+    if (bd) list.push(bd.minM < P.BORDA_MIN_M ? { level: 'alerta', text: `Ponto ${bd.min.number} (${bd.min.trackId}) a ${num(bd.minM)} m da borda (mínimo ${P.BORDA_MIN_M} m)` }
+      : bd.minM < P.BORDADURA_M ? { level: 'ok', text: `Ponto ${bd.min.number} a ${num(bd.minM)} m da borda (bordadura do plantio: ${P.BORDADURA_M} m)` }
+        : { level: 'ok', text: `Pontos fora da bordadura (${num(bd.minM)} m ou mais da borda)` });
     return { field, params: params || base, base, rec, recPending: rec === null && !!worker, sc, f: P.figures(sc), blind, list, split, inUseIsRec: !!rec && P.sameShape(params, rec.chosen.params), block: null, others: [] };
   }
   /** Troca o plano do lote (com Desfazer). `edits`: undefined = manter, null = apagar, objeto = gravar. */
@@ -205,7 +207,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     for (const a of document.querySelectorAll('[data-tab]')) { const on = a.dataset.tab === ui.view; a.classList.toggle('on', on); a.setAttribute('aria-current', on ? 'page' : 'false'); }
     main.dataset.view = ui.view;
     if (ui.view === 'mapa') main.innerHTML = V.mapaView(c);
-    else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), hiTrack: app.hiTrack, hint: c.block ? null : app.hint?.(), border: (b => (b ? { minM: b.minM, n: b.min.number, near: b.minM < P.BORDADURA_M } : null))(P.borderStats(c.field, c.sc)),
+    else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), hiTrack: app.hiTrack, hint: c.block ? null : app.hint?.(), border: (b => (b ? { minM: b.minM, n: b.min.number, near: b.minM < P.BORDADURA_M, low: b.minM < P.BORDA_MIN_M } : null))(P.borderStats(c.field, c.sc)),
       rows: c.sc.trackRows.map(r => ({ ...r, d: c.block ? null : (c.details ??= new Map()).get(r.trackId) ?? c.details.set(r.trackId, P.trackDetail(c.field, c.sc, r.trackId)).get(r.trackId) })) });
     else if (ui.view === 'lotes') main.innerHTML = app.lotesView();
     else main.innerHTML = V.monitorView(app.monitorData());
