@@ -309,3 +309,35 @@ pontos na mesma área.
 | RB9, BE1 | — | — | sem mudança (vence o mesmo +1 de antes) |
 
 Nos demais lotes, um ponto a mais no vazio ganharia 12% ou menos. Não vale sugerir: o 95% do lote já está no limite.
+
+## 23. 4.0.2 · guarda de qualidade do motor e bordadura mínima
+
+**Guarda** (`audit/engine-quality.mjs`, teste `engine-quality.test.mjs` no `test:blocks`, roda no CI):
+- Retrato do plano recomendado (5 pessoas) nos 51 lotes, em `audit/engine-quality-baseline.json`:
+  pontos, tiros, 95% do lote, maior vazio exato, razão ao ótimo hexagonal, área descoberta, caminhada,
+  pessoa mais longa, tiros sem ponto, tiros de 1 ponto no meio e menor distância à borda.
+- Qualquer piora em qualquer lote reprova (folga só de arredondamento: 0,5 m / 0,1%).
+- Piora intencional: `node engine-quality.mjs --update --motivo "…"`. O motivo e a lista do que mudou ficam
+  no `historico` do arquivo.
+
+**Achado na primeira medição:** BC3 tinha ponto a 10,5 m da borda (T5 cruza um recorte do lote), abaixo
+da mínima de 15 m. Nenhuma fase de tiros resolvia; por isso o teste antigo o aceitava como exceção.
+
+**Correção** (`src/engine3/scenario.mjs`, `borderGuard`):
+- No plano equilibrado, o trecho com ponto a menos de 15 m desliza inteiro ao longo do tiro (mesmos pontos,
+  mesmo espaçamento), no menor deslocamento que tira os pontos da faixa.
+- Teto: o maior vazio exato pode crescer no máximo 15%. Ponto na bordadura não representa o talhão
+  (manobra, compactação, sobreposição de adubo).
+- Candidatos do equilíbrio de áreas que só passam por causa da guarda são descartados (sem isso o RB7
+  trocava de fase, +1,5% de caminhada).
+- A Conferência mostra "T5: pontos deslizados 70 m para longe da borda".
+
+| BC3 | 4.0.1 | 4.0.2 |
+|---|---|---|
+| Ponto mais perto da borda | 10,5 m | 15 m |
+| Maior vazio | 321 m (1,16× o ótimo) | 354 m (1,28×; mediana dos lotes 1,29×) |
+| 95% do lote | 273 m | 273 m |
+| Demais 50 lotes | — | idênticos |
+
+**Retrato atual:** mediana 1,29× o ótimo hexagonal no maior vazio. Fora da curva: RB9 (2,5×, lote pequeno
+e irregular, aceito) e BD5 (2,5×; o botão "Ponto no maior vazio" leva a 453 m).

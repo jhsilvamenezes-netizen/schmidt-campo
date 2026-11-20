@@ -63,10 +63,55 @@ export function planScenario(field, given = {}, legacy) {
   return { params, ...planCore(field, params) };
 }
 
+/** 4.0.2 · bordadura mínima (regra do proprietário, 19/11): nenhum ponto a menos de 15 m da borda do lote. */
+export const BORDER_MIN_M = 15;
+/** Menor distância de um conjunto de pontos até a borda do lote (anéis fechados), em m. */
+function edgeMin(geom, pts) {
+  let m = Infinity;
+  for (const p of pts) for (const pg of geom) for (const ring of pg) for (let j = 1; j < ring.length; j++) {
+    const [ax, ay] = ring[j - 1], ex = ring[j][0] - ax, ey = ring[j][1] - ay, L2 = ex * ex + ey * ey;
+    const t = L2 ? Math.max(0, Math.min(1, ((p.x - ax) * ex + (p.y - ay) * ey) / L2)) : 0;
+    m = Math.min(m, Math.hypot(p.x - ax - t * ex, p.y - ay - t * ey));
+  }
+  return m;
+}
+const BORDER_STEP_M = 5, BORDER_MAX_SHIFT_M = 250, BORDER_MAX_WORST_GROWTH = 0.15;
+
+/**
+ * 4.0.2 · guarda da bordadura no plano equilibrado: o trecho com ponto a menos de 15 m da borda desliza inteiro ao longo
+ * do tiro (mesmos pontos, mesmo espaçamento), no menor deslocamento que tira todos os seus pontos da faixa. Ponto na
+ * bordadura não representa o talhão (manobra, compactação, sobreposição de adubo); por isso a regra vale mais que alguns
+ * metros de vazio, mas com teto: o pior vazio EXATO do lote pode crescer no máximo 15%. Sem posição assim (lote estreito),
+ * fica como está e a conferência avisa. Medido nos 51 lotes (audit/engine-quality.mjs): só o BC3 muda (T5 cruza um
+ * recorte da borda): ponto de 10,5 m → 15 m da borda, pior vazio 321 → 357 m (1,16× → 1,29× o ótimo; mediana dos lotes 1,29×).
+ */
+function borderGuard(field, core, params, samples, shifts0) {
+  const low = core.units.filter(u => { const own = samples.filter(p => p.unitId === u.id); return own.length && edgeMin(field.geom, own) < BORDER_MIN_M; });
+  if (!low.length) return { samples, fix: null };
+  let cur = samples, shifts = new Map(shifts0 || []);
+  const fix = [];
+  const cap = exactCoverage(field.geom, cur).worstGapM * (1 + BORDER_MAX_WORST_GROWTH);
+  for (const u of low) {
+    const at = shifts.get(u.id) || 0;
+    for (let k = 1; k * BORDER_STEP_M <= BORDER_MAX_SHIFT_M; k++) {
+      const hit = [at + k * BORDER_STEP_M, at - k * BORDER_STEP_M].map(sh => {
+        const trial = new Map(shifts).set(u.id, sh), next = sampleUnits(core.units, core.counts, params.edgePolicy, params.edgeMarginM, trial);
+        const own = next.filter(p => p.unitId === u.id);
+        if (edgeMin(field.geom, own) < BORDER_MIN_M) return null;
+        const w = exactCoverage(field.geom, next).worstGapM;
+        return w <= cap ? { sh, next, w, trial } : null;
+      }).filter(c => c !== null).sort((a, b) => (a?.w ?? 0) - (b?.w ?? 0))[0];
+      if (hit) { shifts = hit.trial; cur = hit.next; fix.push({ trackId: u.trackId, shiftM: hit.sh - at }); break; }
+    }
+  }
+  return { samples: cur, fix: fix.length ? fix : null };
+}
+
 export function buildScenario(field, given = {}, opts = {}, legacy) {
   const params = validated(field, given, legacy.assertParams);
   const core = planCore(field, params, opts);
   let samples = core.samples, optimization = null;
+  /** @type {any} */ let borderFix = null;
   // 2.5 · plano equilibrado (opts.balanced): mesma busca do "Buscar distribuição melhor", mas só desloca os pontos
   // dentro de cada tiro (pontos por tiro e total iguais) e nenhum passo pode aumentar o pior vazio. Medido nos 51 lotes:
   // busca enxuta (2 rodadas, 7 posições por tiro); com o ganho mínimo de 2%: 31 dos 51 lotes mudam (p95 −11% na
@@ -86,6 +131,7 @@ export function buildScenario(field, given = {}, opts = {}, legacy) {
     // passar o do plano regular. Nos 51 lotes nunca passa; a conferência transforma o "medido" em garantia.
     if (balanced && worth && exactCoverage(field.geom, moved).worstGapM > exactCoverage(field.geom, core.samples).worstGapM + 1e-6) worth = false;
     samples = worth ? moved : core.samples;
+    if (balanced) ({ samples, fix: borderFix } = borderGuard(field, core, params, samples, worth ? r.shifts : null));
     optimization = r.report ? { ...r.report, ...(balanced ? { mode: 'equilibrado', accepted: !!worth, minGain: BALANCED_MIN_GAIN } : {}) } : null;
   }
   return withMetrics(field, {
@@ -95,6 +141,6 @@ export function buildScenario(field, given = {}, opts = {}, legacy) {
     params, signature: paramsSignature(params), bearing: core.bearing, deltaM: core.deltaM, passes: core.passes, anchored: core.anchored,
     frame: core.frame, allTracks: core.allTracks, tracksInside: core.tracksInside, selected: core.selected, units: core.units,
     discarded: core.discarded, outside: core.outside, minPoints: core.minPoints, requestedPoints: core.requestedPoints,
-    allocation: core.allocation, optimization, samples,
+    allocation: core.allocation, optimization, borderFix, samples,
   }, legacy.buildWarnings);
 }
