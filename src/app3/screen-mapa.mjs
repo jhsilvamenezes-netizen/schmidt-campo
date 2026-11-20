@@ -101,6 +101,7 @@ export function installMapa(app) {
       const kind = full ? 'full' : guide ? 'guide' : 'small', view = guide && g.focus ? ID : views[kind];
       // 3.26 · satélite (camada opcional): no mapa principal e no da guia, onde ajuda a se orientar no campo
       const sat = layers.satelite && (full || guide) ? { ...satImage(cur.field), credit: SAT_CREDIT } : null;
+      el.classList.toggle('sat', !!sat);
       el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { sat, small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, hiTrack: full ? selTrack : !guide ? app.hiTrack : null, focus: guide ? g.focus : null, others: cur.others || [], under, ...opts })
         + (full ? (ruler ? `<div class="bal" role="status"><b>${num(ruler.m)} m</b><span>do ponto ${num(ruler.na)} ao ponto ${num(ruler.nb)} (em linha reta)</span><span>Toque fora para limpar</span></div>` : info ? balloon() : selTrack ? trackCard() : w ? hereCard(w) : '')
           + VMa.mapTools(layers, moved(view), !!here, panel, panel ? summary(cur, areas, bd) : null)

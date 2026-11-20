@@ -9,7 +9,7 @@ import { loadFields } from './legacy-engine.mjs';
 import * as P from '../src/app3/planner.mjs';
 import { reply } from '../src/app3/worker.mjs';
 import { offlineStatus, OFFLINE_FILES } from '../src/app3/offline.mjs';
-import { satRequest, SAT_HOST, SAT_MAX_PX } from '../src/app3/satellite.mjs';
+import { satRequest, SAT_HOST, SAT_MAX_PX, SAT_CONTEXT_PX } from '../src/app3/satellite.mjs';
 import { statsAdd, statsSummary, statsCsv, binQuantile, ACC_BINS } from '../src/app3/gps-stats.mjs';
 import { speedStep, modeStep, guideAlerts, guideModel, routeFor, ENTRY_REACHED_M } from '../src/app3/monitor.mjs';
 
@@ -152,16 +152,20 @@ test('3.25 · qualidade do GPS: faixas de precisão e intervalo, moto/a pé, res
   assert.equal(statsAdd(st, { accuracyM: NaN, dtS: 1, mode: 'pe', day }), st, 'leitura sem precisão não conta');
 });
 
-test('3.26 · satélite: a imagem cobre o lote com folga, no fuso 23S, sem distorcer; CSP só libera esse servidor', async () => {
+test('3.26 · satélite: lote nítido com folga e entorno largo que cobre a tela, no fuso 23S, sem distorcer; CSP só libera esse servidor', async () => {
   const fields = await loadFields();
   for (const [k, f] of Object.entries(fields)) {
-    const r = satRequest(f), [x0, y0, x1, y1] = r.local, pts = f.geom.flat(2);
-    for (const [x, y] of pts) assert.ok(x > x0 + 200 && x < x1 - 200 && y > y0 + 200 && y < y1 - 200, `${k}: lote dentro da imagem com folga`);
-    assert.equal(Math.max(...r.size), SAT_MAX_PX, k);
-    assert.ok(Math.abs(r.size[0] / r.size[1] - (x1 - x0) / (y1 - y0)) < 0.02, `${k}: mesma proporção (sem esticar)`);
-    const q = new URL(r.href).searchParams, bb = q.get('bbox').split(',').map(Number);
-    assert.equal(q.get('bboxSR'), '32723'); assert.equal(q.get('imageSR'), '32723'); assert.equal(q.get('f'), 'image');
-    assert.ok(Math.abs(bb[0] - (f.centroidUTM[0] + x0)) < 0.1 && Math.abs(bb[3] - (f.centroidUTM[1] + y1)) < 0.1, `${k}: caixa em UTM`);
+    const { detail: d, context: c } = satRequest(f), pts = f.geom.flat(2);
+    for (const [x, y] of pts) assert.ok(x > d.local[0] + 200 && x < d.local[2] - 200 && y > d.local[1] + 200 && y < d.local[3] - 200, `${k}: lote dentro da imagem nítida com folga`);
+    assert.ok(c.local[0] < d.local[0] && c.local[1] < d.local[1] && c.local[2] > d.local[2] && c.local[3] > d.local[3], `${k}: entorno cobre a imagem do lote`);
+    assert.equal(Math.max(...d.size), SAT_MAX_PX, k); assert.equal(Math.max(...c.size), SAT_CONTEXT_PX, k);
+    for (const r of [d, c]) {
+      const [x0, y0, x1, y1] = r.local;
+      assert.ok(Math.abs(r.size[0] / r.size[1] - (x1 - x0) / (y1 - y0)) < 0.02, `${k}: mesma proporção (sem esticar)`);
+      const q = new URL(r.href).searchParams, bb = q.get('bbox').split(',').map(Number);
+      assert.equal(q.get('bboxSR'), '32723'); assert.equal(q.get('imageSR'), '32723'); assert.equal(q.get('f'), 'image');
+      assert.ok(Math.abs(bb[0] - (f.centroidUTM[0] + x0)) < 0.1 && Math.abs(bb[3] - (f.centroidUTM[1] + y1)) < 0.1, `${k}: caixa em UTM`);
+    }
   }
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8'), csp = /Content-Security-Policy" content="([^"]+)"/.exec(html)[1];
   assert.match(csp, new RegExp(`img-src 'self' data: blob: ${SAT_HOST.replace(/[./]/g, '\\$&')};`));

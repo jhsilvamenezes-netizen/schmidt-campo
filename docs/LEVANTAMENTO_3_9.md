@@ -249,7 +249,15 @@ Sem imagem de drone (proprietário, 20/11), a escolha foi a fonte de imagem mais
 
 Como funciona:
 - **Camada "Satélite"** no painel de camadas do Mapa. Vem desligada; ligada, fica lembrada.
-- **Uma imagem por lote**, no fuso UTM 23S dos lotes, com folga em volta e no máximo 1600 px. Aparece no mapa principal e no da guia.
+- **Duas imagens por lote**, no fuso UTM 23S, no mapa principal e no da guia:
+  - a do lote, nítida: folga em volta e no máximo 2048 px;
+  - a do entorno, larga e leve: 3× o lado maior, 1024 px. Assim não sobra borda vazia na tela.
+- **Visual próprio ("tema satélite"), pelos mesmos tokens de cor:**
+  - fundo verde-escuro da marca além da foto;
+  - véu verde-escuro leve sobre a foto;
+  - lote em branco; tiros e medidas entre tiros em verde-claro; medidas entre pontos em dourado;
+  - textos, escala e norte em branco com contorno escuro;
+  - os pontos não mudam.
 - **Nada externo até ligar.** A CSP libera só `services.arcgisonline.com`, e só para imagem (`connect-src 'self'`).
 - **Sem sinal**, o mapa segue igual: o plano não depende da imagem.
 - **Crédito no canto:** "Imagem: Esri, Vantor, Earthstar Geographics".

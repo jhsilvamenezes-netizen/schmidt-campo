@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-yinPoaDsRAkgc+dHS7//yh5YSaq6Gp4JQ/gyeZigO8o=' 'sha256-KslIZHSiiW0H/kqUsvHr0+XpyxWdFIv/oG9PO3SE2y0='; style-src 'sha256-lKLrHK6McSwcrojnFkMFYAobFXeDSq1iuES2kPudIxQ='; img-src 'self' data: blob: https://services.arcgisonline.com; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-yinPoaDsRAkgc+dHS7//yh5YSaq6Gp4JQ/gyeZigO8o=' 'sha256-M+dVGI+NFwCSdoVcK9YH2EOQXHFANoPO2pKlkHfkBA8='; style-src 'sha256-ijQpDxIfKRFuWvEIjSG/Bsg8iILji0jwyY0JIeKg6hs='; img-src 'self' data: blob: https://services.arcgisonline.com; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#023628" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#01261c" media="(prefers-color-scheme: dark)">
 <title>SCHMIDT Campo</title>
 <link rel="preload" href="inter.woff2" as="font" type="font/woff2" crossorigin><link rel="icon" href="marca.svg"><link rel="apple-touch-icon" href="marca-180.png"><link rel="manifest" href="app.webmanifest">
@@ -317,12 +317,23 @@ main.tab-in>*:not(.map){animation:entra 180ms cubic-bezier(.2,.7,.2,1)}
 .ficha table{width:100%;border-collapse:collapse;margin:8px 0}.ficha th,.ficha td{border:1px solid #000;padding:4px 8px;text-align:right}.ficha th:first-child,.ficha td:first-child{text-align:center}.ficha ol{padding-left:18px}
 .ficha .map-svg .lot{fill:#fff;stroke:#000;filter:none}.ficha .map-svg .track{stroke:#999}.ficha .map-svg .pt circle{fill:#000;stroke:#fff;filter:none}.ficha .map-svg .pt text{fill:#fff}.ficha .map-svg .pt.sel circle{fill:#000}}
 
-/* 3.26 · satélite: imagem por baixo; lote, tiros e rótulos com contorno claro para ler sobre a foto */
-.map-svg .sat{pointer-events:none}
-.map-svg.sat-on .lot{fill:#ffffff0a;stroke:#fff;stroke-width:2.5;filter:drop-shadow(0 1px 1px #0b2f23)}
-.map-svg.sat-on .track{stroke:#7fe8ff;stroke-opacity:.95;filter:drop-shadow(0 1px 1px #0b2f23)}
-.map-svg.sat-on text{paint-order:stroke;stroke:#0b2f23cc;stroke-width:3px}
-.map-svg .satcredit{font:600 10px var(--f);fill:#fff;text-anchor:end;stroke:#0b2f23cc;stroke-width:3px;paint-order:stroke}
+/* 3.26 · satélite: um "tema" próprio por tokens (as mesmas peças do mapa, cores para foto): fundo verde-escuro da marca
+   além da imagem, véu escuro leve sobre a foto, lote em branco, tiros em verde-claro (mata), medidas de ponto em
+   dourado (ouro), textos brancos com contorno escuro. Pontos continuam os mesmos (dourado com número escuro). */
+.map.sat{background:#0f2119}
+.map-svg.sat-on{--ink:#ffffff;--mu:#e3ece6;--fd:#0b2018;--fl:#ffffff;--tr:#9ff0c0;--pt:#ffd36b;--ptr:#0b2018;--er:#ff8a7a;--al:#ffc56b}
+.map-svg .sat{pointer-events:none;filter:saturate(.82) contrast(1.06)}
+.map-svg .sat.ctx{filter:saturate(.6) brightness(.82)}
+.map-svg .satveil{fill:#0b2f23;fill-opacity:.24;pointer-events:none}
+.map-svg.sat-on .lot{fill:#ffffff0f;stroke:#fff;stroke-width:2.5;filter:drop-shadow(0 0 2px #0b2018) drop-shadow(0 6px 14px #0b201880)}
+.map-svg.sat-on .track{stroke-opacity:.95;filter:drop-shadow(0 0 1.5px #0b2018)}
+.map-svg.sat-on .tid,.map-svg.sat-on .med-t,.map-svg.sat-on .med-p,.map-svg.sat-on .ha,.map-svg.sat-on .sel-l,.map-svg.sat-on .rul-t,.map-svg.sat-on .vz-t,.map-svg.sat-on .bd-t{stroke:#0b2018d9;stroke-width:4px}
+.map-svg.sat-on .tid{fill:#fff}
+.map-svg.sat-on .scale text,.map-svg.sat-on .north text{stroke:#0b2018d9;stroke-width:4px;paint-order:stroke}
+.map-svg.sat-on .scale path,.map-svg.sat-on .north path{filter:drop-shadow(0 0 1.5px #0b2018)}
+.map-svg.sat-on .pt circle{filter:drop-shadow(0 0 2px #0b2018) drop-shadow(0 2px 3px #0b201899)}
+.map-svg.sat-on .me{stroke:#fff}
+.map-svg .satcredit{font:600 10px var(--f);fill:#ffffffd9;text-anchor:end;stroke:#0b2018b3;stroke-width:3px;paint-order:stroke}
 /* gerado por src/app3/tokens4.mjs (OKLCH → sRGB) — não editar à mão */
 :root[data-design="4"]:not(.sun){--bg:#f7f7f5;--sf:#ffffff;--sf2:#eeedea;--ink:#151411;--mu:#504d45;--ln:#dcdad6;--br:#085c34;--br2:#ddf4e4;--on-br:#ffffff;--act:#085c34;--on-act:#ffffff;--gold:#a87502;--hd:#012a14;--hd-ink:#ffffff;--mapbg:#deece2;--pt:#664608;--tr:#085c34;--ptf:#efb224;--ptr:#012a14;--pti:#151411;--fd:#fefcf8;--fl:#085c34;--ok:#085c34;--oks:#ddf4e4;--al:#6d4201;--als:#fde9d6;--er:#b02a27;--ers:#fff4f2}
 @media (prefers-color-scheme:dark){:root[data-design="4"]:not(.sun){--bg:#0b110d;--sf:#141b17;--sf2:#1d251f;--ink:#f7f7f5;--mu:#c3c1bb;--ln:#2e3831;--br:#9ccfad;--br2:#173523;--on-br:#02190b;--act:#067743;--on-act:#ffffff;--gold:#c99845;--hd:#0a1a10;--hd-ink:#ffffff;--mapbg:#0f1912;--pt:#debb84;--tr:#6ab485;--ptf:#efb224;--ptr:#f7f7f5;--pti:#151411;--fd:#18251c;--fl:#6ab485;--ok:#9ccfad;--oks:#143320;--al:#e2b88b;--als:#3e290f;--er:#f6aaa1;--ers:#47211d}}
@@ -4409,27 +4420,37 @@ const SAT_SERVICE = 'https://services.arcgisonline.com/ArcGIS/rest/services/Worl
 const SAT_HOST = 'https://services.arcgisonline.com';
 /** Crédito obrigatório da fonte (o mesmo da 2.5). */
 const SAT_CREDIT = 'Esri, Vantor, Earthstar Geographics';
-/** Lado maior da imagem (px): nítida no celular sem pesar (≈ 150–400 KB em JPG). */
-const SAT_MAX_PX = 1600;
+/** Lado maior da imagem do lote (px): nítida no celular (≈ 2,5–3,5 m por pixel nos lotes atuais). */
+const SAT_MAX_PX = 2048;
+/** Imagem do entorno: mais larga e leve, só para não haver borda vazia em volta do lote. */
+const SAT_CONTEXT_PX = 1024;
+
+const request = (/** @type {number[]} */ c, /** @type {number[]} */ box, /** @type {number} */ maxPx) => {
+  const [x0, y0, x1, y1] = box, wM = x1 - x0, hM = y1 - y0;
+  const w = wM >= hM ? maxPx : Math.max(64, Math.round(maxPx * wM / hM)), h = hM > wM ? maxPx : Math.max(64, Math.round(maxPx * hM / wM));
+  const bbox = [c[0] + x0, c[1] + y0, c[0] + x1, c[1] + y1].map(v => Math.round(v * 10) / 10);
+  const q = new URLSearchParams({ bbox: bbox.join(','), bboxSR: '32723', imageSR: '32723', size: `${w},${h}`, format: 'jpg', transparent: 'false', f: 'image' });
+  return { href: `${SAT_SERVICE}?${q}`, local: box, size: [w, h] };
+};
 
 /**
- * Pedido da imagem de um lote: caixa em UTM (do lote + folga de 35% do lado maior, mín. 250 m) e endereço.
- * `local` = a mesma caixa em metros do lote (para desenhar no mapa).
+ * Pedido das imagens de um lote, em UTM 23S:
+ * - `detail`: o lote + folga de 35% do lado maior (mín. 250 m), nítida;
+ * - `context`: um quadrado de 3× o lado maior (mín. 4 km), centrado no lote, que cobre a tela em volta.
+ * `local` = a caixa em metros do lote (para desenhar no mapa).
  * @param {{geom:number[][][][], centroidUTM:number[]}} field
  */
 function satRequest(field) {
   const pts = field.geom.flat(2), xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
-  let x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
-  const m = Math.max(250, 0.35 * Math.max(x1 - x0, y1 - y0));
-  x0 -= m; x1 += m; y0 -= m; y1 += m;
-  const [cx, cy] = field.centroidUTM, wM = x1 - x0, hM = y1 - y0;
-  const w = wM >= hM ? SAT_MAX_PX : Math.max(64, Math.round(SAT_MAX_PX * wM / hM)), h = hM > wM ? SAT_MAX_PX : Math.max(64, Math.round(SAT_MAX_PX * hM / wM));
-  const bbox = [cx + x0, cy + y0, cx + x1, cy + y1].map(v => Math.round(v * 10) / 10);
-  const q = new URLSearchParams({ bbox: bbox.join(','), bboxSR: '32723', imageSR: '32723', size: `${w},${h}`, format: 'jpg', transparent: 'false', f: 'image' });
-  return { href: `${SAT_SERVICE}?${q}`, local: [x0, y0, x1, y1], size: [w, h] };
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), L = Math.max(x1 - x0, y1 - y0);
+  const m = Math.max(250, 0.35 * L), half = Math.max(2000, 1.5 * L), cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  return {
+    detail: request(field.centroidUTM, [x0 - m, y0 - m, x1 + m, y1 + m], SAT_MAX_PX),
+    context: request(field.centroidUTM, [cx - half, cy - half, cx + half, cy + half], SAT_CONTEXT_PX),
+  };
 }
 
-return Object.freeze({SAT_SERVICE,SAT_HOST,SAT_CREDIT,SAT_MAX_PX,satRequest});
+return Object.freeze({SAT_SERVICE,SAT_HOST,SAT_CREDIT,SAT_MAX_PX,SAT_CONTEXT_PX,satRequest});
 })();
 // src/app3/map.mjs
 const __m_app3_map=(()=>{
@@ -4507,7 +4528,7 @@ function cota(cls, a, b) {
 
 /** Marcação SVG do lote ajustada a w × h px. `small` = mapa do Plano/guia (sem medidas).
  * @param {any} field @param {any} sc @param {number} w @param {number} h
- * @param {{sat?:{href:string,local:number[],credit:string}|null, pad?:number|{t:number,r:number,b:number,l:number}, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null,
+ * @param {{sat?:{detail:any, context?:any, credit:string}|null, pad?:number|{t:number,r:number,b:number,l:number}, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null,
  *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null, hiTrack?:string|null, ruler?:{a:number[],b:number[],m:number}|null, grid?:boolean, border?:any, under?:number}} [opts] */
 function mapMarkup(field, sc, w, h, opts = {}) {
   const { sat = null, pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null, hiTrack = null, ruler = null, grid = true, border = null, under = 0 } = opts;
@@ -4554,10 +4575,15 @@ function mapMarkup(field, sc, w, h, opts = {}) {
     }
     if (g && grid && !sat) s += `<path class="mgrid" d="${g}"/>`;
   }
-  // 3.26 · fundo de satélite (opcional): a imagem do lote, presa ao terreno (anda com o zoom), embaixo de tudo
+  // 3.26 · fundo de satélite (opcional): entorno largo + lote nítido, presos ao terreno (andam com o zoom), embaixo de
+  // tudo, e um véu verde-escuro da marca por cima da foto para pontos, linhas e textos saltarem
   if (sat) {
-    const [a, b] = [XY(sat.local[0], sat.local[3]), XY(sat.local[2], sat.local[1])];
-    s += `<image class="sat" href="${esc(sat.href)}" x="${f1(a[0])}" y="${f1(a[1])}" width="${f1(b[0] - a[0])}" height="${f1(b[1] - a[1])}" preserveAspectRatio="none"/>`;
+    for (const [cls, img] of [['sat ctx', sat.context], ['sat', sat.detail]]) {
+      if (!img) continue;
+      const [a, b] = [XY(img.local[0], img.local[3]), XY(img.local[2], img.local[1])];
+      s += `<image class="${cls}" href="${esc(img.href)}" x="${f1(a[0])}" y="${f1(a[1])}" width="${f1(b[0] - a[0])}" height="${f1(b[1] - a[1])}" preserveAspectRatio="none"/>`;
+    }
+    s += `<rect class="satveil" x="0" y="0" width="${w}" height="${h}"/>`;
     sp.boxes.push([w - 230, h - 20 - under, w, h - under]);
   }
   s += s0 + `<path class="lot" d="${ring}" fill-rule="evenodd"/>`;
@@ -6524,6 +6550,7 @@ function installMapa(app) {
       const kind = full ? 'full' : guide ? 'guide' : 'small', view = guide && g.focus ? ID : views[kind];
       // 3.26 · satélite (camada opcional): no mapa principal e no da guia, onde ajuda a se orientar no campo
       const sat = layers.satelite && (full || guide) ? { ...satImage(cur.field), credit: SAT_CREDIT } : null;
+      el.classList.toggle('sat', !!sat);
       el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { sat, small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, hiTrack: full ? selTrack : !guide ? app.hiTrack : null, focus: guide ? g.focus : null, others: cur.others || [], under, ...opts })
         + (full ? (ruler ? `<div class="bal" role="status"><b>${num(ruler.m)} m</b><span>do ponto ${num(ruler.na)} ao ponto ${num(ruler.nb)} (em linha reta)</span><span>Toque fora para limpar</span></div>` : info ? balloon() : selTrack ? trackCard() : w ? hereCard(w) : '')
           + VMa.mapTools(layers, moved(view), !!here, panel, panel ? summary(cur, areas, bd) : null)

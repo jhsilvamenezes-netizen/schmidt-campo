@@ -310,9 +310,20 @@ main.tab-in>*:not(.map){animation:entra 180ms cubic-bezier(.2,.7,.2,1)}
 .ficha table{width:100%;border-collapse:collapse;margin:8px 0}.ficha th,.ficha td{border:1px solid #000;padding:4px 8px;text-align:right}.ficha th:first-child,.ficha td:first-child{text-align:center}.ficha ol{padding-left:18px}
 .ficha .map-svg .lot{fill:#fff;stroke:#000;filter:none}.ficha .map-svg .track{stroke:#999}.ficha .map-svg .pt circle{fill:#000;stroke:#fff;filter:none}.ficha .map-svg .pt text{fill:#fff}.ficha .map-svg .pt.sel circle{fill:#000}}
 
-/* 3.26 · satélite: imagem por baixo; lote, tiros e rótulos com contorno claro para ler sobre a foto */
-.map-svg .sat{pointer-events:none}
-.map-svg.sat-on .lot{fill:#ffffff0a;stroke:#fff;stroke-width:2.5;filter:drop-shadow(0 1px 1px #0b2f23)}
-.map-svg.sat-on .track{stroke:#7fe8ff;stroke-opacity:.95;filter:drop-shadow(0 1px 1px #0b2f23)}
-.map-svg.sat-on text{paint-order:stroke;stroke:#0b2f23cc;stroke-width:3px}
-.map-svg .satcredit{font:600 10px var(--f);fill:#fff;text-anchor:end;stroke:#0b2f23cc;stroke-width:3px;paint-order:stroke}
+/* 3.26 · satélite: um "tema" próprio por tokens (as mesmas peças do mapa, cores para foto): fundo verde-escuro da marca
+   além da imagem, véu escuro leve sobre a foto, lote em branco, tiros em verde-claro (mata), medidas de ponto em
+   dourado (ouro), textos brancos com contorno escuro. Pontos continuam os mesmos (dourado com número escuro). */
+.map.sat{background:#0f2119}
+.map-svg.sat-on{--ink:#ffffff;--mu:#e3ece6;--fd:#0b2018;--fl:#ffffff;--tr:#9ff0c0;--pt:#ffd36b;--ptr:#0b2018;--er:#ff8a7a;--al:#ffc56b}
+.map-svg .sat{pointer-events:none;filter:saturate(.82) contrast(1.06)}
+.map-svg .sat.ctx{filter:saturate(.6) brightness(.82)}
+.map-svg .satveil{fill:#0b2f23;fill-opacity:.24;pointer-events:none}
+.map-svg.sat-on .lot{fill:#ffffff0f;stroke:#fff;stroke-width:2.5;filter:drop-shadow(0 0 2px #0b2018) drop-shadow(0 6px 14px #0b201880)}
+.map-svg.sat-on .track{stroke-opacity:.95;filter:drop-shadow(0 0 1.5px #0b2018)}
+.map-svg.sat-on .tid,.map-svg.sat-on .med-t,.map-svg.sat-on .med-p,.map-svg.sat-on .ha,.map-svg.sat-on .sel-l,.map-svg.sat-on .rul-t,.map-svg.sat-on .vz-t,.map-svg.sat-on .bd-t{stroke:#0b2018d9;stroke-width:4px}
+.map-svg.sat-on .tid{fill:#fff}
+.map-svg.sat-on .scale text,.map-svg.sat-on .north text{stroke:#0b2018d9;stroke-width:4px;paint-order:stroke}
+.map-svg.sat-on .scale path,.map-svg.sat-on .north path{filter:drop-shadow(0 0 1.5px #0b2018)}
+.map-svg.sat-on .pt circle{filter:drop-shadow(0 0 2px #0b2018) drop-shadow(0 2px 3px #0b201899)}
+.map-svg.sat-on .me{stroke:#fff}
+.map-svg .satcredit{font:600 10px var(--f);fill:#ffffffd9;text-anchor:end;stroke:#0b2018b3;stroke-width:3px;paint-order:stroke}
