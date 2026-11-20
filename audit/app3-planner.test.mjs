@@ -159,6 +159,36 @@ test('3.20 · o tiro pode ser feito pelas duas pontas: a guia entra pela ponta m
   assert.ok(n >= 150, `tiros testados: ${n}`);
 });
 
+test('3.21 · equipe em zigue-zague: cada pessoa anda o mínimo (todas as combinações de pontas), 1 tiro igual ao motor', async () => {
+  const { teamPlan: legacyTeam } = await import('../src/engine/team.mjs');
+  const { cumulative, pointAt } = await import('../src/engine3/polyline.mjs');
+  let multi = 0;
+  for (const k of keys) for (const ppl of [1, 2, 3]) {
+    const f = fields[k], sc = P.planInUse(f, P.recommend(f, {}, 5, false).chosen.params, null), A = legacyTeam(sc, ppl), B = P.team(sc, ppl);
+    if (!A) continue;
+    assert.deepStrictEqual(B.pessoas.map(p => p.tarefas.map(t => t.id)), A.pessoas.map(p => p.tarefas.map(t => t.id)), `${k} ${ppl}: mesma divisão`);
+    B.pessoas.forEach((pb, i) => {
+      if (pb.tarefas.length < 2) { assert.deepStrictEqual(pb, A.pessoas[i], `${k} ${ppl}: 1 tiro igual ao motor`); return; }
+      const ts = pb.tarefas.map(t => { const tr = sc.selected.find(x => x.id === t.id), us = sc.units.filter(u => u.trackId === t.id), cum = cumulative(tr.line);
+        const a = Math.min(...us.map(u => u.s0Track)), b = Math.max(...us.map(u => u.s0Track + u.len)), pts = sc.samples.filter(q => q.trackId === t.id && Number.isFinite(q.sTrack)).map(q => q.sTrack).sort((x, y) => x - y);
+        return { a, b, pts, end: { a: pointAt(tr.line, a, cum), b: pointAt(tr.line, b, cum) } }; });
+      if (ts.length > 8) return;
+      // força bruta: toda entrada e toda saída de cada tiro; passagem em linha reta da saída à próxima entrada
+      const walkIn = (t, e, x) => e !== x ? t.b - t.a : !t.pts.length ? 0 : e === 'a' ? 2 * (t.pts.at(-1) - t.a) : 2 * (t.b - t.pts[0]);
+      let best = Infinity;
+      for (let m = 0; m < 4 ** ts.length; m++) {
+        let c = 0, prev = null;
+        ts.forEach((t, j) => { const e = (m >> (2 * j)) & 1 ? 'b' : 'a', x = (m >> (2 * j + 1)) & 1 ? 'b' : 'a';
+          if (prev) c += Math.hypot(prev[0] - t.end[e][0], prev[1] - t.end[e][1]); c += walkIn(t, e, x); prev = t.end[x]; });
+        best = Math.min(best, c);
+      }
+      assert.ok(Math.abs(pb.m - best) < 0.5, `${k} ${ppl} pessoa ${i + 1}: ${pb.m.toFixed(1)} m ≠ mínimo ${best.toFixed(1)} m`);
+      multi++;
+    });
+  }
+  assert.ok(multi >= 150, `pessoas com 2+ tiros: ${multi}`);
+});
+
 test('U05 · recomendações embutidas no arquivo = motor da tela, nos 51 lotes (5 pessoas, sem limitar à equipe)', async () => {
   const { recsData, RECS_PEOPLE } = await import('../scripts/build-3.mjs');
   const data = JSON.parse(await recsData(fields));

@@ -3,7 +3,7 @@
 // trecho, área de cada ponto (célula exata) e, ao tocar num ponto, as distâncias dele aos vizinhos e à borda.
 // Todo texto passa por um único verificador de espaço: o que não cabe sem cobrir ponto, número ou outro texto
 // não é desenhado (nunca fica um em cima do outro).
-import { esc, num } from './format.mjs';
+import { esc, num, plural } from './format.mjs';
 
 const NICE = [50, 100, 200, 250, 500, 1000, 2000, 2500, 5000];
 /** Fonte de cada classe de texto (igual ao styles.css). Medida no próprio aparelho quando há tela (qualquer fonte de
@@ -107,7 +107,7 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
     const c = XY(o.d[0], o.d[1]); s0 += `<text class="oname" x="${f1(c[0])}" y="${f1(c[1])}">${o.field.code}</text>`;
   }
   const ring = field.geom.map(pg => pg.map(rg => `M${rg.map(P).join('L')}Z`).join('')).join('');
-  let s = `<svg class="map-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Lote ${field.code}: ${sc ? `${sc.samples.length} pontos em ${sc.selected.length} tiros` : 'sem plano'}">`;
+  let s = `<svg class="map-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Lote ${field.code}: ${sc ? `${plural(sc.samples.length, 'ponto', 'pontos')} em ${plural(sc.selected.length, 'tiro', 'tiros')}` : 'sem plano'}">`;
   // 3.2 (G1) · grade em METROS: cada quadrado tem o tamanho da barra de escala (ex.: 500 m), presa ao terreno (anda com o zoom)
   {
     const wx = sx => x0 + ((sx - view.x) / view.k - ox) / k, wy = sy => y0 + (h - oy - (sy - view.y) / view.k) / k;

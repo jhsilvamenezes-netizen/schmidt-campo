@@ -1,6 +1,6 @@
 // 3.1 (U02) · tela Plano: hectares por ponto, pessoas, recomendado e outras opções, ajustes avançados.
 import * as P from './planner.mjs';
-import { num } from './format.mjs';
+import { num, plural } from './format.mjs';
 import { hintMarkup } from './views.mjs';
 import { advancedForm, applyField } from './advanced.mjs';
 
@@ -40,7 +40,7 @@ export function installPlano(app) {
     // 3.5 · regra comum com um toque (mesmo caminho do campo "Hectares por ponto")
     if (t.dataset.haSet) { const inp = document.querySelector('#ha'); if (inp) { inp.value = t.dataset.haSet; inp.dispatchEvent(new Event('change', { bubbles: true })); } return true; }
     if (t.dataset.set) { advancedChange(t.dataset.set, t.dataset.v); return true; }
-    if (t.dataset.alt) { const a = cur.rec.alternatives.filter(Boolean)[+t.dataset.alt]; if (a) app.setParams({ ...cur.base, ...a.params }, `Usando ${a.m.tiros} tiros · ${a.m.pontos} pontos`, null); return true; }
+    if (t.dataset.alt) { const a = cur.rec.alternatives.filter(Boolean)[+t.dataset.alt]; if (a) app.setParams({ ...cur.base, ...a.params }, `Usando ${plural(a.m.tiros, 'tiro', 'tiros')} · ${plural(a.m.pontos, 'ponto', 'pontos')}`, null); return true; }
     if (t.dataset.use === 'rec') { app.setParams({ ...cur.base, ...cur.rec.chosen.params }, 'Usando o plano recomendado', null); return true; }
     if (t.dataset.inc || t.dataset.dec) {
       const id = t.dataset.inc || t.dataset.dec, inp = document.querySelector(`#${id}`);

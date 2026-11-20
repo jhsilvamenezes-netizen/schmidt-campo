@@ -13,13 +13,14 @@ function trackTasks(sc) {
     const all = sc.samples.filter(s => s.trackId === track.id);
     const pts = all.filter(s => Number.isFinite(s.sTrack)).sort((x, y) => x.sTrack - y.sTrack).map(s => ({ s: s.sTrack, n: s.number }));
     const a = Math.min(...units.map(u => u.s0Track)), b = Math.max(...units.map(u => u.s0Track + u.len)), ring = units.some(u => u.wraps);
-    let side = { a: '', b: '' };
+    let side = { a: '', b: '' }, /** @type {any} */ ends = null;
     if (!ring && Array.isArray(track.line) && track.line.length >= 2) {
       const cum = cumulative(track.line), pa = pointAt(track.line, a, cum), pb = pointAt(track.line, b, cum);
       side = { a: cardinal(azimuth(pa[0] - pb[0], pa[1] - pb[1])), b: cardinal(azimuth(pb[0] - pa[0], pb[1] - pa[1])) };
+      ends = { a: pa, b: pb };
     }
     out.push({ id: track.id, offset: Number.isFinite(track.offsetM) ? track.offsetM : null, ring, a, b,
-      len: units.reduce((sum, u) => sum + u.len, 0), pts, nAll: all.length, side });
+      len: units.reduce((sum, u) => sum + u.len, 0), pts, nAll: all.length, side, ends });
   }
   return out;
 }
@@ -32,6 +33,38 @@ function walk(t) {
   const fromA = last - t.a + Math.min(t.b - last, last - t.a), fromB = t.b - first + Math.min(first - t.a, t.b - first);
   return fromA <= fromB ? { m: fromA, entra: t.side.a, de: t.pts[0].n, ate: t.pts.at(-1).n, n: t.nAll }
     : { m: fromB, entra: t.side.b, de: t.pts.at(-1).n, ate: t.pts[0].n, n: t.nAll };
+}
+
+/** Caminhada no tiro entrando pela ponta `e` e saindo pela ponta `x` ('a' ou 'b'): mesma ponta = até o ponto mais
+ * longe e volta; pontas opostas = o tiro inteiro. */
+function crossM(t, e, x) {
+  if (!t.pts.length) return e === x ? 0 : t.b - t.a;
+  if (e !== x) return t.b - t.a;
+  return e === 'a' ? 2 * (t.pts.at(-1).s - t.a) : 2 * (t.b - t.pts[0].s);
+}
+/** 3.21 · ordem de uma pessoa com 2+ tiros: o tiro pode ser feito pelas duas pontas, então cada tiro entra pela ponta
+ * que deixa a menor caminhada total, contando a passagem real (em linha reta) da saída de um tiro à entrada do próximo.
+ * Na prática vira zigue-zague: sai no norte do T1, entra pelo norte do T2. Programação dinâmica em 2 estados (ponta). */
+function serpentine(ts) {
+  const E = ['a', 'b'], d = (p, q) => Math.hypot(p[0] - q[0], p[1] - q[1]);
+  /** @type {any} */ let dp = { a: { m: 0, path: [] }, b: { m: 0, path: [] } };
+  ts.forEach((t, i) => {
+    /** @type {any} */ const nx = { a: null, b: null };
+    for (const x of E) for (const e of E) for (const px of E) {
+      if (i === 0 && px === 'b') continue; // primeiro tiro: sem saída anterior
+      const prev = dp[px], move = i === 0 ? 0 : d(ts[i - 1].ends[px], t.ends[e]);
+      const last = i === ts.length - 1, m = prev.m + move + (last ? Math.min(crossM(t, e, 'a'), crossM(t, e, 'b')) : crossM(t, e, x));
+      if (!nx[x] || m < nx[x].m - 1e-6) nx[x] = { m, path: [...prev.path, e] };
+    }
+    dp = nx;
+  });
+  return dp.a.m <= dp.b.m + 1e-6 ? dp.a : dp.b;
+}
+/** Tarefa de um tiro com a entrada dada: pontos na ordem de caminhada. */
+function walkFrom(t, e) {
+  if (!t.pts.length) return { m: 0, entra: t.side[e], n: t.nAll };
+  const m = Math.min(crossM(t, e, 'a'), crossM(t, e, 'b'));
+  return e === 'a' ? { m, entra: t.side.a, de: t.pts[0].n, ate: t.pts.at(-1).n, n: t.nAll } : { m, entra: t.side.b, de: t.pts.at(-1).n, ate: t.pts[0].n, n: t.nAll };
 }
 
 /** Partição de k pessoas em blocos contíguos: min-max e, empatado o máximo, menor soma dos quadrados. */
@@ -66,7 +99,13 @@ export function teamPlan(sc, people) {
     for (let i = 0; i < n - 1; i++) B.push(B[i] + between[i]);
     const cost = (i, j) => W[j + 1] - W[i] + (B[j] - B[i]);
     const blocks = partition(n, k, cost);
-    pessoas = blocks.map(([i, j]) => ({ m: cost(i, j), tarefas: tracks.slice(i, j + 1).map((t, d) => task(t, i + d)) }));
+    pessoas = blocks.map(([i, j]) => {
+      const ts = tracks.slice(i, j + 1);
+      if (ts.length < 2 || ts.some(t => t.ring || !t.ends)) return { m: cost(i, j), tarefas: ts.map((t, d) => task(t, i + d)) };
+      // 3.21 · zigue-zague: cada tiro entra pela ponta onde o anterior terminou (se encurtar o total)
+      const best = serpentine(ts);
+      return { m: best.m, tarefas: ts.map((t, d) => ({ id: t.id, parte: 'inteiro', ...walkFrom(t, best.path[d]) })) };
+    });
     agrupados = blocks.filter(([i, j]) => j > i).length;
   } else {
     sobra = k - tracks.length;

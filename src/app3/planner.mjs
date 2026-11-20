@@ -16,7 +16,7 @@ import { pointInGeom } from '../engine3/geometry.mjs';
 import { cumulative, pointAt } from '../engine3/polyline.mjs';
 import { num, range, km, plural } from './format.mjs';
 
-export const ENGINE_LABEL = '3.20.0';
+export const ENGINE_LABEL = '3.21.0';
 export const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
@@ -169,7 +169,7 @@ export const team = (sc, people) => teamPlan(sc, people);
 /** Resumo em texto para colar no WhatsApp. */
 export function summaryText(field, sc, people, list, split) {
   const f = figures(sc), lines = [`*SCHMIDT · Plano* · ${field.farm} / ${field.code} (${num(field.areaOfficialHa, 2)} ha)`,
-    `${f.pontos} pontos · ${f.tiros} tiros · ${people} pessoas`, `Entre tiros ${f.entreTiros} · entre pontos ${f.entrePontos} · 95% do lote ${f.p95}`, ''];
+    `${plural(f.pontos, 'ponto', 'pontos')} · ${plural(f.tiros, 'tiro', 'tiros')} · ${plural(people, 'pessoa', 'pessoas')}`, `Entre tiros ${f.entreTiros} · entre pontos ${f.entrePontos} · 95% do lote ${f.p95}`, ''];
   if (split) split.pessoas.forEach((p, i) => lines.push(`- Pessoa ${i + 1} (${km(p.m)} km): ${p.tarefas.map(t => `${t.id}, entra a ${t.entra || '—'}, pontos ${t.de ?? '—'}–${t.ate ?? '—'}`).join('; ')}`));
   lines.push('', ...list.map(c => `[${c.level === 'ok' ? 'ok' : c.level.toUpperCase()}] ${c.text}`), '', 'Simulação: pontos planejados, não coletados.');
   return lines.join('\n');

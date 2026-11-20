@@ -4,7 +4,7 @@
 import { createStore, safeStorage } from './store.mjs';
 import * as P from './planner.mjs';
 import * as V from './views.mjs';
-import { esc, num } from './format.mjs';
+import { esc, num, plural } from './format.mjs';
 import { createVersions } from './versions.mjs';
 import { createSchmidtSessionLock, installSchmidtSessionLifecycle } from '../platform/browser-session-lock.mjs';
 import { installMapa } from './screen-mapa.mjs';
@@ -218,7 +218,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     versionTimer = setTimeout(() => {
       const st = saved(), key = ui.key, sc = app.cur.sc;
       app.versions.save(key, { params: st.paramsByField?.[key] ?? null, edits: st.editsByField?.[key] ?? null },
-        [`${sc.selected.length} tiros`, `${sc.samples.length} pontos`, `95% < ${num(sc.coverage.p95 ?? 0)} m`, `1 ponto a cada ${sc.params.haPerPoint} ha`].join(' · '));
+        [plural(sc.selected.length, 'tiro', 'tiros'), plural(sc.samples.length, 'ponto', 'pontos'), `95% < ${num(sc.coverage.p95 ?? 0)} m`, `1 ponto a cada ${sc.params.haPerPoint} ha`].join(' · '));
     }, 4000);
   }
   function render() {

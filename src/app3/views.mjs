@@ -1,5 +1,5 @@
 // 3.0 · telas em HTML (sem estilo inline: CSP). Recebem dados prontos do planner; não calculam nada.
-import { esc, num, km } from './format.mjs';
+import { esc, num, km, plural } from './format.mjs';
 
 export const ICONS = {
   mapa: '<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>',
@@ -26,7 +26,7 @@ export function badge(sc) {
 }
 
 export const mapaView = ({ f, sc }) => `<div class="map" data-map="full"></div>
-<section class="sheet"><div class="grab"></div><div class="row-sb"><p class="big">${num(f.pontos)} pontos <span>· ${num(f.tiros)} tiros</span></p><button class="badge" data-open="dados">${badge(sc)}</button></div>
+<section class="sheet"><div class="grab"></div><div class="row-sb"><p class="big">${plural(f.pontos, 'ponto', 'pontos')} <span>· ${plural(f.tiros, 'tiro', 'tiros')}</span></p><button class="badge" data-open="dados">${badge(sc)}</button></div>
 <p class="mu">95% do lote ${esc(f.p95)} · caminhada ${esc(f.caminhada)}</p><button class="btn p" data-go="plano">Ver plano</button></section>`;
 
 /** Legenda do mapa (como na 2.5): cada medida com a marca da sua cor no desenho. */
@@ -67,13 +67,13 @@ export function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, bu
   const alts = (rec?.alternatives || []).filter(a => a);
   return `<div class="map sm${bigMap ? ' big' : ''}" data-map="small"></div><div class="scroll">${GRAB}
 <section class="card res"><div class="row-sb"><h2 class="h">${inUseIsRec ? 'Plano recomendado' : 'Plano em uso'}</h2>${inUseIsRec ? '<span class="tag">em uso</span>' : rec ? '<button class="link" data-use="rec">Usar recomendado</button>' : '<span class="mu sk">calculando o recomendado…</span>'}</div>
-<p class="big">${num(f.pontos)} pontos <span>· ${num(f.tiros)} tiros</span></p>${metrics(f)}<p class="mu">Caminhada ${esc(f.caminhada)}${f.tiros ? ` · ${km(sc.route.totalEstimatedM / f.tiros)} km por tiro` : ''}${border ? (border.near ? ` · <span class="${border.low ? 'warn' : 'note'}">ponto ${num(border.n)} a ${num(border.minM)} m da borda</span>` : ` · borda ≥ ${num(border.minM)} m`) : ''}</p>${busy ? '<p class="mu"><span class="sk">Calculando…</span></p>' : ''}
+<p class="big">${plural(f.pontos, 'ponto', 'pontos')} <span>· ${plural(f.tiros, 'tiro', 'tiros')}</span></p>${metrics(f)}<p class="mu">Caminhada ${esc(f.caminhada)}${f.tiros ? ` · ${km(sc.route.totalEstimatedM / f.tiros)} km por tiro` : ''}${border ? (border.near ? ` · <span class="${border.low ? 'warn' : 'note'}">ponto ${num(border.n)} a ${num(border.minM)} m da borda</span>` : ` · borda ≥ ${num(border.minM)} m`) : ''}</p>${busy ? '<p class="mu"><span class="sk">Calculando…</span></p>' : ''}
 <div data-hint>${hintMarkup(hint)}</div></section>
 <section class="card regra">${stepper('ha', 'Hectares por ponto', `mínimo ${num(sc.minPoints)} pontos`, haPerPoint)}<div class="presets" role="group" aria-label="Regras comuns">${[10, 15, 20, 25, 30].map(v => `<button data-ha-set="${v}" aria-pressed="${String(v) === String(haPerPoint)}">${v} ha</button>`).join('')}</div>${stepper('people', 'Pessoas', '', people)}
 <div class="seg" role="group" aria-label="Planejar"><button class="on" aria-pressed="true">Lote</button><button data-open="bloco" aria-pressed="false">Bloco</button></div></section>
 ${trackRows(rows, hiTrack)}
 ${checkAndTeam(list, split)}
-<section class="card list"><h2 class="h">Outras opções</h2>${alts.length ? alts.map((a, i) => `<div class="li"><span class="x">${num(a.m.tiros)} tiros · ${num(a.m.pontos)} pontos<br><small>95% &lt; ${num(a.m.p95M)} m · ${num(a.m.caminhadaKm, 1)} km${a.id === 'equipe' ? ' · igual por pessoa' : ''}</small></span><button class="use" data-alt="${i}">Usar</button></div>`).join('') : '<p class="mu">Sem outra opção melhor.</p>'}
+<section class="card list"><h2 class="h">Outras opções</h2>${alts.length ? alts.map((a, i) => `<div class="li"><span class="x">${plural(a.m.tiros, 'tiro', 'tiros')} · ${plural(a.m.pontos, 'ponto', 'pontos')}<br><small>95% &lt; ${num(a.m.p95M)} m · ${num(a.m.caminhadaKm, 1)} km${a.id === 'equipe' ? ' · igual por pessoa' : ''}</small></span><button class="use" data-alt="${i}">Usar</button></div>`).join('') : '<p class="mu">Sem outra opção melhor.</p>'}
 <button class="lnk" data-open="ajustes">Ajustes avançados</button><button class="lnk" data-open="calculo">Como foi calculado</button></section></div>`;
 }
 
