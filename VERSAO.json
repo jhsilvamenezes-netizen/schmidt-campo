@@ -1,16 +1,17 @@
 {
-  "entrega": "3.26.0",
+  "entrega": "3.27.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-20",
-  "versaoDoApp": "3.26.0",
+  "versaoDoApp": "3.27.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "59e8db21a94439f56ad05e5bf48744d84cbe6f21f92f48e47f6584f395b87a6b",
-  "workerSha256": "3a78e63fdef78a7c8c01f8b8530c8c98c71744fdaa762552c3836f80933c8978",
+  "htmlSha256": "a66cd408aaa59843d993a0dc88530cb69164626af70d7914e942236715b8c04d",
+  "workerSha256": "49635af4cedca91718522cc7dec36eaedb34c58546f226aedb9ff4b0fd4ce62c",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "3.27.0: design 4.0 (prévia) etapas d e e — cartografia (textura de plantio no sentido dos tiros recortada no lote, talhão com sombra mais funda, halo dourado nos pontos e mais forte no selecionado) e movimento (troca de aba com View Transition só no conteúdo, alvo da guia pulsando, tela em pé na guia onde o aparelho deixa, vibrações com nome); tudo some com \"reduzir movimento\"; design atual idêntico",
     "3.26.0: fundo de satélite opcional (Esri World Imagery, a mesma fonte da 2.5) — camada \"Satélite\" no Mapa, desligada por padrão; imagem nítida do lote + entorno largo (sem borda vazia) no fuso 23S, visual próprio pelos tokens (véu verde-escuro da marca de 34%, calibrado em 7 fotos reais; erro em coral claro; lote branco, tiros verde-claro, medidas de ponto em dourado, textos brancos com contorno), no mapa principal e no da guia, com crédito; CSP libera só esse servidor e só para imagem; sem sinal o mapa segue igual",
     "3.25.0: qualidade do GPS para calibrar com dado real — a guia conta as leituras em faixas (precisão, intervalo, moto/a pé), sem coordenadas e sem marcar coleta; Mais → Qualidade do GPS mostra o resumo (o raio de chegada cobre 9 em 10 leituras?) e compartilha um CSV só com contagens",
     "3.24.0: selo \"Pronto para usar sem internet\" no menu Mais (e aviso único na 1ª visita); com a voz ligada, \"Faltam N metros\" a cada 100 m a caminho (sem vibrar); telas em HTML divididas por aba (views.mjs só com as peças comuns), 24 telas idênticas",
@@ -102,5 +103,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "66e852628b3d58279493ce93e991a9bcb0d172f87859402b47403979a24bc8db"
+  "motorSha256": "bdb4988c2ec9cafcb20e6c414471e26f9b6a8575655bea5532d641dfdaff550a"
 }

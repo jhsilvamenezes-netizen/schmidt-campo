@@ -96,10 +96,13 @@ export function installMonitor(app) {
   function gpsStart() {
     if (!window.navigator.geolocation) { app.toast('Este aparelho não oferece GPS ao navegador.'); return; }
     mon.active = true; mon.pos = null; mon.lastFixAt = 0; mon.unsaved = mon.unsaved || 0; mon.session = {}; mon.startedTrack = false; mon.reachedEntry = false; mon.arrivedId = null; mon.nearId = null; mon.stopId = null; mon.hist = [];
-    watch(); compassOn(); keepAwake(true); clearInterval(mon.ticker); mon.ticker = setInterval(() => { if (mon.active && ui.view === 'monitorar') app.render(); }, 5000);
+    watch(); compassOn(); keepAwake(true);
+    // 4.0-e · na guia a tela fica em pé (só onde o aparelho deixa: app instalado/tela cheia; senão nada muda)
+    if (app.isDesign4?.()) { try { window.screen?.orientation?.lock?.('portrait')?.catch?.(() => {}); } catch { /* sem trava */ } } clearInterval(mon.ticker); mon.ticker = setInterval(() => { if (mon.active && ui.view === 'monitorar') app.render(); }, 5000);
     app.render();
   }
   function gpsStop() {
+    try { window.screen?.orientation?.unlock?.(); } catch { /* sem trava */ }
     flushStats(); unwatch(); mon.active = false; clearInterval(mon.ticker); compassOff(); keepAwake(false); window.speechSynthesis?.cancel?.(); app.render();
   }
   // Tela apagada ou app em segundo plano: GPS e bússola param (bateria); ao voltar, retomam sozinhos.
