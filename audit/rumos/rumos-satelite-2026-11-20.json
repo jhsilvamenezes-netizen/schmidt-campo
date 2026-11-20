@@ -1,0 +1,506 @@
+{
+ "data": "2026-11-20",
+ "fonte": "Esri World Imagery (data da imagem desconhecida), 1,25–1,6 m/px",
+ "metodo": "FFT 2D em janelas de 256 px dentro do lote (60 m da borda), faixas de período 30–45 m e 16,5–20 m; direção das linhas comparada ao rumo da planilha com correção de grade",
+ "decisao": "Proprietário (20/11): vale o rumo da planilha.",
+ "lotes": [
+  {
+   "k": "Bananal|BA1",
+   "n": 25,
+   "linhas": 50,
+   "plano": 63.0,
+   "dif": 13.0,
+   "forca": 15.8,
+   "periodo": 41.0,
+   "mpx": 1.25
+  },
+  {
+   "k": "Bananal|BA2",
+   "n": 54,
+   "linhas": 50,
+   "plano": 63.0,
+   "dif": 13.0,
+   "forca": 15.1,
+   "periodo": 43.1,
+   "mpx": 1.31
+  },
+  {
+   "k": "Bananal|BA3",
+   "n": 56,
+   "linhas": 52,
+   "plano": 63.0,
+   "dif": 11.0,
+   "forca": 4.4,
+   "periodo": 36.4,
+   "mpx": 1.62
+  },
+  {
+   "k": "Bananal|BB1",
+   "n": 69,
+   "linhas": 152,
+   "plano": 153.0,
+   "dif": 1.0,
+   "forca": 64.1,
+   "periodo": 43.6,
+   "mpx": 1.52
+  },
+  {
+   "k": "Bananal|BB2",
+   "n": 72,
+   "linhas": 152,
+   "plano": 153.0,
+   "dif": 1.0,
+   "forca": 54.9,
+   "periodo": 43.3,
+   "mpx": 1.51
+  },
+  {
+   "k": "Bananal|BB3",
+   "n": 70,
+   "linhas": 152,
+   "plano": 153.0,
+   "dif": 1.0,
+   "forca": 27.4,
+   "periodo": 43.7,
+   "mpx": 1.53
+  },
+  {
+   "k": "Bananal|BC1",
+   "n": 69,
+   "linhas": 152,
+   "plano": 153.0,
+   "dif": 1.0,
+   "forca": 54.9,
+   "periodo": 36.0,
+   "mpx": 1.45
+  },
+  {
+   "k": "Bananal|BC2",
+   "n": 76,
+   "linhas": 152,
+   "plano": 153.0,
+   "dif": 1.0,
+   "forca": 97.2,
+   "periodo": 37.0,
+   "mpx": 1.61
+  },
+  {
+   "k": "Bananal|BC3",
+   "n": 69,
+   "linhas": 152,
+   "plano": 153.0,
+   "dif": 1.0,
+   "forca": 57.9,
+   "periodo": 37.4,
+   "mpx": 1.51
+  },
+  {
+   "k": "Bananal|BC4",
+   "n": 26,
+   "linhas": 152,
+   "plano": 153.0,
+   "dif": 1.0,
+   "forca": 73.3,
+   "periodo": 35.8,
+   "mpx": 1.25
+  },
+  {
+   "k": "Bananal|BD1",
+   "n": 37,
+   "linhas": 57,
+   "plano": 56.1,
+   "dif": 0.9,
+   "forca": 94.8,
+   "periodo": 37.9,
+   "mpx": 1.4
+  },
+  {
+   "k": "Bananal|BD2",
+   "n": 69,
+   "linhas": 55,
+   "plano": 56.1,
+   "dif": 1.1,
+   "forca": 70.8,
+   "periodo": 38.7,
+   "mpx": 1.3
+  },
+  {
+   "k": "Bananal|BD3",
+   "n": 66,
+   "linhas": 42,
+   "plano": 84.4,
+   "dif": 42.4,
+   "forca": 6.9,
+   "periodo": 18.4,
+   "mpx": 1.53
+  },
+  {
+   "k": "Bananal|BD4",
+   "n": 35,
+   "linhas": 46,
+   "plano": 84.4,
+   "dif": 38.4,
+   "forca": 2.7,
+   "periodo": 37.7,
+   "mpx": 1.25
+  },
+  {
+   "k": "Bananal|BD5",
+   "n": 2,
+   "linhas": 66,
+   "plano": 58.5,
+   "dif": 7.5,
+   "forca": 5.4,
+   "periodo": 18.2,
+   "mpx": 2.49
+  },
+  {
+   "k": "Bananal|BE1",
+   "n": 12,
+   "linhas": 51,
+   "plano": 73.5,
+   "dif": 22.5,
+   "forca": 28.8,
+   "periodo": 18.5,
+   "mpx": 1.69
+  },
+  {
+   "k": "Bananal|BE2",
+   "n": 76,
+   "linhas": 50,
+   "plano": 73.5,
+   "dif": 23.5,
+   "forca": 22.2,
+   "periodo": 18.2,
+   "mpx": 1.61
+  },
+  {
+   "k": "Bananal|BE3",
+   "n": 78,
+   "linhas": 50,
+   "plano": 73.5,
+   "dif": 23.5,
+   "forca": 38.9,
+   "periodo": 18.3,
+   "mpx": 1.58
+  },
+  {
+   "k": "Rio de Janeiro|P1",
+   "n": 13,
+   "linhas": 40,
+   "plano": 39.1,
+   "dif": 0.9,
+   "forca": 13.9,
+   "periodo": 41.0,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|P2",
+   "n": 13,
+   "linhas": 57,
+   "plano": 57.5,
+   "dif": 0.5,
+   "forca": 10.2,
+   "periodo": 44.4,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|P3",
+   "n": 13,
+   "linhas": 96,
+   "plano": 94.1,
+   "dif": 1.9,
+   "forca": 10.6,
+   "periodo": 35.3,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|P4",
+   "n": 13,
+   "linhas": 103,
+   "plano": 103.1,
+   "dif": 0.1,
+   "forca": 12.1,
+   "periodo": 34.7,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|P5",
+   "n": 13,
+   "linhas": 17,
+   "plano": 18.9,
+   "dif": 1.9,
+   "forca": 33.7,
+   "periodo": 19.1,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|P6",
+   "n": 12,
+   "linhas": 119,
+   "plano": 120.2,
+   "dif": 1.2,
+   "forca": 13.0,
+   "periodo": 17.4,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|P7",
+   "n": 13,
+   "linhas": 33,
+   "plano": 33.8,
+   "dif": 0.8,
+   "forca": 11.8,
+   "periodo": 44.4,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|RA1",
+   "n": 36,
+   "linhas": 55,
+   "plano": 56.4,
+   "dif": 1.4,
+   "forca": 77.5,
+   "periodo": 44.4,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|RA2",
+   "n": 69,
+   "linhas": 57,
+   "plano": 56.4,
+   "dif": 0.6,
+   "forca": 68.2,
+   "periodo": 36.2,
+   "mpx": 1.34
+  },
+  {
+   "k": "Rio de Janeiro|RA3",
+   "n": 69,
+   "linhas": 55,
+   "plano": 56.4,
+   "dif": 1.4,
+   "forca": 33.5,
+   "periodo": 31.7,
+   "mpx": 1.34
+  },
+  {
+   "k": "Rio de Janeiro|RA4",
+   "n": 29,
+   "linhas": 55,
+   "plano": 56.4,
+   "dif": 1.4,
+   "forca": 33.3,
+   "periodo": 17.8,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|RA5",
+   "n": 69,
+   "linhas": 55,
+   "plano": 56.4,
+   "dif": 1.4,
+   "forca": 29.9,
+   "periodo": 17.7,
+   "mpx": 1.35
+  },
+  {
+   "k": "Rio de Janeiro|RA6",
+   "n": 68,
+   "linhas": 55,
+   "plano": 56.4,
+   "dif": 1.4,
+   "forca": 17.8,
+   "periodo": 40.1,
+   "mpx": 1.35
+  },
+  {
+   "k": "Rio de Janeiro|RA7",
+   "n": 31,
+   "linhas": 57,
+   "plano": 56.3,
+   "dif": 0.7,
+   "forca": 166.6,
+   "periodo": 33.9,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|RA8",
+   "n": 8,
+   "linhas": 44,
+   "plano": 56.3,
+   "dif": 12.3,
+   "forca": 81.2,
+   "periodo": 42.7,
+   "mpx": 1.42
+  },
+  {
+   "k": "Rio de Janeiro|RA9",
+   "n": 0
+  },
+  {
+   "k": "Rio de Janeiro|RB1",
+   "n": 22,
+   "linhas": 57,
+   "plano": 56.4,
+   "dif": 0.6,
+   "forca": 30.7,
+   "periodo": 44.4,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|RB2",
+   "n": 67,
+   "linhas": 55,
+   "plano": 56.4,
+   "dif": 1.4,
+   "forca": 38.6,
+   "periodo": 40.3,
+   "mpx": 1.35
+  },
+  {
+   "k": "Rio de Janeiro|RB3",
+   "n": 68,
+   "linhas": 55,
+   "plano": 56.4,
+   "dif": 1.4,
+   "forca": 20.5,
+   "periodo": 40.3,
+   "mpx": 1.35
+  },
+  {
+   "k": "Rio de Janeiro|RB4",
+   "n": 31,
+   "linhas": 55,
+   "plano": 56.6,
+   "dif": 1.6,
+   "forca": 55.1,
+   "periodo": 17.7,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|RB5",
+   "n": 68,
+   "linhas": 57,
+   "plano": 56.6,
+   "dif": 0.4,
+   "forca": 42.9,
+   "periodo": 36.7,
+   "mpx": 1.35
+  },
+  {
+   "k": "Rio de Janeiro|RB6",
+   "n": 69,
+   "linhas": 57,
+   "plano": 56.6,
+   "dif": 0.4,
+   "forca": 35.8,
+   "periodo": 37.6,
+   "mpx": 1.39
+  },
+  {
+   "k": "Rio de Janeiro|RB7",
+   "n": 25,
+   "linhas": 55,
+   "plano": 56.3,
+   "dif": 1.3,
+   "forca": 15.4,
+   "periodo": 37.2,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|RB8",
+   "n": 8,
+   "linhas": 90,
+   "plano": 56.3,
+   "dif": 33.7,
+   "forca": 49.1,
+   "periodo": 32.0,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|RB9",
+   "n": 0
+  },
+  {
+   "k": "Rio de Janeiro|RC1",
+   "n": 19,
+   "linhas": 55,
+   "plano": 56.6,
+   "dif": 1.6,
+   "forca": 85.0,
+   "periodo": 17.7,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|RC2",
+   "n": 29,
+   "linhas": 55,
+   "plano": 56.6,
+   "dif": 1.6,
+   "forca": 34.2,
+   "periodo": 17.7,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|RC3",
+   "n": 29,
+   "linhas": 55,
+   "plano": 56.6,
+   "dif": 1.6,
+   "forca": 48.6,
+   "periodo": 17.8,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|RC4",
+   "n": 11,
+   "linhas": 55,
+   "plano": 56.3,
+   "dif": 1.3,
+   "forca": 119.6,
+   "periodo": 17.8,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|RC5",
+   "n": 29,
+   "linhas": 55,
+   "plano": 56.3,
+   "dif": 1.3,
+   "forca": 103.7,
+   "periodo": 17.7,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|RC6",
+   "n": 31,
+   "linhas": 55,
+   "plano": 56.3,
+   "dif": 1.3,
+   "forca": 121.8,
+   "periodo": 17.8,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|RC7",
+   "n": 8,
+   "linhas": 55,
+   "plano": 56.2,
+   "dif": 1.2,
+   "forca": 333.4,
+   "periodo": 17.7,
+   "mpx": 1.25
+  },
+  {
+   "k": "Rio de Janeiro|RC8",
+   "n": 17,
+   "linhas": 55,
+   "plano": 56.2,
+   "dif": 1.2,
+   "forca": 311.1,
+   "periodo": 17.8,
+   "mpx": 1.25
+  }
+ ]
+}

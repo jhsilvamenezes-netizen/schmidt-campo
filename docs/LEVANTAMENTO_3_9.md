@@ -341,3 +341,16 @@ da mínima de 15 m. Nenhuma fase de tiros resolvia; por isso o teste antigo o ac
 
 **Retrato atual:** mediana 1,29× o ótimo hexagonal no maior vazio. Fora da curva: RB9 (2,5×, lote pequeno
 e irregular, aceito) e BD5 (2,5×; o botão "Ponto no maior vazio" leva a 453 m).
+
+## 24. Rumos dos 51 lotes (20/11): conferência e decisão
+
+**Conferido** (scripts em `audit/rumos/`, resultado em `rumos-satelite-2026-11-20.json`):
+- Correção de grade (convergência meridiana UTM 23S): igual ao cálculo nos 51 lotes (diferença < 0,0001°).
+- Rumo da planilha × direção de A para B: só o P6 diverge (já conferido com o proprietário).
+- Em 29 lotes A e B estão a 3,05 m: essa conferência não é independente nesses lotes.
+- Rumo × linhas visíveis na imagem de satélite: 39 lotes batem (≤ 2°, todos os pivôs incluídos).
+  Divergem: BD3 (42°), BD4 (38°), BE1–BE3 (23°), BA1–BA3 (12°), BD5 (7°, sinal fraco).
+  Sem conclusão: RA8 e RB8 (imagem antiga, outro uso), RA9 e RB9 (pequenos demais).
+
+**Decisão do proprietário (20/11):** vale o rumo da planilha. Nenhum rumo foi alterado. As linhas da
+imagem podem ser de plantio, que não segue o rastro da pulverização, e a data da imagem é desconhecida.
