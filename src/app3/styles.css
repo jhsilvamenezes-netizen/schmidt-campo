@@ -312,12 +312,14 @@ main.tab-in>*:not(.map){animation:entra 180ms cubic-bezier(.2,.7,.2,1)}
 
 /* 3.26 · satélite: um "tema" próprio por tokens (as mesmas peças do mapa, cores para foto): fundo verde-escuro da marca
    além da imagem, véu escuro leve sobre a foto, lote em branco, tiros em verde-claro (mata), medidas de ponto em
-   dourado (ouro), textos brancos com contorno escuro. Pontos continuam os mesmos (dourado com número escuro). */
+   dourado (ouro), textos brancos com contorno escuro. Pontos continuam os mesmos (dourado com número escuro).
+   Calibrado em 7 fotos reais (pior caso = 5% dos pixels mais claros): véu 34% → branco 4,8:1, tiros 3,6:1, medidas
+   de ponto 3,4:1, alerta 3,1:1, erro (coral claro #ffb3a6, com sombra) acima de 3:1 em 90% dos pixels. */
 .map.sat{background:#0f2119}
-.map-svg.sat-on{--ink:#ffffff;--mu:#e3ece6;--fd:#0b2018;--fl:#ffffff;--tr:#9ff0c0;--pt:#ffd36b;--ptr:#0b2018;--er:#ff8a7a;--al:#ffc56b}
+.map-svg.sat-on{--ink:#ffffff;--mu:#e3ece6;--fd:#0b2018;--fl:#ffffff;--tr:#9ff0c0;--pt:#ffd36b;--ptr:#0b2018;--er:#ffb3a6;--al:#ffc56b}
 .map-svg .sat{pointer-events:none;filter:saturate(.82) contrast(1.06)}
 .map-svg .sat.ctx{filter:saturate(.6) brightness(.82)}
-.map-svg .satveil{fill:#0b2f23;fill-opacity:.24;pointer-events:none}
+.map-svg .satveil{fill:#0b2f23;fill-opacity:.34;pointer-events:none}
 .map-svg.sat-on .lot{fill:#ffffff0f;stroke:#fff;stroke-width:2.5;filter:drop-shadow(0 0 2px #0b2018) drop-shadow(0 6px 14px #0b201880)}
 .map-svg.sat-on .track{stroke-opacity:.95;filter:drop-shadow(0 0 1.5px #0b2018)}
 .map-svg.sat-on .tid,.map-svg.sat-on .med-t,.map-svg.sat-on .med-p,.map-svg.sat-on .ha,.map-svg.sat-on .sel-l,.map-svg.sat-on .rul-t,.map-svg.sat-on .vz-t,.map-svg.sat-on .bd-t{stroke:#0b2018d9;stroke-width:4px}
@@ -326,4 +328,5 @@ main.tab-in>*:not(.map){animation:entra 180ms cubic-bezier(.2,.7,.2,1)}
 .map-svg.sat-on .scale path,.map-svg.sat-on .north path{filter:drop-shadow(0 0 1.5px #0b2018)}
 .map-svg.sat-on .pt circle{filter:drop-shadow(0 0 2px #0b2018) drop-shadow(0 2px 3px #0b201899)}
 .map-svg.sat-on .me{stroke:#fff}
+.map-svg.sat-on :is(.cota-t,.cota-p,.cota-g,.vz,.vz-l,.bd-l,.rul,.togo,.sel-m path){filter:drop-shadow(0 0 1.5px #0b2018)}
 .map-svg .satcredit{font:600 10px var(--f);fill:#ffffffd9;text-anchor:end;stroke:#0b2018b3;stroke-width:3px;paint-order:stroke}

@@ -268,3 +268,17 @@ a imagem e o crédito aparecem; a camada fica lembrada e desligar tira a imagem.
 
 Qualidade do GPS (3.25): não precisa mandar arquivo. A guia já ajusta o raio de chegada à precisão de cada leitura
 (3.16). A tela fica no menu Mais só para diagnóstico, se alguém relatar "não chega no ponto".
+
+Calibração das cores sobre o satélite: 7 fotos reais (BB1, BD1, BD3, BD5, RA3, RB2, RC5). A medida é o contraste
+contra o pior caso, os 5% de pixels mais claros, com o mesmo tratamento da tela.
+
+| Cor | Véu 24% | Véu 34% (adotado) |
+|---|---|---|
+| Branco (lote, textos) | 4,1:1 | 4,8:1 |
+| Verde-claro (tiros) | 3,0:1 | 3,6:1 |
+| Ouro (medidas de ponto) | 2,9:1 | 3,4:1 |
+| Alerta | 2,6:1 | 3,1:1 |
+| Erro (#ff8a7a → #ffb3a6, coral claro) | 1,8:1 (43% dos pixels ≥ 3:1) | 2,8:1 (90% ≥ 3:1), com sombra escura |
+
+A paleta segue a mesma (branco, mata e ouro). Só o vermelho e a força do véu foram calibrados para a foto. Linhas de
+medida, borda, vazio e régua ganham uma sombra escura fina.
