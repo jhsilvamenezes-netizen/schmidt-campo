@@ -192,3 +192,18 @@ linha reta da saída de um tiro até a entrada do próximo.
 Antes, o total mostrado contava a passagem entre tiros como a distância entre as linhas, mesmo quando a pessoa
 saía na ponta oposta; agora conta a passagem real. Teste: força bruta em todas as combinações de entrada e saída
 (até 8 tiros por pessoa) = o valor da divisão.
+
+## 18. 3.23 · "Outra ponta" com a guia ligada
+
+A ponta mais perto (3.20) pode não ter acesso: canal, cerca, lavoura sem carreador. Com a voz disponível (quase todo
+Android), o "Inverter" sumia durante a guia, e era preciso parar a guia para trocar.
+
+| Situação | 3.23 |
+|---|---|
+| Antes do 1º ponto | a guia mostra "Pela ponta mais perto." (ou "Pela entrada do plano." / "Pela outra ponta.") e o botão "Outra ponta" (88×44 px) |
+| Escolhida à mão | leva até a entrada desse sentido, mesmo com a pessoa perto da outra ponta. Antes mandava ao último ponto, como se o tiro já estivesse andado |
+| Chegou à entrada (≤ 30 m) | segue normal, pelo ponto 1 |
+| Depois do 1º ponto | o botão some e o sentido fica |
+
+Medido e descartado: dividir a equipe pela caminhada real, em vez de dividir e depois ajustar as pontas (3.21).
+Nos 51 lotes com 2 a 4 pessoas, só 2 de 100 casos melhoram, em cerca de 10 m. Não vale a complexidade a mais.

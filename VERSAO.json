@@ -1,16 +1,17 @@
 {
-  "entrega": "3.22.0",
+  "entrega": "3.23.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-20",
-  "versaoDoApp": "3.22.0",
+  "versaoDoApp": "3.23.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "237de9876187c6489775edbe7b033575919cce51bc01aba740e1f229b4885781",
-  "workerSha256": "f68975f3e710d76dd68f924fd8a2c4508d14defc5774809fcbfe804ff5ab88fa",
+  "htmlSha256": "53b99db47ecabafb5b031bb904bfee8d0dd792ce10952c1fce76aaf081ef458e",
+  "workerSha256": "e67dc6cb823e37ae631c2494d93e4027614514f0730ffc21375e14ae6c4544df",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "3.23.0: \"Outra ponta\" com a guia ligada — antes do primeiro ponto a guia mostra por qual ponta começa e um botão para trocar (a ponta mais perto pode não ter acesso); escolhida à mão, a guia leva até a entrada (antes, perto da outra ponta, mandava ao último ponto) e na entrada segue pelo ponto 1. Medido e descartado: dividir a equipe pela caminhada real (ganho em 2 de 100 casos, ~10 m)",
     "3.22.0: arquitetura sem mudar a tela — worker como módulo (src/app3/worker.mjs, testado no Node = motor direto); núcleo da guia sem DOM (velocidade, moto/a pé e avisos em monitor.mjs; a tela só vibra e fala); teste de camadas (motor e GPS sem tela nem navegador, sem ciclos de importação); docs/ARQUITETURA_3.md",
     "3.21.0: equipe em zigue-zague — quem faz 2+ tiros entra em cada tiro pela ponta onde o anterior terminou, com a menor caminhada total (passagem real entre tiros, conferida por força bruta); nos 51 lotes, 23,5% menos caminhada que entrar em cada tiro separado (1.315 → 1.006 km nas 185 pessoas com 2+ tiros, 1–3 pessoas); quem faz 1 tiro não muda; singular certo (\"1 tiro\", \"1 ponto\") em todas as abas",
     "3.20.0: o tiro pode ser feito pelas duas pontas — antes do primeiro ponto e fora da linha, a guia começa pela ponta mais perto da pessoa (troca só com folga de 30 m e 15%, para o GPS não ficar trocando); o próximo tiro também começa pela ponta mais perto; \"Inverter\" à mão continua e desliga a escolha automática",
@@ -98,5 +99,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "22d96545997b40904cfb8cf37f87c9dddf34431f12a9f1a26169c5d465cd813e"
+  "motorSha256": "c99d8a7c1ca0ba17936fa98ec48900d34b225563d0681d9db5bdb1933289c513"
 }

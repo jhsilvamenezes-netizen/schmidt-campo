@@ -264,7 +264,7 @@ header:has(#upd) .logo{font-size:0;gap:0}
 .hero .big{font-size:28px}
 
 /* ===== Monitorar ===== */
-.gsheet{gap:12px;padding-top:12px}
+.gsheet{gap:12px;padding-top:12px}.gsheet .row-sb .link{white-space:nowrap;flex:none}
 .guide{display:flex;align-items:center;gap:12px;border-radius:16px;padding:8px 4px}.gtxt{min-width:0}
 .guide .big{font:700 40px/1.05 var(--f);letter-spacing:-.03em;margin:0;color:var(--ink)}.guide .dir{font:600 16px var(--f);color:var(--mu)}
 .guide.arrived{background:var(--oks);padding:8px 12px}.guide.arrived .big{color:var(--ok)}

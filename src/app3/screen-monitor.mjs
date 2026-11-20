@@ -1,5 +1,5 @@
 // 3.1 (U02) · tela Monitorar: tiro e sentido, guia por GPS (política 2.0), tela acesa e vibração ao chegar.
-import { routeFor, fixToPos, guideModel, nearEndFlipped, speedStep, modeStep, guideAlerts } from './monitor.mjs';
+import { routeFor, fixToPos, guideModel, nearEndFlipped, speedStep, modeStep, guideAlerts, ENTRY_REACHED_M } from './monitor.mjs';
 import { headingOf, smoothHeading, arrowAngle } from './compass.mjs';
 import { toGPX } from '../engine3/exporters.mjs';
 
@@ -20,7 +20,10 @@ export function installMonitor(app) {
       if (f !== mon.flipped) { mon.flipped = f; mon.autoDir = true; mon.session = {}; mon.nearId = null; mon.stopId = null; }
     }
     const route = mon.trackId ? routeFor(sc, cur.field, mon.trackId, mon.flipped) : null;
-    const model = route && mon.active ? guideModel(route, sc, cur.field, mon.pos, Date.now(), mon.session) : null;
+    // 3.23 · ponta escolhida à mão: a guia leva à entrada até a pessoa chegar a ela (depois segue normal)
+    const entry = route?.parts?.[0]?.entry;
+    if (mon.pos && entry && Math.hypot(entry[0] - mon.pos.x, entry[1] - mon.pos.y) <= ENTRY_REACHED_M) mon.reachedEntry = true;
+    const model = route && mon.active ? guideModel(route, sc, cur.field, mon.pos, Date.now(), mon.session, { toEntry: !!mon.manualDir && !mon.startedTrack && !mon.reachedEntry }) : null;
     // 3.22 · avisos decididos no núcleo sem DOM (monitor.mjs); aqui só vibra e fala
     const al = guideAlerts(model, { offWarned: mon.offWarned, nearId: mon.nearId, stopId: mon.stopId, arrivedId: mon.arrivedId, startedTrack: mon.startedTrack },
       { arrivalRadiusM: cur.sc.params.monitor?.arrivalRadiusM ?? 10, speedMps: mon.pos?.speedMps ?? 0 });
@@ -81,7 +84,7 @@ export function installMonitor(app) {
   function unwatch() { if (mon.watchId !== null) window.navigator.geolocation?.clearWatch(mon.watchId); mon.watchId = null; }
   function gpsStart() {
     if (!window.navigator.geolocation) { app.toast('Este aparelho não oferece GPS ao navegador.'); return; }
-    mon.active = true; mon.pos = null; mon.session = {}; mon.startedTrack = false; mon.arrivedId = null; mon.nearId = null; mon.stopId = null; mon.hist = [];
+    mon.active = true; mon.pos = null; mon.session = {}; mon.startedTrack = false; mon.reachedEntry = false; mon.arrivedId = null; mon.nearId = null; mon.stopId = null; mon.hist = [];
     watch(); compassOn(); keepAwake(true); clearInterval(mon.ticker); mon.ticker = setInterval(() => { if (mon.active && ui.view === 'monitorar') app.render(); }, 5000);
     app.render();
   }
@@ -106,7 +109,7 @@ export function installMonitor(app) {
     return { target: d?.target ?? null, pos: mon.pos, to, heading: mon.heading, follow: mon.follow, focus: mon.follow && mon.pos ? [[mon.pos.x, mon.pos.y], ...(to ? [to] : [])] : null };
   };
   app.onLotChange.push(() => { if (mon.active) gpsStop(); mon.trackId = null; });
-  app.clicks.push(t => { if (!t.dataset.track) return false; mon.trackId = t.dataset.track; mon.flipped = false; mon.manualDir = false; mon.autoDir = false; mon.startedTrack = false; mon.session = {}; mon.arrivedId = null; app.render(); return true; });
+  app.clicks.push(t => { if (!t.dataset.track) return false; mon.trackId = t.dataset.track; mon.flipped = false; mon.manualDir = false; mon.autoDir = false; mon.startedTrack = false; mon.reachedEntry = false; mon.session = {}; mon.arrivedId = null; app.render(); return true; });
   Object.assign(app.ACTIONS, {
     // arquivo só do tiro escolhido (no sentido escolhido), para abrir em outro app de GPS
     'gpx-track': () => {
@@ -118,8 +121,8 @@ export function installMonitor(app) {
     'gps-stop': () => gpsStop(),
     voice: () => { mon.voice = !mon.voice; if (mon.voice) say('Voz ligada.'); app.render(); },
     follow: () => { mon.follow = !mon.follow; app.drawMaps(); },
-    flip: () => { mon.flipped = !mon.flipped; mon.manualDir = true; mon.autoDir = false; mon.session = {}; app.render(); },
+    flip: () => { mon.flipped = !mon.flipped; mon.manualDir = true; mon.autoDir = false; mon.reachedEntry = false; mon.startedTrack = false; mon.session = {}; mon.nearId = null; mon.stopId = null; app.render(); },
     // 3.13 · segue para o próximo tiro sem parar a guia (sentido do plano, chegada e vibração zeradas)
-    'next-track': () => { const n = monitorData().nextTrack; if (!n) return; mon.trackId = n.id; mon.flipped = false; mon.manualDir = false; mon.autoDir = false; mon.startedTrack = false; mon.session = {}; mon.arrivedId = null; mon.nearId = null; mon.stopId = null; app.render(); },
+    'next-track': () => { const n = monitorData().nextTrack; if (!n) return; mon.trackId = n.id; mon.flipped = false; mon.manualDir = false; mon.autoDir = false; mon.startedTrack = false; mon.reachedEntry = false; mon.session = {}; mon.arrivedId = null; mon.nearId = null; mon.stopId = null; app.render(); },
   });
 }
