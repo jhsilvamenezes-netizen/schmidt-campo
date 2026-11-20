@@ -1,7 +1,7 @@
 // 3.1 (U02) · tela Enviar: arquivo do plano, fichas de campo, resumo e arquivos (CSV, GeoJSON, KML, GPX); abrir plano recebido.
 import { mapMarkup } from './map.mjs';
 import * as P from './planner.mjs';
-import * as V from './views.mjs';
+import * as VX from './views-mais.mjs';
 import { buildPlanFile, parsePlanFile } from './plan-file.mjs';
 import { buildRoute } from '../engine3/guidance.mjs';
 import { toCSV, toGeoJSON, toGPX, toKML } from '../engine3/exporters.mjs';
@@ -17,7 +17,7 @@ export function installEnviar(app) {
     const cur = app.cur, people = new Map(); (cur.split?.pessoas || []).forEach((p, i) => p.tarefas.forEach(t => people.set(t.id, `Pessoa ${i + 1}`)));
     const mapFor = id => mapMarkup(cur.field, { ...cur.sc, samples: cur.sc.samples.filter(s => s.trackId === id) }, 700, 240, { pad: 16 });
     let box = document.querySelector('#print'); if (!box) { box = document.createElement('div'); box.id = 'print'; document.body.append(box); }
-    box.innerHTML = V.fichasMarkup(cur.field, routes(), people, mapFor);
+    box.innerHTML = VX.fichasMarkup(cur.field, routes(), people, mapFor);
     window.print();
   }
   const dl = app.download;
@@ -37,7 +37,7 @@ export function installEnviar(app) {
       dl(text, name, 'application/json'); status('Arquivo do plano baixado: envie aos monitores.');
     },
   });
-  app.SHEETS.arquivos = () => app.openSheet('Arquivos e fichas', V.arquivosBody());
+  app.SHEETS.arquivos = () => app.openSheet('Arquivos e fichas', VX.arquivosBody());
   app.SHEETS.abrir = () => { app.closeSheet(); document.querySelector('#plan-input').click(); };
   app.changes.push(t => {
     if (t.id !== 'plan-input' || !t.files?.[0]) return false;

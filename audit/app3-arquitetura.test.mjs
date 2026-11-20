@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { loadFields } from './legacy-engine.mjs';
 import * as P from '../src/app3/planner.mjs';
 import { reply } from '../src/app3/worker.mjs';
+import { offlineStatus, OFFLINE_FILES } from '../src/app3/offline.mjs';
 import { speedStep, modeStep, guideAlerts, guideModel, routeFor, ENTRY_REACHED_M } from '../src/app3/monitor.mjs';
 
 const src = fileURLToPath(new URL('../src/', import.meta.url));
@@ -22,7 +23,7 @@ test('camadas: engine3 e gps puros (sem tela, sem navegador); motor da tela só 
     assert.doesNotMatch(code, /\b(document|window|navigator|localStorage)\b/, `${p} usa o navegador`);
   }
   // núcleo da tela sem DOM: planner, monitor, worker, format, map (SVG em texto), views (HTML em texto), tokens4
-  for (const p of ['app3/planner.mjs', 'app3/monitor.mjs', 'app3/worker.mjs', 'app3/format.mjs', 'app3/views.mjs', 'app3/map.mjs', 'app3/tokens4.mjs']) {
+  for (const p of ['app3/planner.mjs', 'app3/monitor.mjs', 'app3/worker.mjs', 'app3/offline.mjs', 'app3/format.mjs', 'app3/views.mjs', 'app3/views-mapa.mjs', 'app3/views-plano.mjs', 'app3/views-monitor.mjs', 'app3/views-mais.mjs', 'app3/map.mjs', 'app3/tokens4.mjs']) {
     const code = read(p).replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, '');
     assert.doesNotMatch(code, /\b(document|window|navigator|localStorage)\s*\./, `${p} deveria ser sem DOM`);
   }
@@ -104,4 +105,30 @@ test('3.23 · "Outra ponta" à mão: a guia leva à entrada mesmo perto da outra
     n++;
   }
   assert.ok(n >= 30, `lotes: ${n}`);
+});
+
+test('3.24 · voz a caminho: "faltam N metros" a cada 100 m (só fala), para no aviso de chegando; volta a contar se afastar', () => {
+  let mem = {}; const say = (goM, id = 1, o = { speedMps: 8 }) => { const r = guideAlerts({ state: 'go', goM, distM: goM, next: { id, seq: id, number: id }, warn: [] }, mem, o); mem = r.mem; return r.effects; };
+  assert.deepStrictEqual(say(450), [], 'primeira leitura só marca a faixa');
+  assert.deepStrictEqual(say(420), []);
+  const e = say(390); assert.deepStrictEqual(e.map(x => x.say), ['Faltam 400 metros.']); assert.equal(e[0].vibrate, null, 'não vibra');
+  assert.deepStrictEqual(say(310), []); assert.deepStrictEqual(say(290).map(x => x.say), ['Faltam 300 metros.']);
+  assert.deepStrictEqual(say(350), [], 'afastou'); assert.deepStrictEqual(say(295).map(x => x.say), ['Faltam 300 metros.'], 'voltou a se aproximar');
+  assert.deepStrictEqual(say(150).map(x => x.say), ['Faltam 200 metros.']);
+  assert.deepStrictEqual(say(60).map(x => x.say), ['Chegando ao ponto 1: 60 metros.'], 'perto: só o aviso de chegando (de moto, 8 s)');
+  assert.deepStrictEqual(say(900, 2), [], 'alvo novo: começa a contar de novo');
+});
+
+test('3.24 · selo "pronto sem internet": pronto só com todos os arquivos no cache da 3.x', async () => {
+  const base = 'https://x.test/app/', mk = (key, files) => ({ key, has: new Set(files.map(f => new URL(f, base).href)) });
+  const api = list => ({ keys: async () => list.map(c => c.key), open: async k => { const c = list.find(x => x.key === k); return { match: async u => (c.has.has(u) ? {} : undefined) }; } });
+  assert.deepStrictEqual(await offlineStatus(null, base), { state: 'sem' });
+  assert.equal((await offlineStatus(api([]), base)).state, 'baixando');
+  const part = await offlineStatus(api([mk('schmidt-3-abc', ['index.html'])]), base);
+  assert.equal(part.state, 'baixando'); assert.deepStrictEqual(part.missing, OFFLINE_FILES.filter(f => f !== 'index.html'));
+  assert.equal((await offlineStatus(api([mk('schmidt-2-old', OFFLINE_FILES)]), base)).state, 'baixando', 'cache da 2.x não conta');
+  assert.equal((await offlineStatus(api([mk('schmidt-3-abc', OFFLINE_FILES)]), base)).state, 'pronto');
+  // a lista confere com o que o service worker guarda
+  const sw = readFileSync(new URL('../sw.js', import.meta.url), 'utf8'), arq = /const ARQUIVOS = \[([^\]]*)\]/.exec(sw)[1];
+  for (const f of OFFLINE_FILES) assert.match(arq, new RegExp(`'${f.replace('.', '\\.')}'`), `${f} está no service worker`);
 });

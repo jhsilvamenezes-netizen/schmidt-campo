@@ -25,10 +25,10 @@ export function installMonitor(app) {
     if (mon.pos && entry && Math.hypot(entry[0] - mon.pos.x, entry[1] - mon.pos.y) <= ENTRY_REACHED_M) mon.reachedEntry = true;
     const model = route && mon.active ? guideModel(route, sc, cur.field, mon.pos, Date.now(), mon.session, { toEntry: !!mon.manualDir && !mon.startedTrack && !mon.reachedEntry }) : null;
     // 3.22 · avisos decididos no núcleo sem DOM (monitor.mjs); aqui só vibra e fala
-    const al = guideAlerts(model, { offWarned: mon.offWarned, nearId: mon.nearId, stopId: mon.stopId, arrivedId: mon.arrivedId, startedTrack: mon.startedTrack },
+    const al = guideAlerts(model, { offWarned: mon.offWarned, nearId: mon.nearId, stopId: mon.stopId, arrivedId: mon.arrivedId, startedTrack: mon.startedTrack, bandKey: mon.bandKey, band: mon.band },
       { arrivalRadiusM: cur.sc.params.monitor?.arrivalRadiusM ?? 10, speedMps: mon.pos?.speedMps ?? 0 });
     Object.assign(mon, al.mem);
-    for (const e of al.effects) { try { window.navigator.vibrate?.(e.vibrate); } catch { /* sem vibração */ } say(e.say); }
+    for (const e of al.effects) { if (e.vibrate !== null) { try { window.navigator.vibrate?.(e.vibrate); } catch { /* sem vibração */ } } say(e.say); }
     // 3.13 (V3) · terminou o tiro: oferece o próximo tiro da mesma pessoa (equipe do Plano); sem equipe, o seguinte da lista
     /** @type {any} */ let nextTrack = null;
     if (model && route && (model.state === 'done' || (model.state === 'arrived' && model.next?.seq === route.nPoints))) {

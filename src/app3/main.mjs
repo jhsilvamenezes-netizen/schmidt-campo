@@ -4,8 +4,12 @@
 import { createStore, safeStorage } from './store.mjs';
 import * as P from './planner.mjs';
 import * as V from './views.mjs';
+import * as VMa from './views-mapa.mjs';
+import * as VMo from './views-monitor.mjs';
+import * as VP from './views-plano.mjs';
 import { esc, num, plural } from './format.mjs';
 import { createVersions } from './versions.mjs';
+import { offlineStatus } from './offline.mjs';
 import { createSchmidtSessionLock, installSchmidtSessionLifecycle } from '../platform/browser-session-lock.mjs';
 import { installMapa } from './screen-mapa.mjs';
 import { installMonitor } from './screen-monitor.mjs';
@@ -21,13 +25,14 @@ export async function startApp(opts) {
   try { await session.enter(); } catch { /* sem trava: segue só leitura se a sessão disser que não pode gravar */ }
   installSchmidtSessionLifecycle(opts.window, session);
   const app = runApp({ ...opts, session });
-  registerWorker(opts.window, app.toast);
+  registerWorker(opts.window, app.toast, app.setOffline);
   return app;
 }
 
 /** 3.12 · versão nova: o service worker novo fica esperando (nunca troca sozinho no meio do uso). Quando ele está pronto,
  *  aparece "Atualizar" no topo (no lugar da palavra SCHMIDT) e um aviso; um toque troca e recarrega. Escondido durante a guia (CSS). */
-function registerWorker(window, toast) {
+/** @param {any} window @param {any} toast @param {(st:any)=>void} setOffline */
+function registerWorker(window, toast, setOffline) {
   const sw = window.navigator.serviceWorker;
   if (!sw || !/^https?:$/.test(window.location.protocol)) return;
   const doc = window.document, had = !!sw.controller;
@@ -40,6 +45,14 @@ function registerWorker(window, toast) {
     doc.querySelector('header .logo')?.after(b);
     toast('Versão nova pronta. Toque em Atualizar no topo quando puder.');
   };
+  // 3.24 · selo "pronto sem internet": confere o cache quando o worker fica ativo. Na 1ª visita (página ainda sem
+  // worker), avisa uma vez quando termina de guardar; nas outras só atualiza o selo do menu Mais
+  let told = false;
+  const check = () => offlineStatus(window.caches, window.location.href).then(st => {
+    setOffline(st);
+    if (st.state === 'pronto' && !had && !told) { told = true; toast('Pronto para usar sem internet.'); }
+  });
+  sw.ready.then(check); sw.addEventListener('controllerchange', () => setTimeout(check, 500));
   sw.register('sw.js').then((/** @type {any} */ reg) => {
     offer(reg.waiting);
     reg.addEventListener('updatefound', () => { const nw = reg.installing; nw?.addEventListener('statechange', () => { if (nw.state === 'installed') offer(nw); }); });
@@ -246,11 +259,11 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     $('#titulo').textContent = `SCHMIDT Campo · ${c.field.code} · ${({ lotes: 'Lotes', mapa: 'Mapa', plano: 'Plano', monitorar: 'Monitorar' })[ui.view] || ''}`;
     for (const a of document.querySelectorAll('[data-tab]')) { const on = a.dataset.tab === ui.view; a.classList.toggle('on', on); a.setAttribute('aria-current', on ? 'page' : 'false'); }
     main.dataset.view = ui.view; app.applySnap?.();
-    if (ui.view === 'mapa') main.innerHTML = V.mapaView(c);
-    else if (ui.view === 'plano') main.innerHTML = V.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), hiTrack: app.hiTrack, bigMap: !!app.planBig, hint: c.block ? null : app.hint?.(), border: (b => (b ? { minM: b.minM, n: b.min.number, near: b.minM < P.BORDADURA_M, low: b.minM < P.BORDA_MIN_M } : null))(P.borderStats(c.field, c.sc)),
+    if (ui.view === 'mapa') main.innerHTML = VMa.mapaView(c);
+    else if (ui.view === 'plano') main.innerHTML = VP.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), hiTrack: app.hiTrack, bigMap: !!app.planBig, hint: c.block ? null : app.hint?.(), border: (b => (b ? { minM: b.minM, n: b.min.number, near: b.minM < P.BORDADURA_M, low: b.minM < P.BORDA_MIN_M } : null))(P.borderStats(c.field, c.sc)),
       rows: c.sc.trackRows.map(r => ({ ...r, d: c.block ? null : (c.details ??= new Map()).get(r.trackId) ?? c.details.set(r.trackId, P.trackDetail(c.field, c.sc, r.trackId)).get(r.trackId) })) });
     else if (ui.view === 'lotes') main.innerHTML = app.lotesView();
-    else main.innerHTML = V.monitorView(app.monitorData());
+    else main.innerHTML = VMo.monitorView(app.monitorData());
     requestAnimationFrame(app.drawMaps);
   }
 
@@ -323,5 +336,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   new window.ResizeObserver(() => app.cur && app.drawMaps()).observe($('#view'));
   render();
   document.documentElement.dataset.ready = '1';
-  return { render, toast, get state() { return { ...ui, cur: app.cur }; } };
+  // 3.24 · selo "pronto sem internet" (o service worker é registrado fora daqui)
+  app.offline = { state: window.navigator.serviceWorker && /^https?:$/.test(window.location.protocol) ? 'baixando' : 'sem' };
+  return { render, toast, setOffline: (/** @type {any} */ st) => { app.offline = st; }, get state() { return { ...ui, cur: app.cur }; } };
 }

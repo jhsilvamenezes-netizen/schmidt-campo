@@ -2,6 +2,8 @@
 // versões anteriores e cópia de segurança.
 import * as P from './planner.mjs';
 import * as V from './views.mjs';
+import { offlineText } from './offline.mjs';
+import * as VX from './views-mais.mjs';
 import { esc, num } from './format.mjs';
 import { makeBackup, readBackup, ITEM_LABELS } from './backup.mjs';
 import { createSchmidtBackupService } from '../persistence/backup-service.mjs';
@@ -53,7 +55,7 @@ export function installMais(app) {
       const t0 = performance.now();
       while (i < keys.length && performance.now() - t0 < 30) rows.push(lotRow(keys[i++], st));
       if (i < keys.length) { app.host.querySelector('[data-prog]').textContent = `Calculando… ${i} de ${keys.length}`; setTimeout(step, 0); }
-      else app.openSheet('Todos os lotes', V.allLotsBody(rows));
+      else app.openSheet('Todos os lotes', VX.allLotsBody(rows));
     };
     setTimeout(step, 0);
   }
@@ -99,18 +101,20 @@ export function installMais(app) {
   });
   Object.assign(app.SHEETS, {
     menu: () => app.openSheet('Mais', `<div class="brand"><img src="marca-logo.png" alt="SCHMIDT" width="88" height="88"><span><b>SCHMIDT Campo</b><small>Planejamento de amostragem · versão ${app.appVersion}</small></span></div>`
+      // 3.24 · selo: o app já está guardado no celular para abrir sem sinal?
+      + `<p class="ck${app.offline?.state === 'pronto' ? '' : ' alerta'}" data-offline="${esc(app.offline?.state || 'sem')}">${esc(offlineText(app.offline?.state || 'sem'))}</p>`
       + `<button class="lrow" data-act="design4" role="switch" aria-checked="${app.isDesign4()}"><span><b>Design 4.0 (prévia)</b><small>o visual novo, para comparar; desliga a qualquer hora</small></span><i class="tg" aria-hidden="true"></i></button>`
       + (app.isDesign4() ? '<button class="lnk" data-open="vitrine">Vitrine do design 4.0</button>' : '') + V.menuBody([['glossario', 'Glossário: o que cada medida quer dizer'], ['arquivos', 'Arquivos e fichas'], ['dados', 'Dados do lote'], ['calculo', 'Como foi calculado'], ['versoes', 'Versões anteriores'],
       ['copia', 'Cópia de segurança'], ['abrir', 'Abrir plano recebido']])),
     // 4.0-b · vitrine: todos os componentes num lugar só, para revisar o design 4.0 sem procurar caso a caso
-    vitrine: () => app.openSheet('Vitrine do design 4.0', V.vitrineBody()),
+    vitrine: () => app.openSheet('Vitrine do design 4.0', VX.vitrineBody()),
     glossario: () => app.openSheet('Glossário', `<dl class="glos">${glossTerms().map(([t, d]) => `<dt>${esc(t)}</dt><dd>${esc(d)}</dd>`).join('')}</dl>`),
     todos: openAll,
-    versoes: async () => { app.openSheet(`Versões · ${app.cur.field.code}`, '<p class="mu">…</p>'); const rows = await versions.list(ui.key); app.openSheet(`Versões · ${app.cur.field.code}`, V.versionsBody(rows)); },
-    copia: () => app.openSheet('Cópia de segurança', V.backupBody('', lastBackup())),
+    versoes: async () => { app.openSheet(`Versões · ${app.cur.field.code}`, '<p class="mu">…</p>'); const rows = await versions.list(ui.key); app.openSheet(`Versões · ${app.cur.field.code}`, VX.versionsBody(rows)); },
+    copia: () => app.openSheet('Cópia de segurança', VX.backupBody('', lastBackup())),
     lote: () => app.openSheet('Escolher lote', lotPicker()),
-    dados: () => app.openSheet(`Dados · ${app.cur.field.code}`, V.dadosBody(app.cur.field, assessField(app.cur.field), safra?.data?.[ui.key], safra?.source)),
-    calculo: () => app.openSheet('Como foi calculado', V.calculoBody(explainScenario(app.cur.sc, app.cur.field))),
+    dados: () => app.openSheet(`Dados · ${app.cur.field.code}`, VX.dadosBody(app.cur.field, assessField(app.cur.field), safra?.data?.[ui.key], safra?.source)),
+    calculo: () => app.openSheet('Como foi calculado', VX.calculoBody(explainScenario(app.cur.sc, app.cur.field))),
   });
   Object.assign(app.ACTIONS, {
     design4: () => { const on = !app.isDesign4(); app.setDesign4(on); app.SHEETS.menu(); app.toast(on ? 'Design 4.0 ligado (prévia).' : 'Design 4.0 desligado.'); },
@@ -141,7 +145,7 @@ export function installMais(app) {
   });
   app.changes.push(t => {
     if (t.id !== 'backup-input' || !t.files?.[0]) return false;
-    t.files[0].text().then(text => readBackup(text, window.crypto.subtle)).then(({ backup, items }) => { pendingRestore = backup; app.openSheet('Restaurar cópia', V.backupBody(V.restoreConfirm(items, ITEM_LABELS), lastBackup())); })
+    t.files[0].text().then(text => readBackup(text, window.crypto.subtle)).then(({ backup, items }) => { pendingRestore = backup; app.openSheet('Restaurar cópia', VX.backupBody(VX.restoreConfirm(items, ITEM_LABELS), lastBackup())); })
       .catch(err => app.toast(`Cópia recusada: ${err.message}.`)).finally(() => { t.value = ''; });
     return true;
   });
