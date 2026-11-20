@@ -104,7 +104,7 @@ export function installMais(app) {
     menu: () => app.openSheet('Mais', `<div class="brand"><img src="marca-logo.png" alt="SCHMIDT" width="88" height="88"><span><b>SCHMIDT Campo</b><small>Planejamento de amostragem · versão ${app.appVersion}</small></span></div>`
       // 3.24 · selo: o app já está guardado no celular para abrir sem sinal?
       + `<p class="ck${app.offline?.state === 'pronto' ? '' : ' alerta'}" data-offline="${esc(app.offline?.state || 'sem')}">${esc(offlineText(app.offline?.state || 'sem'))}</p>`
-      + `<button class="lrow" data-act="design4" role="switch" aria-checked="${app.isDesign4()}"><span><b>Design 4.0 (prévia)</b><small>o visual novo, para comparar; desliga a qualquer hora</small></span><i class="tg" aria-hidden="true"></i></button>`
+      + `<button class="lrow" data-act="design4" role="switch" aria-checked="${!app.isDesign4()}"><span><b>Visual anterior (reserva)</b><small>o visual da 3.x, por mais uma versão; volta a qualquer hora</small></span><i class="tg" aria-hidden="true"></i></button>`
       + (app.isDesign4() ? '<button class="lnk" data-open="vitrine">Vitrine do design 4.0</button>' : '') + V.menuBody([['glossario', 'Glossário: o que cada medida quer dizer'], ['arquivos', 'Arquivos e fichas'], ['dados', 'Dados do lote'], ['calculo', 'Como foi calculado'], ['versoes', 'Versões anteriores'], ['gps', 'Qualidade do GPS (calibrar)'],
       ['copia', 'Cópia de segurança'], ['abrir', 'Abrir plano recebido']])),
     // 3.25 · qualidade do GPS: o que os celulares da equipe medem em campo (sem posição), para calibrar raio e precisão
@@ -135,7 +135,7 @@ export function installMais(app) {
       app.download(text, name, 'text/csv'); app.toast('Arquivo da qualidade do GPS baixado.');
     },
     'gps-reset': () => { app.resetGpsStats?.(); app.SHEETS.gps(); app.toast('Contagem do GPS zerada.'); },
-    design4: () => { const on = !app.isDesign4(); app.setDesign4(on); app.SHEETS.menu(); app.toast(on ? 'Design 4.0 ligado (prévia).' : 'Design 4.0 desligado.'); },
+    design4: () => { const on = !app.isDesign4(); app.setDesign4(on); app.SHEETS.menu(); app.toast(on ? 'Visual 4.0 de volta.' : 'Visual anterior ligado (reserva).'); },
     async backup() {
       try { const b = await doBackup(); app.download(JSON.stringify(b), `schmidt_copia_${stamp()}.json`, 'application/json'); try { storage.setItem(LAST_BACKUP, String(Date.now())); } catch { /* só não lembra */ } app.toast('Cópia de segurança baixada.'); }
       catch (e) { app.toast(`Cópia não feita: ${/** @type {Error} */ (e).message}.`); }

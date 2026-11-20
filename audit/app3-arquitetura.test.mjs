@@ -173,15 +173,8 @@ test('3.26 · satélite: lote nítido com folga e entorno largo que cobre a tela
   assert.match(csp, /connect-src 'self';/, 'nenhuma conexão externa além da imagem');
 });
 
-test('4.0-d/e · textura de plantio só no 4.0 (recorte único por mapa, no sentido dos tiros); vibrações com nome', async () => {
+test('4.0-e · vibrações com nome, mesmos padrões de antes; mapa sem textura de plantio (retirada a pedido)', async () => {
   const fields = await loadFields(), f = fields['Bananal|BD3'], sc = P.planInUse(f, P.recommend(f, {}, 5, false).chosen.params, null);
-  const a = mapMarkup(f, sc, 390, 600, {}), b = mapMarkup(f, sc, 390, 600, { rows: true }), c = mapMarkup(f, sc, 390, 600, { rows: true });
-  assert.doesNotMatch(a, /class="rows"|clipPath/, 'design atual: sem textura');
-  assert.match(b, /<clipPath id="lotclip\d+"><path d="M[^"]+"[^>]*\/><\/clipPath><path class="rows" clip-path="url\(#lotclip\d+\)"/);
-  assert.notEqual(/lotclip(\d+)/.exec(b)[1], /lotclip(\d+)/.exec(c)[1], 'recorte com id único por mapa');
-  // linhas paralelas ao primeiro tiro (mesma inclinação na tela)
-  const seg = /class="rows"[^>]* d="M(-?[\d.]+),(-?[\d.]+)L(-?[\d.]+),(-?[\d.]+)/.exec(b).slice(1).map(Number), ln = sc.units[0].line;
-  const ang = Math.atan2(-(seg[3] - seg[1]), seg[2] - seg[0]), tr = Math.atan2(ln.at(-1)[1] - ln[0][1], ln.at(-1)[0] - ln[0][0]);
-  assert.ok(Math.abs(Math.sin(ang - tr)) < 0.01, 'no sentido dos tiros');
-  assert.deepStrictEqual(VIBRA, { foraDaLinha: [70, 60, 70, 60, 70], chegando: 150, pare: 600, chegou: [300, 100, 300, 100, 300] }, 'mesmos padrões de antes');
+  assert.doesNotMatch(mapMarkup(f, sc, 390, 600, {}), /class="rows"|clipPath/);
+  assert.deepStrictEqual(VIBRA, { foraDaLinha: [70, 60, 70, 60, 70], chegando: 150, pare: 600, chegou: [300, 100, 300, 100, 300] });
 });

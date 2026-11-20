@@ -58,10 +58,11 @@ function layoutDiff(a, b) {
 }
 
 /** Cada cena: tema, largura e, opcionalmente, o design 4.0 ligado. */
+// 4.0-f · o padrão é o 4.0 (claro, escuro, Sol, 360 px); o visual anterior (reserva, design '3') em claro e escuro
 const SCENES = [
   ...['light', 'dark', 'sun'].map(theme => ({ theme, w: 390 })),
   { theme: 'light', w: 360 },
-  ...(process.env.VISUAL_V4 === '0' ? [] : [{ theme: 'light', w: 390, v4: true }, { theme: 'dark', w: 390, v4: true }]),
+  ...(process.env.VISUAL_V3 === '0' ? [] : [{ theme: 'light', w: 390, v3: true }, { theme: 'dark', w: 390, v3: true }]),
 ];
 const TABS = ['lotes', 'mapa', 'plano', 'monitorar'];
 
@@ -78,14 +79,14 @@ try {
   for (const s of SCENES) {
     const ctx = await browser.newContext({ viewport: { width: s.w, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true, locale: 'pt-BR',
       colorScheme: s.theme === 'dark' ? 'dark' : 'light', reducedMotion: 'reduce', serviceWorkers: 'block' });
-    const st = { fieldKey: 'Bananal|BD3', sunMode: s.theme === 'sun', ...(s.v4 ? { design: '4' } : {}) };
+    const st = { fieldKey: 'Bananal|BD3', sunMode: s.theme === 'sun', ...(s.v3 ? { design: '3' } : {}) };
     await ctx.addInitScript(v => { try { localStorage.setItem('monitoramento.v03', v); } catch { /* sem armazenamento */ } }, JSON.stringify(st));
     // mudança de layout ao abrir (CLS): soma dos deslocamentos sem toque da pessoa
     await ctx.addInitScript(() => { window.__cls = 0; try { new PerformanceObserver(l => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; }).observe({ type: 'layout-shift', buffered: true }); } catch { /* sem API */ } });
     const p = await ctx.newPage();
     await p.goto(url); await p.waitForFunction(() => document.documentElement.dataset.ready === '1');
     await p.evaluate(() => document.fonts.ready);
-    shifts.push([`${s.theme}-${s.w}${s.v4 ? '-v4' : ''}`, await p.evaluate(() => window.__cls)]);
+    shifts.push([`${s.theme}-${s.w}${s.v3 ? '-v3' : ''}`, await p.evaluate(() => window.__cls)]);
     for (const tab of TABS) {
       await p.click(`[data-tab="${tab}"]`);
       // espera os cálculos em segundo plano (lista de lotes, recomendado, sugestão do motor) e a tela parar de mudar
@@ -93,7 +94,7 @@ try {
       let last = '', same = 0;
       for (let i = 0; i < 40 && same < 3; i++) { await p.waitForTimeout(250); const h = await p.evaluate(() => document.querySelector('#view').innerHTML.length + '|' + (document.querySelector('[data-hint]')?.textContent || '')); same = h === last ? same + 1 : 0; last = h; }
       await p.evaluate(() => { const t = document.getElementById('toast'); if (t) t.innerHTML = ''; });
-      const name = `${tab}-${s.theme}-${s.w}${s.v4 ? '-v4' : ''}.png`, shot = await p.screenshot(), lay = await layoutOf(p), lname = name.replace('.png', '.estrutura.json');
+      const name = `${tab}-${s.theme}-${s.w}${s.v3 ? '-v3' : ''}.png`, shot = await p.screenshot(), lay = await layoutOf(p), lname = name.replace('.png', '.estrutura.json');
       if (UPDATE || !existsSync(OUT + name) || !existsSync(OUT + lname)) { await writeFile(OUT + name, shot); await writeFile(OUT + lname, JSON.stringify(lay)); wrote.push(name); continue; }
       const wide = await p.evaluate(() => document.documentElement.scrollWidth - innerWidth);
       if (wide > 1) bad.push(`${name}: a página rola de lado (${wide} px)`);
