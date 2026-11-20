@@ -9,6 +9,7 @@ import { loadFields } from './legacy-engine.mjs';
 import * as P from '../src/app3/planner.mjs';
 import { reply } from '../src/app3/worker.mjs';
 import { offlineStatus, OFFLINE_FILES } from '../src/app3/offline.mjs';
+import { satRequest, SAT_HOST, SAT_MAX_PX } from '../src/app3/satellite.mjs';
 import { statsAdd, statsSummary, statsCsv, binQuantile, ACC_BINS } from '../src/app3/gps-stats.mjs';
 import { speedStep, modeStep, guideAlerts, guideModel, routeFor, ENTRY_REACHED_M } from '../src/app3/monitor.mjs';
 
@@ -24,7 +25,7 @@ test('camadas: engine3 e gps puros (sem tela, sem navegador); motor da tela só 
     assert.doesNotMatch(code, /\b(document|window|navigator|localStorage)\b/, `${p} usa o navegador`);
   }
   // núcleo da tela sem DOM: planner, monitor, worker, format, map (SVG em texto), views (HTML em texto), tokens4
-  for (const p of ['app3/planner.mjs', 'app3/monitor.mjs', 'app3/worker.mjs', 'app3/offline.mjs', 'app3/gps-stats.mjs', 'app3/format.mjs', 'app3/views.mjs', 'app3/views-mapa.mjs', 'app3/views-plano.mjs', 'app3/views-monitor.mjs', 'app3/views-mais.mjs', 'app3/map.mjs', 'app3/tokens4.mjs']) {
+  for (const p of ['app3/planner.mjs', 'app3/monitor.mjs', 'app3/worker.mjs', 'app3/offline.mjs', 'app3/gps-stats.mjs', 'app3/satellite.mjs', 'app3/format.mjs', 'app3/views.mjs', 'app3/views-mapa.mjs', 'app3/views-plano.mjs', 'app3/views-monitor.mjs', 'app3/views-mais.mjs', 'app3/map.mjs', 'app3/tokens4.mjs']) {
     const code = read(p).replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, '');
     assert.doesNotMatch(code, /\b(document|window|navigator|localStorage)\s*\./, `${p} deveria ser sem DOM`);
   }
@@ -149,4 +150,20 @@ test('3.25 · qualidade do GPS: faixas de precisão e intervalo, moto/a pé, res
   const csv = statsCsv(st, '3.25.0');
   assert.match(csv, /^tipo;faixa;leituras\nprecisao_m;<=3;1\n/); assert.match(csv, /modo;moto;3/); assert.doesNotMatch(csv, /lat|lon|-1[0-9]\.\d{4}/, 'sem posição');
   assert.equal(statsAdd(st, { accuracyM: NaN, dtS: 1, mode: 'pe', day }), st, 'leitura sem precisão não conta');
+});
+
+test('3.26 · satélite: a imagem cobre o lote com folga, no fuso 23S, sem distorcer; CSP só libera esse servidor', async () => {
+  const fields = await loadFields();
+  for (const [k, f] of Object.entries(fields)) {
+    const r = satRequest(f), [x0, y0, x1, y1] = r.local, pts = f.geom.flat(2);
+    for (const [x, y] of pts) assert.ok(x > x0 + 200 && x < x1 - 200 && y > y0 + 200 && y < y1 - 200, `${k}: lote dentro da imagem com folga`);
+    assert.equal(Math.max(...r.size), SAT_MAX_PX, k);
+    assert.ok(Math.abs(r.size[0] / r.size[1] - (x1 - x0) / (y1 - y0)) < 0.02, `${k}: mesma proporção (sem esticar)`);
+    const q = new URL(r.href).searchParams, bb = q.get('bbox').split(',').map(Number);
+    assert.equal(q.get('bboxSR'), '32723'); assert.equal(q.get('imageSR'), '32723'); assert.equal(q.get('f'), 'image');
+    assert.ok(Math.abs(bb[0] - (f.centroidUTM[0] + x0)) < 0.1 && Math.abs(bb[3] - (f.centroidUTM[1] + y1)) < 0.1, `${k}: caixa em UTM`);
+  }
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8'), csp = /Content-Security-Policy" content="([^"]+)"/.exec(html)[1];
+  assert.match(csp, new RegExp(`img-src 'self' data: blob: ${SAT_HOST.replace(/[./]/g, '\\$&')};`));
+  assert.match(csp, /connect-src 'self';/, 'nenhuma conexão externa além da imagem');
 });

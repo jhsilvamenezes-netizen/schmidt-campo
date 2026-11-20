@@ -236,3 +236,27 @@ conta as leituras do GPS em faixas, no próprio aparelho. Não guarda coordenada
 
 Testes: Node (faixas, percentis, resumo, arquivo sem posição, leitura sem precisão ignorada) e navegador
 (guia de verdade, depois parar: contagem gravada sem x/y/lat/lon e tela de resumo).
+
+## 21. 3.26 · fundo de satélite (decisão)
+
+Sem imagem de drone (proprietário, 20/11), a escolha foi a fonte de imagem mais nítida, a mesma já usada na 2.5.
+
+| Fonte | Nitidez | Uso empresarial | Escolha |
+|---|---|---|---|
+| Esri World Imagery | abaixo de 1 m (talhões, carreadores, pivôs) | termos da Esri: uso comercial pode exigir licença; **a confirmar** com a Esri | ✅ camada opcional, como na 2.5 |
+| Sentinel-2 cloudless (EOX) | 10 m | só a camada de 2016 é CC BY 4.0 (imagem antiga); 2018 em diante não comercial | descartada |
+| Google / Mapbox | boa | pago, com chave, e os termos proíbem guardar a imagem | descartada |
+
+Como funciona:
+- **Camada "Satélite"** no painel de camadas do Mapa. Vem desligada; ligada, fica lembrada.
+- **Uma imagem por lote**, no fuso UTM 23S dos lotes, com folga em volta e no máximo 1600 px. Aparece no mapa principal e no da guia.
+- **Nada externo até ligar.** A CSP libera só `services.arcgisonline.com`, e só para imagem (`connect-src 'self'`).
+- **Sem sinal**, o mapa segue igual: o plano não depende da imagem.
+- **Crédito no canto:** "Imagem: Esri, Vantor, Earthstar Geographics".
+
+Conferido com a imagem real (BD3 e BD5): o contorno do lote cai em cima dos talhões. Teste no Node: nos 51 lotes, o
+lote fica dentro da imagem com folga, sem esticar, no fuso 23S. Teste no navegador: desligado não pede nada; ligado,
+a imagem e o crédito aparecem; a camada fica lembrada e desligar tira a imagem.
+
+Qualidade do GPS (3.25): não precisa mandar arquivo. A guia já ajusta o raio de chegada à precisão de cada leitura
+(3.16). A tela fica no menu Mais só para diagnóstico, se alguém relatar "não chega no ponto".

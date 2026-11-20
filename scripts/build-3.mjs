@@ -9,11 +9,11 @@ import { ICONS } from '../src/app3/views.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 /** Módulos da tela, caminho relativo a src/ (ordem: dependências primeiro). Motor: src/engine via schmidtEngine2. */
-export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', 'app3/store', 'app3/plan-file', 'app3/planner', 'app3/map', 'app3/views', 'app3/views-mapa', 'app3/views-plano', 'app3/views-monitor', 'app3/views-mais',
+export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', 'app3/store', 'app3/plan-file', 'app3/planner', 'app3/satellite', 'app3/map', 'app3/views', 'app3/views-mapa', 'app3/views-plano', 'app3/views-monitor', 'app3/views-mais',
   'app3/advanced', 'app3/gestures', 'app3/monitor', 'app3/gps-stats', 'app3/compass', 'persistence/backup-service', 'persistence/backup-format', 'platform/browser-backup-adapters', 'platform/browser-session-lock',
   'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/versions', 'app3/backup', 'app3/offline',
   'app3/screen-mapa', 'app3/screen-monitor', 'app3/screen-plano', 'app3/screen-enviar', 'app3/screen-mais', 'app3/screen-lotes', 'app3/screen-bloco', 'app3/main'];
-export const APP_VERSION = '3.25.0';
+export const APP_VERSION = '3.26.0';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
 /** Cada módulo no seu escopo; importações do motor viram o namespace schmidtEngine2. */
@@ -76,7 +76,7 @@ export async function build3() {
   for (const [n, t] of [['motor', engine], ['tela', app], ['dados', fields], ['safra', safra], ['recomendações', recs]]) if (/<\/script/i.test(t)) throw Error(`${n} contém </script>`);
   const nav = [['lotes', 'Lotes'], ['mapa', 'Mapa'], ['plano', 'Plano'], ['monitorar', 'Monitorar']]
     .map(([k, l]) => `<button data-tab="${k}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>${l}</button>`).join('');
-  const csp = `default-src 'self'; script-src ${sha(engine)} ${sha(app)}; style-src ${sha(css)}; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'`;
+  const csp = `default-src 'self'; script-src ${sha(engine)} ${sha(app)}; style-src ${sha(css)}; img-src 'self' data: blob: https://services.arcgisonline.com; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'`;
   const html = shell.replace('__CSP__', csp).replace('__CSS__', () => css).replace('__ICON_SOL__', ICONS.sol).replace('__ICON_MAIS__', ICONS.mais)
     .replace('__NAV__', nav).replace('__FIELDS__', () => fields).replace('__SAFRA__', () => safra).replace('__RECS__', () => recs).replace('__ENGINE__', () => engine).replace('__APP__', () => app);
   if (/__[A-Z_]+__/.test(html)) throw Error('Marcador do modelo sem valor');

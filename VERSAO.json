@@ -1,16 +1,17 @@
 {
-  "entrega": "3.25.0",
+  "entrega": "3.26.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-20",
-  "versaoDoApp": "3.25.0",
+  "versaoDoApp": "3.26.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "9d295c86d4026b5373e5a967fd77a1e3c4486b7d14e84ce14da86a6efb938678",
-  "workerSha256": "b545479bab5dc9a9a06028fea9731f8945493b1ab4781960aa12ace4f65d8f64",
+  "htmlSha256": "25c3c94e6c01c33006143b50e3f25f7a056a08fb48f146294bd1474331a116ff",
+  "workerSha256": "3590b54d2308c0bfeea4d8798f2d1c3c9e545286524cdc11123e09b0bd89695e",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "3.26.0: fundo de satélite opcional (Esri World Imagery, a mesma fonte da 2.5) — camada \"Satélite\" no Mapa, desligada por padrão; uma imagem por lote no fuso 23S, no mapa principal e no da guia, com crédito; CSP libera só esse servidor e só para imagem; sem sinal o mapa segue igual",
     "3.25.0: qualidade do GPS para calibrar com dado real — a guia conta as leituras em faixas (precisão, intervalo, moto/a pé), sem coordenadas e sem marcar coleta; Mais → Qualidade do GPS mostra o resumo (o raio de chegada cobre 9 em 10 leituras?) e compartilha um CSV só com contagens",
     "3.24.0: selo \"Pronto para usar sem internet\" no menu Mais (e aviso único na 1ª visita); com a voz ligada, \"Faltam N metros\" a cada 100 m a caminho (sem vibrar); telas em HTML divididas por aba (views.mjs só com as peças comuns), 24 telas idênticas",
     "3.23.0: \"Outra ponta\" com a guia ligada — antes do primeiro ponto a guia mostra por qual ponta começa e um botão para trocar (a ponta mais perto pode não ter acesso); escolhida à mão, a guia leva até a entrada (antes, perto da outra ponta, mandava ao último ponto) e na entrada segue pelo ponto 1. Medido e descartado: dividir a equipe pela caminhada real (ganho em 2 de 100 casos, ~10 m)",
@@ -101,5 +102,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "20cdc51f72aa3c7e33426f690a79c2b40dc5c7ddd9df8866bb0e5957c885e9a7"
+  "motorSha256": "66e852628b3d58279493ce93e991a9bcb0d172f87859402b47403979a24bc8db"
 }
