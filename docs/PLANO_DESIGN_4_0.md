@@ -10,9 +10,9 @@ lado com o atual e só vira padrão com aprovação do proprietário.
 | 4.0-a | Rede de segurança: comparação de imagens (`audit/app3-visual-browser.mjs`, 24 telas, limite 0,2% de pixels, CLS ≤ 0,05), orçamento de tamanho (`audit/budget.test.mjs`); tokens OKLCH em 3 camadas (`src/app3/tokens4.mjs`) com teste WCAG 2 + APCA, ordem dos tons e daltonismo (`audit/tokens4.test.mjs`) | Feito (3.18) |
 | 4.0-b | Componentes tonais (`src/app3/styles-4.css`): pílulas com toque ≥ 48 px, elevação tingida, números com algarismos de largura fixa, menu com cápsula cheia; vitrine no menu | Feito (3.18) |
 | 4.0-c | Folha sobre o mapa com 3 alturas (baixa 34%, meia 56%, cheia) e alça arrastável (gesto rápido = próxima altura); guia de moto (≥ 9 km/h) com distância de 56–72 px | Feito (3.18) |
-| 4.0-d | Cartografia: textura de plantio, sombra do talhão, alfinetes numerados, halos; desenho híbrido SVG + Canvas | Próxima |
-| 4.0-e | Movimento (View Transitions com alternativa), vibração por padrões nomeados, Web Share com arquivo, tela travada em pé na guia | — |
-| 4.0-f | 4.0 vira padrão; o atual fica uma versão como reserva; satélite sem internet só com decisão do proprietário | — |
+| 4.0-d | Cartografia: textura de plantio no sentido dos tiros (recortada no lote), sombra mais funda do talhão, halo dourado nos pontos (mais forte no selecionado). Alfinetes e desenho SVG + Canvas descartados: alfinete desloca o número do ponto exato e conflita com as medidas; o desenho atual já fica abaixo de 200 ms (1.18) | Feito (3.27) |
+| 4.0-e | Movimento: troca de aba com View Transition só no conteúdo (alternativa: a animação de antes), alvo da guia pulsando, tela em pé na guia (onde o aparelho deixa), vibrações com nome (`VIBRA`); Web Share com arquivo já existia (Enviar, GPS). Tudo some com "reduzir movimento" | Feito (3.27) |
+| 4.0-f | 4.0 vira padrão; o atual fica uma versão como reserva; satélite sem internet só com decisão do proprietário | Próxima (aprovação) |
 
 ## Garantias de cada etapa
 

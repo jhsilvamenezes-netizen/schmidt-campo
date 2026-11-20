@@ -11,7 +11,8 @@ import { reply } from '../src/app3/worker.mjs';
 import { offlineStatus, OFFLINE_FILES } from '../src/app3/offline.mjs';
 import { satRequest, SAT_HOST, SAT_MAX_PX, SAT_CONTEXT_PX } from '../src/app3/satellite.mjs';
 import { statsAdd, statsSummary, statsCsv, binQuantile, ACC_BINS } from '../src/app3/gps-stats.mjs';
-import { speedStep, modeStep, guideAlerts, guideModel, routeFor, ENTRY_REACHED_M } from '../src/app3/monitor.mjs';
+import { mapMarkup } from '../src/app3/map.mjs';
+import { speedStep, modeStep, guideAlerts, VIBRA, guideModel, routeFor, ENTRY_REACHED_M } from '../src/app3/monitor.mjs';
 
 const src = fileURLToPath(new URL('../src/', import.meta.url));
 const read = p => readFileSync(src + p, 'utf8');
@@ -170,4 +171,17 @@ test('3.26 · satélite: lote nítido com folga e entorno largo que cobre a tela
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8'), csp = /Content-Security-Policy" content="([^"]+)"/.exec(html)[1];
   assert.match(csp, new RegExp(`img-src 'self' data: blob: ${SAT_HOST.replace(/[./]/g, '\\$&')};`));
   assert.match(csp, /connect-src 'self';/, 'nenhuma conexão externa além da imagem');
+});
+
+test('4.0-d/e · textura de plantio só no 4.0 (recorte único por mapa, no sentido dos tiros); vibrações com nome', async () => {
+  const fields = await loadFields(), f = fields['Bananal|BD3'], sc = P.planInUse(f, P.recommend(f, {}, 5, false).chosen.params, null);
+  const a = mapMarkup(f, sc, 390, 600, {}), b = mapMarkup(f, sc, 390, 600, { rows: true }), c = mapMarkup(f, sc, 390, 600, { rows: true });
+  assert.doesNotMatch(a, /class="rows"|clipPath/, 'design atual: sem textura');
+  assert.match(b, /<clipPath id="lotclip\d+"><path d="M[^"]+"[^>]*\/><\/clipPath><path class="rows" clip-path="url\(#lotclip\d+\)"/);
+  assert.notEqual(/lotclip(\d+)/.exec(b)[1], /lotclip(\d+)/.exec(c)[1], 'recorte com id único por mapa');
+  // linhas paralelas ao primeiro tiro (mesma inclinação na tela)
+  const seg = /class="rows"[^>]* d="M(-?[\d.]+),(-?[\d.]+)L(-?[\d.]+),(-?[\d.]+)/.exec(b).slice(1).map(Number), ln = sc.units[0].line;
+  const ang = Math.atan2(-(seg[3] - seg[1]), seg[2] - seg[0]), tr = Math.atan2(ln.at(-1)[1] - ln[0][1], ln.at(-1)[0] - ln[0][0]);
+  assert.ok(Math.abs(Math.sin(ang - tr)) < 0.01, 'no sentido dos tiros');
+  assert.deepStrictEqual(VIBRA, { foraDaLinha: [70, 60, 70, 60, 70], chegando: 150, pare: 600, chegou: [300, 100, 300, 100, 300] }, 'mesmos padrões de antes');
 });

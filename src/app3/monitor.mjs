@@ -73,6 +73,10 @@ export function modeStep(st, v) {
   return n >= 2 ? { mode: want, n: 0 } : { mode: st.mode, n };
 }
 
+/** 4.0-e · vibrações com nome (o mesmo padrão em todo lugar; dá para sentir sem olhar): fora da linha = 3 toques curtos,
+ *  chegando = 1 toque, pare aqui = 1 longo, chegou = 3 pulsos longos. */
+export const VIBRA = Object.freeze({ foraDaLinha: [70, 60, 70, 60, 70], chegando: 150, pare: 600, chegou: [300, 100, 300, 100, 300] });
+
 /** Avisos da guia, uma vez por saída da linha / por ponto: fora da linha (3 toques), chegando (1 toque; de moto ~8 s
  *  antes), pare aqui (vibração longa, de moto) e chegou (3 pulsos). `mem` = o que já foi avisado.
  *  @param {any} model modelo da tela (guideModel)  @param {any} mem {offWarned, nearId, stopId, arrivedId, startedTrack}
@@ -81,11 +85,11 @@ export function modeStep(st, v) {
 export function guideAlerts(model, mem, o = {}) {
   const m = { ...mem }, effects = [];
   const off = !!model?.warn?.some(w => /da linha|linha do|Passou do ponto/.test(w));
-  if (off && !m.offWarned) effects.push({ vibrate: [70, 60, 70, 60, 70], say: 'Atenção: fora da linha.' });
+  if (off && !m.offWarned) effects.push({ vibrate: VIBRA.foraDaLinha, say: 'Atenção: fora da linha.' });
   m.offWarned = off;
   const nearM = Math.max(3 * (o.arrivalRadiusM ?? 10), 8 * (o.speedMps ?? 0)), dM = model?.distM ?? NaN;
   if (model?.state === 'go' && Number.isFinite(dM) && dM <= nearM && model.next?.id !== m.nearId) {
-    m.nearId = model.next.id; effects.push({ vibrate: 150, say: `Chegando ao ponto ${model.next.seq}: ${Math.round(dM)} metros.` });
+    m.nearId = model.next.id; effects.push({ vibrate: VIBRA.chegando, say: `Chegando ao ponto ${model.next.seq}: ${Math.round(dM)} metros.` });
   }
   // 3.24 · a caminho (sobretudo de moto, sem olhar a tela): com a voz ligada, "faltam N metros" a cada 100 m, até o
   // aviso de chegando assumir. Só fala (sem vibrar); a primeira leitura de cada alvo só marca a faixa
@@ -97,11 +101,11 @@ export function guideAlerts(model, mem, o = {}) {
     else if (band > m.band) m.band = band; // afastou: volta a contar dali
   }
   if (model?.state === 'stop' && model.next?.id !== m.stopId) {
-    m.stopId = model.next.id; effects.push({ vibrate: 600, say: `Pare. Ponto ${model.next.seq} a ${Math.round(model.distM ?? 0)} metros.` });
+    m.stopId = model.next.id; effects.push({ vibrate: VIBRA.pare, say: `Pare. Ponto ${model.next.seq} a ${Math.round(model.distM ?? 0)} metros.` });
   }
   if (model?.state === 'arrived') m.startedTrack = true; // chegou a um ponto: o sentido do tiro fica (3.20)
   if (model?.state === 'arrived' && model.next?.id !== m.arrivedId) {
-    m.arrivedId = model.next.id; effects.push({ vibrate: [300, 100, 300, 100, 300], say: `Chegou ao ponto ${model.next.seq}, número ${model.next.number}.` });
+    m.arrivedId = model.next.id; effects.push({ vibrate: VIBRA.chegou, say: `Chegou ao ponto ${model.next.seq}, número ${model.next.number}.` });
   }
   return { mem: m, effects };
 }
