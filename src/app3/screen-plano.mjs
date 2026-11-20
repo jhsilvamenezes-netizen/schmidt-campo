@@ -93,7 +93,8 @@ export function installPlano(app) {
     plus1() {
       const pl = hints.get(app.hintKey())?.plus ?? P.plusOne(app.cur.field, app.cur.params, app.people());
       if (!pl) { app.toast('Neste lote, 1 ponto a mais não melhora o bastante.'); return; }
-      app.setParams(pl.params, `${pl.after.n} pontos (1 acima do mínimo): maior vazio ${num(pl.before.worst)} → ${num(pl.after.worst)} m`, null);
+      // 4.0.1 · "vazio": mesmo plano + 1 ponto no lugar do maior vazio (vai como ajuste, com Desfazer)
+      app.setParams(pl.params, `${pl.after.n} pontos (1 acima do mínimo${pl.reason === 'vazio' ? ', no maior vazio' : ''}): maior vazio ${num(pl.before.worst)} → ${num(pl.after.worst)} m`, pl.edits ?? null);
     },
     optimize() {
       const cur = app.cur, r = P.optimizeEdits(cur.field, cur.params);
