@@ -21,10 +21,6 @@ export const metrics = f => `<div class="m3">${metric('Entre tiros', f.entreTiro
 export const chip = (level, text) => `<span class="chip ${level}">${esc(text)}</span>`;
 
 /** Selo do lote: alertas do motor (dados) ou "Sem alertas". */
-export function badge(sc) {
-  const e = sc.warnings.filter(w => w.level === 'erro').length, a = sc.warnings.filter(w => w.level === 'alerta').length;
-  return e ? chip('erro', e === 1 ? '1 erro' : `${e} erros`) : a ? chip('alerta', a === 1 ? '1 alerta' : `${a} alertas`) : chip('ok', 'Sem alertas');
-}
 export const sw = (act, label, on, hint = '') => `<button class="lrow" data-act="${act}" role="switch" aria-checked="${!!on}"><span><b>${label}</b>${hint ? `<small>${hint}</small>` : ''}</span><i class="tg" aria-hidden="true"></i></button>`;
 
 export const sheet = (title, body) => `<div class="ov" data-close><section class="sheet menu" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="grab"></div><div class="row-sb"><h2 class="big md">${esc(title)}</h2><button class="close" data-close aria-label="Fechar">×</button></div>${body}</section></div>`;

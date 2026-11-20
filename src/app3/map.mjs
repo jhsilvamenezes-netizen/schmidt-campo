@@ -72,12 +72,10 @@ function cota(cls, a, b) {
 
 /** Marcação SVG do lote ajustada a w × h px. `small` = mapa do Plano/guia (sem medidas).
  * @param {any} field @param {any} sc @param {number} w @param {number} h
- * @param {{rows?:boolean, sat?:{detail:any, context?:any, credit:string}|null, pad?:number|{t:number,r:number,b:number,l:number}, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null,
+ * @param {{sat?:{detail:any, context?:any, credit:string}|null, pad?:number|{t:number,r:number,b:number,l:number}, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null,
  *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null, hiTrack?:string|null, ruler?:{a:number[],b:number[],m:number}|null, grid?:boolean, border?:any, under?:number}} [opts] */
-/** Identificador único de recorte por desenho (vários mapas na mesma página). */
-let mapSeq = 0;
 export function mapMarkup(field, sc, w, h, opts = {}) {
-  const { rows = false, sat = null, pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null, hiTrack = null, ruler = null, grid = true, border = null, under = 0 } = opts;
+  const { sat = null, pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null, hiTrack = null, ruler = null, grid = true, border = null, under = 0 } = opts;
   // `under`: faixa de baixo coberta pela folha que sobe sobre o mapa (3.11); o lote e a escala ficam acima dela
   const pad = { ...(typeof pad0 === 'number' ? { t: pad0, r: pad0, b: pad0, l: pad0 } : pad0) }; pad.b += under;
   // Outros lotes (bloco): levados ao referencial do lote atual pela diferença dos centroides UTM.
@@ -133,18 +131,6 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
     sp.boxes.push([w - 230, h - 20 - under, w, h - under]);
   }
   s += s0 + `<path class="lot" d="${ring}" fill-rule="evenodd"/>`;
-  // 4.0-d · textura de plantio (só no design 4.0): linhas finas no sentido dos tiros, a cada ~7 px, recortadas no lote
-  if (rows && sc?.units?.length) {
-    const ln = sc.units[0].line, [ax, ay] = XY(ln[0][0], ln[0][1]), [bx, by] = XY(ln.at(-1)[0], ln.at(-1)[1]), L = Math.hypot(bx - ax, by - ay) || 1;
-    const ux = (bx - ax) / L, uy = (by - ay) / L, nx = -uy, ny = ux, id = `lotclip${++mapSeq}`;
-    const sx = ring.match(/-?\d+(\.\d+)?/g)?.map(Number) || [], xs2 = sx.filter((_, i) => i % 2 === 0), ys2 = sx.filter((_, i) => i % 2 === 1);
-    if (xs2.length) {
-      const cx = (Math.min(...xs2) + Math.max(...xs2)) / 2, cy = (Math.min(...ys2) + Math.max(...ys2)) / 2, R = Math.hypot(Math.max(...xs2) - Math.min(...xs2), Math.max(...ys2) - Math.min(...ys2)) / 2 + 2;
-      let d = '';
-      for (let o = -R; o <= R; o += 7) d += `M${f1(cx + nx * o - ux * R)},${f1(cy + ny * o - uy * R)}L${f1(cx + nx * o + ux * R)},${f1(cy + ny * o + uy * R)}`;
-      s += `<clipPath id="${id}"><path d="${ring}" fill-rule="evenodd"/></clipPath><path class="rows" clip-path="url(#${id})" d="${d}"/>`;
-    }
-  }
   let top = '';
   if (sc) {
     const scr = new Map(sc.samples.map(p => [p.id, XY(p.x, p.y)]));

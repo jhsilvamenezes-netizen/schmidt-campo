@@ -279,8 +279,10 @@ try {
     assert.deepStrictEqual(errors.filter(e => !/Service Worker/.test(e)), []); await ctx.close();
   }
   // 3.15 · fonte embutida carregada; mapa grande no Plano; lote irregular (RB9) com sugestão de 1 ponto a mais
+  // (no visual anterior, a reserva: no 4.0 o "ampliar mapa" é a folha de 3 alturas, testada no bloco do 4.0)
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'pt-BR', serviceWorkers: 'block' });
+    await ctx.addInitScript(() => { if (!localStorage.getItem('monitoramento.v03')) localStorage.setItem('monitoramento.v03', JSON.stringify({ design: '3' })); });
     const p = await ctx.newPage(), errors = []; p.on('pageerror', e => errors.push(e.message));
     await p.goto(url); await ready(p);
     await p.evaluate(() => document.fonts.ready);
@@ -298,16 +300,15 @@ try {
     assert.match(await p.textContent('#toast'), /4 pontos \(1 acima do mínimo\)/);
     assert.deepStrictEqual(errors, []); await ctx.close();
   }
-  // 4.0-b · chave do design 4.0 no menu: liga (atributo na página e gravado), vitrine abre, desliga e volta ao atual
+  // 4.0-f · o 4.0 é o padrão: alça e folha de 3 alturas; vitrine; o visual anterior (reserva) liga no menu, fica gravado
+  // ao reabrir e desliga de volta ao 4.0
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'pt-BR', serviceWorkers: 'block' });
     const p = await ctx.newPage(), errors = []; p.on('pageerror', e => errors.push(e.message));
     await p.goto(url); await ready(p);
-    assert.equal(await p.evaluate(() => document.documentElement.dataset.design ?? null), null, 'padrão: design atual');
-    assert.equal(await p.locator('.grabber:visible').count(), 0, 'no design atual a alça não aparece');
-    await p.click('[data-open="menu"]'); await p.click('[data-act="design4"]');
-    await p.waitForFunction(() => document.documentElement.dataset.design === '4');
-    assert.equal(await p.getAttribute('[data-act="design4"]', 'aria-checked'), 'true');
+    assert.equal(await p.evaluate(() => document.documentElement.dataset.design), '4', 'padrão: design 4.0');
+    await p.click('[data-open="menu"]');
+    assert.equal(await p.getAttribute('[data-act="design4"]', 'aria-checked'), 'false', 'visual anterior desligado');
     await p.click('[data-open="vitrine"]'); await p.waitForSelector('.vt-sw');
     assert.ok(await p.locator('.vt-c').count() >= 20, 'vitrine com as cores');
     await p.click('.close');
@@ -323,10 +324,16 @@ try {
     await p.mouse.move(g.x + g.width / 2, g.y + g.height / 2); await p.mouse.down(); await p.mouse.move(g.x + g.width / 2, g.y - 200, { steps: 8 }); await p.mouse.up();
     await p.waitForFunction(() => ['meia', 'cheia'].includes(document.querySelector('#view').dataset.snap));
     assert.ok(await p.evaluate(() => getComputedStyle(document.querySelector('.map.sm')).position === 'absolute'), 'mapa atrás da folha');
-    await p.reload(); await ready(p);
-    assert.equal(await p.evaluate(() => document.documentElement.dataset.design), '4', 'fica ligado ao reabrir');
+    // reserva: o visual anterior liga, sem alça; fica gravado ao reabrir; desliga de volta ao 4.0
     await p.click('[data-open="menu"]'); await p.click('[data-act="design4"]');
     await p.waitForFunction(() => !document.documentElement.dataset.design);
+    assert.equal(await p.getAttribute('[data-act="design4"]', 'aria-checked'), 'true');
+    await p.keyboard.press('Escape');
+    assert.equal(await p.locator('.grabber:visible').count(), 0, 'no visual anterior a alça não aparece');
+    await p.reload(); await ready(p);
+    assert.equal(await p.evaluate(() => document.documentElement.dataset.design ?? null), null, 'reserva fica ligada ao reabrir');
+    await p.click('[data-open="menu"]'); await p.click('[data-act="design4"]');
+    await p.waitForFunction(() => document.documentElement.dataset.design === '4');
     assert.deepStrictEqual(errors, []); await ctx.close();
   }
   // R4.3 · Monitorar com GPS simulado: no ponto 1 do T1 → "Chegou"; 150 m antes → seta e distância

@@ -312,10 +312,9 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     if (!t) return;
     // 3.4: troca de aba com entrada suave do conteúdo (180 ms, só na troca; "reduzir movimento" desliga no CSS). A tela é
     // montada na hora: a animação é só de entrada, não atrasa nada
-    // 4.0-e · troca de aba com View Transition (só no 4.0, onde o navegador tem, sem "reduzir movimento"); senão o de antes
-    const go = v => { const changed = ui.view !== v; ui.view = v;
-      if (changed && app.isDesign4?.() && document.startViewTransition && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { document.startViewTransition(() => render()); return; }
-      render(); if (changed) { const m = $('#view'); m.classList.remove('tab-in'); void m.offsetWidth; m.classList.add('tab-in'); clearTimeout(tabTimer); tabTimer = setTimeout(() => m.classList.remove('tab-in'), 220); } };
+    // 4.0-f · troca de aba: a animação leve de sempre (não bloqueia o toque). A View Transition do 4.0-e foi retirada:
+    // durante os ~0,2 s dela os toques não chegam à tela (medido no teste do mapa), pior que o visual anterior
+    const go = v => { const changed = ui.view !== v; ui.view = v; render(); if (changed) { const m = $('#view'); m.classList.remove('tab-in'); void m.offsetWidth; m.classList.add('tab-in'); clearTimeout(tabTimer); tabTimer = setTimeout(() => m.classList.remove('tab-in'), 220); } };
     if (t.dataset.tab) { go(t.dataset.tab); return; }
     if (t.dataset.go) { go(t.dataset.go); return; }
     if (t.dataset.open) { app.SHEETS[t.dataset.open]?.(); return; }
@@ -333,8 +332,10 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   sun(!!saved().sunMode);
   // 4.0 · design novo em prévia, atrás de uma chave (Mais → Design 4.0): liga e desliga na hora, sem mexer no plano
   const design4 = on => { if (on) document.documentElement.dataset.design = '4'; else delete document.documentElement.dataset.design; requestAnimationFrame(() => app.drawMaps?.()); };
-  app.isDesign4 = () => saved().design === '4';
-  app.setDesign4 = on => { store.update({ design: on ? '4' : null }); design4(on); render(); };
+  // 4.0-f · o 4.0 é o padrão (aprovado em 20/11, depois de empatar ou ganhar em cada medida); o visual anterior fica como
+  // reserva por uma versão (Mais → Visual anterior), gravado como design '3'
+  app.isDesign4 = () => saved().design !== '3';
+  app.setDesign4 = on => { store.update({ design: on ? '4' : '3' }); design4(on); render(); };
   design4(app.isDesign4());
   new window.ResizeObserver(() => app.cur && app.drawMaps()).observe($('#view'));
   render();

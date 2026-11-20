@@ -92,7 +92,7 @@ button.lsum:after{content:"?";position:absolute;top:8px;right:8px;width:16px;hei
 .chip{display:inline-flex;align-items:center;gap:6px;font:600 12px var(--f);padding:4px 10px;border-radius:99px;white-space:nowrap}
 .chip:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
 .chip.ok{color:var(--ok);background:var(--oks)}.chip.alerta{color:var(--al);background:var(--als)}.chip.erro{color:var(--er);background:var(--ers)}
-.badge{min-height:44px;display:inline-flex;align-items:center;border-radius:99px}
+
 .step{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .step label{font:600 16px var(--f)}.step small{display:block;font:400 12px var(--f);color:var(--mu)}
 .stp{display:flex;align-items:center;gap:4px;padding:3px;border-radius:16px;background:var(--sf2);border:1px solid var(--ln)}

@@ -1,10 +1,10 @@
 // 3.24 · aba Mapa em HTML (mapa, legenda e ferramentas). Sem DOM; recebe dados prontos.
 import { esc, num, plural } from './format.mjs';
-import { badge, sw } from './views.mjs';
+import { sw } from './views.mjs';
 
 
 export const mapaView = ({ f, sc }) => `<div class="map" data-map="full"></div>
-<section class="sheet"><div class="grab"></div><div class="row-sb"><p class="big">${plural(f.pontos, 'ponto', 'pontos')} <span>· ${plural(f.tiros, 'tiro', 'tiros')}</span></p><button class="badge" data-open="dados">${badge(sc)}</button></div>
+<section class="sheet"><div class="grab"></div><div class="row-sb"><p class="big">${plural(f.pontos, 'ponto', 'pontos')} <span>· ${plural(f.tiros, 'tiro', 'tiros')}</span></p></div>
 <p class="mu">95% do lote ${esc(f.p95)} · caminhada ${esc(f.caminhada)}</p><button class="btn p" data-go="plano">Ver plano</button></section>`;
 
 /** Legenda do mapa (como na 2.5): cada medida com a marca da sua cor no desenho. */

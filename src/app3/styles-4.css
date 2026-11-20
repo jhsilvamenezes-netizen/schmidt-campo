@@ -10,7 +10,7 @@
   --tone:color-mix(in srgb,var(--br2) 55%,var(--sf))}
 
 /* topo */
-[data-design="4"] header{height:60px;background:var(--hd);box-shadow:inset 0 -1px 0 color-mix(in srgb,var(--gold) 55%,transparent)}
+[data-design="4"] header{height:58px;background:var(--hd);box-shadow:inset 0 -1px 0 color-mix(in srgb,var(--gold) 55%,transparent)}
 [data-design="4"] .lot{border-radius:999px;padding:4px 32px 4px 16px;background:color-mix(in srgb,#fff 10%,transparent);border-color:color-mix(in srgb,#fff 16%,transparent);font-size:17px}
 
 /* superfícies */
@@ -51,7 +51,7 @@
 [data-design="4"] .chip{padding:5px 12px}
 
 /* menu de baixo: cápsula cheia no item ativo */
-[data-design="4"] nav{border-radius:var(--r-xl);border:0;box-shadow:var(--e3);height:68px}
+[data-design="4"] nav{border-radius:var(--r-xl);border:0;box-shadow:var(--e3);height:64px}
 [data-design="4"] nav button{border-radius:22px}
 [data-design="4"] nav button.on{background:var(--act);color:var(--on-act)}
 
@@ -89,22 +89,26 @@
 .vt-pt i{background:var(--pt)}.vt-oks i{background:var(--oks)}.vt-ok i{background:var(--ok)}.vt-als i{background:var(--als)}.vt-al i{background:var(--al)}.vt-ers i{background:var(--ers)}
 .vt-er i{background:var(--er)}.vt-mapbg i{background:var(--mapbg)}.vt-fd i{background:var(--fd)}.vt-tr i{background:var(--tr)}
 
-/* 4.0-d · cartografia: textura de plantio no sentido dos tiros, talhão com sombra mais funda, pontos com halo dourado
+/* 4.0-d · cartografia: talhão com sombra mais funda, pontos com halo dourado
    (o selecionado / alvo da guia com halo mais forte); tiros um pouco mais grossos e arredondados */
-[data-design="4"] .map-svg .rows{fill:none;stroke:var(--fl);stroke-opacity:.09;stroke-width:1;pointer-events:none}
-[data-design="4"] .map-svg.sat-on .rows{stroke:#fff;stroke-opacity:.07}
 [data-design="4"] .map-svg .lot{filter:drop-shadow(0 2px 3px color-mix(in srgb,var(--hd) 22%,transparent)) drop-shadow(0 14px 22px color-mix(in srgb,var(--hd) 26%,transparent))}
 [data-design="4"] .map-svg .track{stroke-width:2.4}
 [data-design="4"] .map-svg .pt circle{filter:drop-shadow(0 0 3px color-mix(in srgb,var(--ptf) 45%,transparent)) drop-shadow(0 1px 1.5px #0b2f2340)}
 [data-design="4"] .map-svg .pt.sel circle{filter:drop-shadow(0 0 6px color-mix(in srgb,var(--br) 70%,transparent)) drop-shadow(0 1px 2px #0b2f2366)}
 
-/* 4.0-e · movimento: troca de aba só no conteúdo (cabeçalho e menu ficam parados); alvo da guia pulsa devagar.
-   Tudo some com "reduzir movimento". */
-[data-design="4"] #view{view-transition-name:view}
-::view-transition-old(view){animation:vt-out .14s ease-in both}
-::view-transition-new(view){animation:vt-in .22s cubic-bezier(.2,.8,.2,1) both}
-@keyframes vt-out{to{opacity:0;transform:translateY(-4px)}}
-@keyframes vt-in{from{opacity:0;transform:translateY(8px)}}
+/* 4.0-e · movimento: alvo da guia pulsa devagar (some com "reduzir movimento") */
 [data-design="4"] .map.nav .map-svg .pt.sel circle{animation:alvo 1.8s ease-in-out infinite}
 @keyframes alvo{50%{filter:drop-shadow(0 0 11px color-mix(in srgb,var(--br) 85%,transparent)) drop-shadow(0 1px 2px #0b2f2366)}}
-@media (prefers-reduced-motion:reduce){::view-transition-old(view),::view-transition-new(view),[data-design="4"] .map.nav .map-svg .pt.sel circle{animation:none}}
+@media (prefers-reduced-motion:reduce){[data-design="4"] .map.nav .map-svg .pt.sel circle{animation:none}}
+
+/* 4.0-f · leitura no campo: nenhum texto abaixo de 13 px (no visual anterior o mínimo era 12 px) */
+[data-design="4"] :is(.lot small,.eyebrow,.h,.m small,.mu.sm,.li .id,.sub,.chip,nav button,.tag,small,.rs b,.rs i,.chipb small,.lh,.lsum,.gps,.modo,.cnt){font-size:13px}
+/* 4.0-f · resumo do Mapa com a mesma altura do visual anterior: o mapa não perde área (botão segue com 56 px) */
+[data-design="4"] #view>.sheet{padding-top:8px}
+[data-design="4"] #view>.sheet .big{font-size:28px}
+/* 4.0-f · medidas do Plano cabem inteiras em 360 px e no Sol (antes cortavam com reticências): menos margem interna,
+   número que acompanha a largura da tela e rótulo que pode quebrar linha (continua com 13 px) */
+[data-design="4"] .m{padding:12px 8px}
+[data-design="4"] .m small{white-space:normal;line-height:1.2}
+[data-design="4"] .m b{font-size:min(18px,4.6vw)}
+[data-design="4"] .m{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;gap:2px;text-align:left}
