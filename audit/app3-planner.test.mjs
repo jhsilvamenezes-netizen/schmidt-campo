@@ -293,7 +293,7 @@ test('3.2 · "Buscar distribuição melhor" não aceita piorar o pior vazio nem 
   }
 });
 
-test('3.15 · lote irregular: +1 ponto só onde o maior vazio passa de 1,2 × o lado ideal e o ganho é ≥ 8% (BD5, RB9)', () => {
+test('3.15 · lote irregular: +1 ponto só onde o maior vazio passa de 1,2 × o lado ideal e o ganho é ≥ 8% (BD5, RB9); 4.0.1: BD5 no próprio vazio', () => {
   const hit = [];
   for (const k of keys) {
     const f = fields[k], cp = P.recommend(f, {}, 5, false).chosen.params, r = P.plusOne(f, cp, 5);
@@ -302,8 +302,19 @@ test('3.15 · lote irregular: +1 ponto só onde o maior vazio passa de 1,2 × o 
     assert.equal(r.after.n, r.before.n + 1, k);
     assert.ok(r.after.worst <= r.before.worst + 1, `${k}: maior vazio não piora`);
     assert.ok(r.reason === 'meio' ? r.after.mid < r.before.mid && r.after.p95 <= r.before.p95 + 1 : r.after.worst <= r.before.worst * 0.92 || r.after.p95 <= r.before.p95 * 0.92, `${k}: ganho`);
-    assert.equal(P.plusOne(f, r.params, 5), null, `${k}: com o total escolhido não sugere de novo`);
+    if (r.reason === 'vazio') {
+      // 4.0.1 · mesmo plano + 1 ponto no maior vazio: vai como ajuste; o plano aplicado tem n+1 pontos e o vazio cai
+      const sc = P.planInUse(f, r.params, r.edits), extra = sc.samples.filter(q => q.extra);
+      assert.equal(sc.samples.length, r.before.n + 1, k); assert.equal(extra.length, 1, `${k}: 1 ponto acrescentado`);
+      assert.ok(Math.abs(P.pointAreas(f, sc).worstGapM - r.after.worst) < 1, `${k}: maior vazio aplicado = sugerido`);
+      const x = extra[0]; assert.ok(x.unitId && !x.offTrack, `${k}: num tiro existente`);
+      assert.ok(P.edgeDistance(f, x).m >= P.BORDA_MIN_M, `${k}: fora da bordadura mínima`);
+      assert.ok(sc.samples.every(q => q === x || q.unitId !== x.unitId || Math.abs(q.s - x.s) >= 60), `${k}: a 60 m dos vizinhos no tiro`);
+      assert.ok(r.after.worst <= r.before.worst * 0.75, `${k}: vazio cai ≥ 25% (${Math.round(r.before.worst)} → ${Math.round(r.after.worst)} m)`);
+    } else assert.equal(P.plusOne(f, r.params, 5), null, `${k}: com o total escolhido não sugere de novo`);
   }
   // 3.19 · BE1: 1 ponto a mais tira o tiro de 1 ponto do meio do lote sem piorar a cobertura
   assert.deepEqual(hit.sort(), ['BD5', 'BE1', 'RB9']);
+  const bd5 = P.plusOne(fields['Bananal|BD5'], P.recommend(fields['Bananal|BD5'], {}, 5, false).chosen.params, 5);
+  assert.equal(bd5.reason, 'vazio', 'BD5: o ponto no vazio vence o plano refeito');
 });

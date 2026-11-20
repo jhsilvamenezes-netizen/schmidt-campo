@@ -282,3 +282,30 @@ contra o pior caso, os 5% de pixels mais claros, com o mesmo tratamento da tela.
 
 A paleta segue a mesma (branco, mata e ouro). Só o vermelho e a força do véu foram calibrados para a foto. Linhas de
 medida, borda, vazio e régua ganham uma sombra escura fina.
+
+## 22. 4.0.1 · onde o motor ainda podia melhorar (medido) e o ponto no maior vazio
+
+Qualidade do plano nos 51 lotes, contra o limite teórico. O limite é a malha hexagonal ideal com o mesmo número de
+pontos na mesma área.
+
+| Medida | Mediana dos 51 lotes |
+|---|---|
+| 95% do lote ÷ limite teórico | 1,01 (praticamente no limite) |
+| Maior vazio ÷ limite teórico | 1,28 |
+
+- **Onde destoa:** só o BD5, com o maior vazio a 2,4 × o limite. O vazio fica no bico NE, a ponta comprida do triângulo.
+- **O +1 de antes:** refazia o plano com 1 ponto a mais e redistribuía tudo. Levava o vazio só de 689 para 602 m.
+- **O que mudou:** a sugestão também testa manter o plano e acrescentar 1 ponto num tiro existente, na posição que mais
+  encurta o maior vazio. É a regra do proprietário: "um ponto sozinho, só no bico, para evitar buraco".
+- **Travas do ponto novo:**
+  - fora da bordadura mínima (15 m);
+  - a 30 m das pontas do tiro;
+  - a 60 m de outro ponto do mesmo tiro.
+- **Escolha:** fica a alternativa que encurtar mais o maior vazio.
+
+| Lote | Antes | +1 refazendo o plano | +1 no vazio (4.0.1) |
+|---|---|---|---|
+| BD5 | 689 m | 602 m | 453 m (−34%), 95% 313 → 311 m |
+| RB9, BE1 | — | — | sem mudança (vence o mesmo +1 de antes) |
+
+Nos demais lotes, um ponto a mais no vazio ganharia 12% ou menos. Não vale sugerir: o 95% do lote já está no limite.

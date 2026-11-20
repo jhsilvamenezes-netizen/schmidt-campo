@@ -1,16 +1,17 @@
 {
-  "entrega": "4.0.0",
+  "entrega": "4.0.1",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-20",
-  "versaoDoApp": "4.0.0",
+  "versaoDoApp": "4.0.1",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "79af1d7ac1f6b770bebf3486e72cceded8184c6659095f66f45fa9661998ff0c",
-  "workerSha256": "3ac6350dafa8a8b8f8287548b9932350ab94417fdd5d51ff79e2a47efd1bcd99",
+  "htmlSha256": "e3ee1c35fe0f0b54e06d7f35b09d33759019ec8e0024618a247d7f81451aab15",
+  "workerSha256": "d582b694b4cda59fd67c206fd85f6835b69a3456b9aab25e395d9bd59e23779a",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "4.0.1: ponto no maior vazio — a sugestão de 1 ponto a mais também testa manter o plano e pôr o ponto num tiro existente onde mais encurta o maior vazio (fora da bordadura mínima, a 30 m das pontas e 60 m dos vizinhos); BD5: maior vazio 689 → 453 m (antes 602 m). Medido: nos 51 lotes o \"95% do lote\" já fica a 1,01 × o limite teórico (malha hexagonal ideal)",
     "4.0.0: design 4.0 vira o padrão (aprovado pelo proprietário com a condição de empatar ou ganhar em cada medida); visual anterior fica como reserva por uma versão (Mais → Visual anterior). Comparação medida (audit/design-compare.mjs, 5 telas × claro/escuro/Sol/360 px): axe 2 → 0, menor contraste 5,2 → 5,6–8,1, textos cortados 1 → 0, fonte mínima 12 → 13 px, mapa no Plano/Monitorar 30% → 37% e no Mapa igual ou maior, alvos < 44 px 0 = 0. Ajustes para não perder em nada: cabeçalho 58 px e menu 64 px como antes, resumo do Mapa na mesma altura, medidas do Plano sem reticências. Retirados: selos de alerta de cadastro das abas Mapa e Lotes (os avisos seguem em Mais → Dados do lote e na Conferência do Plano), textura de plantio (não segue o rumo real do plantio) e troca de aba com View Transition (bloqueava o toque por ~0,2 s)",
     "3.27.0: design 4.0 (prévia) etapas d e e — cartografia (textura de plantio no sentido dos tiros recortada no lote, talhão com sombra mais funda, halo dourado nos pontos e mais forte no selecionado) e movimento (troca de aba com View Transition só no conteúdo, alvo da guia pulsando, tela em pé na guia onde o aparelho deixa, vibrações com nome); tudo some com \"reduzir movimento\"; design atual idêntico",
     "3.26.0: fundo de satélite opcional (Esri World Imagery, a mesma fonte da 2.5) — camada \"Satélite\" no Mapa, desligada por padrão; imagem nítida do lote + entorno largo (sem borda vazia) no fuso 23S, visual próprio pelos tokens (véu verde-escuro da marca de 34%, calibrado em 7 fotos reais; erro em coral claro; lote branco, tiros verde-claro, medidas de ponto em dourado, textos brancos com contorno), no mapa principal e no da guia, com crédito; CSP libera só esse servidor e só para imagem; sem sinal o mapa segue igual",
@@ -104,5 +105,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "bc38d2156af6c9516126a9ce157cc48f7a76b8d3c0c8b5ed75076be9f5f77283"
+  "motorSha256": "994163591c01bf7642de763f6707eb4c5fc677852b17422d9013b00ebb451a05"
 }

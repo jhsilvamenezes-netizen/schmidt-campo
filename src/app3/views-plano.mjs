@@ -9,7 +9,7 @@ const stepper = (id, label, hint, value) => `<div class="step"><label for="${id}
 /** Sugestão do motor pronta (ganho e "Aplicar") ou o botão para calcular na hora. Também trocada sozinha, sem redesenhar a tela. */
 export const hintMarkup = hint => (hint?.r ? `<button class="sug" data-act="minimax"><span class="x"><b>Sugestão do motor</b><small class="sub">${esc(hint.text)}</small></span><span class="go">Aplicar</span></button>` : '<button class="lnk" data-act="minimax">Melhorar a distribuição dos pontos</button>')
   // 3.15 · lote irregular: 1 ponto acima do mínimo, quando encurta de verdade o maior vazio ou o 95%
-  + (hint?.plus ? `<button class="sug" data-act="plus1"><span class="x"><b>${hint.plus.reason === 'meio' ? 'Sugestão' : 'Lote irregular'}: ${hint.plus.n} pontos (1 a mais)</b><small class="sub">${esc(hint.plus.text)}</small></span><span class="go">Usar</span></button>` : '');
+  + (hint?.plus ? `<button class="sug" data-act="plus1"><span class="x"><b>${hint.plus.reason === 'meio' ? 'Sugestão' : hint.plus.reason === 'vazio' ? 'Ponto no maior vazio' : 'Lote irregular'}: ${hint.plus.n} pontos (1 a mais)</b><small class="sub">${esc(hint.plus.text)}</small></span><span class="go">Usar</span></button>` : '');
 
 /** @param {any} o */
 export function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, block, hiTrack = null, list = [], split = null, hint = null, border = null, bigMap = false }) {

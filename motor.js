@@ -3362,7 +3362,7 @@ const { optimizeDistribution } = schmidtEngine2.optimize;
 const { DEFAULT_PARAMS, paramsSignature } = schmidtEngine2.params;
 const { coverageGrid, nearestDistances, quickP95 } = schmidtEngine2.metrics;
 const { recommendPlan, SHAPE_KEYS, metricsOf } = schmidtEngine2.recommend;
-const { restoreSamples, withSamples, moveSample } = schmidtEngine2.editing;
+const { restoreSamples, withSamples, moveSample, addSample } = schmidtEngine2.editing;
 const { teamPlan } = schmidtEngine2.team;
 const { buildRoute } = schmidtEngine2.guidance;
 const { exactCoverage } = schmidtEngine2.voronoi;
@@ -3372,7 +3372,7 @@ const { num, range, km, plural } = __m_app3_format;
 // 3.0 · aplicação: monta o plano de um lote com o motor 2, a recomendação, a conferência, a equipe e a área
 // descoberta. Sem DOM: testável no Node com os 51 lotes.
 
-const ENGINE_LABEL = '4.0.0';
+const ENGINE_LABEL = '4.0.1';
 const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
@@ -3716,6 +3716,37 @@ function middleOnes(field, sc) {
   const ord = sc.selected.filter(t => sc.units.some(u => u.trackId === t.id)).map(t => t.id);
   return sc.trackRows.filter(r => r.n === 1 && r.trackId !== ord[0] && r.trackId !== ord.at(-1)).length;
 }
+/** 4.0.1 · o ponto a mais ONDE ELE FALTA: mantém o plano e acrescenta 1 ponto num tiro existente, na posição que mais
+ *  encurta o maior vazio (busca a cada 20 m ao longo dos tiros, perto do vazio). Travas: fora da bordadura mínima
+ *  (15 m), a 30 m das pontas do tiro e a 60 m de outro ponto do mesmo tiro. Devolve {samples, worst, p95} ou null. */
+function plusOneHere(field, sc) {
+  if (!sc.samples.length || sc.samples.some(p => p.offTrack)) return null;
+  const grid = coverageGrid(field.geom, sc.coverage.fineStepM ?? 20), d = nearestDistances(grid, sc.samples);
+  let gi = 0; for (let i = 1; i < d.length; i++) if (d[i] > d[gi]) gi = i;
+  const gx = grid.x[gi], gy = grid.y[gi], reach = d[gi] * 1.25, /** @type {any[]} */ cands = [];
+  for (const u of sc.units) {
+    const cum = cumulative(u.line), end = Math.min(30, u.len / 2);
+    for (let t = end; t <= u.len - end; t += 20) {
+      const [x, y] = pointAt(u.line, t, cum);
+      if (Math.hypot(x - gx, y - gy) > reach || !pointInGeom(x, y, field.geom)) continue;
+      if (sc.samples.some(q => q.unitId === u.id && Math.abs(q.s - t) < 60)) continue;
+      if (edgeDistance(field, { x, y }).m < BORDA_MIN_M) continue;
+      const p = { x, y }, dd = nearestDistances(grid, [...sc.samples, p]);
+      let w = 0; for (let i = 0; i < dd.length; i++) if (dd[i] > w) w = dd[i];
+      cands.push({ u, x, y, w });
+    }
+  }
+  cands.sort((a, b) => a.w - b.w);
+  /** @type {any} */ let best = null;
+  for (const c of cands.slice(0, 6)) {
+    const r = addSample(sc, field, { x: c.x, y: c.y }, { unitId: c.u.id });
+    if (!r.ok) continue;
+    const st = exactStats(field, r.samples), p95 = quickP95(grid, r.samples).p95;
+    if (!best || st.worst < best.worst - 1e-6) best = { samples: r.samples, worst: st.worst, p95 };
+  }
+  return best;
+}
+
 function plusOne(field, params, people = 5) {
   if (!params || Number.isFinite(params.totalPoints)) return null;
   const now = balanceStats(field, params);
@@ -3723,14 +3754,24 @@ function plusOne(field, params, people = 5) {
   const n = now.sc.samples.length, mid = middleOnes(field, now.sc);
   const irregular = now.worst >= PLUS_ONE.irregular * Math.sqrt((field.areaOfficialHa * 1e4) / n);
   if (n !== now.sc.minPoints || (!irregular && !mid)) return null;
-  let rec, b;
-  try { rec = recommend(field, { ...baseOf(params), totalPoints: n + 1 }, people, false); b = balanceStats(field, { ...rec.chosen.params, totalPoints: n + 1 }); } catch { return null; }
-  if (!b || b.sc.samples.length !== n + 1 || b.worst > now.worst + 1) return null;
+  /** @type {any} */ let rec = null, /** @type {any} */ b = null;
+  try { rec = recommend(field, { ...baseOf(params), totalPoints: n + 1 }, people, false); b = balanceStats(field, { ...rec.chosen.params, totalPoints: n + 1 }); } catch { b = null; }
+  if (b && (b.sc.samples.length !== n + 1 || b.worst > now.worst + 1)) b = null;
+  // 4.0.1 · alternativa: o mesmo plano com 1 ponto onde está o maior vazio (lote irregular). Vale a que encurtar mais
+  // o maior vazio; empate fica com o plano refeito (mais equilibrado)
+  const here = irregular ? plusOneHere(field, now.sc) : null;
+  if (here && here.worst < now.worst - 1 && (!b || here.worst < b.worst - 1)) {
+    if (here.worst <= now.worst * (1 - PLUS_ONE.gain) || here.p95 <= now.p95 * (1 - PLUS_ONE.gain)) {
+      const edits = { signature: paramsSignature(now.sc.params), samples: here.samples.map(q => ({ id: q.id, x: q.x, y: q.y, unitId: q.unitId, s: q.s, manual: false, offTrack: false, ...(q.extra ? { extra: true } : {}) })) };
+      return { params, edits, reason: 'vazio', before: { n, worst: now.worst, p95: now.p95, mid }, after: { n: n + 1, worst: here.worst, p95: here.p95, mid } };
+    }
+  }
+  if (!b) return null;
   const gains = irregular && (b.worst <= now.worst * (1 - PLUS_ONE.gain) || b.p95 <= now.p95 * (1 - PLUS_ONE.gain));
   // 3.19 · ou tira o tiro de 1 ponto do meio do lote sem piorar a cobertura
   const fixesMid = mid > 0 && middleOnes(field, b.sc) < mid && b.p95 <= now.p95 + 1;
   if (!gains && !fixesMid) return null;
-  return { params: { ...rec.chosen.params, totalPoints: n + 1 }, reason: gains ? 'irregular' : 'meio',
+  return { params: { ...rec.chosen.params, totalPoints: n + 1 }, edits: null, reason: gains ? 'irregular' : 'meio',
     before: { n, worst: now.worst, p95: now.p95, mid }, after: { n: n + 1, worst: b.worst, p95: b.p95, mid: middleOnes(field, b.sc) } };
 }
 
@@ -3784,7 +3825,7 @@ function whereAmI(field, sc, pos) {
   return { inside, edgeM, track, point, accuracyM: pos.accuracyM };
 }
 
-return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BORDADURA_M,BORDA_MIN_M,bordaFaixa,BALANCE,balanceStats,balanceAreas,balanceSteps,planInUse,uncovered,checks,figures,team,summaryText,pointAreas,edgeDistance,borderStats,pointInfo,optimizeEdits,minimaxEdits,PLUS_ONE,middleOnes,plusOne,friendly,tryPlan,trackDetail,whereAmI,DEFAULT_PARAMS,paramsSignature});
+return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BORDADURA_M,BORDA_MIN_M,bordaFaixa,BALANCE,balanceStats,balanceAreas,balanceSteps,planInUse,uncovered,checks,figures,team,summaryText,pointAreas,edgeDistance,borderStats,pointInfo,optimizeEdits,minimaxEdits,PLUS_ONE,middleOnes,plusOneHere,plusOne,friendly,tryPlan,trackDetail,whereAmI,DEFAULT_PARAMS,paramsSignature});
 })();
 // src/app3/worker.mjs
 const __m_app3_worker=(()=>{
