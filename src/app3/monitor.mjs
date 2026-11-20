@@ -3,6 +3,7 @@
 // errado com a tolerância "offLineWarnM". Sem DOM: o modelo da tela sai daqui e é testado no Node.
 import { buildRoute, guide, tiroErrado, azimuth, cardinal } from '../engine3/guidance.mjs';
 import { lonLatToLocal } from '../engine3/projection.mjs';
+import { locate } from '../engine3/polyline.mjs';
 import { schmidtGuideNextPoint, schmidtGuideSession } from '../gps/guide-next.mjs';
 import { validateSchmidtGPSFix } from '../gps/fix-policy.mjs';
 import { num } from './format.mjs';
@@ -10,6 +11,17 @@ import { num } from './format.mjs';
 const NONE = new Set();
 
 export const routeFor = (sc, field, trackId, flipped) => buildRoute(sc, field, trackId, { flipped: !!flipped });
+
+/** 3.20 · o tiro pode ser feito pelas duas pontas. Antes do primeiro ponto, e fora da linha do tiro, a guia entra pela
+ * ponta mais perto da pessoa (sem andar o tiro inteiro por fora até a outra ponta). Troca só com folga (30 m e 15% mais
+ * perto), para o GPS não ficar trocando de ponta. Devolve o sentido (flipped) a usar. */
+export function nearEndFlipped(sc, field, trackId, pos, flipped, offLineM = 25) {
+  if (!pos) return !!flipped;
+  const a = routeFor(sc, field, trackId, !!flipped), b = routeFor(sc, field, trackId, !flipped);
+  if (a.parts.some(p => locate(p.line, [pos.x, pos.y]).dist <= offLineM)) return !!flipped; // já na linha: segue o sentido
+  const d = e => Math.hypot(e[0] - pos.x, e[1] - pos.y), cur = d(a.parts[0].entry), other = d(b.parts[0].entry);
+  return other < cur - Math.max(30, 0.15 * cur) ? !flipped : !!flipped;
+}
 
 /** Posição GPS → coordenadas locais do lote; null se o fix for inválido, antigo ou repetido. */
 export function fixToPos(position, field, lastTimestamp, now) {

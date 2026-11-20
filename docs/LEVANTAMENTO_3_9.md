@@ -158,3 +158,20 @@ margem das pontas por lado (M7) e calibração em campo (trecho mínimo 60 m, ra
 | Comparação de imagens pulada no CI | Navegador do CI (141) ≠ local (153) | Compara também a estrutura da tela (caixas e cores de cada elemento), que não depende da versão | Pega 2 px a mais no espaçamento dos cartões em 6 telas |
 | Símbolos fora da fonte | → ≥ ✓ ⌃ ⌄ caíam na letra do aparelho | Inter com esses símbolos, sem variantes de letra (44 KB, menor que antes) | 24 telas idênticas |
 | Falhas raras de teste | Cópia de segurança (1 vez) e arraste da folha (1 vez) | Arraste: teste espera a animação; o app segue a folha nova se a tela redesenhar no meio. Cópia: não repetiu em 11 rodadas; o teste agora registra aviso e erros da tela | 6 rodadas seguidas verdes |
+
+## 16. 3.20 · o tiro pode ser feito pelas duas pontas
+
+Relato do campo (RB6 · T5): a pessoa estava ao lado do ponto 45, na ponta final do tiro, e a guia mandava ir
+até a entrada do plano (ponto 37), a 2,4 km. O tiro pode ser feito de qualquer lado.
+
+| Regra | Valor |
+|---|---|
+| Quando escolhe | antes do primeiro ponto do tiro e fora da linha do tiro (> tolerância de linha, 25 m) |
+| Qual ponta | a mais perto da pessoa |
+| Folga para trocar | a outra ponta tem de estar 30 m e 15% mais perto (GPS tremendo não troca de ponta) |
+| Depois do primeiro ponto | o sentido fica |
+| Próximo tiro | também começa pela ponta mais perto (vai e volta entre tiros vizinhos) |
+| "Inverter" à mão | continua e desliga a escolha automática naquele tiro |
+
+Testes: todos os tiros ≥ 300 m dos 51 lotes (perto da outra ponta inverte, perto da entrada fica, na linha mantém,
+a guia aponta para a ponta perto) e no navegador (BC1 · T1, 120 m além da ponta final: 120 m, "0/N").

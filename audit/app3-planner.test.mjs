@@ -130,6 +130,35 @@ test('Monitorar: estados da guia nos 51 lotes (sem GPS, chegada, a caminho, GPS 
   assert.ok(n >= 40, `lotes testados: ${n}`);
 });
 
+test('3.20 · o tiro pode ser feito pelas duas pontas: a guia entra pela ponta mais perto (51 lotes, todos os tiros)', async () => {
+  const { routeFor, guideModel, nearEndFlipped } = await import('../src/app3/monitor.mjs');
+  let n = 0;
+  for (const k of keys) {
+    const f = fields[k], sc = P.planInUse(f, P.recommend(f, {}, 5, false).chosen.params, null);
+    for (const t of sc.selected.filter(tr => sc.units.some(u => u.trackId === tr.id))) {
+      const r = routeFor(sc, f, t.id, false), a = r.parts[0].entry, b = r.parts.at(-1).exit, len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      if (len < 300) continue; // tiro curto: as duas pontas ficam perto, sem diferença que valha a troca
+      const ux = (b[0] - a[0]) / len, uy = (b[1] - a[1]) / len, now = 1e12, at = (x, y) => ({ x, y, accuracyM: 4, at: now });
+      const beyondB = at(b[0] + 200 * ux, b[1] + 200 * uy), beyondA = at(a[0] - 200 * ux, a[1] - 200 * uy);
+      // perto da outra ponta (como no RB6 · T5 a 2,4 km da entrada do plano): inverte; perto da entrada do plano: não
+      assert.equal(nearEndFlipped(sc, f, t.id, beyondB, false), true, `${k} ${t.id} perto da outra ponta inverte`);
+      assert.equal(nearEndFlipped(sc, f, t.id, beyondA, false), false, `${k} ${t.id} perto da entrada fica`);
+      assert.equal(nearEndFlipped(sc, f, t.id, beyondA, true), false, `${k} ${t.id} volta ao sentido do plano`);
+      // já andando na linha do tiro, o sentido não muda (só antes de entrar)
+      const mid = r.points[Math.floor(r.points.length / 2)];
+      if (mid?.partIndex !== null) assert.equal(nearEndFlipped(sc, f, t.id, at(mid.x, mid.y), true), true, `${k} ${t.id} na linha mantém`);
+      // GPS tremendo perto do meio (fora da linha): a folga evita trocar de ponta a cada leitura
+      const c = at((a[0] + b[0]) / 2 + 60 * uy, (a[1] + b[1]) / 2 - 60 * ux);
+      assert.equal(nearEndFlipped(sc, f, t.id, c, nearEndFlipped(sc, f, t.id, c, false)), nearEndFlipped(sc, f, t.id, c, false), `${k} ${t.id} estável`);
+      // com o sentido escolhido, a guia leva à ponta perto (≤ 200 m + folga), não à outra
+      const m = guideModel(routeFor(sc, f, t.id, true), sc, f, beyondB, now, {});
+      if (m.state === 'go') assert.ok(Math.hypot(m.to[0] - beyondB.x, m.to[1] - beyondB.y) < 260, `${k} ${t.id} alvo perto: ${m.title}`);
+      n++;
+    }
+  }
+  assert.ok(n >= 150, `tiros testados: ${n}`);
+});
+
 test('U05 · recomendações embutidas no arquivo = motor da tela, nos 51 lotes (5 pessoas, sem limitar à equipe)', async () => {
   const { recsData, RECS_PEOPLE } = await import('../scripts/build-3.mjs');
   const data = JSON.parse(await recsData(fields));
