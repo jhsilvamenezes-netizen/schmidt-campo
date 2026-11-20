@@ -1,6 +1,6 @@
 // 3.1 (U02) · planejar em bloco: escolher grupo, preparar (pode cancelar), usar e sair do bloco.
 import * as P from './planner.mjs';
-import * as V from './views.mjs';
+import * as VP from './views-plano.mjs';
 import { esc } from './format.mjs';
 import { blocksFor, prepareBlock, storeBlock, blockScenario } from './blocks.mjs';
 
@@ -28,14 +28,14 @@ export function installBloco(app) {
     } catch (e) { try { storage.removeItem(BLOCK_KEY); } catch { /* ignora */ } app.toast(/** @type {Error} */ (e).message); return null; }
   };
   app.onCloseSheet.push(() => blockUi?.abort?.abort());
-  app.SHEETS.bloco = () => { blockUi = { groups: blocksFor(fields, ui.key), prepared: null, busy: false, abort: null }; app.openSheet('Planejar em bloco', V.blockPickBody(blockUi.groups, null, false)); };
+  app.SHEETS.bloco = () => { blockUi = { groups: blocksFor(fields, ui.key), prepared: null, busy: false, abort: null }; app.openSheet('Planejar em bloco', VP.blockPickBody(blockUi.groups, null, false)); };
   app.ACTIONS['block-leave'] = () => { try { storage.removeItem(BLOCK_KEY); } catch { /* ignora */ } app.render(); app.toast('De volta ao plano do lote.'); };
   app.clicks.push(t => {
     if (t.dataset.block) {
       const g = blockUi.groups[+t.dataset.block], st = app.saved(), ctl = new AbortController();
-      blockUi = { ...blockUi, busy: true, abort: ctl }; app.openSheet(`Bloco ${g.title}`, V.blockPickBody([], null, true));
+      blockUi = { ...blockUi, busy: true, abort: ctl }; app.openSheet(`Bloco ${g.title}`, VP.blockPickBody([], null, true));
       const paramsOf = k => st.paramsByField?.[k] ?? { ...app.recNow(fields[k], {}, k).chosen.params };
-      prepareBlock(fields, g, paramsOf, ctl.signal).then(rec => { blockUi = { ...blockUi, busy: false, prepared: rec }; if (app.host.innerHTML) app.openSheet(`Bloco ${g.title}`, V.blockPickBody([], rec, false)); })
+      prepareBlock(fields, g, paramsOf, ctl.signal).then(rec => { blockUi = { ...blockUi, busy: false, prepared: rec }; if (app.host.innerHTML) app.openSheet(`Bloco ${g.title}`, VP.blockPickBody([], rec, false)); })
         .catch(err => { blockUi.busy = false; if (app.host.innerHTML) app.openSheet(`Bloco ${g.title}`, `<p class="ck alerta">${esc(err.message)}</p>`); });
       return true;
     }

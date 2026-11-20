@@ -1,7 +1,7 @@
 // 3.1 (U02) · tela Plano: hectares por ponto, pessoas, recomendado e outras opções, ajustes avançados.
 import * as P from './planner.mjs';
 import { num, plural } from './format.mjs';
-import { hintMarkup } from './views.mjs';
+import { hintMarkup } from './views-plano.mjs';
 import { advancedForm, applyField } from './advanced.mjs';
 
 /** @param {any} app */

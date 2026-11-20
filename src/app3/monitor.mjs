@@ -35,7 +35,7 @@ export function fixToPos(position, field, lastTimestamp, now) {
 
 /**
  * Modelo da tela da guia. `session` = memória da sessão (objeto mutável do chamador, ver schmidtGuideSession).
- * @returns {{state:string, title:string, distM?:number|null, seg?:number|null, progress?:any, big?:string, dir?:string, azimuth?:number, warn?:string[], next?:any, info?:string, to?:number[]}}
+ * @returns {{state:string, title:string, distM?:number|null, goM?:number, seg?:number|null, progress?:any, big?:string, dir?:string, azimuth?:number, warn?:string[], next?:any, info?:string, to?:number[]}}
  */
 export function guideModel(route, sc, field, pos, now, session, opts = {}) {
   const m = guideModelCore(route, sc, field, pos, now, session, opts);
@@ -77,7 +77,7 @@ export function modeStep(st, v) {
  *  antes), pare aqui (vibração longa, de moto) e chegou (3 pulsos). `mem` = o que já foi avisado.
  *  @param {any} model modelo da tela (guideModel)  @param {any} mem {offWarned, nearId, stopId, arrivedId, startedTrack}
  *  @param {{arrivalRadiusM?:number, speedMps?:number|null}} [o]
- *  @returns {{mem:any, effects:{vibrate:any, say:string}[]}} */
+ *  @returns {{mem:any, effects:{vibrate:any, say:string}[]}} — vibrate null = só falar */
 export function guideAlerts(model, mem, o = {}) {
   const m = { ...mem }, effects = [];
   const off = !!model?.warn?.some(w => /da linha|linha do|Passou do ponto/.test(w));
@@ -86,6 +86,15 @@ export function guideAlerts(model, mem, o = {}) {
   const nearM = Math.max(3 * (o.arrivalRadiusM ?? 10), 8 * (o.speedMps ?? 0)), dM = model?.distM ?? NaN;
   if (model?.state === 'go' && Number.isFinite(dM) && dM <= nearM && model.next?.id !== m.nearId) {
     m.nearId = model.next.id; effects.push({ vibrate: 150, say: `Chegando ao ponto ${model.next.seq}: ${Math.round(dM)} metros.` });
+  }
+  // 3.24 · a caminho (sobretudo de moto, sem olhar a tela): com a voz ligada, "faltam N metros" a cada 100 m, até o
+  // aviso de chegando assumir. Só fala (sem vibrar); a primeira leitura de cada alvo só marca a faixa
+  const gM = model?.goM ?? dM;
+  if (model?.state === 'go' && Number.isFinite(gM) && model.next) {
+    const band = Math.floor(gM / 100), key = model.next.id + (model.title?.startsWith('Primeiro') ? '|entrada' : '');
+    if (m.bandKey !== key) { m.bandKey = key; m.band = band; }
+    else if (band < m.band && gM > nearM) { m.band = band; effects.push({ vibrate: null, say: `Faltam ${(band + 1) * 100} metros.` }); }
+    else if (band > m.band) m.band = band; // afastou: volta a contar dali
   }
   if (model?.state === 'stop' && model.next?.id !== m.stopId) {
     m.stopId = model.next.id; effects.push({ vibrate: 600, say: `Pare. Ponto ${model.next.seq} a ${Math.round(model.distM ?? 0)} metros.` });
@@ -128,11 +137,11 @@ function guideModelCore(route, sc, field, pos, now, session, opts = {}) {
   // ponta, onde a escolha normal do próximo ponto já daria o tiro como andado)
   if (start && opts.toEntry && Math.hypot(start[0] - pos.x, start[1] - pos.y) > ENTRY_REACHED_M && !g.stale) {
     const dx = start[0] - pos.x, dy = start[1] - pos.y, az = azimuth(dx, dy);
-    return { state: 'go', title: `Primeiro: vá até a entrada do ${route.trackId}`, big: `${num(Math.hypot(dx, dy))} m`, dir: `para o ${cardinal(az)}`, azimuth: az, to: [start[0], start[1]], warn, next: route.points[0] ?? n };
+    return { state: 'go', goM: Math.hypot(dx, dy), title: `Primeiro: vá até a entrada do ${route.trackId}`, big: `${num(Math.hypot(dx, dy))} m`, dir: `para o ${cardinal(az)}`, azimuth: az, to: [start[0], start[1]], warn, next: route.points[0] ?? n };
   }
   if (start && Number.isFinite(g.lateralM) && g.lateralM > farM && !g.arrived) {
     const dx = start[0] - pos.x, dy = start[1] - pos.y, az = azimuth(dx, dy);
-    return { state: 'go', title: `Primeiro: vá até a entrada do ${route.trackId}`, big: `${num(Math.hypot(dx, dy))} m`, dir: `para o ${cardinal(az)}`, azimuth: az, to: [start[0], start[1]], warn, next: n };
+    return { state: 'go', goM: Math.hypot(dx, dy), title: `Primeiro: vá até a entrada do ${route.trackId}`, big: `${num(Math.hypot(dx, dy))} m`, dir: `para o ${cardinal(az)}`, azimuth: az, to: [start[0], start[1]], warn, next: n };
   }
   const entry = g.alvo?.tipo === 'entrada';
   // Indo para a entrada do tiro, "fora da linha" não ajuda (ainda não se está nela): só a seta até a entrada.
@@ -148,7 +157,7 @@ function guideModelCore(route, sc, field, pos, now, session, opts = {}) {
   // 3.19 · de moto, perto do ponto: pare aqui (a chegada vem depois, a pé ou parado no raio normal)
   if (g.stopHere) return { state: 'stop', distM: g.distM, to: [n.x, n.y], title: `Pare aqui: ponto ${n.seq} de ${route.nPoints}`, big: `${num(g.distM)} m`, dir: `para o ${g.direction}`, azimuth: g.azimuthDeg, info: 'Pare a moto e vá até o ponto.', warn, next: n };
   const a = g.alvo;
-  return { state: 'go', distM: entry ? null : a.distM, to: [a.x, a.y], title: entry ? 'Primeiro: vá até a entrada do tiro' : `Próximo: ${label}`, big: `${num(a.distM)} m`, dir: `para o ${a.direction}`, azimuth: a.azimuthDeg,
+  return { state: 'go', distM: entry ? null : a.distM, goM: a.distM, to: [a.x, a.y], title: entry ? 'Primeiro: vá até a entrada do tiro' : `Próximo: ${label}`, big: `${num(a.distM)} m`, dir: `para o ${a.direction}`, azimuth: a.azimuthDeg,
     info: g.trecho && !entry ? `Faltam ${num(Math.max(0, g.trecho.faltaM))} m andando no tiro${eta(Math.max(0, g.trecho.faltaM), pos.speedMps)}` : undefined, warn, next: n,
     // 3.16 · quanto do trecho até o ponto já foi andado (0–1), para o anel em volta da seta
     seg: g.trecho && !entry && g.trecho.totalM > 0 ? Math.max(0, Math.min(1, g.trecho.andadoM / g.trecho.totalM)) : null };

@@ -7,7 +7,7 @@ reprova o que fugir dela.
 |---|---|---|---|
 | Motor (geometria, plano, cobertura, equipe, guia) | `src/engine3/` | só `engine3/` | tela, navegador (document, window…) |
 | GPS (política do fix, próximo ponto) | `src/gps/` | `gps/`, `engine3/` | tela, navegador |
-| Serviços da tela, sem DOM | `app3/planner.mjs`, `monitor.mjs`, `worker.mjs`, `format.mjs`, `views.mjs` (HTML em texto), `map.mjs` (SVG em texto), `tokens4.mjs` | motor, GPS | `document.`, `window.`, `navigator.`, `localStorage.` |
+| Serviços da tela, sem DOM | `app3/planner.mjs`, `monitor.mjs`, `worker.mjs`, `offline.mjs`, `format.mjs`, `views.mjs` + `views-mapa/plano/monitor/mais.mjs` (HTML em texto, um arquivo por aba), `map.mjs` (SVG em texto), `tokens4.mjs` | motor, GPS | `document.`, `window.`, `navigator.`, `localStorage.` |
 | Telas (casca: DOM, eventos, vibrar, falar) | `app3/main.mjs`, `screen-*.mjs` | tudo acima | — |
 
 - **Núcleo funcional, casca imperativa.** A decisão fica nos serviços sem DOM, testados no Node. A tela só executa o efeito.
@@ -23,6 +23,6 @@ reprova o que fugir dela.
   (`build-preserved --check`).
 
 ## Próximos passos (sem mudar a tela)
-1. Dividir `views.mjs` (28 KB) por tela, com prova de tela idêntica (pixels e estrutura).
+1. ~~Dividir `views.mjs` por tela~~ (3.24: `views.mjs` só com as peças comuns, 3 KB; uma aba por arquivo; 24 telas idênticas).
 2. Separar em `planner.mjs` a regra do motor (`plusOne`, `middleOnes`, equilíbrio) dos textos da tela.
 3. Estado da guia (`mon`) como objeto único do núcleo, com reinício explícito por tiro.

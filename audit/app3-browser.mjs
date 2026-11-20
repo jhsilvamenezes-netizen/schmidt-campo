@@ -30,9 +30,10 @@ try {
     assert.equal(await p.textContent('#lot-name'), 'BD3');
     for (const v of Object.keys(LIMITS)) {
       await p.click(`[data-tab="${v}"]`);
-      // palavras da tela; os rótulos desenhados no mapa (T1, 438 m, ha) são dados do desenho e não entram na conta
+      // palavras da tela; os rótulos desenhados no mapa (T1, 438 m, ha) são dados do desenho e não entram na conta, nem o
+      // aviso passageiro (3.24: "Pronto para usar sem internet." aparece uma vez na 1ª visita)
       const m = await p.evaluate(() => { const w = t => t.split(/\s+/).filter(x => /\p{L}/u.test(x)).length;
-        return { words: w(document.body.innerText) - [...document.querySelectorAll('.map-svg text')].reduce((n, t) => n + w(t.textContent), 0), h: document.documentElement.scrollWidth > innerWidth }; });
+        return { words: w(document.body.innerText) - w(document.getElementById('toast')?.innerText || '') - [...document.querySelectorAll('.map-svg text')].reduce((n, t) => n + w(t.textContent), 0), h: document.documentElement.scrollWidth > innerWidth }; });
       assert.ok(m.words <= LIMITS[v], `${colorScheme} ${v}: ${m.words} palavras (limite ${LIMITS[v]})`);
       assert.equal(m.h, false, `${colorScheme} ${v}: rolagem lateral`);
     }
@@ -235,6 +236,9 @@ try {
     await p.evaluate(() => navigator.serviceWorker.ready);
     await p.reload(); await ready(p);
     assert.ok(await p.evaluate(() => !!navigator.serviceWorker.controller), 'página controlada pelo service worker');
+    // 3.24 · selo no menu Mais: o app está guardado para abrir sem internet
+    await p.click('[data-open="menu"]'); await p.waitForSelector('[data-offline="pronto"]', { timeout: 10000 });
+    assert.match(await p.textContent('[data-offline]'), /Pronto para usar sem internet/); await p.keyboard.press('Escape');
     await ctx.setOffline(true); await p.reload(); await ready(p);
     assert.equal(await p.textContent('#lot-name') !== '…', true, 'abre sem internet');
     await ctx.setOffline(false);

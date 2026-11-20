@@ -207,3 +207,13 @@ Android), o "Inverter" sumia durante a guia, e era preciso parar a guia para tro
 
 Medido e descartado: dividir a equipe pela caminhada real, em vez de dividir e depois ajustar as pontas (3.21).
 Nos 51 lotes com 2 a 4 pessoas, só 2 de 100 casos melhoram, em cerca de 10 m. Não vale a complexidade a mais.
+
+## 19. 3.24 · arquitetura (parte 2), selo "sem internet" e voz a caminho
+
+| Item | O que é | Prova |
+|---|---|---|
+| Telas por aba | `views.mjs` (28 KB) virou as peças comuns (3 KB) e 4 arquivos, um por aba (`views-mapa/plano/monitor/mais`). Divisão feita por script, com as dependências calculadas | 24 telas iguais (pixels e estrutura), tsc e teste de camadas |
+| Selo "Pronto para usar sem internet" | no menu Mais. Confere se o cache da 3.x tem todos os arquivos (`offline.mjs`, sem DOM). Na 1ª visita, avisa uma vez quando termina de guardar | Node: cache vazio, parcial, da 2.x e completo; lista igual à do service worker. Navegador: selo "pronto" com o app guardado de verdade |
+| Voz a caminho | com a voz ligada, "Faltam N metros" a cada 100 m (só fala, sem vibrar), até o aviso de chegando. Vale também na ida até a entrada do tiro | Node: conta de 100 em 100; se a pessoa se afastar, volta a contar; alvo novo começa do zero |
+
+O teste de limite de palavras passou a descontar o aviso passageiro do rodapé (como já descontava os rótulos do mapa).
