@@ -1,16 +1,17 @@
 {
-  "entrega": "3.21.0",
+  "entrega": "3.22.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-20",
-  "versaoDoApp": "3.21.0",
+  "versaoDoApp": "3.22.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "48c8d2ef9c30b6d96ee051f75a44e72e425341320e6613ac070e5ad04033497d",
-  "workerSha256": "0d928fee71a4ba8e8a50a5418069ea867dfbb17bafe34ff71215b5342649afea",
+  "htmlSha256": "237de9876187c6489775edbe7b033575919cce51bc01aba740e1f229b4885781",
+  "workerSha256": "f68975f3e710d76dd68f924fd8a2c4508d14defc5774809fcbfe804ff5ab88fa",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "3.22.0: arquitetura sem mudar a tela — worker como módulo (src/app3/worker.mjs, testado no Node = motor direto); núcleo da guia sem DOM (velocidade, moto/a pé e avisos em monitor.mjs; a tela só vibra e fala); teste de camadas (motor e GPS sem tela nem navegador, sem ciclos de importação); docs/ARQUITETURA_3.md",
     "3.21.0: equipe em zigue-zague — quem faz 2+ tiros entra em cada tiro pela ponta onde o anterior terminou, com a menor caminhada total (passagem real entre tiros, conferida por força bruta); nos 51 lotes, 23,5% menos caminhada que entrar em cada tiro separado (1.315 → 1.006 km nas 185 pessoas com 2+ tiros, 1–3 pessoas); quem faz 1 tiro não muda; singular certo (\"1 tiro\", \"1 ponto\") em todas as abas",
     "3.20.0: o tiro pode ser feito pelas duas pontas — antes do primeiro ponto e fora da linha, a guia começa pela ponta mais perto da pessoa (troca só com folga de 30 m e 15%, para o GPS não ficar trocando); o próximo tiro também começa pela ponta mais perto; \"Inverter\" à mão continua e desliga a escolha automática",
     "3.19.0: correções da autoanálise — velocidade pelo deslocamento em ~3 s (tremor do GPS parado não vira \"moto\"; troca moto/a pé só com 2 leituras); de moto, \"Pare aqui\" a 1,5 s do ponto (até 25 m) e a chegada no raio normal; regra do proprietário para tiro de 1 ponto (pequeno e irregular aceito; nos maiores só no bico): BE1 recebe sugestão de 1 ponto a mais que tira o tiro de 1 ponto do meio; fonte Inter com setas, ≥ ≤, ✓ e ⌃ ⌄ (44 KB); comparação de imagens também no CI pela estrutura da tela",
@@ -97,5 +98,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "2c8cfae81b613a915183ccdfb65650c994e3a805890ce076771383a470837891"
+  "motorSha256": "22d96545997b40904cfb8cf37f87c9dddf34431f12a9f1a26169c5d465cd813e"
 }
