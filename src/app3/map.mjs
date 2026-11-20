@@ -72,10 +72,10 @@ function cota(cls, a, b) {
 
 /** Marcação SVG do lote ajustada a w × h px. `small` = mapa do Plano/guia (sem medidas).
  * @param {any} field @param {any} sc @param {number} w @param {number} h
- * @param {{pad?:number|{t:number,r:number,b:number,l:number}, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null,
+ * @param {{sat?:{detail:any, context?:any, credit:string}|null, pad?:number|{t:number,r:number,b:number,l:number}, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null,
  *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null, hiTrack?:string|null, ruler?:{a:number[],b:number[],m:number}|null, grid?:boolean, border?:any, under?:number}} [opts] */
 export function mapMarkup(field, sc, w, h, opts = {}) {
-  const { pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null, hiTrack = null, ruler = null, grid = true, border = null, under = 0 } = opts;
+  const { sat = null, pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null, hiTrack = null, ruler = null, grid = true, border = null, under = 0 } = opts;
   // `under`: faixa de baixo coberta pela folha que sobe sobre o mapa (3.11); o lote e a escala ficam acima dela
   const pad = { ...(typeof pad0 === 'number' ? { t: pad0, r: pad0, b: pad0, l: pad0 } : pad0) }; pad.b += under;
   // Outros lotes (bloco): levados ao referencial do lote atual pela diferença dos centroides UTM.
@@ -107,7 +107,7 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
     const c = XY(o.d[0], o.d[1]); s0 += `<text class="oname" x="${f1(c[0])}" y="${f1(c[1])}">${o.field.code}</text>`;
   }
   const ring = field.geom.map(pg => pg.map(rg => `M${rg.map(P).join('L')}Z`).join('')).join('');
-  let s = `<svg class="map-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Lote ${field.code}: ${sc ? `${plural(sc.samples.length, 'ponto', 'pontos')} em ${plural(sc.selected.length, 'tiro', 'tiros')}` : 'sem plano'}">`;
+  let s = `<svg class="map-svg${sat ? ' sat-on' : ''}" viewBox="0 0 ${w} ${h}" role="img" aria-label="Lote ${field.code}: ${sc ? `${plural(sc.samples.length, 'ponto', 'pontos')} em ${plural(sc.selected.length, 'tiro', 'tiros')}` : 'sem plano'}">`;
   // 3.2 (G1) · grade em METROS: cada quadrado tem o tamanho da barra de escala (ex.: 500 m), presa ao terreno (anda com o zoom)
   {
     const wx = sx => x0 + ((sx - view.x) / view.k - ox) / k, wy = sy => y0 + (h - oy - (sy - view.y) / view.k) / k;
@@ -117,7 +117,18 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
       for (let gx = ax; gx <= bx; gx += len) { const X = XY(gx, 0)[0]; g += `M${f1(X)} 0V${h}`; }
       for (let gy = ay; gy <= by; gy += len) { const Y = XY(0, gy)[1]; g += `M0 ${f1(Y)}H${w}`; }
     }
-    if (g && grid) s += `<path class="mgrid" d="${g}"/>`;
+    if (g && grid && !sat) s += `<path class="mgrid" d="${g}"/>`;
+  }
+  // 3.26 · fundo de satélite (opcional): entorno largo + lote nítido, presos ao terreno (andam com o zoom), embaixo de
+  // tudo, e um véu verde-escuro da marca por cima da foto para pontos, linhas e textos saltarem
+  if (sat) {
+    for (const [cls, img] of [['sat ctx', sat.context], ['sat', sat.detail]]) {
+      if (!img) continue;
+      const [a, b] = [XY(img.local[0], img.local[3]), XY(img.local[2], img.local[1])];
+      s += `<image class="${cls}" href="${esc(img.href)}" x="${f1(a[0])}" y="${f1(a[1])}" width="${f1(b[0] - a[0])}" height="${f1(b[1] - a[1])}" preserveAspectRatio="none"/>`;
+    }
+    s += `<rect class="satveil" x="0" y="0" width="${w}" height="${h}"/>`;
+    sp.boxes.push([w - 230, h - 20 - under, w, h - under]);
   }
   s += s0 + `<path class="lot" d="${ring}" fill-rule="evenodd"/>`;
   let top = '';
@@ -197,6 +208,7 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
   }
   s += `<g class="scale" transform="translate(14 ${h - 14 - under})"><path d="M0 -6V0H${f1(L)}V-6"/><text x="0" y="-10">${num(len)} m</text></g>`;
   s += `<g class="north" transform="translate(${w - 18} 16)"><text x="0" y="8">N</text><path d="M0 14V30M-4 19L0 14L4 19"/></g>`;
+  if (sat) s += `<text class="satcredit" x="${w - 8}" y="${h - 8 - under}">Imagem: ${esc(sat.credit)}</text>`;
   return s + '</svg>';
 }
 

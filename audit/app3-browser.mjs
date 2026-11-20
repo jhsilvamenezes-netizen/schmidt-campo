@@ -261,6 +261,23 @@ try {
     } finally { await wf(swPath, swOld); }
     await ctx.close();
   }
+  // 3.26 · satélite: desligado por padrão (nenhum pedido externo); ligado na camada, a imagem do lote entra por baixo, com
+  // crédito, e só do servidor permitido pela CSP. A imagem é simulada aqui (o teste não depende da internet).
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'pt-BR', serviceWorkers: 'block' });
+    const asked = []; await ctx.route('https://services.arcgisonline.com/**', r => { asked.push(r.request().url()); r.fulfill({ status: 200, contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64') }); });
+    const p = await ctx.newPage(), errors = []; p.on('pageerror', e => errors.push(e.message)); p.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+    await p.goto(url); await ready(p); await p.click('[data-tab="mapa"]'); await p.waitForSelector('[data-map="full"] .pt');
+    assert.equal(await p.locator('image.sat').count(), 0, 'desligado por padrão'); assert.equal(asked.length, 0, 'sem pedido externo');
+    await p.click('[data-act="layers"]'); await p.click('[data-act="layer-satelite"]');
+    await p.waitForFunction(() => document.querySelector('image.sat')?.getBBox().width > 100);
+    assert.match(await p.getAttribute('image.sat', 'href'), /^https:\/\/services\.arcgisonline\.com\/ArcGIS\/rest\/services\/World_Imagery\/MapServer\/export\?.*bboxSR=32723/);
+    assert.match(await p.textContent('.satcredit'), /Esri/); assert.ok(asked.length >= 1, 'pediu a imagem');
+    // a camada fica lembrada; desligar tira a imagem
+    await p.reload(); await ready(p); await p.click('[data-tab="mapa"]'); await p.waitForSelector('image.sat');
+    await p.click('[data-act="layers"]'); await p.click('[data-act="layer-satelite"]'); await p.waitForFunction(() => !document.querySelector('image.sat'));
+    assert.deepStrictEqual(errors.filter(e => !/Service Worker/.test(e)), []); await ctx.close();
+  }
   // 3.15 · fonte embutida carregada; mapa grande no Plano; lote irregular (RB9) com sugestão de 1 ponto a mais
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'pt-BR', serviceWorkers: 'block' });

@@ -5,6 +5,7 @@ import * as VMa from './views-mapa.mjs';
 import { esc, num } from './format.mjs';
 import { attachGestures } from './gestures.mjs';
 import { fixToPos } from './monitor.mjs';
+import { satRequest, SAT_CREDIT } from './satellite.mjs';
 
 const LAYERS_KEY = 'schmidt.mapa.v1';
 
@@ -23,8 +24,8 @@ export function installMapa(app) {
   /** @type {any} */ let here = null;
   /** 3.17 · id do acompanhamento contínuo do GPS no Mapa (null = parado) */
   /** @type {any} */ let hereWatch = null;
-  let layers = { medidas: true, areas: false, borda: false, grade: true }, panel = false;
-  try { const l = JSON.parse(storage.getItem(LAYERS_KEY) || '{}'); layers = { medidas: l.medidas !== false, areas: l.areas === true, borda: l.borda === true, grade: l.grade !== false }; } catch { /* padrão */ }
+  let layers = { medidas: true, areas: false, borda: false, grade: true, satelite: false }, panel = false;
+  try { const l = JSON.parse(storage.getItem(LAYERS_KEY) || '{}'); layers = { medidas: l.medidas !== false, areas: l.areas === true, borda: l.borda === true, grade: l.grade !== false, satelite: l.satelite === true }; } catch { /* padrão */ }
 
   // largura e altura reais de cada rótulo do mapa, medidas com a fonte deste aparelho (guardadas por texto)
   const measured = new Map(), mctx = document.createElement('canvas').getContext('2d');
@@ -98,7 +99,10 @@ export function installMapa(app) {
       const sheet4 = app.isDesign4?.() && el.classList.contains('sm') && el.nextElementSibling?.classList.contains('scroll') ? el.nextElementSibling.getBoundingClientRect().height : 0;
       const g = guide ? app.guide() : null, under = sheet4 || parseFloat(document.defaultView.getComputedStyle(el).getPropertyValue('--under')) || 0;
       const kind = full ? 'full' : guide ? 'guide' : 'small', view = guide && g.focus ? ID : views[kind];
-      el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, hiTrack: full ? selTrack : !guide ? app.hiTrack : null, focus: guide ? g.focus : null, others: cur.others || [], under, ...opts })
+      // 3.26 · satélite (camada opcional): no mapa principal e no da guia, onde ajuda a se orientar no campo
+      const sat = layers.satelite && (full || guide) ? { ...satImage(cur.field), credit: SAT_CREDIT } : null;
+      el.classList.toggle('sat', !!sat);
+      el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { sat, small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, hiTrack: full ? selTrack : !guide ? app.hiTrack : null, focus: guide ? g.focus : null, others: cur.others || [], under, ...opts })
         + (full ? (ruler ? `<div class="bal" role="status"><b>${num(ruler.m)} m</b><span>do ponto ${num(ruler.na)} ao ponto ${num(ruler.nb)} (em linha reta)</span><span>Toque fora para limpar</span></div>` : info ? balloon() : selTrack ? trackCard() : w ? hereCard(w) : '')
           + VMa.mapTools(layers, moved(view), !!here, panel, panel ? summary(cur, areas, bd) : null)
           : guide && g.pos ? `<button class="fit" data-act="follow" aria-pressed="${!!g.follow}" aria-label="${g.follow ? 'Ver o lote inteiro' : 'Seguir minha posição'}">${g.follow ? '⤢' : '◎'}</button>`
@@ -122,10 +126,14 @@ export function installMapa(app) {
       }
     }
   }
+  /** Pedido da imagem do lote, guardado por lote (o endereço não muda; o navegador reaproveita a imagem baixada). */
+  const satMemo = new Map();
+  const satImage = (/** @type {any} */ field) => { const k = `${field.farm}|${field.code}`; if (!satMemo.has(k)) satMemo.set(k, satRequest(field)); return satMemo.get(k); };
   function toggleLayer(name) {
     layers = { ...layers, [name]: !layers[name] };
     try { storage.setItem(LAYERS_KEY, JSON.stringify(layers)); } catch { /* só não lembra */ }
     drawMaps();
+    if (name === 'satelite' && layers.satelite) app.toast('Satélite ligado: precisa de internet para baixar a imagem do lote.');
   }
 
   function stopHere() { if (hereWatch !== null) app.window.navigator.geolocation?.clearWatch(hereWatch); hereWatch = null; here = null; }
@@ -160,6 +168,7 @@ export function installMapa(app) {
     'layer-areas': () => toggleLayer('areas'),
     'layer-borda': () => toggleLayer('borda'),
     'layer-grade': () => toggleLayer('grade'),
+    'layer-satelite': () => toggleLayer('satelite'),
     layers: () => { panel = !panel; drawMaps(); },
   });
 }

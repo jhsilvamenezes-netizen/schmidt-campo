@@ -236,3 +236,49 @@ conta as leituras do GPS em faixas, no próprio aparelho. Não guarda coordenada
 
 Testes: Node (faixas, percentis, resumo, arquivo sem posição, leitura sem precisão ignorada) e navegador
 (guia de verdade, depois parar: contagem gravada sem x/y/lat/lon e tela de resumo).
+
+## 21. 3.26 · fundo de satélite (decisão)
+
+Sem imagem de drone (proprietário, 20/11), a escolha foi a fonte de imagem mais nítida, a mesma já usada na 2.5.
+
+| Fonte | Nitidez | Uso empresarial | Escolha |
+|---|---|---|---|
+| Esri World Imagery | abaixo de 1 m (talhões, carreadores, pivôs) | termos da Esri: uso comercial pode exigir licença; **a confirmar** com a Esri | ✅ camada opcional, como na 2.5 |
+| Sentinel-2 cloudless (EOX) | 10 m | só a camada de 2016 é CC BY 4.0 (imagem antiga); 2018 em diante não comercial | descartada |
+| Google / Mapbox | boa | pago, com chave, e os termos proíbem guardar a imagem | descartada |
+
+Como funciona:
+- **Camada "Satélite"** no painel de camadas do Mapa. Vem desligada; ligada, fica lembrada.
+- **Duas imagens por lote**, no fuso UTM 23S, no mapa principal e no da guia:
+  - a do lote, nítida: folga em volta e no máximo 2048 px;
+  - a do entorno, larga e leve: 3× o lado maior, 1024 px. Assim não sobra borda vazia na tela.
+- **Visual próprio ("tema satélite"), pelos mesmos tokens de cor:**
+  - fundo verde-escuro da marca além da foto;
+  - véu verde-escuro leve sobre a foto;
+  - lote em branco; tiros e medidas entre tiros em verde-claro; medidas entre pontos em dourado;
+  - textos, escala e norte em branco com contorno escuro;
+  - os pontos não mudam.
+- **Nada externo até ligar.** A CSP libera só `services.arcgisonline.com`, e só para imagem (`connect-src 'self'`).
+- **Sem sinal**, o mapa segue igual: o plano não depende da imagem.
+- **Crédito no canto:** "Imagem: Esri, Vantor, Earthstar Geographics".
+
+Conferido com a imagem real (BD3 e BD5): o contorno do lote cai em cima dos talhões. Teste no Node: nos 51 lotes, o
+lote fica dentro da imagem com folga, sem esticar, no fuso 23S. Teste no navegador: desligado não pede nada; ligado,
+a imagem e o crédito aparecem; a camada fica lembrada e desligar tira a imagem.
+
+Qualidade do GPS (3.25): não precisa mandar arquivo. A guia já ajusta o raio de chegada à precisão de cada leitura
+(3.16). A tela fica no menu Mais só para diagnóstico, se alguém relatar "não chega no ponto".
+
+Calibração das cores sobre o satélite: 7 fotos reais (BB1, BD1, BD3, BD5, RA3, RB2, RC5). A medida é o contraste
+contra o pior caso, os 5% de pixels mais claros, com o mesmo tratamento da tela.
+
+| Cor | Véu 24% | Véu 34% (adotado) |
+|---|---|---|
+| Branco (lote, textos) | 4,1:1 | 4,8:1 |
+| Verde-claro (tiros) | 3,0:1 | 3,6:1 |
+| Ouro (medidas de ponto) | 2,9:1 | 3,4:1 |
+| Alerta | 2,6:1 | 3,1:1 |
+| Erro (#ff8a7a → #ffb3a6, coral claro) | 1,8:1 (43% dos pixels ≥ 3:1) | 2,8:1 (90% ≥ 3:1), com sombra escura |
+
+A paleta segue a mesma (branco, mata e ouro). Só o vermelho e a força do véu foram calibrados para a foto. Linhas de
+medida, borda, vazio e régua ganham uma sombra escura fina.
