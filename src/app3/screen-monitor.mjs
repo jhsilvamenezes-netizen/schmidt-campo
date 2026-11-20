@@ -7,7 +7,7 @@ import { toGPX } from '../engine3/exporters.mjs';
 export function installMonitor(app) {
   const { document, window, ui } = app;
   /** Guia: tiro, sentido, GPS ligado, última posição, memória da sessão, trava de tela. */
-  /** @type {any} */ const mon = { voice: false, follow: true, heading: null, compass: false, compassAt: 0, trackId: null, flipped: false, active: false, watchId: null, pos: null, session: {}, wake: null, arrivedId: null, ticker: 0 };
+  /** @type {any} */ const mon = { mode: 'pe', modeN: 0, voice: false, follow: true, heading: null, compass: false, compassAt: 0, trackId: null, flipped: false, active: false, watchId: null, pos: null, session: {}, wake: null, arrivedId: null, ticker: 0 };
 
   function monitorData() {
     const cur = app.cur, sc = cur.sc, tasks = new Map();
@@ -29,6 +29,12 @@ export function installMonitor(app) {
       try { window.navigator.vibrate?.(150); } catch { /* sem vibração */ }
       say(`Chegando ao ponto ${model.next.seq}: ${Math.round(dM)} metros.`);
     }
+    // 3.19 · de moto: "pare aqui" com uma vibração longa, uma vez por ponto
+    if (model?.state === 'stop' && model.next?.id !== mon.stopId) {
+      mon.stopId = model.next.id;
+      try { window.navigator.vibrate?.(600); } catch { /* sem vibração */ }
+      say(`Pare. Ponto ${model.next.seq} a ${Math.round(model.distM ?? 0)} metros.`);
+    }
     if (model?.state === 'arrived' && model.next?.id !== mon.arrivedId) {
       mon.arrivedId = model.next.id;
       // chegou: vibração longa e marcada (três pulsos), para sentir com o celular no bolso
@@ -43,7 +49,7 @@ export function installMonitor(app) {
       const id = order[i + 1] ?? null, t = tracks.find(x => x.id === id);
       if (t) nextTrack = t;
     }
-    return { nextTrack, speed: mon.pos ? (Date.now() - mon.pos.at > 5000 ? 0 : mon.pos.speedMps ?? null) : null, lot: cur.field.code, acc: mon.pos?.accuracyM ?? null, tracks, trackId: mon.trackId, flipped: mon.flipped, active: mon.active, model, heading: mon.heading, voice: mon.voice, canSpeak: !!window.speechSynthesis, steps: route?.instructions || [], target: model?.next?.id ?? null };
+    return { nextTrack, mode: mon.pos ? (Date.now() - mon.pos.at > 5000 ? 'pe' : mon.pos.mode ?? null) : null, speed: mon.pos ? (Date.now() - mon.pos.at > 5000 ? 0 : mon.pos.speedMps ?? null) : null, lot: cur.field.code, acc: mon.pos?.accuracyM ?? null, tracks, trackId: mon.trackId, flipped: mon.flipped, active: mon.active, model, heading: mon.heading, voice: mon.voice, canSpeak: !!window.speechSynthesis, steps: route?.instructions || [], target: model?.next?.id ?? null };
   }
   async function keepAwake(on) {
     try {
@@ -78,18 +84,34 @@ export function installMonitor(app) {
     mon.compass = false; mon.heading = null;
   }
 
-  /** 3.17 · velocidade suavizada (m/s): a do GPS quando existe; senão distância ÷ tempo entre leituras (0,5 a 15 s). */
+  /** Velocidade (m/s): a do GPS quando existe; senão o deslocamento numa janela de ~3–6 s.
+   *  3.19 · parado, o GPS "treme" 3–6 m entre leituras, mas o tremor vai e volta e não acumula: medindo da leitura de
+   *  ~3 s atrás até a atual, e só acima de 1,5 × a precisão (mín. 6 m), tremor fica 0 e moto (≥ 20 m em 3 s) aparece. */
   function speedOf(prev, pos) {
+    const hist = (mon.hist = [...(mon.hist || []).filter(h => pos.at - h.at <= 6000), pos]);
     let v = pos.speedMps;
-    if (!Number.isFinite(v) && prev) { const dt = (pos.at - prev.at) / 1000; if (dt >= 0.5 && dt <= 15) v = Math.hypot(pos.x - prev.x, pos.y - prev.y) / dt; }
-    if (!Number.isFinite(v)) return prev?.speedMps ?? null;
+    if (Number.isFinite(v) && v < 0.5) v = 0;
+    if (!Number.isFinite(v)) {
+      const old = hist.find(h => pos.at - h.at >= 2500) || null;
+      if (!old) return prev?.speedMps ?? null;
+      const dt = (pos.at - old.at) / 1000, d = Math.hypot(pos.x - old.x, pos.y - old.y), noise = Math.max(6, 1.5 * Math.max(old.accuracyM || 0, pos.accuracyM || 0));
+      v = d <= noise ? 0 : d / dt;
+    }
     return Number.isFinite(prev?.speedMps) ? 0.5 * prev.speedMps + 0.5 * v : v;
+  }
+  /** 3.19 · moto ou a pé com histerese: vira moto acima de 2,5 m/s por 2 leituras; volta a pé abaixo de 1,5 m/s por 2. */
+  function modeOf(v) {
+    const want = !Number.isFinite(v) ? mon.mode : v >= 2.5 ? 'moto' : v < 1.5 ? 'pe' : mon.mode;
+    if (want === mon.mode) { mon.modeN = 0; return mon.mode; }
+    mon.modeN = (mon.modeN || 0) + 1;
+    if (mon.modeN >= 2) { mon.mode = want; mon.modeN = 0; }
+    return mon.mode;
   }
   function watch() {
     const geo = window.navigator.geolocation;
     mon.watchId = geo.watchPosition(position => {
       const pos = fixToPos(position, app.cur.field, mon.pos?.at ?? 0, Date.now());
-      if (pos) { pos.speedMps = speedOf(mon.pos, pos); mon.pos = pos; if (ui.view === 'monitorar') app.render(); }
+      if (pos) { pos.speedMps = speedOf(mon.pos, pos); pos.mode = modeOf(pos.speedMps); mon.pos = pos; if (ui.view === 'monitorar') app.render(); }
       // 3.17 · parado no ponto (coletando), o GPS não manda leitura nova: antes vinha "GPS indisponível" a cada 20 s.
       // Sem tempo-limite; leitura velha já aparece como "GPS sem atualização há N s" (guia)
     }, err => { if (err.code === 1) app.toast('Permita a localização para usar a guia.'); else if (!mon.pos) app.toast('Sem sinal do GPS ainda: fique a céu aberto.'); }, { enableHighAccuracy: true, maximumAge: 0 });
@@ -97,7 +119,7 @@ export function installMonitor(app) {
   function unwatch() { if (mon.watchId !== null) window.navigator.geolocation?.clearWatch(mon.watchId); mon.watchId = null; }
   function gpsStart() {
     if (!window.navigator.geolocation) { app.toast('Este aparelho não oferece GPS ao navegador.'); return; }
-    mon.active = true; mon.pos = null; mon.session = {}; mon.arrivedId = null; mon.nearId = null;
+    mon.active = true; mon.pos = null; mon.session = {}; mon.arrivedId = null; mon.nearId = null; mon.stopId = null; mon.hist = [];
     watch(); compassOn(); keepAwake(true); clearInterval(mon.ticker); mon.ticker = setInterval(() => { if (mon.active && ui.view === 'monitorar') app.render(); }, 5000);
     app.render();
   }
@@ -136,6 +158,6 @@ export function installMonitor(app) {
     follow: () => { mon.follow = !mon.follow; app.drawMaps(); },
     flip: () => { mon.flipped = !mon.flipped; mon.session = {}; app.render(); },
     // 3.13 · segue para o próximo tiro sem parar a guia (sentido do plano, chegada e vibração zeradas)
-    'next-track': () => { const n = monitorData().nextTrack; if (!n) return; mon.trackId = n.id; mon.flipped = false; mon.session = {}; mon.arrivedId = null; mon.nearId = null; app.render(); },
+    'next-track': () => { const n = monitorData().nextTrack; if (!n) return; mon.trackId = n.id; mon.flipped = false; mon.session = {}; mon.arrivedId = null; mon.nearId = null; mon.stopId = null; app.render(); },
   });
 }

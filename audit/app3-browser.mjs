@@ -173,7 +173,9 @@ try {
     await p.setInputFiles('#backup-input', file); await p.waitForSelector('[data-act="restore-go"]');
     assert.match(await p.textContent('.sheet'), /lotes com parâmetros próprios/);
     const reloaded = p.waitForEvent('load', { timeout: 15000 });
-    await Promise.all([p.waitForEvent('download'), p.click('[data-act="restore-go"]')]);
+    // 3.19 · se a cópia "antes de restaurar" não chegar, mostra o aviso da tela e os erros (para achar a causa da falha rara)
+    const consoleLog = []; p.on('console', m => consoleLog.push(`${m.type()}: ${m.text()}`));
+    await Promise.all([p.waitForEvent('download', { timeout: 30000 }).catch(async e => { throw new Error(`${e.message} | aviso: ${await p.textContent('#toast').catch(() => '?')} | console: ${consoleLog.slice(-5).join(' / ')}`); }), p.click('[data-act="restore-go"]')]);
 
     await reloaded; await ready(p);
     assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3'].haPerPoint), 15);
@@ -295,6 +297,7 @@ try {
     await p.click('.grabber'); await p.waitForFunction(() => document.querySelector('#view').dataset.snap === 'cheia');
     await p.waitForTimeout(400); const h1 = await hOf(); assert.ok(h1 > h0 + 100, `cheia maior (${h0} → ${h1})`);
     await p.click('.grabber'); await p.waitForFunction(() => document.querySelector('#view').dataset.snap === 'baixa');
+    await p.waitForTimeout(450); // fim da animação de altura: a alça está no lugar final
     const g = await p.locator('.grabber').boundingBox();
     await p.mouse.move(g.x + g.width / 2, g.y + g.height / 2); await p.mouse.down(); await p.mouse.move(g.x + g.width / 2, g.y - 200, { steps: 8 }); await p.mouse.up();
     await p.waitForFunction(() => ['meia', 'cheia'].includes(document.querySelector('#view').dataset.snap));

@@ -59,7 +59,7 @@ const stepper = (id, label, hint, value) => `<div class="step"><label for="${id}
 /** Sugestão do motor pronta (ganho e "Aplicar") ou o botão para calcular na hora. Também trocada sozinha, sem redesenhar a tela. */
 export const hintMarkup = hint => (hint?.r ? `<button class="sug" data-act="minimax"><span class="x"><b>Sugestão do motor</b><small class="sub">${esc(hint.text)}</small></span><span class="go">Aplicar</span></button>` : '<button class="lnk" data-act="minimax">Melhorar a distribuição dos pontos</button>')
   // 3.15 · lote irregular: 1 ponto acima do mínimo, quando encurta de verdade o maior vazio ou o 95%
-  + (hint?.plus ? `<button class="sug" data-act="plus1"><span class="x"><b>Lote irregular: ${hint.plus.n} pontos (1 a mais)</b><small class="sub">${esc(hint.plus.text)}</small></span><span class="go">Usar</span></button>` : '');
+  + (hint?.plus ? `<button class="sug" data-act="plus1"><span class="x"><b>${hint.plus.reason === 'meio' ? 'Sugestão' : 'Lote irregular'}: ${hint.plus.n} pontos (1 a mais)</b><small class="sub">${esc(hint.plus.text)}</small></span><span class="go">Usar</span></button>` : '');
 
 /** @param {any} o */
 export function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, block, hiTrack = null, list = [], split = null, hint = null, border = null, bigMap = false }) {
@@ -114,7 +114,7 @@ ${findings.length ? findings.map(x => `<p class="ck ${x.level === 'info' ? 'info
 export const calculoBody = steps => steps.map(s => `<details class="ex"><summary>${esc(s.etapa)}</summary>${s.texto.map(t => `<p>${esc(t)}</p>`).join('')}</details>`).join('');
 
 /** Guia por GPS: escolha do tiro, seta, distância e avisos. Sem marcação de coleta. */
-export function monitorView({ nextTrack = /** @type {any} */ (null), speed = /** @type {number|null} */ (null), lot = '', acc = null, tracks, trackId, flipped, active, model, steps, heading = null, voice = false, canSpeak = false }) {
+export function monitorView({ mode = /** @type {string|null} */ (null), nextTrack = /** @type {any} */ (null), speed = /** @type {number|null} */ (null), lot = '', acc = null, tracks, trackId, flipped, active, model, steps, heading = null, voice = false, canSpeak = false }) {
   const pick = `<div class="chips" role="group" aria-label="Tiro">${tracks.map(t => `<button class="chipb${t.id === trackId ? ' on' : ''}" data-track="${esc(t.id)}" aria-pressed="${t.id === trackId}">${esc(t.id)}${t.person ? `<small>${esc(t.person)}</small>` : ''}</button>`).join('')}</div>`;
   const head = `<section class="card"><h2 class="h">Tiro</h2>${pick}<div class="row-sb"><p class="mu">Sentido: ${flipped ? 'invertido' : 'do plano'}</p><button class="link" data-act="flip">Inverter</button></div></section>`;
   if (!active) return `<div class="map sm" data-map="guide"></div><div class="scroll">${GRAB}${head}<button class="btn p" data-act="gps-start">Iniciar guia</button>
@@ -132,9 +132,9 @@ export function monitorView({ nextTrack = /** @type {any} */ (null), speed = /**
   // distância grande e botões grandes (luva, sol, uma mão)
   const pr = m.progress, gps = acc === null ? '' : `<span class="gps ${acc <= 5 ? 'ok' : acc <= 15 ? 'al' : 'er'}">GPS ± ${num(acc)} m</span>`;
   // 3.17 · de moto ou a pé (pela velocidade); de moto mostra km/h
-  const v = Number(speed), modo = speed !== null && Number.isFinite(v) ? (v >= 2.5 ? `<span class="modo">Moto ${num(v * 3.6)} km/h</span>` : '<span class="modo">A pé</span>') : '';
+  const v = Number(speed), modo = mode === 'moto' ? `<span class="modo">Moto ${num(Math.max(0, v) * 3.6)} km/h</span>` : mode === 'pe' && speed !== null ? '<span class="modo">A pé</span>' : '';
   const bar = pr ? `<div class="prog" role="img" aria-label="${pr.done} de ${pr.total} pontos">${Array.from({ length: pr.total }, (_, i) => `<i class="${i < pr.done ? 'd' : i === pr.done ? 'n' : ''}"></i>`).join('')}</div>` : '';
-  return `<div class="map nav" data-map="guide"></div><div class="navpill"><b>${esc(lot)} · ${esc(trackId)}</b>${cur?.person ? `<span>${esc(cur.person)}</span>` : ''}${modo}${gps}</div><section class="sheet gsheet${speed !== null && Number(speed) >= 2.5 ? ' moto' : ''}">${bar}
+  return `<div class="map nav" data-map="guide"></div><div class="navpill"><b>${esc(lot)} · ${esc(trackId)}</b>${cur?.person ? `<span>${esc(cur.person)}</span>` : ''}${modo}${gps}</div><section class="sheet gsheet${mode === 'moto' ? ' moto' : ''}">${bar}
 <div class="guide ${m.state}" aria-live="polite">${arrow}<div class="gtxt"><p class="mu">${esc(m.title)}${pr ? ` <b class="cnt">${pr.done}/${pr.total}</b>` : ''}</p>${m.big ? `<p class="big">${esc(m.big)}${m.dir ? ` <span class="dir">${esc(m.dir)}</span>` : ''}</p>` : ''}${m.info ? `<p class="mu">${esc(m.info)}</p>` : ''}${rel === null ? '' : `<p class="mu sm" data-compass-label>${Number.isFinite(heading) ? 'seta pelo celular' : 'seta com o norte para cima'}</p>`}</div></div>
 ${(m.warn || []).map(w => `<p class="ck alerta">${esc(w)}</p>`).join('')}
 ${nextTrack ? `<button class="btn p" data-act="next-track">Próximo tiro: ${esc(nextTrack.id)}${nextTrack.person ? ` · ${esc(nextTrack.person)}` : ''}</button>` : ''}<div class="two gbtns">${canSpeak ? `<button class="btn" data-act="voice" aria-pressed="${voice}">${voice ? 'Voz ligada' : 'Ligar voz'}</button>` : `<button class="btn" data-act="flip">Inverter</button>`}<button class="btn stop" data-act="gps-stop">Parar guia</button></div></section>`;

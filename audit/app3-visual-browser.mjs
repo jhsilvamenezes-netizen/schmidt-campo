@@ -3,7 +3,8 @@
 // a fonte embutida carregada e com os cálculos em segundo plano terminados, para a foto ser estável.
 // Uso: node app3-visual-browser.mjs            → compara
 //      node app3-visual-browser.mjs --update   → grava novas referências (só quando a mudança visual é intencional)
-// A referência vale para a versão do navegador gravada em visual/meta.json; outra versão: avisa e não compara.
+// Duas comparações: (1) com o navegador da referência (visual/meta.json): pixels e estrutura completa (posição, tamanho
+// e cores de cada elemento visível); (2) com outra versão (o CI): lista de elementos e cores. Nas duas: a página não rola de lado e não pula ao abrir.
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
@@ -26,9 +27,34 @@ const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePa
 const version = browser.version();
 await mkdir(OUT, { recursive: true });
 const metaPath = OUT + 'meta.json', meta = existsSync(metaPath) ? JSON.parse(await readFile(metaPath, 'utf8')) : null;
-if (!UPDATE && meta && meta.browser !== version) {
-  console.log(`comparação de imagens: referência feita no navegador ${meta.browser}, este é ${version} — não comparado`);
-  await browser.close(); server.close(); process.exit(0);
+const PIXELS = process.env.VISUAL_ESTRUTURA === '1' ? false : UPDATE || !meta || meta.browser === version; // VISUAL_ESTRUTURA=1: simula o CI (só estrutura)
+if (!PIXELS) console.log(`comparação de imagens: ${meta && meta.browser !== version ? `navegador ${version} ≠ ${meta.browser} da referência` : "modo só estrutura (VISUAL_ESTRUTURA=1)"} — compara a estrutura da tela`);
+
+/** Estrutura da tela: cada elemento visível com caixa (arredondada a 2 px), cor do texto e do fundo. */
+const layoutOf = p => p.evaluate(() => {
+  const out = [];
+  for (const el of document.querySelectorAll('header *, #view *, nav *')) {
+    if (el.closest('svg') && el.tagName.toLowerCase() !== 'svg') continue; // desenho do mapa: coberto pelos testes do mapa
+    const r = el.getBoundingClientRect(); if (r.width < 1 || r.height < 1) continue;
+    const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || cs.display === 'none') continue;
+    const q = v => Math.round(v / 2) * 2;
+    out.push([el.tagName.toLowerCase() + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/).join('.') : ''), q(r.x), q(r.y), q(r.width), q(r.height), cs.color, cs.backgroundColor]);
+  }
+  return out;
+});
+/** Diferenças de estrutura: elementos a mais/a menos, cor diferente e, com o mesmo navegador, caixa mudada > 4 px.
+ * Entre versões diferentes do navegador o texto mede diferente com a mesma fonte (Chromium 141 × 153: ~8%), então a
+ * caixa exata não é comparável; no lugar dela vale "a página não rola de lado" (conferido em toda tela). */
+function layoutDiff(a, b) {
+  const bad = [];
+  if (a.length !== b.length) bad.push(`elementos ${b.length} → ${a.length}`);
+  for (let i = 0; i < Math.min(a.length, b.length); i++) {
+    const [ta, ...ra] = a[i], [tb, ...rb] = b[i];
+    if (ta !== tb) { bad.push(`${i}: ${tb} → ${ta}`); continue; }
+    if (PIXELS && ra.slice(0, 4).some((v, j) => Math.abs(v - rb[j]) > 4)) bad.push(`${ta} caixa ${rb.slice(0, 4)} → ${ra.slice(0, 4)}`);
+    if (ra[4] !== rb[4] || ra[5] !== rb[5]) bad.push(`${ta} cor ${rb[4]}/${rb[5]} → ${ra[4]}/${ra[5]}`);
+  }
+  return bad;
 }
 
 /** Cada cena: tema, largura e, opcionalmente, o design 4.0 ligado. */
@@ -67,16 +93,23 @@ try {
       let last = '', same = 0;
       for (let i = 0; i < 40 && same < 3; i++) { await p.waitForTimeout(250); const h = await p.evaluate(() => document.querySelector('#view').innerHTML.length + '|' + (document.querySelector('[data-hint]')?.textContent || '')); same = h === last ? same + 1 : 0; last = h; }
       await p.evaluate(() => { const t = document.getElementById('toast'); if (t) t.innerHTML = ''; });
-      const name = `${tab}-${s.theme}-${s.w}${s.v4 ? '-v4' : ''}.png`, shot = await p.screenshot();
-      if (UPDATE || !existsSync(OUT + name)) { await writeFile(OUT + name, shot); wrote.push(name); continue; }
-      const d = diff(PNG.sync.read(shot), PNG.sync.read(await readFile(OUT + name)));
-      if (d > LIMIT) { bad.push(`${name}: ${(d * 100).toFixed(2)}% diferente`); await writeFile(OUT + name.replace('.png', '.novo.png'), shot); }
+      const name = `${tab}-${s.theme}-${s.w}${s.v4 ? '-v4' : ''}.png`, shot = await p.screenshot(), lay = await layoutOf(p), lname = name.replace('.png', '.estrutura.json');
+      if (UPDATE || !existsSync(OUT + name) || !existsSync(OUT + lname)) { await writeFile(OUT + name, shot); await writeFile(OUT + lname, JSON.stringify(lay)); wrote.push(name); continue; }
+      const wide = await p.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+      if (wide > 1) bad.push(`${name}: a página rola de lado (${wide} px)`);
+      const ld = layoutDiff(lay, JSON.parse(await readFile(OUT + lname, 'utf8')));
+      if (ld.length) bad.push(`${name}: estrutura ${ld.length} diferença(s), ex.: ${ld.slice(0, 3).join(' | ')}`);
+      if (PIXELS) {
+        const d = diff(PNG.sync.read(shot), PNG.sync.read(await readFile(OUT + name)));
+        if (d > LIMIT) bad.push(`${name}: ${(d * 100).toFixed(2)}% dos pixels diferentes`);
+      }
+      if (bad.some(b => b.startsWith(name))) await writeFile(OUT + name.replace('.png', '.novo.png'), shot);
     }
     await ctx.close();
   }
-  if (UPDATE || wrote.length) await writeFile(metaPath, JSON.stringify({ browser: version, cenas: SCENES.length * TABS.length }, null, 2) + '\n');
+  if (UPDATE || (wrote.length && PIXELS)) await writeFile(metaPath, JSON.stringify({ browser: version, cenas: SCENES.length * TABS.length }, null, 2) + '\n');
   // tela que "pula" ao abrir: limite de 0,05 (bom, pelo critério do Chrome é < 0,1)
   for (const [k, v] of shifts) assert.ok(v <= 0.05, `mudança de layout ao abrir ${k}: ${v.toFixed(3)}`);
   assert.deepStrictEqual(bad, [], 'imagens diferentes da referência (veja os .novo.png em audit/visual/)');
-  console.log(`comparação de imagens: ${SCENES.length * TABS.length} telas ${wrote.length ? `(${wrote.length} referências gravadas)` : 'iguais à referência'}; CLS máx. ${Math.max(...shifts.map(x => x[1])).toFixed(3)}`);
+  console.log(`comparação de imagens: ${SCENES.length * TABS.length} telas ${wrote.length ? `(${wrote.length} referências gravadas)` : PIXELS ? 'iguais à referência (pixels e estrutura)' : 'com a mesma estrutura da referência'}; CLS máx. ${Math.max(...shifts.map(x => x[1])).toFixed(3)}`);
 } finally { await browser.close(); server.close(); }

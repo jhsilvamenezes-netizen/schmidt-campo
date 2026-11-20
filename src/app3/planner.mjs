@@ -16,7 +16,7 @@ import { pointInGeom } from '../engine3/geometry.mjs';
 import { cumulative, pointAt } from '../engine3/polyline.mjs';
 import { num, range, km, plural } from './format.mjs';
 
-export const ENGINE_LABEL = '3.18.0';
+export const ENGINE_LABEL = '3.19.0';
 export const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
@@ -353,18 +353,30 @@ export function minimaxEdits(field, params, edits = null, { maxEvals = 1200, min
  * (decisão do proprietário, 19/11). Só quando o maior vazio já passa de 1,2 × o lado ideal (lote irregular), o total
  * não foi escolhido à mão e o ganho é de pelo menos 8%. Devolve {params, before, after} ou null.
  */
-export const PLUS_ONE = Object.freeze({ irregular: 1.2, gain: 0.08 });
+export const PLUS_ONE = Object.freeze({ irregular: 1.2, gain: 0.08, smallHa: 60 });
+/** 3.19 · tiros de 1 ponto no meio do lote (fora do primeiro e do último tiro), em lote que não é pequeno. Regra do
+ *  proprietário (19/11): em lote pequeno e irregular (RA9, RB9) o ponto sozinho é aceito; nos maiores, só no bico. */
+export function middleOnes(field, sc) {
+  if (field.areaOfficialHa < PLUS_ONE.smallHa) return 0;
+  const ord = sc.selected.filter(t => sc.units.some(u => u.trackId === t.id)).map(t => t.id);
+  return sc.trackRows.filter(r => r.n === 1 && r.trackId !== ord[0] && r.trackId !== ord.at(-1)).length;
+}
 export function plusOne(field, params, people = 5) {
   if (!params || Number.isFinite(params.totalPoints)) return null;
   const now = balanceStats(field, params);
   if (!now) return null;
-  const n = now.sc.samples.length;
-  if (n !== now.sc.minPoints || now.worst < PLUS_ONE.irregular * Math.sqrt((field.areaOfficialHa * 1e4) / n)) return null;
+  const n = now.sc.samples.length, mid = middleOnes(field, now.sc);
+  const irregular = now.worst >= PLUS_ONE.irregular * Math.sqrt((field.areaOfficialHa * 1e4) / n);
+  if (n !== now.sc.minPoints || (!irregular && !mid)) return null;
   let rec, b;
   try { rec = recommend(field, { ...baseOf(params), totalPoints: n + 1 }, people, false); b = balanceStats(field, { ...rec.chosen.params, totalPoints: n + 1 }); } catch { return null; }
   if (!b || b.sc.samples.length !== n + 1 || b.worst > now.worst + 1) return null;
-  if (b.worst > now.worst * (1 - PLUS_ONE.gain) && b.p95 > now.p95 * (1 - PLUS_ONE.gain)) return null;
-  return { params: { ...rec.chosen.params, totalPoints: n + 1 }, before: { n, worst: now.worst, p95: now.p95 }, after: { n: n + 1, worst: b.worst, p95: b.p95 } };
+  const gains = irregular && (b.worst <= now.worst * (1 - PLUS_ONE.gain) || b.p95 <= now.p95 * (1 - PLUS_ONE.gain));
+  // 3.19 · ou tira o tiro de 1 ponto do meio do lote sem piorar a cobertura
+  const fixesMid = mid > 0 && middleOnes(field, b.sc) < mid && b.p95 <= now.p95 + 1;
+  if (!gains && !fixesMid) return null;
+  return { params: { ...rec.chosen.params, totalPoints: n + 1 }, reason: gains ? 'irregular' : 'meio',
+    before: { n, worst: now.worst, p95: now.p95, mid }, after: { n: n + 1, worst: b.worst, p95: b.p95, mid: middleOnes(field, b.sc) } };
 }
 
 /** Mensagem curta para quem usa, a partir do erro do motor. */

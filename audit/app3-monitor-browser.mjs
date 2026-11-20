@@ -90,10 +90,12 @@ try {
     assert.ok(await p.locator('[data-act="gps-stop"]').count(), 'guia segue ligada');
     assert.deepStrictEqual(errors, []); await ctx.close();
   }
-  { // 3.17 · velocidade: duas leituras 12 m em ~1 s → "Moto … km/h" na etiqueta; parado → "A pé"
+  { // 3.17 · velocidade: leituras a cada ~1 s andando 12 m → "Moto … km/h" na etiqueta. 3.19: a velocidade é medida
+    // numa janela de ~3 s e a troca para moto pede 2 leituras seguidas, então o trajeto simulado tem 6 leituras (como uma
+    // moto de verdade, que manda leitura o tempo todo)
     const { ctx, p, errors } = await open(p1.x * 0.5 + p2.x * 0.5, p1.y * 0.5 + p2.y * 0.5);
     const L = Math.hypot(p2.x - p1.x, p2.y - p1.y), ux = (p2.x - p1.x) / L, uy = (p2.y - p1.y) / L;
-    for (let i = 1; i <= 3; i++) {
+    for (let i = 1; i <= 6; i++) {
       await p.waitForTimeout(1000);
       const [lon, lat] = localToLonLat(p1.x * 0.5 + p2.x * 0.5 + ux * 12 * i, p1.y * 0.5 + p2.y * 0.5 + uy * 12 * i, f.centroidUTM);
       await ctx.setGeolocation({ longitude: lon, latitude: lat, accuracy: 5 });
@@ -101,6 +103,19 @@ try {
     await p.waitForFunction(() => /Moto \d+ km\/h/.test(document.querySelector('.navpill')?.textContent || ''), null, { timeout: 15000 });
     assert.match(await p.textContent('.gsheet'), /~\d+ s/, 'tempo estimado até o ponto');
     assert.ok(await p.locator('.gsheet.moto').count(), '4.0: folha da guia marcada como moto (números grandes)');
+    assert.deepStrictEqual(errors, []); await ctx.close();
+  }
+  { // 3.19 · GPS parado "tremendo" 3–4 m por leitura (precisão ± 5 m): continua "A pé", sem "Moto"
+    const cx = p1.x * 0.5 + p2.x * 0.5, cy = p1.y * 0.5 + p2.y * 0.5;
+    const { ctx, p, errors } = await open(cx, cy);
+    for (const [dx, dy] of [[3, 0], [0, 3], [-3, 1], [2, -2], [-1, 3], [3, 1]]) {
+      await p.waitForTimeout(1000);
+      const [lon, lat] = localToLonLat(cx + dx, cy + dy, f.centroidUTM); await ctx.setGeolocation({ longitude: lon, latitude: lat, accuracy: 5 });
+    }
+    await p.waitForTimeout(800);
+    const pill = await p.textContent('.navpill');
+    assert.doesNotMatch(pill, /Moto/, `parado com tremor do GPS não vira moto: ${pill}`);
+    assert.equal(await p.locator('.gsheet.moto').count(), 0);
     assert.deepStrictEqual(errors, []); await ctx.close();
   }
   { // 3.17 · "Onde estou" no Mapa acompanha o movimento sem tocar de novo
