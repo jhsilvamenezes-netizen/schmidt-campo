@@ -27,7 +27,7 @@ export function createVersions(indexedDB) {
   }
   /** Para a cópia de segurança (mesmo contrato do serviço da 2.x). */
   const history = {
-    readAll: async () => { try { return await req((await open()).transaction(STORE, 'readonly').objectStore(STORE).getAll()); } catch { return []; } },
+    readAll: async () => req((await open()).transaction(STORE, 'readonly').objectStore(STORE).getAll()),
     replaceAll: async rows => { const tx = (await open()).transaction(STORE, 'readwrite'), st = tx.objectStore(STORE); st.clear(); for (const r of rows) st.put(r); await done(tx); },
   };
   return { list, save, history };

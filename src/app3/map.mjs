@@ -101,10 +101,10 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
   let s0 = '';
   for (const o of extra) {
     const Q = ([x, y]) => P([x + o.d[0], y + o.d[1]]);
-    s0 += `<path class="lot other" d="${o.field.geom.map(pg => pg.map(rg => `M${rg.map(Q).join('L')}Z`).join('')).join('')}" fill-rule="evenodd"/>`;
+    s0 += `<g data-member="${esc(o.field.farm + '|' + o.field.code)}"><path class="lot other" d="${o.field.geom.map(pg => pg.map(rg => `M${rg.map(Q).join('L')}Z`).join('')).join('')}" fill-rule="evenodd"/>`;
     if (o.sc) for (const u of o.sc.units) s0 += `<path class="track other" d="M${u.line.map(Q).join('L')}"/>`;
     if (o.sc) for (const q of o.sc.samples) { const [x, y] = XY(q.x + o.d[0], q.y + o.d[1]); s0 += `<circle class="opt" cx="${f1(x)}" cy="${f1(y)}" r="${small ? 4 : 5}"/>`; }
-    const c = XY(o.d[0], o.d[1]); s0 += `<text class="oname" x="${f1(c[0])}" y="${f1(c[1])}">${o.field.code}</text>`;
+    const c = XY(o.d[0], o.d[1]); s0 += `<text class="oname" x="${f1(c[0])}" y="${f1(c[1])}">${esc(o.field.code)}</text></g>`;
   }
   const ring = field.geom.map(pg => pg.map(rg => `M${rg.map(P).join('L')}Z`).join('')).join('');
   let s = `<svg class="map-svg${sat ? ' sat-on' : ''}" viewBox="0 0 ${w} ${h}" role="img" aria-label="Lote ${field.code}: ${sc ? `${plural(sc.samples.length, 'ponto', 'pontos')} em ${plural(sc.selected.length, 'tiro', 'tiros')}` : 'sem plano'}">`;
@@ -136,8 +136,19 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
     const scr = new Map(sc.samples.map(p => [p.id, XY(p.x, p.y)]));
     // lote com pontos muito juntos nesta escala: círculo menor (nunca abaixo de 9 px; número continua com 12 px)
     const sp0 = [...scr.values()];
-    let dmin = Infinity;
-    for (let i = 0; i < sp0.length; i++) for (let j = i + 1; j < sp0.length; j++) dmin = Math.min(dmin, Math.hypot(sp0[i][0] - sp0[j][0], sp0[i][1] - sp0[j][1]));
+    // Só vizinhos a menos de dois diâmetros influem no raio. Atingido o mínimo, pode parar.
+    const cell = 2 * r + 1, bins = new Map();
+    let dmin = cell;
+    for (const pt of sp0) {
+      const [x, y] = pt, col = Math.floor(x / cell), row = Math.floor(y / cell);
+      for (let i = col - 1; i <= col + 1; i++) for (let j = row - 1; j <= row + 1; j++) {
+        for (const q of bins.get(i + ',' + j) || []) dmin = Math.min(dmin, Math.hypot(x - q[0], y - q[1]));
+      }
+      if (dmin <= 18) break;
+      const id = col + ',' + row;
+      if (!bins.has(id)) bins.set(id, []);
+      bins.get(id).push(pt);
+    }
     r = Math.max(8.5, Math.min(r, dmin / 2 - 0.5));
     for (const [, [x, y]] of scr) sp.circles.push([x, y, r + 1]);
     // área de cada ponto: contornos das células por baixo dos tiros
@@ -305,6 +316,12 @@ function tocado(info, XY, sp, r) {
     for (const t of [0.5, 0.65, 0.35, 0.8]) {
       const mx = a[0] + (b[0] - a[0]) * t, my = a[1] + (b[1] - a[1]) * t;
       for (const off of [10, 22, 34]) for (const sg of [1, -1]) { const dx = -uy * off * sg; cands.push([mx + dx, my + ux * off * sg + 4, anchorFor(dx)]); }
+    }
+    // Últimas opções junto à mesma linha quando o texto central esbarra num ponto ou no cartão.
+    for (const t of [0.5, 0.25, 0.75]) {
+      const mx = a[0] + (b[0] - a[0]) * t, my = a[1] + (b[1] - a[1]) * t;
+      for (const dy of [-15, 18, -29, 32]) for (const dx of [0, -12, 12])
+        cands.push([mx + dx, my + dy, anchorFor(dx)]);
     }
     sp.line(a, b, 2);
     const p = sp.place(cands, label, 'sel');

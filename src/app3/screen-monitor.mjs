@@ -1,4 +1,5 @@
 // 3.1 (U02) · tela Monitorar: tiro e sentido, guia por GPS (política 2.0), tela acesa e vibração ao chegar.
+import { GPS_MAX_AGE_MS } from '../engine3/guidance.mjs';
 import { routeFor, fixToPos, guideModel, nearEndFlipped, speedStep, modeStep, guideAlerts, ENTRY_REACHED_M } from './monitor.mjs';
 import { headingOf, smoothHeading, arrowAngle } from './compass.mjs';
 import { toGPX } from '../engine3/exporters.mjs';
@@ -10,20 +11,22 @@ export function installMonitor(app) {
   /** Guia: tiro, sentido, GPS ligado, última posição, memória da sessão, trava de tela. */
   /** @type {any} */ const mon = { mode: 'pe', modeN: 0, voice: false, follow: true, heading: null, compass: false, compassAt: 0, trackId: null, flipped: false, active: false, watchId: null, pos: null, session: {}, wake: null, arrivedId: null, ticker: 0 };
 
+  const freshPos = () => mon.active && mon.pos && Date.now() - mon.pos.at <= GPS_MAX_AGE_MS ? mon.pos : null;
   function monitorData() {
     const cur = app.cur, sc = cur.sc, tasks = new Map();
     (cur.split?.pessoas || []).forEach((p, i) => p.tarefas.forEach(t => tasks.set(t.id, `Pessoa ${i + 1}`)));
     const tracks = sc.selected.filter(t => sc.units.some(u => u.trackId === t.id)).map(t => ({ id: t.id, person: tasks.get(t.id) }));
     if (!tracks.some(t => t.id === mon.trackId)) mon.trackId = tracks[0]?.id ?? null;
     // 3.20 · antes do primeiro ponto, entra pela ponta mais perto (o "Inverter" à mão desliga a escolha automática)
-    if (mon.active && mon.trackId && mon.pos && !mon.manualDir && !mon.startedTrack) {
+    const pos = freshPos(), reliable = pos && pos.accuracyM <= sc.params.monitor.gpsAccuracyMaxM;
+    if (reliable && mon.trackId && !mon.manualDir && !mon.startedTrack) {
       const f = nearEndFlipped(sc, cur.field, mon.trackId, mon.pos, mon.flipped, sc.params.monitor?.offLineWarnM ?? 25);
       if (f !== mon.flipped) { mon.flipped = f; mon.autoDir = true; mon.session = {}; mon.nearId = null; mon.stopId = null; }
     }
     const route = mon.trackId ? routeFor(sc, cur.field, mon.trackId, mon.flipped) : null;
     // 3.23 · ponta escolhida à mão: a guia leva à entrada até a pessoa chegar a ela (depois segue normal)
     const entry = route?.parts?.[0]?.entry;
-    if (mon.pos && entry && Math.hypot(entry[0] - mon.pos.x, entry[1] - mon.pos.y) <= ENTRY_REACHED_M) mon.reachedEntry = true;
+    if (reliable && entry && Math.hypot(entry[0] - mon.pos.x, entry[1] - mon.pos.y) <= ENTRY_REACHED_M) mon.reachedEntry = true;
     const model = route && mon.active ? guideModel(route, sc, cur.field, mon.pos, Date.now(), mon.session, { toEntry: !!mon.manualDir && !mon.startedTrack && !mon.reachedEntry }) : null;
     // 3.22 · avisos decididos no núcleo sem DOM (monitor.mjs); aqui só vibra e fala
     const al = guideAlerts(model, { offWarned: mon.offWarned, nearId: mon.nearId, stopId: mon.stopId, arrivedId: mon.arrivedId, startedTrack: mon.startedTrack, bandKey: mon.bandKey, band: mon.band },
@@ -103,7 +106,7 @@ export function installMonitor(app) {
   }
   function gpsStop() {
     try { window.screen?.orientation?.unlock?.(); } catch { /* sem trava */ }
-    flushStats(); unwatch(); mon.active = false; clearInterval(mon.ticker); compassOff(); keepAwake(false); window.speechSynthesis?.cancel?.(); app.render();
+    flushStats(); unwatch(); mon.active = false; mon.pos = null; clearInterval(mon.ticker); compassOff(); keepAwake(false); window.speechSynthesis?.cancel?.(); app.render();
   }
   // Tela apagada ou app em segundo plano: GPS e bússola param (bateria); ao voltar, retomam sozinhos.
   document.addEventListener('visibilitychange', () => {
@@ -120,7 +123,8 @@ export function installMonitor(app) {
   app.monitorData = monitorData;
   app.guide = () => {
     const d = mon.active ? monitorData() : null, to = d?.model?.to || null;
-    return { target: d?.target ?? null, pos: mon.pos, to, heading: mon.heading, follow: mon.follow, focus: mon.follow && mon.pos ? [[mon.pos.x, mon.pos.y], ...(to ? [to] : [])] : null };
+    const pos = freshPos(), reliable = pos && d?.model?.state !== 'impreciso';
+    return { target: reliable ? d?.target ?? null : null, pos, to, heading: mon.heading, follow: mon.follow, focus: mon.follow && reliable ? [[pos.x, pos.y], ...(to ? [to] : [])] : null };
   };
   app.onLotChange.push(() => { if (mon.active) gpsStop(); mon.trackId = null; });
   app.clicks.push(t => { if (!t.dataset.track) return false; mon.trackId = t.dataset.track; mon.flipped = false; mon.manualDir = false; mon.autoDir = false; mon.startedTrack = false; mon.reachedEntry = false; mon.session = {}; mon.arrivedId = null; app.render(); return true; });

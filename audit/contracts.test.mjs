@@ -44,7 +44,7 @@ test('HTML e worker correspondem ao build determinístico (3.0 na raiz, 2.5 em l
   if (!process.env.SCHMIDT_LEGACY_ROOT) {
     assert.equal(read('index.html').toString(),b3.html);
     assert.equal(read('sw.js').toString(),b3.worker);
-    assert.match(b3.worker,/\/legado\//);
+    assert.ok(b3.worker.includes("request.url.startsWith(absolute('legado/'))"));
   }
 });
 test('CSS/HTML estáticos, dados e scripts auxiliares preservam a referência; Plano muda por adaptador aprovado', () => {
@@ -59,10 +59,10 @@ test('CSS/HTML estáticos, dados e scripts auxiliares preservam a referência; P
   const worker=read('sw.js').toString();
   assert.ok(worker.includes(createHash('sha256').update(read('index.html')).digest('hex')));
   // 3.12: troca de versão só quando a pessoa toca em "Atualizar" (mensagem do app); nunca sozinha na instalação
-  const onAsk="self.addEventListener('message',event=>{if(event.data&&event.data.type==='schmidt-atualizar')self.skipWaiting();});";
-  assert.equal(worker.split(onAsk).length,2,'troca só a pedido');
-  assert.doesNotMatch(worker.replace(onAsk,''),/self\.skipWaiting\s*\(/);
-  assert.match(worker,/cache:'reload'/);
+  const onAsk = /if\s*\(event\.data\?\.type === 'schmidt-atualizar'\) self\.skipWaiting\(\);/g;
+  assert.equal([...worker.matchAll(onAsk)].length, 1, 'troca só a pedido');
+  assert.doesNotMatch(worker.replace(onAsk, ''), /self\.skipWaiting\s*\(/);
+  assert.match(worker, /cache:\s*'reload'/);
 });
 for (const page of ['index.html','legado/index.html']) test(`CSP contém hashes corretos de todos os scripts executáveis, sem liberar inline: ${page}`, () => {
   const html=read(page).toString();
@@ -77,6 +77,7 @@ test('VERSAO identifica os mesmos artefatos e a opção de blocos do build',()=>
   const version=JSON.parse(read('VERSAO.json'));
   assert.equal(version.htmlSha256,createHash('sha256').update(read('index.html')).digest('hex'));
   assert.equal(version.workerSha256,createHash('sha256').update(read('sw.js')).digest('hex'));
+  assert.equal(version.motorSha256,createHash('sha256').update(read('motor.js')).digest('hex'));
   assert.equal(version.legadoSha256,createHash('sha256').update(read('legado/index.html')).digest('hex'));
   assert.ok(read('index.html').toString().includes(`appVersion:'${version.versaoDoApp}'`));
   assert.ok(read('legado/index.html').toString().includes('APP_VERSION:`'+version.versaoLegado+'`'));

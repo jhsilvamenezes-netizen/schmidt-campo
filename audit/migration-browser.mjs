@@ -13,6 +13,7 @@ const legacy = await buildCandidate();
 let phase = 'repo'; // 'old' = raiz com a 2.5 e o service worker dela (como o link estava antes da troca)
 const server = createServer(async (q, r) => {
   let path = decodeURIComponent(new URL(q.url, 'http://x').pathname).slice(1);
+  if (phase === 'bad-motor' && path === 'motor.js') { r.setHeader('Content-Type', 'text/javascript'); return r.end('// versão divergente'); }
   if (phase === 'old' && (path === '' || path === 'index.html' || path === 'sw.js')) { r.setHeader('Content-Type', path === 'sw.js' ? 'text/javascript' : 'text/html'); r.setHeader('Cache-Control', 'no-store'); return r.end(path === 'sw.js' ? legacy.worker : legacy.html); }
   r.setHeader('Cache-Control', 'no-store');
   if (path === '' || path.endsWith('/')) path += 'index.html';
@@ -58,6 +59,17 @@ try {
     let q = await c2.newPage(); await q.addInitScript(() => sessionStorage.setItem('schmidt.backup.lembrado', '1'));
     await q.goto(base); await ready(q); await q.evaluate(() => navigator.serviceWorker.ready); await q.reload(); await ready(q);
     assert.ok(await q.evaluate(() => !!navigator.serviceWorker.controller && !!document.querySelector('[data-v08-view]')), '2.5 instalada');
+    phase = 'bad-motor';
+    const rejected = await q.evaluate(async () => {
+      const reg = await navigator.serviceWorker.getRegistration();
+      const nextState = new Promise(resolve => reg.addEventListener('updatefound', () => {
+        const candidate = reg.installing;
+        candidate.addEventListener('statechange', () => { if (['installed', 'redundant'].includes(candidate.state)) resolve(candidate.state); });
+      }, { once: true }));
+      await reg.update(); return nextState;
+    });
+    assert.equal(rejected, 'redundant', 'motor divergente impede instalar');
+    assert.ok(await q.evaluate(async () => (await caches.keys()).some(k => k.startsWith('schmidt-1.31-'))), 'cache anterior disponível');
     phase = 'repo';
     await q.evaluate(() => navigator.serviceWorker.getRegistration().then(r => r.update()));
     await q.waitForFunction(() => navigator.serviceWorker.getRegistration().then(r => !!(r.waiting || r.installing === null && r.active)), null, { timeout: 15000 });

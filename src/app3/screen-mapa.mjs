@@ -24,6 +24,8 @@ export function installMapa(app) {
   /** @type {any} */ let here = null;
   /** 3.17 · id do acompanhamento contínuo do GPS no Mapa (null = parado) */
   /** @type {any} */ let hereWatch = null;
+  let expiry = 0, whereGeneration = 0;
+  const failedSat = new Set();
   let layers = { medidas: true, areas: false, borda: false, grade: true, satelite: false }, panel = false;
   try { const l = JSON.parse(storage.getItem(LAYERS_KEY) || '{}'); layers = { medidas: l.medidas !== false, areas: l.areas === true, borda: l.borda === true, grade: l.grade !== false, satelite: l.satelite === true }; } catch { /* padrão */ }
 
@@ -100,7 +102,7 @@ export function installMapa(app) {
       const g = guide ? app.guide() : null, under = sheet4 || parseFloat(document.defaultView.getComputedStyle(el).getPropertyValue('--under')) || 0;
       const kind = full ? 'full' : guide ? 'guide' : 'small', view = guide && g.focus ? ID : views[kind];
       // 3.26 · satélite (camada opcional): no mapa principal e no da guia, onde ajuda a se orientar no campo
-      const sat = layers.satelite && (full || guide) ? { ...satImage(cur.field), credit: SAT_CREDIT } : null;
+      const sat = layers.satelite && !failedSat.has(app.ui.key) && (full || guide) ? { ...satImage(cur.field), credit: SAT_CREDIT } : null;
       el.classList.toggle('sat', !!sat);
       el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { sat, small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, hiTrack: full ? selTrack : !guide ? app.hiTrack : null, focus: guide ? g.focus : null, others: cur.others || [], under, ...opts })
         + (full ? (ruler ? `<div class="bal" role="status"><b>${num(ruler.m)} m</b><span>do ponto ${num(ruler.na)} ao ponto ${num(ruler.nb)} (em linha reta)</span><span>Toque fora para limpar</span></div>` : info ? balloon() : selTrack ? trackCard() : w ? hereCard(w) : '')
@@ -108,7 +110,14 @@ export function installMapa(app) {
           : guide && g.pos ? `<button class="fit" data-act="follow" aria-pressed="${!!g.follow}" aria-label="${g.follow ? 'Ver o lote inteiro' : 'Seguir minha posição'}">${g.follow ? '⤢' : '◎'}</button>`
             : (moved(view) ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : '')
               // 3.15 · Plano: mapa maior com um toque (e de volta)
-              + (kind === 'small' && !app.cur.block ? `<button class="fit grow" data-act="plan-grow" aria-pressed="${!!app.planBig}" aria-label="${app.planBig ? 'Mapa menor' : 'Mapa maior'}">${app.planBig ? '⌄' : '⌃'}</button>` : ''));
+              + (kind === 'small' ? `<button class="fit grow" data-act="plan-grow" aria-pressed="${!!app.planBig}" aria-label="${app.planBig ? 'Mapa menor' : 'Mapa maior'}">${app.planBig ? '⌄' : '⌃'}</button>` : ''));
+      if (sat) {
+        const key = app.ui.key;
+        el.querySelector('image.sat:not(.ctx)')?.addEventListener('error', () => {
+          if (app.ui.key !== key || !el.isConnected || !layers.satelite || failedSat.has(key)) return;
+          failedSat.add(key); drawMaps(); app.toast('Satélite indisponível. O mapa do plano continua disponível.');
+        }, { once: true });
+      }
       if (!el.dataset.g) {
         el.dataset.g = '1';
         const k2 = full ? 'full' : el.dataset.map === 'guide' ? 'guide' : 'small';
@@ -118,6 +127,8 @@ export function installMapa(app) {
             const t = target.closest?.('[data-pt]'), id = t ? t.dataset.pt : null, trk = !id && k2 === 'full' ? target.closest?.('[data-trk]')?.dataset.trk ?? null : null;
             // com um ponto escolhido, tocar em outro mede a distância entre os dois (régua); tocar fora limpa
             if (k2 === 'full' && panel) { panel = false; drawMaps(); return; } // tocar no mapa fecha o painel
+            const member = target.closest?.('[data-member]')?.dataset.member;
+            if (member && k2 !== 'guide') { app.selectLot(member); return; }
             if (k2 === 'full' && id && selectedPt && id !== selectedPt && !rulerPt) rulerPt = id;
             else { selectedPt = id; rulerPt = null; }
             selTrack = trk && trk !== selTrack ? trk : null; // tocar no mesmo tiro de novo (ou fora) limpa
@@ -131,12 +142,13 @@ export function installMapa(app) {
   const satImage = (/** @type {any} */ field) => { const k = `${field.farm}|${field.code}`; if (!satMemo.has(k)) satMemo.set(k, satRequest(field)); return satMemo.get(k); };
   function toggleLayer(name) {
     layers = { ...layers, [name]: !layers[name] };
+    if (name === 'satelite') failedSat.clear();
     try { storage.setItem(LAYERS_KEY, JSON.stringify(layers)); } catch { /* só não lembra */ }
     drawMaps();
     if (name === 'satelite' && layers.satelite) app.toast('Satélite ligado: precisa de internet para baixar a imagem do lote.');
   }
 
-  function stopHere() { if (hereWatch !== null) app.window.navigator.geolocation?.clearWatch(hereWatch); hereWatch = null; here = null; }
+  function stopHere() { whereGeneration++; clearTimeout(expiry); if (hereWatch !== null) app.window.navigator.geolocation?.clearWatch(hereWatch); hereWatch = null; here = null; }
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && hereWatch !== null) stopHere(); });
   app.drawMaps = drawMaps;
   app.onLotChange.push(() => { panel = false; stopHere(); views.full = views.small = views.guide = ID; selectedPt = null; rulerPt = null; selTrack = null; app.hiTrack = null; });
@@ -150,14 +162,18 @@ export function installMapa(app) {
       const geo = app.window.navigator.geolocation;
       if (!geo) { app.toast('Este aparelho não oferece GPS ao navegador.'); return; }
       app.toast('Buscando sua posição…');
-      let first = true;
+      let first = true; const generation = ++whereGeneration;
       hereWatch = geo.watchPosition(position => {
+        if (whereGeneration !== generation) return;
         const pos = fixToPos(position, app.cur.field, here?.at ?? 0, Date.now());
         if (!pos) { if (first) app.toast('Posição do GPS imprecisa ou antiga: tente a céu aberto.'); return; }
+        clearTimeout(expiry);
+        expiry = setTimeout(() => { if (whereGeneration === generation) { here = null; drawMaps(); } }, Math.max(0, pos.at + 15000 - Date.now()));
         here = pos; if (first) { selectedPt = null; views.full = ID; app.toast('Acompanhando sua posição. Toque em ◎ para parar.'); }
         first = false;
         if (app.ui.view === 'mapa') drawMaps();
       }, err => {
+        if (whereGeneration !== generation) return;
         // parado, o GPS só manda leitura quando muda: "tempo esgotado" ou "sem sinal" não param o acompanhamento;
         // só a localização negada para
         if (err.code === 1) { app.toast('Permita a localização para ver onde você está.'); stopHere(); drawMaps(); }

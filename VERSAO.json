@@ -1,16 +1,17 @@
 {
-  "entrega": "4.0.2",
+  "entrega": "4.1.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-20",
-  "versaoDoApp": "4.0.2",
+  "versaoDoApp": "4.1.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "888978734c9ead411c88edf1a5c07572e63bb7b1422223c3e3c67376fa546a7a",
-  "workerSha256": "bda2951dca6df6f8fd2d92d4a6541103c2775c6810c8e1849ff3ea104a21538e",
+  "htmlSha256": "e950046416ec77b61a6526e0976294ee2afc62ec87cbbdfa810472c788ee1296",
+  "workerSha256": "c0ae2d92912f26c2bba491d91b96bcb319fe435dd9140d9ff9afab0379b6ddce",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "4.1.0: arquivo de bloco com os pontos efetivos dos lotes, comparação pelo maior vazio exato e p95, borda mínima de 15 m, importação conferida, proteção dos dados locais e do cache offline, GPS impreciso sem confirmação de chegada.",
     "4.0.2: guarda de qualidade do motor — retrato dos 51 lotes (95% do lote, maior vazio, área descoberta, caminhada, pessoa mais longa, bordadura, tiros de 1 ponto) no CI; versão que piora qualquer lote é barrada, salvo decisão registrada com motivo. Guarda da bordadura mínima (15 m): o tiro com ponto na faixa desliza ao longo do tiro (mesmo espaçamento), com teto de +15% no maior vazio; BC3: ponto de 10,5 m → 15 m da borda, maior vazio 321 → 354 m; demais 50 lotes idênticos",
     "4.0.1: ponto no maior vazio — a sugestão de 1 ponto a mais também testa manter o plano e pôr o ponto num tiro existente onde mais encurta o maior vazio (fora da bordadura mínima, a 30 m das pontas e 60 m dos vizinhos); BD5: maior vazio 689 → 453 m (antes 602 m). Medido: nos 51 lotes o \"95% do lote\" já fica a 1,01 × o limite teórico (malha hexagonal ideal)",
     "4.0.0: design 4.0 vira o padrão (aprovado pelo proprietário com a condição de empatar ou ganhar em cada medida); visual anterior fica como reserva por uma versão (Mais → Visual anterior). Comparação medida (audit/design-compare.mjs, 5 telas × claro/escuro/Sol/360 px): axe 2 → 0, menor contraste 5,2 → 5,6–8,1, textos cortados 1 → 0, fonte mínima 12 → 13 px, mapa no Plano/Monitorar 30% → 37% e no Mapa igual ou maior, alvos < 44 px 0 = 0. Ajustes para não perder em nada: cabeçalho 58 px e menu 64 px como antes, resumo do Mapa na mesma altura, medidas do Plano sem reticências. Retirados: selos de alerta de cadastro das abas Mapa e Lotes (os avisos seguem em Mais → Dados do lote e na Conferência do Plano), textura de plantio (não segue o rumo real do plantio) e troca de aba com View Transition (bloqueava o toque por ~0,2 s)",
@@ -106,5 +107,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "72560595fa1788ed32af8019d4b84aa17093c0381188b54756a93c361eef763f"
+  "motorSha256": "6e07ad94d88c64a8f83311d5d0f6e7aa3e293f343085f47a8ddf1bc1d1dfde92"
 }

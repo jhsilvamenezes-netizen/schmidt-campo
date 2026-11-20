@@ -7,8 +7,6 @@ import { statsSummary, statsCsv } from './gps-stats.mjs';
 import * as VX from './views-mais.mjs';
 import { esc, num } from './format.mjs';
 import { makeBackup, readBackup, ITEM_LABELS } from './backup.mjs';
-import { createSchmidtBackupService } from '../persistence/backup-service.mjs';
-import { createSchmidtJournal, createSchmidtImageRepository } from '../platform/browser-backup-adapters.mjs';
 import { explainScenario } from '../engine3/explain.mjs';
 import { assessField } from '../engine3/dataQuality.mjs';
 
@@ -40,6 +38,7 @@ export function installMais(app) {
       let row;
       try { const sc = P.planInUse(f, params, edits); row = { key: k, code: f.code, farm: f.farm, pontos: sc.samples.length, tiros: sc.selected.length, p95: sc.coverage.p95, alerts: sc.warnings.filter(w => w.level !== 'info').length }; }
       catch { row = { key: k, code: f.code, farm: f.farm, pontos: 0, tiros: 0, p95: null, alerts: 1 }; }
+      if (rowCache.size >= 128) rowCache.delete(rowCache.keys().next().value);
       rowCache.set(id, row);
     }
     return rowCache.get(id);
@@ -62,8 +61,7 @@ export function installMais(app) {
   }
 
   // ---------- cópia de segurança (mesmo formato da 2.x) ----------
-  const backupService = window.indexedDB && app.persistent ? createSchmidtBackupService({ storage, images: createSchmidtImageRepository(window.indexedDB), history: versions.history, journal: createSchmidtJournal(window.indexedDB),
-    exclusive: window.navigator.locks ? op => app.session.exclusive(op) : op => op() }) : null;
+  const { backupService } = app;
   /** @type {any} */ let pendingRestore = null;
   const lastBackup = () => { try { const t = storage.getItem(LAST_BACKUP); return t ? new Date(+t).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : ''; } catch { return ''; } };
   const stamp = () => { const d = new Date(), z = v => String(v).padStart(2, '0'); return `${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}`; };
@@ -118,7 +116,12 @@ export function installMais(app) {
     vitrine: () => app.openSheet('Vitrine do design 4.0', VX.vitrineBody()),
     glossario: () => app.openSheet('Glossário', `<dl class="glos">${glossTerms().map(([t, d]) => `<dt>${esc(t)}</dt><dd>${esc(d)}</dd>`).join('')}</dl>`),
     todos: openAll,
-    versoes: async () => { app.openSheet(`Versões · ${app.cur.field.code}`, '<p class="mu">…</p>'); const rows = await versions.list(ui.key); app.openSheet(`Versões · ${app.cur.field.code}`, VX.versionsBody(rows)); },
+    versoes: async () => {
+      const key = ui.key, title = `Versões · ${fields[key].code}`;
+      app.openSheet(title, '<p class="mu">…</p>');
+      const sheet = app.host.firstElementChild, rows = await versions.list(key);
+      if (ui.key === key && app.host.firstElementChild === sheet) app.openSheet(title, VX.versionsBody(rows));
+    },
     copia: () => app.openSheet('Cópia de segurança', VX.backupBody('', lastBackup())),
     lote: () => app.openSheet('Escolher lote', lotPicker()),
     dados: () => app.openSheet(`Dados · ${app.cur.field.code}`, VX.dadosBody(app.cur.field, assessField(app.cur.field), safra?.data?.[ui.key], safra?.source)),
@@ -137,6 +140,11 @@ export function installMais(app) {
     'gps-reset': () => { app.resetGpsStats?.(); app.SHEETS.gps(); app.toast('Contagem do GPS zerada.'); },
     design4: () => { const on = !app.isDesign4(); app.setDesign4(on); app.SHEETS.menu(); app.toast(on ? 'Visual 4.0 de volta.' : 'Visual anterior ligado (reserva).'); },
     async backup() {
+      if (store.unreadable()) {
+        const raw = storage.getItem('monitoramento.v03');
+        if (raw !== null) app.download(raw, `schmidt_estado_original_${stamp()}.txt`, 'text/plain');
+        app.toast('Dados originais preservados para recuperação.'); return;
+      }
       try { const b = await doBackup(); app.download(JSON.stringify(b), `schmidt_copia_${stamp()}.json`, 'application/json'); try { storage.setItem(LAST_BACKUP, String(Date.now())); } catch { /* só não lembra */ } app.toast('Cópia de segurança baixada.'); }
       catch (e) { app.toast(`Cópia não feita: ${/** @type {Error} */ (e).message}.`); }
     },
@@ -147,18 +155,20 @@ export function installMais(app) {
       try {
         const b = pendingRestore;
         if (!backupService) return;
-        app.freeze(); // o estado da memória é o de antes: não pode voltar a ser gravado
+        await app.freeze(); // o estado da memória é o de antes: não pode voltar a ser gravado
         await backupService.restore({ data: b.dados, images: b.imagens.map(i => ({ key: i.chave, rec: { blob: fromBase64(i.base64, i.tipo), name: i.nome, world: i.world, width: i.largura, height: i.altura, crs: i.crs } })), history: b.historico || [], legacy: !!b.legado });
         app.toast('Restaurado. Abrindo de novo…'); setTimeout(() => window.location.reload(), 600);
       } catch (e) { app.freeze(false); app.toast(`Falha ao restaurar: ${/** @type {Error} */ (e).message}.`); }
     },
   });
+  app.selectLot = key => {
+    if (!Object.hasOwn(fields, key)) return;
+    for (const f of app.onLotChange) f();
+    ui.key = key; pushRecent(key); store.update({ fieldKey: key }); app.closeSheet(); app.render();
+  };
   app.clicks.push(t => {
-    if (t.dataset.ver) { versions.list(ui.key).then(rows => { const r = rows.find(x => String(x.id) === t.dataset.ver); if (r?.estado?.params) { app.closeSheet(); app.setParams(r.estado.params, 'Versão anterior em uso', r.estado.edits ?? null); } }); return true; }
-    if (t.dataset.lot) {
-      for (const f of app.onLotChange) f();
-      ui.key = t.dataset.lot; pushRecent(ui.key); store.update({ fieldKey: ui.key }); app.closeSheet(); app.render(); return true;
-    }
+    if (t.dataset.ver) { const key = ui.key, sheet = app.host.firstElementChild; versions.list(key).then(rows => { if (ui.key !== key || app.host.firstElementChild !== sheet) return; const r = rows.find(x => String(x.id) === t.dataset.ver); if (r?.estado?.params) { app.closeSheet(); app.setParams(r.estado.params, 'Versão anterior em uso', r.estado.edits ?? null); } }); return true; }
+    if (t.dataset.lot) { app.selectLot(t.dataset.lot); return true; }
     return false;
   });
   app.changes.push(t => {
@@ -168,6 +178,5 @@ export function installMais(app) {
     return true;
   });
   app.inputs.push(t => { if (!t.hasAttribute?.('data-search')) return false; app.host.querySelector('[data-lots]').innerHTML = lotList(t.value); return true; });
-  backupService?.recover().catch(() => app.toast('Restauração anterior incompleta: faça uma nova cópia.'));
   pushRecent(ui.key);
 }

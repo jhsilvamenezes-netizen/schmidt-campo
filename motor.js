@@ -1734,13 +1734,22 @@ function allocatePerTrack(units, perTrack, policy, margin = 0) {
 /** Menor n que deixa o intervalo (ou, com 1 ponto, o dobro do raio) ≤ alvo. */
 function countForSpacing(L, target, policy, margin = 0) {
   if (!(target > 0)) throw Error('Intervalo alvo deve ser positivo');
-  let n = 1;
-  while (n < 1e4) {
-    const gap = internalGap(L, n, policy, margin), r = alongCoverageRadius(L, n, policy, margin);
-    if ((gap === null && 2 * r <= target + ALLOC_EPS_M) || (gap !== null && gap <= target + ALLOC_EPS_M)) return n;
-    n++;
+  const firstGap = internalGap(L, 1, policy, margin), firstRadius = alongCoverageRadius(L, 1, policy, margin);
+  if ((firstGap === null && 2 * firstRadius <= target + ALLOC_EPS_M) || (firstGap !== null && firstGap <= target + ALLOC_EPS_M)) return 1;
+  // Para n >= 2, o intervalo é não crescente nas três políticas. A expansão
+  // mantém baixo o custo dos planos pequenos; a busca binária limita o caso denso.
+  // Preserva a desigualdade, as tolerâncias e o teto histórico de 10.000 pontos.
+  let low = 2, high = 2;
+  while (high < 10000 && Number(internalGap(L, high, policy, margin)) > target + ALLOC_EPS_M) {
+    low = high + 1;
+    high = Math.min(10000, high * 2);
   }
-  return n;
+  while (low < high) {
+    const middle = (low + high) >> 1;
+    if (Number(internalGap(L, middle, policy, margin)) <= target + ALLOC_EPS_M) high = middle;
+    else low = middle + 1;
+  }
+  return low;
 }
 
 /** Pelo intervalo desejado; completa até o mínimo por área; acima do teto = conflito. */
@@ -2397,6 +2406,7 @@ function buildScenario(field, given = {}, opts = {}, legacy) {
     if (balanced) ({ samples, fix: borderFix } = borderGuard(field, core, params, samples, worth ? r.shifts : null));
     optimization = r.report ? { ...r.report, ...(balanced ? { mode: 'equilibrado', accepted: !!worth, minGain: BALANCED_MIN_GAIN } : {}) } : null;
   }
+  if (opts.guardBorder && !balanced) ({ samples, fix: borderFix } = borderGuard(field, core, params, samples, null));
   return withMetrics(field, {
     engineVersion: legacy.engineVersion ?? ENGINE_VERSION, generatedAt: new Date().toISOString(),
     status: core.units.some(u => u.kind === 'trajeto_gps_equipe') ? STATUS.TRAJETO_IMPORTADO : STATUS.SIMULADO,
@@ -2787,7 +2797,7 @@ function instructions(route) {
 /** Direção ao próximo ponto a partir da posição `pos`. `nextPoint(route, pos, collected, monitor, state)` escolhe o alvo. */
 function guide(route, pos, collected, monitor, nextPoint) {
   const nCollected = route.points.filter(p => collected.has(p.id)).length, next = nextPoint(route, pos, collected, monitor, pos.guideState);
-  const accuracyOk = Number.isFinite(pos.accuracyM) && pos.accuracyM <= monitor.gpsAccuracyMaxM, stale = Number.isFinite(pos.ageMs) && pos.ageMs > GPS_MAX_AGE_MS;
+  const accuracyOk = Number.isFinite(pos.accuracyM) && pos.accuracyM >= 0 && pos.accuracyM <= monitor.gpsAccuracyMaxM, stale = Number.isFinite(pos.ageMs) && pos.ageMs > GPS_MAX_AGE_MS;
   if (!next) return { done: true, collected: nCollected, total: route.points.length, accuracyOk, stale };
   const dx = next.x - pos.x, dy = next.y - pos.y, distM = Math.hypot(dx, dy), az = azimuth(dx, dy);
   /** @type {any} */ let lateralM = null, /** @type {any} */ lado = null, /** @type {any} */ voltaDir = null, /** @type {any} */ along = null;
@@ -2820,8 +2830,8 @@ function guide(route, pos, collected, monitor, nextPoint) {
   // a chegada continua pelo raio normal (ou pela precisão do GPS), depois de parar ou descer
   const acc = Number.isFinite(pos.accuracyM) ? pos.accuracyM : 0, spd = Number.isFinite(pos.speedMps) ? pos.speedMps : 0;
   const radiusM = Math.max(monitor.arrivalRadiusM, Math.min(acc, monitor.gpsAccuracyMaxM));
-  const stopHere = spd >= 2.5 && distM > radiusM && distM <= Math.min(25, radiusM + spd * 1.5) && !stale;
-  return { done: false, next, distM, azimuthDeg: az, direction: cardinal(az), arrived: distM <= radiusM && !stale, radiusM, stopHere,
+  const stopHere = spd >= 2.5 && distM > radiusM && distM <= Math.min(25, radiusM + spd * 1.5) && !stale && accuracyOk;
+  return { done: false, next, distM, azimuthDeg: az, direction: cardinal(az), arrived: distM <= radiusM && !stale && accuracyOk, radiusM, stopHere,
     arrivalUncertain: distM <= radiusM && (!accuracyOk || acc > monitor.arrivalRadiusM), accuracyOk, stale, lateralM, lado, voltaDir, offLine, alvo, trecho,
     collected: nCollected, total: route.points.length };
 }
@@ -3047,18 +3057,26 @@ const withSamples = (field, sc, samples, metrics) => metrics(field, { ...sc, sam
 const ID_RE = /^[\p{L}\p{N}_ .-]{1,80}$/u, isNum = v => typeof v === 'number' && Number.isFinite(v);
 
 /** Restaura pontos gravados (validação estrita; qualquer item inválido → null). */
-function restoreSamples(sc, saved) {
-  if (!Array.isArray(saved) || saved.length > 5000) return null;
+function restoreSamples(sc, saved, geom = null) {
+  if (!Array.isArray(saved) || !saved.length || saved.length > (sc.params?.maxPointsCap ?? 5000)) return null;
   const units = new Map(sc.units.map(u => [u.id, u])), seen = new Set(), out = [];
   for (const it of saved) {
     if (!it || typeof it !== 'object' || typeof it.id !== 'string' || !ID_RE.test(it.id) || seen.has(it.id) || !isNum(it.x) || !isNum(it.y)) return null;
     seen.add(it.id);
     const offTrack = it.offTrack === true, u = units.get(it.unitId);
-    if (!u && !offTrack) return null;
+    if (geom && !pointInGeom(it.x, it.y, geom)) {
+      // Um ponto exatamente na ponta do tiro pode cair no lado aberto do teste de paridade.
+      if (!u || offTrack || Math.min(...[u.line[0], u.line.at(-1)].map(p => Math.hypot(p[0] - it.x, p[1] - it.y))) > 1e-6) return null;
+    }
+    if (!u && (!offTrack || it.unitId != null)) return null;
     const base = { id: it.id, x: it.x, y: it.y, manual: it.manual === true, offTrack, ...(it.extra === true ? { extra: true } : {}) };
     if (!u) { out.push({ ...base, unitId: null, trackId: null, s: null, sTrack: null, kind: null, confidence: null }); continue; }
-    if (!isNum(it.s)) return null;
+    if (!isNum(it.s) || it.s < -0.001 || it.s > u.len + 0.001) return null;
     const s = Math.min(u.len, Math.max(0, it.s));
+    if (!offTrack && geom) {
+      const [x, y] = pointAt(u.line, s);
+      if (Math.hypot(it.x - x, it.y - y) > 0.001) return null;
+    }
     out.push({ ...base, unitId: u.id, trackId: u.trackId, s, sTrack: trackPosition(u, s), kind: u.kind, confidence: TRACK_KINDS[u.kind]?.confidence ?? null });
   }
   return out;
@@ -3418,7 +3436,7 @@ const { num, range, km, plural } = __m_app3_format;
 // 3.0 · aplicação: monta o plano de um lote com o motor 2, a recomendação, a conferência, a equipe e a área
 // descoberta. Sem DOM: testável no Node com os 51 lotes.
 
-const ENGINE_LABEL = '4.0.2';
+const ENGINE_LABEL = '4.1.0';
 const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
@@ -3528,8 +3546,9 @@ function* balanceSteps(field, base, rec) {
 function planInUse(field, params, edits) {
   let sc = scenarioOf(field, params);
   if (edits && Array.isArray(edits.samples) && edits.signature === paramsSignature(sc.params)) {
-    const restored = restoreSamples(sc, edits.samples);
-    if (restored) sc = withSamples(field, sc, restored, metrics);
+    const restored = restoreSamples(sc, edits.samples, field.geom);
+    if (!restored) throw Error('Os ajustes não correspondem aos pontos e tiros deste lote.');
+    sc = withSamples(field, sc, restored, metrics);
   }
   return sc;
 }
@@ -3554,7 +3573,7 @@ function checks(sc, people, blind) {
   out.push(empty.length ? { level: 'erro', text: `${empty.map(r => r.trackId).join(', ')} sem ponto` } : { level: 'ok', text: 'Todos os tiros com ponto' });
   const tiros = sc.selected.length;
   out.push(tiros > people ? { level: 'alerta', text: `${plural(tiros, 'tiro', 'tiros')} para ${plural(people, 'pessoa', 'pessoas')}` } : { level: 'ok', text: tiros === people ? '1 tiro por pessoa' : `1 tiro por pessoa · sobra ${plural(people - tiros, 'pessoa', 'pessoas')}` });
-  if (blind) out.push(blind.haBlind > blind.limitHa ? { level: 'alerta', text: `${num(blind.haBlind, 1)} ha a mais de ${num(blind.limitM)} m de um ponto` } : { level: 'ok', text: 'Sem área descoberta' });
+  if (blind) out.push(blind.haBlind > blind.limitHa ? { level: 'alerta', text: `${num(blind.haBlind, 1)} ha a mais de ${num(blind.limitM)} m de um ponto` } : { level: 'ok', text: blind.haBlind > 0 ? `${num(blind.haBlind, 2)} ha dentro da tolerância de ${num(blind.limitHa, 2)} ha` : 'Sem área descoberta' });
   // 4.0.2 · a guarda da bordadura deslizou um tiro: diz qual e quanto (o ponto saiu da faixa de 15 m da borda)
   for (const f of sc.borderFix || []) out.push({ level: 'ok', text: `${f.trackId}: pontos deslizados ${num(Math.abs(f.shiftM))} m para longe da borda` });
   const errors = sc.warnings.filter(w => w.level === 'erro').length, alerts = sc.warnings.filter(w => w.level === 'alerta').length;
@@ -3564,7 +3583,7 @@ function checks(sc, people, blind) {
 
 /** Números do plano, já formatados para a tela. */
 function figures(sc) {
-  const gaps = sc.trackRows.filter(r => r.n > 1 && r.medianGapM).map(r => r.medianGapM);
+  const gaps = sc.trackRows.flatMap(r => r.gaps);
   return { pontos: sc.samples.length, tiros: sc.selected.length, entreTiros: sc.deltaM ? `${num(sc.deltaM)} m` : '—',
     entrePontos: gaps.length ? `${range(Math.min(...gaps), Math.max(...gaps))} m` : '—', p95: sc.coverage.p95 == null ? '—' : `< ${num(sc.coverage.p95)} m`,
     caminhada: `${km(sc.route.totalEstimatedM)} km` };

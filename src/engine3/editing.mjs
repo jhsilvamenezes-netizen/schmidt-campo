@@ -58,18 +58,26 @@ export const withSamples = (field, sc, samples, metrics) => metrics(field, { ...
 const ID_RE = /^[\p{L}\p{N}_ .-]{1,80}$/u, isNum = v => typeof v === 'number' && Number.isFinite(v);
 
 /** Restaura pontos gravados (validação estrita; qualquer item inválido → null). */
-export function restoreSamples(sc, saved) {
-  if (!Array.isArray(saved) || saved.length > 5000) return null;
+export function restoreSamples(sc, saved, geom = null) {
+  if (!Array.isArray(saved) || !saved.length || saved.length > (sc.params?.maxPointsCap ?? 5000)) return null;
   const units = new Map(sc.units.map(u => [u.id, u])), seen = new Set(), out = [];
   for (const it of saved) {
     if (!it || typeof it !== 'object' || typeof it.id !== 'string' || !ID_RE.test(it.id) || seen.has(it.id) || !isNum(it.x) || !isNum(it.y)) return null;
     seen.add(it.id);
     const offTrack = it.offTrack === true, u = units.get(it.unitId);
-    if (!u && !offTrack) return null;
+    if (geom && !pointInGeom(it.x, it.y, geom)) {
+      // Um ponto exatamente na ponta do tiro pode cair no lado aberto do teste de paridade.
+      if (!u || offTrack || Math.min(...[u.line[0], u.line.at(-1)].map(p => Math.hypot(p[0] - it.x, p[1] - it.y))) > 1e-6) return null;
+    }
+    if (!u && (!offTrack || it.unitId != null)) return null;
     const base = { id: it.id, x: it.x, y: it.y, manual: it.manual === true, offTrack, ...(it.extra === true ? { extra: true } : {}) };
     if (!u) { out.push({ ...base, unitId: null, trackId: null, s: null, sTrack: null, kind: null, confidence: null }); continue; }
-    if (!isNum(it.s)) return null;
+    if (!isNum(it.s) || it.s < -0.001 || it.s > u.len + 0.001) return null;
     const s = Math.min(u.len, Math.max(0, it.s));
+    if (!offTrack && geom) {
+      const [x, y] = pointAt(u.line, s);
+      if (Math.hypot(it.x - x, it.y - y) > 0.001) return null;
+    }
     out.push({ ...base, unitId: u.id, trackId: u.trackId, s, sTrack: trackPosition(u, s), kind: u.kind, confidence: TRACK_KINDS[u.kind]?.confidence ?? null });
   }
   return out;

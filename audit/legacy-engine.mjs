@@ -9,6 +9,7 @@ import { execFileSync } from 'node:child_process';
 // então, sem caminho explícito, o HTML vem do commit ENGINE_ORACLE_REF (padrão: cd25d4b, 2.1.0 publicada).
 const root = fileURLToPath(new URL('../', import.meta.url));
 async function oracleHtml(htmlPath) {
+  htmlPath ??= process.env.ENGINE_ORACLE_FILE;
   if (htmlPath) return readFile(htmlPath, 'utf8');
   const current = await readFile(root + 'index.html', 'utf8');
   if (!current.includes('const schmidtEngine2=')) return current;

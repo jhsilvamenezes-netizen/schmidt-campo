@@ -9,11 +9,11 @@ import { ICONS } from '../src/app3/views.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 /** Módulos da tela, caminho relativo a src/ (ordem: dependências primeiro). Motor: src/engine via schmidtEngine2. */
-export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', 'app3/store', 'app3/plan-file', 'app3/planner', 'app3/satellite', 'app3/map', 'app3/views', 'app3/views-mapa', 'app3/views-plano', 'app3/views-monitor', 'app3/views-mais',
+export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', 'app3/store', 'app3/planner', 'app3/satellite', 'app3/map', 'app3/views', 'app3/views-mapa', 'app3/views-plano', 'app3/views-monitor', 'app3/views-mais',
   'app3/advanced', 'app3/gestures', 'app3/monitor', 'app3/gps-stats', 'app3/compass', 'persistence/backup-service', 'persistence/backup-format', 'platform/browser-backup-adapters', 'platform/browser-session-lock',
-  'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/versions', 'app3/backup', 'app3/offline',
+  'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/plan-file', 'app3/versions', 'app3/backup', 'app3/offline',
   'app3/screen-mapa', 'app3/screen-monitor', 'app3/screen-plano', 'app3/screen-enviar', 'app3/screen-mais', 'app3/screen-lotes', 'app3/screen-bloco', 'app3/main'];
-export const APP_VERSION = '4.0.2';
+export const APP_VERSION = '4.1.0';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
 /** Cada módulo no seu escopo; importações do motor viram o namespace schmidtEngine2. */
@@ -85,20 +85,17 @@ export async function build3() {
   await writeFile(root + 'build/3/index.html', html);
   // marca da 3.0 em arquivos próprios: os ícones da raiz (icone*) são da 2.5/APK e ficam intactos
   for (const f of ['marca.svg', 'app.webmanifest', 'marca-192.png', 'marca-512.png', 'marca-180.png', 'marca-logo.png', 'inter.woff2']) await copyFile(root + f, root + 'build/3/' + f);
-  // service worker: mesmo modelo da 2.x (cache conferido pelo SHA-256 da página; sem troca no meio do uso)
-  const tpl = await readFile(root + 'src/platform/service-worker.js', 'utf8'), digest = createHash('sha256').update(html).digest('hex');
-  let worker = tpl.replace('__SCHMIDT_CACHE__', `schmidt-3-${digest.slice(0, 10)}`).replace('__SCHMIDT_INDEX_SHA256__', digest);
-  // A reserva 2.5 em legado/ não passa por este worker (senão a navegação cairia na página 3.0 do cache).
-  const hook = "if(request.method!=='GET'||new URL(request.url).origin!==location.origin)return;";
-  if (worker.split(hook).length !== 2) throw Error('Modelo do service worker mudou');
-  worker = worker.replace(hook, hook + "if(new URL(request.url).pathname.includes('/legado/'))return;");
-  const files = "const ARQUIVOS = ['./','index.html','manifest.webmanifest','icone.svg','icone-192.png','icone-512.png','icone-180.png'];";
-  if (worker.split(files).length !== 2) throw Error('Lista de arquivos do service worker mudou');
-  worker = worker.replace(files, "const ARQUIVOS = ['./','index.html','motor.js','app.webmanifest','marca.svg','marca-192.png','marca-512.png','marca-180.png','marca-logo.png','inter.woff2'];");
-  // 3.12 · versão nova pronta: só troca quando a pessoa toca em "Atualizar" (o app manda a mensagem; nunca no meio da guia)
-  worker += "self.addEventListener('message',event=>{if(event.data&&event.data.type==='schmidt-atualizar')self.skipWaiting();});\n";
-  await writeFile(root + 'build/3/sw.js', worker);
   const motor = await bundleWorker();
+  const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+  const hashes = { './': hash(html), 'index.html': hash(html), 'motor.js': hash(motor) };
+  for (const name of ['app.webmanifest', 'marca.svg', 'marca-192.png', 'marca-512.png', 'marca-180.png', 'marca-logo.png', 'inter.woff2']) {
+    hashes[name] = hash(await readFile(root + name));
+  }
+  const template = await readFile(root + 'src/app3/service-worker.js', 'utf8');
+  const cache = 'schmidt-3-' + hash(JSON.stringify(hashes) + template).slice(0, 20);
+  const worker = template.replace('__FILES__', JSON.stringify(Object.keys(hashes)).replaceAll('"', "'"))
+    .replace('__HASHES__', JSON.stringify(hashes)).replace('__CACHE__', cache).replace('__VERSION__', APP_VERSION);
+  await writeFile(root + 'build/3/sw.js', worker);
   await writeFile(root + 'build/3/motor.js', motor);
   return { html, worker, motor, bytes: Buffer.byteLength(html), engine: engine.length, app: app.length };
 }

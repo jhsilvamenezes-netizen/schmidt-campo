@@ -9,6 +9,8 @@ import * as VMo from './views-monitor.mjs';
 import * as VP from './views-plano.mjs';
 import { esc, num, plural } from './format.mjs';
 import { createVersions } from './versions.mjs';
+import { createSchmidtBackupService, SCHMIDT_RESTORE_MARKER } from '../persistence/backup-service.mjs';
+import { createSchmidtJournal, createSchmidtImageRepository } from '../platform/browser-backup-adapters.mjs';
 import { offlineStatus } from './offline.mjs';
 import { createSchmidtSessionLock, installSchmidtSessionLifecycle } from '../platform/browser-session-lock.mjs';
 import { installMapa } from './screen-mapa.mjs';
@@ -24,15 +26,23 @@ export async function startApp(opts) {
   const session = createSchmidtSessionLock(opts.window.navigator.locks);
   try { await session.enter(); } catch { /* sem trava: segue só leitura se a sessão disser que não pode gravar */ }
   installSchmidtSessionLifecycle(opts.window, session);
-  const app = runApp({ ...opts, session });
-  registerWorker(opts.window, app.toast, app.setOffline);
+  const { window } = opts;
+  const { storage, persistent } = safeStorage(() => window.localStorage);
+  const versions = createVersions(window.indexedDB);
+  const backupService = window.indexedDB && persistent ? createSchmidtBackupService({
+    storage, history: versions.history, images: createSchmidtImageRepository(window.indexedDB),
+    journal: createSchmidtJournal(window.indexedDB), exclusive: window.navigator.locks ? op => session.exclusive(op) : op => op(),
+  }) : null;
+  try { await backupService?.recover(); } catch { /* O marcador mantém a sessão em leitura. */ }
+  const app = runApp({ ...opts, session, storage, persistent, versions, backupService });
+  registerWorker(opts.window, app.toast, app.setOffline, opts.appVersion);
   return app;
 }
 
 /** 3.12 · versão nova: o service worker novo fica esperando (nunca troca sozinho no meio do uso). Quando ele está pronto,
  *  aparece "Atualizar" no topo (no lugar da palavra SCHMIDT) e um aviso; um toque troca e recarrega. Escondido durante a guia (CSS). */
 /** @param {any} window @param {any} toast @param {(st:any)=>void} setOffline */
-function registerWorker(window, toast, setOffline) {
+function registerWorker(window, toast, setOffline, version) {
   const sw = window.navigator.serviceWorker;
   if (!sw || !/^https?:$/.test(window.location.protocol)) return;
   const doc = window.document, had = !!sw.controller;
@@ -48,10 +58,22 @@ function registerWorker(window, toast, setOffline) {
   // 3.24 · selo "pronto sem internet": confere o cache quando o worker fica ativo. Na 1ª visita (página ainda sem
   // worker), avisa uma vez quando termina de guardar; nas outras só atualiza o selo do menu Mais
   let told = false;
-  const check = () => offlineStatus(window.caches, window.location.href).then(st => {
+  let checkId = 0;
+  const check = async () => {
+    const id = ++checkId, reg = await sw.ready, active = sw.controller || reg.active;
+    if (!active) return;
+    const channel = new MessageChannel();
+    const revision = await new Promise(resolve => {
+      const timer = setTimeout(() => resolve(null), 1500);
+      channel.port1.onmessage = e => { clearTimeout(timer); resolve(e.data); };
+      active.postMessage({ type: 'schmidt-cache' }, [channel.port2]);
+    });
+    channel.port1.close();
+    const st = revision?.version === version && revision.cache ? await offlineStatus(window.caches, window.location.href, revision.cache) : { state: 'baixando' };
+    if (id !== checkId) return;
     setOffline(st);
-    if (st.state === 'pronto' && !had && !told) { told = true; toast('Pronto para usar sem internet.'); }
-  });
+    if (st.state === 'pronto' && !had && !told && !doc.getElementById('toast')?.textContent) { told = true; toast('Pronto para usar sem internet.'); }
+  };
   sw.ready.then(check); sw.addEventListener('controllerchange', () => setTimeout(check, 500));
   sw.register('sw.js').then((/** @type {any} */ reg) => {
     offer(reg.waiting);
@@ -63,25 +85,32 @@ function registerWorker(window, toast, setOffline) {
   });
 }
 
-/** @param {{document:any, window:any, fields:any, appVersion:string, safra?:any, recs?:any, session:any}} opts */
-function runApp({ document, window, fields, appVersion, safra = null, recs = null, session }) {
+/** @param {{document:any, window:any, fields:any, appVersion:string, safra?:any, recs?:any, session:any, storage:any, persistent:boolean, versions:any, backupService:any}} opts */
+function runApp({ document, window, fields, appVersion, safra = null, recs = null, session, storage, persistent, versions, backupService }) {
   const $ = s => document.querySelector(s);
   let blockedShown = false;
   // C2: sem armazenamento (modo privado restrito) o app abre igual, só não guarda depois de fechar.
-  const { storage, persistent } = safeStorage(() => window.localStorage);
   // 3.12: depois de restaurar uma cópia, nada mais grava até o app recarregar (uma recomendação que chegasse do motor
   // nesse meio-tempo gravaria por cima o estado antigo que ainda está na memória)
   let frozen = false;
-  const store = createStore(storage, { canWrite: () => !frozen && session.canWrite(),
-    onBlocked: () => { if (!frozen && !blockedShown) { blockedShown = true; toast(session.writeError().userMessage); } },
+  function restorePending() {
+    try { return storage.getItem(SCHMIDT_RESTORE_MARKER) !== null; } catch { return true; }
+  }
+  /** @type {ReturnType<typeof createStore>} */
+  const store = createStore(storage, { canWrite: () => !frozen && session.canWrite() && !session.isBusy() && !restorePending(),
+    onBlocked: () => {
+      if (restorePending()) { toast('Restauração pendente. Reabra o app para recuperar a cópia.'); return; }
+      if (!frozen && !blockedShown) { blockedShown = true; toast(session.writeError().userMessage); }
+    },
     // C3: não finge que gravou
-    onFail: () => toast('Não foi possível gravar neste aparelho (memória cheia ou bloqueada). Nada foi alterado.') });
+    onFail: () => store.unreadable() ? toast('Os dados gravados não puderam ser lidos. Salve o original em Mais › Cópia de segurança.') : toast('Não foi possível gravar neste aparelho (memória cheia ou bloqueada). Nada foi alterado.') });
   const keys = Object.keys(fields).sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true }));
   const ui = { view: 'mapa', key: fields[store.get().fieldKey] ? store.get().fieldKey : keys[0] };
   const recCache = new Map();
   // U05: recomendações da regra padrão já vêm calculadas no arquivo (mesmo motor; conferidas no teste)
   if (recs?.motor === P.ENGINE_LABEL) for (const [k, r] of Object.entries(recs.recs || {})) if (fields[k]) recCache.set(`${k}|{}|${recs.pessoas}|false`, r);
-  let toastTimer = 0, versionTimer = 0;
+  let toastTimer = 0;
+  const versionTimers = new Map(), versionWrites = new Set();
   /** @type {any} */ let toastAction = null;
   /** @type {string|null} */ let warnedInvalid = null;
   /** @type {any} */ let memo = null;
@@ -98,28 +127,48 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
    *  Web Worker): a tela não trava; enquanto isso o lote mostra o plano gravado e "calculando o recomendado".
    *  Sem worker (navegador antigo ou arquivo local): recomendação base na hora e equilíbrio aos poucos. */
   const recId = (base, key) => `${key}|${JSON.stringify(base)}|${people()}|${!!saved().fitTeam}`;
-  /** @type {Map<string, {field:any, base:any, key:string, fns:Function[]}>} */ const pending = new Map();
+  /** @type {Map<string, {field:any, base:any, key:string, people:number, fitTeam:boolean, timer:any, fns:Function[]}>} */ const pending = new Map();
   /** @type {any} */ let worker = null;
   try {
     if (/^https?:$/.test(window.location.protocol) && window.Worker) {
       worker = new window.Worker('motor.js');
-      worker.onmessage = e => { const { id, rec, error } = e.data || {}; const p = pending.get(id); if (!p) return; pending.delete(id); done(id, error ? P.recommendBase(p.field, p.base, people(), saved().fitTeam) : rec, p); };
-      worker.onerror = () => { worker = null; for (const [id, p] of [...pending]) { pending.delete(id); done(id, P.recommend(p.field, p.base, people(), saved().fitTeam), p); } };
+      worker.onmessage = e => {
+        const { id, rec, error } = e.data || {}, p = pending.get(id);
+        if (!p) return;
+        pending.delete(id); clearTimeout(p.timer);
+        done(id, error ? P.recommendBase(p.field, p.base, p.people, p.fitTeam) : rec, p);
+      };
+      worker.onerror = fallback;
     }
   } catch { worker = null; }
+  function fallback() {
+    worker?.terminate(); worker = null;
+    const jobs = [...pending]; pending.clear();
+    for (const [id, p] of jobs) {
+      clearTimeout(p.timer);
+      done(id, P.recommendBase(p.field, p.base, p.people, p.fitTeam), p);
+    }
+  }
   function done(id, rec, p) {
+    if (recCache.size >= 128) recCache.delete(recCache.keys().next().value);
     recCache.set(id, rec); memo = null;
-    for (const fn of p.fns) fn(rec);
+    if (p.people === people() && p.fitTeam === !!saved().fitTeam) for (const fn of p.fns) fn(rec);
     if (ui.key === p.key) render();
   }
   function recFor(field, base, key = ui.key) {
     const id = recId(base, key);
     if (recCache.has(id)) return recCache.get(id);
     if (worker) {
-      if (!pending.has(id)) { pending.set(id, { field, base, key, fns: [] }); worker.postMessage({ id, field, base, people: people(), fitTeam: !!saved().fitTeam }); }
+      if (!pending.has(id)) {
+        const job = { field, base, key, people: people(), fitTeam: !!saved().fitTeam, fns: [], timer: setTimeout(fallback, 15000) };
+        pending.set(id, job);
+        try { worker.postMessage({ id, field, base, people: job.people, fitTeam: job.fitTeam }); }
+        catch { fallback(); return recCache.get(id); }
+      }
       return null;
     }
     const first = P.recommendBase(field, base, people(), saved().fitTeam);
+    if (recCache.size >= 128) recCache.delete(recCache.keys().next().value);
     recCache.set(id, first);
     if (first) balanceLater(id, field, base, key, first);
     return first;
@@ -141,7 +190,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
       if (rec === first) return;
       // ajusta o plano gravado só se ele ainda é o recomendado de antes (a pessoa não escolheu outro no meio)
       const st = saved(), now = st.paramsByField?.[key];
-      if (now && P.sameShape(now, first.chosen.params) && JSON.stringify(P.baseOf(now)) === JSON.stringify(base)) {
+      if (id === recId(base, key) && now && P.sameShape(now, first.chosen.params) && JSON.stringify(P.baseOf(now)) === JSON.stringify(base)) {
         if (store.update({ paramsByField: { ...(st.paramsByField || {}), [key]: { ...base, ...rec.chosen.params } } })) {
           // não cobre um aviso em curso (ex.: "Desfazer" da regra)
           if (ui.key === key) { render(); if (!$('#toast').textContent) toast('Recomendado ajustado: áreas por ponto mais iguais.'); }
@@ -152,9 +201,10 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   }
   const host = $('#sheets');
   let ignorePop = 0;
+  /** @type {any} */ let sheetOpener = null;
   /** Contexto comum: cada tela (screen-*.mjs) lê daqui e registra as suas folhas, ações e eventos. */
   /** @type {any} */ const app = {
-    document, window, fields, keys, ui, store, storage, persistent, session, safra, appVersion, host, versions: createVersions(window.indexedDB),
+    document, window, fields, keys, ui, store, storage, persistent, session, safra, appVersion, host, versions, backupService, scheduleVersion,
     cur: null, hiTrack: null, toast, saved, people, recFor, whenRec, render, setParams,
     /** Recomendação já pronta (sem calcular), ou undefined. */
     /** Recomendação já pronta ou feita na hora (para listas e bloco, que precisam do valor já). */
@@ -163,17 +213,23 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     SHEETS: {}, ACTIONS: {}, clicks: [], changes: [], inputs: [], onLotChange: [], onCloseSheet: [],
     // 3.13 (X3) · janela aberta ocupa uma entrada no histórico: o Voltar do celular fecha a janela em vez de sair do app
     openSheet: (title, body) => {
-      if (!host.innerHTML) { try { window.history.pushState({ sheet: 1 }, ''); } catch { /* sem histórico: fecha só pelo ×/Esc */ } }
+      if (!host.innerHTML) { sheetOpener = document.activeElement; try { window.history.pushState({ sheet: 1 }, ''); } catch { /* sem histórico: fecha só pelo ×/Esc */ } }
       host.innerHTML = V.sheet(title, body); host.querySelector('.close')?.focus();
     },
     closeSheet: (fromBack = false) => {
       const was = !!host.innerHTML;
       host.innerHTML = ''; for (const f of app.onCloseSheet) f();
+      if (was && sheetOpener?.isConnected) sheetOpener.focus({ preventScroll: true });
       if (was && !fromBack && window.history.state?.sheet) { ignorePop++; window.history.back(); }
     },
     clearInvalid: () => { warnedInvalid = null; },
     /** Para de gravar até recarregar (usado ao restaurar uma cópia). */
-    freeze: (on = true) => { frozen = on; clearTimeout(versionTimer); },
+    freeze: (on = true) => {
+      frozen = on;
+      for (const timer of versionTimers.values()) clearTimeout(timer);
+      versionTimers.clear();
+      return Promise.allSettled([...versionWrites]);
+    },
     download(text, name, type) {
       const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name;
       document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
@@ -222,25 +278,36 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     };
     if (!write(params, edits)) { render(); return false; }
     render(); scheduleVersion();
-    toast(msg, { label: 'Desfazer', run: () => { if (write(before.params, before.edits ?? null)) { ui.key = key; render(); toast('Desfeito'); } } });
+    toast(msg, { label: 'Desfazer', run: () => { if (write(before.params, before.edits ?? null)) { ui.key = key; render(); scheduleVersion(); toast('Desfeito'); } } });
     return true;
   }
   /** Guarda uma versão do plano quando ele para de mudar (4 s), como na 2.x. */
-  function scheduleVersion() {
-    clearTimeout(versionTimer);
-    versionTimer = setTimeout(() => {
-      const st = saved(), key = ui.key, sc = app.cur.sc;
-      app.versions.save(key, { params: st.paramsByField?.[key] ?? null, edits: st.editsByField?.[key] ?? null },
-        [plural(sc.selected.length, 'tiro', 'tiros'), plural(sc.samples.length, 'ponto', 'pontos'), `95% < ${num(sc.coverage.p95 ?? 0)} m`, `1 ponto a cada ${sc.params.haPerPoint} ha`].join(' · '));
-    }, 4000);
+  function scheduleVersion(key = ui.key) {
+    const st = saved(), sc = key === ui.key && app.cur && !app.cur.block ? app.cur.sc : P.tryPlan(fields[key], st.paramsByField?.[key], st.editsByField?.[key]).sc;
+    if (!sc) return;
+    clearTimeout(versionTimers.get(key));
+    const snapshot = { params: st.paramsByField?.[key] ?? null, edits: st.editsByField?.[key] ?? null };
+    const summary = [plural(sc.selected.length, 'tiro', 'tiros'), plural(sc.samples.length, 'ponto', 'pontos'), `95% < ${num(sc.coverage.p95 ?? 0)} m`, `1 ponto a cada ${sc.params.haPerPoint} ha`].join(' · ');
+    versionTimers.set(key, setTimeout(() => {
+      versionTimers.delete(key);
+      if (frozen || !session.canWrite() || backupService?.isWriteBlocked()) return;
+      const write = versions.save(key, snapshot, summary);
+      versionWrites.add(write); write.finally(() => versionWrites.delete(write));
+    }, 4000));
   }
   function render() {
     const main = $('#view');
     // Redesenhar a mesma aba não fecha o que a pessoa abriu nem perde a rolagem (tiro aberto, Conferir, Equipe).
     const same = main.dataset.view === ui.view, sc = main.querySelector('.scroll');
+    const focused = document.activeElement;
+    const focusAttr = same && main.contains(focused) ? [...focused.attributes].find(a => a.name.startsWith('data-')) : null;
     const keep = same ? { open: [...main.querySelectorAll('details[data-k][open]')].map(d => d.dataset.k), top: sc ? sc.scrollTop : 0 } : null;
     try {
       draw(main);
+      if (focusAttr && !focused.isConnected) {
+        const replacement = [...main.querySelectorAll(`[${focusAttr.name}]`)].find(n => n.getAttribute(focusAttr.name) === focusAttr.value);
+        replacement?.focus({ preventScroll: true });
+      }
       if (keep) {
         for (const d of main.querySelectorAll('details[data-k]')) if (keep.open.includes(d.dataset.k)) d.open = true;
         const s2 = main.querySelector('.scroll'); if (s2 && keep.top) s2.scrollTop = keep.top;
@@ -261,7 +328,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     main.dataset.view = ui.view; app.applySnap?.();
     if (ui.view === 'mapa') main.innerHTML = VMa.mapaView(c);
     else if (ui.view === 'plano') main.innerHTML = VP.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), hiTrack: app.hiTrack, bigMap: !!app.planBig, hint: c.block ? null : app.hint?.(), border: (b => (b ? { minM: b.minM, n: b.min.number, near: b.minM < P.BORDADURA_M, low: b.minM < P.BORDA_MIN_M } : null))(P.borderStats(c.field, c.sc)),
-      rows: c.sc.trackRows.map(r => ({ ...r, d: c.block ? null : (c.details ??= new Map()).get(r.trackId) ?? c.details.set(r.trackId, P.trackDetail(c.field, c.sc, r.trackId)).get(r.trackId) })) });
+      rows: c.sc.trackRows.map(r => ({ ...r, d: (c.details ??= new Map()).get(r.trackId) ?? c.details.set(r.trackId, P.trackDetail(c.field, c.sc, r.trackId)).get(r.trackId) })) });
     else if (ui.view === 'lotes') main.innerHTML = app.lotesView();
     else main.innerHTML = VMo.monitorView(app.monitorData());
     requestAnimationFrame(app.drawMaps);
@@ -325,7 +392,14 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   });
   document.addEventListener('change', e => { for (const h of app.changes) if (h(e.target)) return; });
   document.addEventListener('input', e => { for (const h of app.inputs) if (h(e.target)) return; });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && host.innerHTML) app.closeSheet(); });
+  document.addEventListener('keydown', e => { if (!host.innerHTML) return;
+    if (e.key === 'Escape') { app.closeSheet(); return; }
+    if (e.key !== 'Tab') return;
+    const nodes = [...host.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),a[href],summary,[tabindex="0"]')].filter(n => n.getClientRects().length);
+    const first = nodes[0], last = nodes.at(-1);
+    if (!host.contains(document.activeElement) || document.activeElement === (e.shiftKey ? first : last)) {
+      e.preventDefault(); (e.shiftKey ? last : first)?.focus();
+    } });
   window.addEventListener('popstate', () => { if (ignorePop) { ignorePop--; return; } if (host.innerHTML) app.closeSheet(true); });
   const sun = on => { document.documentElement.classList.toggle('sun', on); $('#sol').setAttribute('aria-pressed', String(on)); requestAnimationFrame(() => app.drawMaps?.()); };
   $('#sol').addEventListener('click', () => { const on = !saved().sunMode; store.update({ sunMode: on }); sun(on); toast(on ? 'Sol: contraste alto para a luz do dia.' : 'Sol desligado.'); });

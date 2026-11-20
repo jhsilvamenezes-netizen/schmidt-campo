@@ -72,7 +72,7 @@ export function instructions(route) {
 /** Direção ao próximo ponto a partir da posição `pos`. `nextPoint(route, pos, collected, monitor, state)` escolhe o alvo. */
 export function guide(route, pos, collected, monitor, nextPoint) {
   const nCollected = route.points.filter(p => collected.has(p.id)).length, next = nextPoint(route, pos, collected, monitor, pos.guideState);
-  const accuracyOk = Number.isFinite(pos.accuracyM) && pos.accuracyM <= monitor.gpsAccuracyMaxM, stale = Number.isFinite(pos.ageMs) && pos.ageMs > GPS_MAX_AGE_MS;
+  const accuracyOk = Number.isFinite(pos.accuracyM) && pos.accuracyM >= 0 && pos.accuracyM <= monitor.gpsAccuracyMaxM, stale = Number.isFinite(pos.ageMs) && pos.ageMs > GPS_MAX_AGE_MS;
   if (!next) return { done: true, collected: nCollected, total: route.points.length, accuracyOk, stale };
   const dx = next.x - pos.x, dy = next.y - pos.y, distM = Math.hypot(dx, dy), az = azimuth(dx, dy);
   /** @type {any} */ let lateralM = null, /** @type {any} */ lado = null, /** @type {any} */ voltaDir = null, /** @type {any} */ along = null;
@@ -105,8 +105,8 @@ export function guide(route, pos, collected, monitor, nextPoint) {
   // a chegada continua pelo raio normal (ou pela precisão do GPS), depois de parar ou descer
   const acc = Number.isFinite(pos.accuracyM) ? pos.accuracyM : 0, spd = Number.isFinite(pos.speedMps) ? pos.speedMps : 0;
   const radiusM = Math.max(monitor.arrivalRadiusM, Math.min(acc, monitor.gpsAccuracyMaxM));
-  const stopHere = spd >= 2.5 && distM > radiusM && distM <= Math.min(25, radiusM + spd * 1.5) && !stale;
-  return { done: false, next, distM, azimuthDeg: az, direction: cardinal(az), arrived: distM <= radiusM && !stale, radiusM, stopHere,
+  const stopHere = spd >= 2.5 && distM > radiusM && distM <= Math.min(25, radiusM + spd * 1.5) && !stale && accuracyOk;
+  return { done: false, next, distM, azimuthDeg: az, direction: cardinal(az), arrived: distM <= radiusM && !stale && accuracyOk, radiusM, stopHere,
     arrivalUncertain: distM <= radiusM && (!accuracyOk || acc > monitor.arrivalRadiusM), accuracyOk, stale, lateralM, lado, voltaDir, offLine, alvo, trecho,
     collected: nCollected, total: route.points.length };
 }

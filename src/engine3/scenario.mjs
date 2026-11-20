@@ -134,6 +134,7 @@ export function buildScenario(field, given = {}, opts = {}, legacy) {
     if (balanced) ({ samples, fix: borderFix } = borderGuard(field, core, params, samples, worth ? r.shifts : null));
     optimization = r.report ? { ...r.report, ...(balanced ? { mode: 'equilibrado', accepted: !!worth, minGain: BALANCED_MIN_GAIN } : {}) } : null;
   }
+  if (opts.guardBorder && !balanced) ({ samples, fix: borderFix } = borderGuard(field, core, params, samples, null));
   return withMetrics(field, {
     engineVersion: legacy.engineVersion ?? ENGINE_VERSION, generatedAt: new Date().toISOString(),
     status: core.units.some(u => u.kind === 'trajeto_gps_equipe') ? STATUS.TRAJETO_IMPORTADO : STATUS.SIMULADO,

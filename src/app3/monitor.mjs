@@ -134,7 +134,7 @@ function guideModelCore(route, sc, field, pos, now, session, opts = {}) {
   if (g.done) return { state: 'done', title: 'Tiro sem pontos à frente' };
   const n = g.next, label = `Ponto ${n.seq} de ${route.nPoints}`, warn = [];
   if (g.stale) return { state: 'stale', title: label, big: 'Aguardando posição', warn: [`GPS sem atualização há ${num(ageMs / 1000)} s.`], next: n };
-  if (!g.accuracyOk) warn.push(`GPS impreciso (± ${num(pos.accuracyM)} m).`);
+  if (!g.accuracyOk) return { state: 'impreciso', title: label, big: 'Aguardando precisão', warn: [`GPS impreciso (± ${num(pos.accuracyM)} m). Aguarde uma leitura de até ${num(monitor.gpsAccuracyMaxM)} m.`], next: n };
   // Longe do tiro (chegando ao lote): a guia leva à entrada do tiro, no início do sentido escolhido, sem avisos de linha.
   const farM = Math.max(150, 5 * (monitor.offLineWarnM || 0)), start = route.parts?.[0]?.entry;
   // 3.23 · ponta escolhida à mão ("Outra ponta"): leva até a entrada antes de tudo (a pessoa pode estar perto da outra

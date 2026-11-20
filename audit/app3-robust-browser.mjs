@@ -74,5 +74,64 @@ try {
     await toastHas(p, /1 ponto a cada 25 ha/);
     await p.waitForFunction(() => JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BA2']?.haPerPoint === 25, null, { timeout: 30000 });
     assert.deepStrictEqual(errors, []); await ctx.close(); }
+  const attachPlan = (p, doc) => p.setInputFiles('#plan-input', { name: 'plano.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(doc)) });
+  const disk = p => p.evaluate(() => JSON.parse(localStorage.getItem('monitoramento.v03')));
+  const full = p => p.evaluate(() => {
+    const write = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (key, value) {
+      if (key === 'monitoramento.v03') throw new DOMException('cheio', 'QuotaExceededError');
+      return write.call(this, key, value);
+    };
+  });
+  {
+    const { ctx, p } = await page("localStorage.setItem('monitoramento.v03', '{dados quebrados')");
+    await ready(p); await toastHas(p, /dados gravados/);
+    assert.equal(await p.evaluate(() => localStorage.getItem('monitoramento.v03')), '{dados quebrados');
+    await p.click('[data-open=menu]'); await p.keyboard.press('Shift+Tab');
+    assert.ok(await p.evaluate(() => !!document.activeElement.closest('[role=dialog]')));
+    await p.keyboard.press('Escape');
+    assert.equal(await p.evaluate(() => document.activeElement.dataset.open), 'menu');
+    await ctx.close();
+  }
+  {
+    const key = 'Bananal|BC2', { ctx, p } = await page(state({ fieldKey: key, paramsByField: { [key]: { haPerPoint: 20 } } }));
+    await ready(p); const original = await disk(p), file = n => ({ schema: 'monitoramento.plano.v1', lote: key, parametros: { haPerPoint: n } });
+    await attachPlan(p, file(1)); await toastHas(p, /600/); assert.deepEqual(await disk(p), original);
+    await attachPlan(p, file(29)); await p.click('[data-act=import-plan]'); await toastHas(p, /aberto/);
+    assert.equal((await disk(p)).paramsByField[key].haPerPoint, 29);
+    await p.click('[data-toast]'); assert.deepEqual((await disk(p)).paramsByField, original.paramsByField);
+    await full(p); await attachPlan(p, file(29)); await p.click('[data-act=import-plan]'); await toastHas(p, /Não foi possível gravar/);
+    assert.deepEqual((await disk(p)).paramsByField, original.paramsByField);
+    await ctx.close();
+  }
+  {
+    const key = 'Bananal|BA1', { ctx, p } = await page(state({ fieldKey: key }));
+    await ready(p); await p.click('[data-tab=plano]');
+    await p.click('[data-open=bloco]'); await p.click('[data-block="0"]'); await p.click('[data-block-use]');
+    await p.waitForSelector('[data-act=block-leave]');
+    await p.locator('details.trk summary').first().click();
+    assert.ok(await p.locator('details.trk[open] .ruler').count(), 'distâncias do tiro no bloco');
+    assert.equal(await p.locator('details[data-k=equipe]').count(), 1);
+    const record = await disk(p); assert.ok(record.planningBlocks.records[record.activeBlockId]);
+    await p.click('[data-tab=mapa]'); await p.locator('.oname').filter({ hasText: 'BA2' }).click();
+    await p.waitForSelector('.lot.other'); assert.equal(await p.textContent('#lot-name'), 'BA2'); assert.equal(await p.locator('.lot.other').count(), 2);
+    await p.click('[data-open=menu]'); await p.click('[data-open=arquivos]');
+    const download = p.waitForEvent('download'); await p.click('[data-act=share]');
+    const doc = JSON.parse(await readFile(await (await download).path(), 'utf8')); assert.equal(doc.schema, 'monitoramento.plano.v2');
+    const other = await page(state({ fieldKey: 'Bananal|BC1' })); await ready(other.p);
+    await attachPlan(other.p, doc); await other.p.click('[data-act=import-plan]'); await toastHas(other.p, /aberto/);
+    assert.equal(await other.p.textContent('#lot-name'), 'BA2'); await other.p.click('[data-tab=mapa]');
+    await other.p.waitForSelector('.lot.other'); assert.equal(await other.p.locator('.lot.other').count(), 2);
+    await other.ctx.close(); await ctx.close();
+  }
+  {
+    const { ctx, p } = await page(state({ fieldKey: 'Bananal|BA1' })); await ready(p);
+    await p.click('[data-tab=plano]'); await p.click('[data-open=bloco]'); await p.click('[data-block="0"]');
+    await p.waitForSelector('[data-block-use]'); const before = await disk(p);
+    await full(p); await p.click('[data-block-use]'); await toastHas(p, /Não foi possível gravar/);
+    assert.deepEqual(await disk(p), before); assert.equal(await p.locator('[data-act=block-leave]').count(), 0);
+    await ctx.close();
+  }
+  console.log('4.1: importação, quota, dados corrompidos, foco e mapa do bloco em dois aparelhos simulados ok');
   console.log('3.0.1: abre com plano inválido, sem armazenamento e com trajeto da 2.5; recusa acima do teto e versão inválida; avisa quando não grava; aceita decimal');
 } finally { await browser.close(); server.close(); }

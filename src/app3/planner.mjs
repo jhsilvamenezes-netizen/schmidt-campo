@@ -16,7 +16,7 @@ import { pointInGeom } from '../engine3/geometry.mjs';
 import { cumulative, pointAt } from '../engine3/polyline.mjs';
 import { num, range, km, plural } from './format.mjs';
 
-export const ENGINE_LABEL = '4.0.2';
+export const ENGINE_LABEL = '4.1.0';
 export const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
@@ -126,8 +126,9 @@ export function* balanceSteps(field, base, rec) {
 export function planInUse(field, params, edits) {
   let sc = scenarioOf(field, params);
   if (edits && Array.isArray(edits.samples) && edits.signature === paramsSignature(sc.params)) {
-    const restored = restoreSamples(sc, edits.samples);
-    if (restored) sc = withSamples(field, sc, restored, metrics);
+    const restored = restoreSamples(sc, edits.samples, field.geom);
+    if (!restored) throw Error('Os ajustes não correspondem aos pontos e tiros deste lote.');
+    sc = withSamples(field, sc, restored, metrics);
   }
   return sc;
 }
@@ -152,7 +153,7 @@ export function checks(sc, people, blind) {
   out.push(empty.length ? { level: 'erro', text: `${empty.map(r => r.trackId).join(', ')} sem ponto` } : { level: 'ok', text: 'Todos os tiros com ponto' });
   const tiros = sc.selected.length;
   out.push(tiros > people ? { level: 'alerta', text: `${plural(tiros, 'tiro', 'tiros')} para ${plural(people, 'pessoa', 'pessoas')}` } : { level: 'ok', text: tiros === people ? '1 tiro por pessoa' : `1 tiro por pessoa · sobra ${plural(people - tiros, 'pessoa', 'pessoas')}` });
-  if (blind) out.push(blind.haBlind > blind.limitHa ? { level: 'alerta', text: `${num(blind.haBlind, 1)} ha a mais de ${num(blind.limitM)} m de um ponto` } : { level: 'ok', text: 'Sem área descoberta' });
+  if (blind) out.push(blind.haBlind > blind.limitHa ? { level: 'alerta', text: `${num(blind.haBlind, 1)} ha a mais de ${num(blind.limitM)} m de um ponto` } : { level: 'ok', text: blind.haBlind > 0 ? `${num(blind.haBlind, 2)} ha dentro da tolerância de ${num(blind.limitHa, 2)} ha` : 'Sem área descoberta' });
   // 4.0.2 · a guarda da bordadura deslizou um tiro: diz qual e quanto (o ponto saiu da faixa de 15 m da borda)
   for (const f of sc.borderFix || []) out.push({ level: 'ok', text: `${f.trackId}: pontos deslizados ${num(Math.abs(f.shiftM))} m para longe da borda` });
   const errors = sc.warnings.filter(w => w.level === 'erro').length, alerts = sc.warnings.filter(w => w.level === 'alerta').length;
@@ -162,7 +163,7 @@ export function checks(sc, people, blind) {
 
 /** Números do plano, já formatados para a tela. */
 export function figures(sc) {
-  const gaps = sc.trackRows.filter(r => r.n > 1 && r.medianGapM).map(r => r.medianGapM);
+  const gaps = sc.trackRows.flatMap(r => r.gaps);
   return { pontos: sc.samples.length, tiros: sc.selected.length, entreTiros: sc.deltaM ? `${num(sc.deltaM)} m` : '—',
     entrePontos: gaps.length ? `${range(Math.min(...gaps), Math.max(...gaps))} m` : '—', p95: sc.coverage.p95 == null ? '—' : `< ${num(sc.coverage.p95)} m`,
     caminhada: `${km(sc.route.totalEstimatedM)} km` };

@@ -13,15 +13,24 @@ export function safeStorage(get) {
 /** `canWrite()`: trava entre abas (outra janela aberta grava; esta só lê). `onBlocked()` avisa a pessoa.
  *  `onFail()`: a gravação falhou (memória cheia ou bloqueada); o estado em memória volta ao que estava gravado. */
 export function createStore(storage, { canWrite = () => true, onBlocked = () => {}, onFail = () => {} } = {}) {
-  const read = () => { try { const t = storage.getItem(STATE_KEY); const v = t ? JSON.parse(t) : {}; return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; } catch { return {}; } };
-  let state = read();
+  function read() {
+    const raw = storage.getItem(STATE_KEY);
+    if (raw === null) return {};
+    const value = JSON.parse(raw);
+    if (!value || typeof value !== 'object' || Array.isArray(value)) throw Error('Estado inválido');
+    return value;
+  }
+  let state = {}, unreadable = false;
+  try { state = read(); } catch { unreadable = true; }
   return {
     get: () => state,
+    unreadable: () => unreadable,
     /** Aplica `patch` sobre o estado mais recente do armazenamento (outra aba pode ter gravado) e grava. */
     update(patch) {
       if (!canWrite()) { onBlocked(); return false; }
-      const next = { ...read(), ...patch };
-      try { storage.setItem(STATE_KEY, JSON.stringify(next)); state = next; return true; } catch { state = read(); onFail(); return false; }
+      try { state = read(); unreadable = false; } catch { unreadable = true; onFail(); return false; }
+      const next = { ...state, ...patch };
+      try { storage.setItem(STATE_KEY, JSON.stringify(next)); state = next; return true; } catch { onFail(); return false; }
     },
   };
 }

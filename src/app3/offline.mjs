@@ -10,11 +10,11 @@ export const OFFLINE_FILES = ['index.html', 'motor.js', 'app.webmanifest', 'inte
  * @param {any} cachesApi `window.caches` (ou nada)  @param {string} base endereço da página
  * @returns {Promise<{state:'pronto'|'baixando'|'sem', missing?:string[]}>}
  */
-export async function offlineStatus(cachesApi, base) {
+export async function offlineStatus(cachesApi, base, activeCache = null) {
   if (!cachesApi?.keys) return { state: 'sem' };
   let missing = OFFLINE_FILES;
   try {
-    for (const key of (await cachesApi.keys()).filter((/** @type {string} */ k) => k.startsWith('schmidt-3-'))) {
+    for (const key of (await cachesApi.keys()).filter((/** @type {string} */ k) => k.startsWith('schmidt-3-') && (!activeCache || activeCache === k))) {
       const c = await cachesApi.open(key), miss = [];
       for (const f of OFFLINE_FILES) if (!(await c.match(new URL(f, base).href))) miss.push(f);
       if (!miss.length) return { state: 'pronto' };

@@ -22,12 +22,12 @@ export function installPlano(app) {
   const hints = new Map();
   /** @type {any} */ let improver = null, seq = 0;
   try { if (app.window.Worker) { improver = new app.window.Worker('motor.js'); improver.onmessage = e => { const d = e.data || {}; if (d.kind !== 'improve') return; for (const [k, v] of hints) if (v.id === d.id) { hints.set(k, { id: d.id, r: d.r, plus: d.plus || null }); if (app.ui.view === 'plano' && app.hintKey?.() === k) { const box = document.querySelector('[data-hint]'); if (box) box.innerHTML = hintMarkup(app.hint()); } } }; improver.onerror = () => { improver = null; }; } } catch { improver = null; }
-  app.hintKey = () => { const cur = app.cur; return cur && !cur.block ? `${app.ui.key}|${JSON.stringify(cur.params)}|${JSON.stringify(app.saved().editsByField?.[app.ui.key] ?? null)}` : null; };
+  app.hintKey = () => { const cur = app.cur; return cur && !cur.block ? `${app.ui.key}|${app.people()}|${JSON.stringify(cur.params)}|${JSON.stringify(app.saved().editsByField?.[app.ui.key] ?? null)}` : null; };
   /** Ganho pronto para o plano em uso (ou null enquanto calcula / se não há ganho). */
   app.hint = () => {
     const k = app.hintKey(); if (!k || !improver) return null;
     const h = hints.get(k);
-    if (!h) { const id = ++seq; hints.set(k, { id, r: undefined }); improver.postMessage({ kind: 'improve', id, field: app.cur.field, params: app.cur.params, edits: app.saved().editsByField?.[app.ui.key] ?? null, people: app.people() }); return null; }
+    if (!h) { const id = ++seq; if (hints.size >= 32) hints.delete(hints.keys().next().value); hints.set(k, { id, r: undefined }); improver.postMessage({ kind: 'improve', id, field: app.cur.field, params: app.cur.params, edits: app.saved().editsByField?.[app.ui.key] ?? null, people: app.people() }); return null; }
     const pl = h.plus, plus = pl ? { reason: pl.reason, text: [pl.reason === 'meio' && pl.after.mid < pl.before.mid && 'sem tiro de 1 ponto no meio do lote',pl.after.worst < pl.before.worst - 1 && `maior vazio ${num(pl.before.worst)} → ${num(pl.after.worst)} m`, pl.after.p95 < pl.before.p95 - 1 && `95% ${num(pl.before.p95)} → ${num(pl.after.p95)} m`].filter(Boolean).join(' · '), n: pl.after.n } : null;
     const r = h.r, parts = r?.edits ? [r.after.worst < r.before.worst - 1 && `maior vazio ${num(r.before.worst)} → ${num(r.after.worst)} m`, r.after.cv < r.before.cv - 0.004 && `áreas ${num(r.before.cv * 100)} → ${num(r.after.cv * 100)}%`].filter(Boolean) : [];
     return parts.length || plus ? { text: parts.join(' · '), r: parts.length ? r : null, plus } : null;
@@ -60,10 +60,14 @@ export function installPlano(app) {
       // plano e só substitui o plano se ele ainda for este (a pessoa não mudou nada no meio)
       const key = app.ui.key, quick = { ...cur.params, haPerPoint: v };
       if (!app.setParams(quick, msg)) return true;
+      const editsAtRequest = JSON.stringify(app.saved().editsByField?.[key] ?? null);
       app.whenRec(cur.field, base, rec => {
         const st = app.saved();
-        if (!rec || JSON.stringify(st.paramsByField?.[key]) !== JSON.stringify(quick)) return;
-        if (store.update({ paramsByField: { ...(st.paramsByField || {}), [key]: { ...base, ...rec.chosen.params } } }) && app.ui.key === key) app.render();
+        if (!rec || JSON.stringify(st.editsByField?.[key] ?? null) !== editsAtRequest || JSON.stringify(st.paramsByField?.[key]) !== JSON.stringify(quick)) return;
+        if (store.update({ paramsByField: { ...(st.paramsByField || {}), [key]: { ...base, ...rec.chosen.params } } })) {
+          if (app.ui.key === key) app.render();
+          app.scheduleVersion(key);
+        }
       }, key);
       return true;
     }
@@ -84,7 +88,7 @@ export function installPlano(app) {
     minimax() {
       const cur = app.cur, edits = app.saved().editsByField?.[app.ui.key] ?? null, ready = hints.get(app.hintKey())?.r;
       const r = ready !== undefined && ready !== null ? ready : P.minimaxEdits(cur.field, cur.params, edits);
-      if (!r.edits) { app.toast('A distribuição já é a melhor possível sem piorar a cobertura.'); return; }
+      if (!r.edits) { app.toast('A busca não encontrou melhora com estes critérios.'); return; }
       const parts = [r.after.worst < r.before.worst - 1 && `maior vazio ${num(r.before.worst)} → ${num(r.after.worst)} m`,
         r.after.cv < r.before.cv - 0.004 && `áreas ${num(r.before.cv * 100)} → ${num(r.after.cv * 100)}% de variação`].filter(Boolean);
       app.setParams(cur.params, parts.join(' · ') || 'Distribuição melhorada', r.edits);
@@ -103,7 +107,8 @@ export function installPlano(app) {
     },
     restore() {
       const cur = app.cur, base = { haPerPoint: cur.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint };
-      app.whenRec(cur.field, base, rec => { app.setParams(rec ? { ...base, ...rec.chosen.params } : base, 'Padrões do lote restaurados', null); setTimeout(reopenAdvanced, 0); });
+      const key = app.ui.key, original = app.saved().paramsByField?.[key], sheet = app.host.firstElementChild;
+      app.whenRec(cur.field, base, rec => { if (app.ui.key !== key || app.host.firstElementChild !== sheet || JSON.stringify(app.saved().paramsByField?.[key]) !== JSON.stringify(original)) return; app.setParams(rec ? { ...base, ...rec.chosen.params } : base, 'Padrões do lote restaurados', null); setTimeout(reopenAdvanced, 0); });
     },
   });
 }
