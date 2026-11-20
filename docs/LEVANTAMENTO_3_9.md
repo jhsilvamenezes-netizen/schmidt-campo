@@ -175,3 +175,20 @@ até a entrada do plano (ponto 37), a 2,4 km. O tiro pode ser feito de qualquer 
 
 Testes: todos os tiros ≥ 300 m dos 51 lotes (perto da outra ponta inverte, perto da entrada fica, na linha mantém,
 a guia aponta para a ponta perto) e no navegador (BC1 · T1, 120 m além da ponta final: 120 m, "0/N").
+
+## 17. 3.21 · equipe em zigue-zague
+
+Com o tiro feito pelas duas pontas (3.20), quem faz 2 ou mais tiros não precisa voltar à mesma borda: sai no
+fim de um tiro e entra no próximo pela ponta ao lado. A divisão escolhe a entrada de cada tiro pela menor
+caminhada total da pessoa (programação dinâmica com 2 estados, a ponta onde se está), contando a passagem em
+linha reta da saída de um tiro até a entrada do próximo.
+
+| 51 lotes, 1–3 pessoas | Antes (cada tiro sozinho) | 3.21 |
+|---|---|---|
+| Caminhada das 185 pessoas com 2+ tiros | 1.315 km | 1.006 km (−23,5%) |
+| Pessoas que pioraram | — | 0 |
+| Quem faz 1 tiro | igual | igual |
+
+Antes, o total mostrado contava a passagem entre tiros como a distância entre as linhas, mesmo quando a pessoa
+saía na ponta oposta; agora conta a passagem real. Teste: força bruta em todas as combinações de entrada e saída
+(até 8 tiros por pessoa) = o valor da divisão.
