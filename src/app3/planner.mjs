@@ -16,7 +16,7 @@ import { pointInGeom } from '../engine3/geometry.mjs';
 import { cumulative, pointAt } from '../engine3/polyline.mjs';
 import { num, range, km, plural } from './format.mjs';
 
-export const ENGINE_LABEL = '4.0.1';
+export const ENGINE_LABEL = '4.0.2';
 export const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
@@ -99,7 +99,9 @@ export function* balanceSteps(field, base, rec) {
     // 1 ponto já se sabe pelo plano simples; quem cria tiro de 1 ponto a mais nem chega ao cálculo completo (mesmo resultado)
     if (onesOf(field, { ...base, ...params }) > now.ones) continue;
     const c = balanceStats(field, { ...base, ...params });
-    if (!c || c.p95 > now.p95 * BALANCE.p95 || c.worst > now.worst + 1e-6 || c.ones > now.ones || c.km > now.km * BALANCE.km) continue;
+    // 4.0.2 · candidato que só passa na bordadura porque a guarda deslizou um tiro não entra no equilíbrio (a guarda é
+    // correção do plano escolhido, não critério de escolha): sem isso o RB7 trocava de fase (+1,5% de caminhada)
+    if (!c || c.sc.borderFix || c.p95 > now.p95 * BALANCE.p95 || c.worst > now.worst + 1e-6 || c.ones > now.ones || c.km > now.km * BALANCE.km) continue;
     // 3.8: bordadura como desempate — com áreas quase iguais (até +0,5 p.p.), vale o plano sem ponto colado na borda
     const bf = faixa(c.sc);
     // subir de faixa custa até +0,5 p.p. de variação; descer da faixa ideal (≥ 41 m) para 15–41 m só se as áreas ficarem
@@ -151,6 +153,8 @@ export function checks(sc, people, blind) {
   const tiros = sc.selected.length;
   out.push(tiros > people ? { level: 'alerta', text: `${plural(tiros, 'tiro', 'tiros')} para ${plural(people, 'pessoa', 'pessoas')}` } : { level: 'ok', text: tiros === people ? '1 tiro por pessoa' : `1 tiro por pessoa · sobra ${plural(people - tiros, 'pessoa', 'pessoas')}` });
   if (blind) out.push(blind.haBlind > blind.limitHa ? { level: 'alerta', text: `${num(blind.haBlind, 1)} ha a mais de ${num(blind.limitM)} m de um ponto` } : { level: 'ok', text: 'Sem área descoberta' });
+  // 4.0.2 · a guarda da bordadura deslizou um tiro: diz qual e quanto (o ponto saiu da faixa de 15 m da borda)
+  for (const f of sc.borderFix || []) out.push({ level: 'ok', text: `${f.trackId}: pontos deslizados ${num(Math.abs(f.shiftM))} m para longe da borda` });
   const errors = sc.warnings.filter(w => w.level === 'erro').length, alerts = sc.warnings.filter(w => w.level === 'alerta').length;
   if (errors || alerts) out.push({ level: errors ? 'erro' : 'alerta', text: [errors && plural(errors, 'erro', 'erros'), alerts && plural(alerts, 'alerta', 'alertas')].filter(Boolean).join(' e ') + ' nos dados' });
   return out;
