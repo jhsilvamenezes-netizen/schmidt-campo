@@ -1,5 +1,5 @@
 // 3.1 (U02) · tela Monitorar: tiro e sentido, guia por GPS (política 2.0), tela acesa e vibração ao chegar.
-import { routeFor, fixToPos, guideModel, nearEndFlipped } from './monitor.mjs';
+import { routeFor, fixToPos, guideModel, nearEndFlipped, speedStep, modeStep, guideAlerts } from './monitor.mjs';
 import { headingOf, smoothHeading, arrowAngle } from './compass.mjs';
 import { toGPX } from '../engine3/exporters.mjs';
 
@@ -21,32 +21,11 @@ export function installMonitor(app) {
     }
     const route = mon.trackId ? routeFor(sc, cur.field, mon.trackId, mon.flipped) : null;
     const model = route && mon.active ? guideModel(route, sc, cur.field, mon.pos, Date.now(), mon.session) : null;
-    // 3.5 · fora da linha (ou passou do ponto): três toques curtos de vibração, uma vez por saída — sem olhar a tela
-    const off = !!model?.warn?.some(w => /da linha|linha do|Passou do ponto/.test(w));
-    if (off && !mon.offWarned) { try { window.navigator.vibrate?.([70, 60, 70, 60, 70]); } catch { /* sem vibração */ } say('Atenção: fora da linha.'); }
-    mon.offWarned = off;
-    // 3.10 · chegando (a 3× o raio de chegada, 30 m no padrão): um toque curto de vibração, uma vez por ponto
-    // de moto, o aviso vem ~8 s antes (a 30 km/h, ~67 m); a pé, a 30 m
-    const nearM = Math.max(3 * (cur.sc.params.monitor?.arrivalRadiusM ?? 10), 8 * (mon.pos?.speedMps ?? 0));
-    const dM = model?.distM ?? NaN;
-    if (model?.state === 'go' && Number.isFinite(dM) && dM <= nearM && model.next?.id !== mon.nearId) {
-      mon.nearId = model.next.id;
-      try { window.navigator.vibrate?.(150); } catch { /* sem vibração */ }
-      say(`Chegando ao ponto ${model.next.seq}: ${Math.round(dM)} metros.`);
-    }
-    // 3.19 · de moto: "pare aqui" com uma vibração longa, uma vez por ponto
-    if (model?.state === 'stop' && model.next?.id !== mon.stopId) {
-      mon.stopId = model.next.id;
-      try { window.navigator.vibrate?.(600); } catch { /* sem vibração */ }
-      say(`Pare. Ponto ${model.next.seq} a ${Math.round(model.distM ?? 0)} metros.`);
-    }
-    if (model?.state === 'arrived') mon.startedTrack = true; // chegou a um ponto: o sentido fica
-    if (model?.state === 'arrived' && model.next?.id !== mon.arrivedId) {
-      mon.arrivedId = model.next.id;
-      // chegou: vibração longa e marcada (três pulsos), para sentir com o celular no bolso
-      try { window.navigator.vibrate?.([300, 100, 300, 100, 300]); } catch { /* sem vibração */ }
-      say(`Chegou ao ponto ${model.next.seq}, número ${model.next.number}.`);
-    }
+    // 3.22 · avisos decididos no núcleo sem DOM (monitor.mjs); aqui só vibra e fala
+    const al = guideAlerts(model, { offWarned: mon.offWarned, nearId: mon.nearId, stopId: mon.stopId, arrivedId: mon.arrivedId, startedTrack: mon.startedTrack },
+      { arrivalRadiusM: cur.sc.params.monitor?.arrivalRadiusM ?? 10, speedMps: mon.pos?.speedMps ?? 0 });
+    Object.assign(mon, al.mem);
+    for (const e of al.effects) { try { window.navigator.vibrate?.(e.vibrate); } catch { /* sem vibração */ } say(e.say); }
     // 3.13 (V3) · terminou o tiro: oferece o próximo tiro da mesma pessoa (equipe do Plano); sem equipe, o seguinte da lista
     /** @type {any} */ let nextTrack = null;
     if (model && route && (model.state === 'done' || (model.state === 'arrived' && model.next?.seq === route.nPoints))) {
@@ -90,34 +69,11 @@ export function installMonitor(app) {
     mon.compass = false; mon.heading = null;
   }
 
-  /** Velocidade (m/s): a do GPS quando existe; senão o deslocamento numa janela de ~3–6 s.
-   *  3.19 · parado, o GPS "treme" 3–6 m entre leituras, mas o tremor vai e volta e não acumula: medindo da leitura de
-   *  ~3 s atrás até a atual, e só acima de 1,5 × a precisão (mín. 6 m), tremor fica 0 e moto (≥ 20 m em 3 s) aparece. */
-  function speedOf(prev, pos) {
-    const hist = (mon.hist = [...(mon.hist || []).filter(h => pos.at - h.at <= 6000), pos]);
-    let v = pos.speedMps;
-    if (Number.isFinite(v) && v < 0.5) v = 0;
-    if (!Number.isFinite(v)) {
-      const old = hist.find(h => pos.at - h.at >= 2500) || null;
-      if (!old) return prev?.speedMps ?? null;
-      const dt = (pos.at - old.at) / 1000, d = Math.hypot(pos.x - old.x, pos.y - old.y), noise = Math.max(6, 1.5 * Math.max(old.accuracyM || 0, pos.accuracyM || 0));
-      v = d <= noise ? 0 : d / dt;
-    }
-    return Number.isFinite(prev?.speedMps) ? 0.5 * prev.speedMps + 0.5 * v : v;
-  }
-  /** 3.19 · moto ou a pé com histerese: vira moto acima de 2,5 m/s por 2 leituras; volta a pé abaixo de 1,5 m/s por 2. */
-  function modeOf(v) {
-    const want = !Number.isFinite(v) ? mon.mode : v >= 2.5 ? 'moto' : v < 1.5 ? 'pe' : mon.mode;
-    if (want === mon.mode) { mon.modeN = 0; return mon.mode; }
-    mon.modeN = (mon.modeN || 0) + 1;
-    if (mon.modeN >= 2) { mon.mode = want; mon.modeN = 0; }
-    return mon.mode;
-  }
   function watch() {
     const geo = window.navigator.geolocation;
     mon.watchId = geo.watchPosition(position => {
       const pos = fixToPos(position, app.cur.field, mon.pos?.at ?? 0, Date.now());
-      if (pos) { pos.speedMps = speedOf(mon.pos, pos); pos.mode = modeOf(pos.speedMps); mon.pos = pos; if (ui.view === 'monitorar') app.render(); }
+      if (pos) { const sp = speedStep(mon.hist, mon.pos, pos), md = modeStep({ mode: mon.mode, n: mon.modeN }, sp.speed); mon.hist = sp.hist; mon.mode = md.mode; mon.modeN = md.n; pos.speedMps = sp.speed; pos.mode = md.mode; mon.pos = pos; if (ui.view === 'monitorar') app.render(); }
       // 3.17 · parado no ponto (coletando), o GPS não manda leitura nova: antes vinha "GPS indisponível" a cada 20 s.
       // Sem tempo-limite; leitura velha já aparece como "GPS sem atualização há N s" (guia)
     }, err => { if (err.code === 1) app.toast('Permita a localização para usar a guia.'); else if (!mon.pos) app.toast('Sem sinal do GPS ainda: fique a céu aberto.'); }, { enableHighAccuracy: true, maximumAge: 0 });

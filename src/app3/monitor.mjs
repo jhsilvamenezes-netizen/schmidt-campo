@@ -44,6 +44,59 @@ export function guideModel(route, sc, field, pos, now, session) {
   return m;
 }
 
+// ---------- 3.22 · núcleo da guia sem DOM (a tela só executa os efeitos: vibrar, falar, redesenhar) ----------
+
+/** Velocidade (m/s): a do GPS quando existe; senão o deslocamento numa janela de ~3–6 s (3.19).
+ *  Parado, o GPS "treme" 3–6 m entre leituras, mas o tremor vai e volta e não acumula: medindo da leitura de ~3 s atrás
+ *  até a atual, e só acima de 1,5 × a precisão (mín. 6 m), tremor fica 0 e moto (≥ 20 m em 3 s) aparece.
+ *  @param {any[]} hist leituras anteriores  @param {any} prev posição anterior (com speedMps)  @param {any} pos nova posição
+ *  @returns {{hist:any[], speed:number|null}} */
+export function speedStep(hist, prev, pos) {
+  const h = [...(hist || []).filter(x => pos.at - x.at <= 6000), pos];
+  let v = pos.speedMps;
+  if (Number.isFinite(v) && v < 0.5) v = 0;
+  if (!Number.isFinite(v)) {
+    const old = h.find(x => pos.at - x.at >= 2500) || null;
+    if (!old) return { hist: h, speed: prev?.speedMps ?? null };
+    const dt = (pos.at - old.at) / 1000, d = Math.hypot(pos.x - old.x, pos.y - old.y), noise = Math.max(6, 1.5 * Math.max(old.accuracyM || 0, pos.accuracyM || 0));
+    v = d <= noise ? 0 : d / dt;
+  }
+  return { hist: h, speed: Number.isFinite(prev?.speedMps) ? 0.5 * prev.speedMps + 0.5 * v : v };
+}
+
+/** Moto ou a pé com histerese (3.19): vira moto acima de 2,5 m/s por 2 leituras; volta a pé abaixo de 1,5 m/s por 2.
+ *  @param {{mode:string, n:number}} st  @param {number|null} v  @returns {{mode:string, n:number}} */
+export function modeStep(st, v) {
+  const want = !Number.isFinite(v) ? st.mode : Number(v) >= MOTO_MPS ? 'moto' : Number(v) < 1.5 ? 'pe' : st.mode;
+  if (want === st.mode) return { mode: st.mode, n: 0 };
+  const n = (st.n || 0) + 1;
+  return n >= 2 ? { mode: want, n: 0 } : { mode: st.mode, n };
+}
+
+/** Avisos da guia, uma vez por saída da linha / por ponto: fora da linha (3 toques), chegando (1 toque; de moto ~8 s
+ *  antes), pare aqui (vibração longa, de moto) e chegou (3 pulsos). `mem` = o que já foi avisado.
+ *  @param {any} model modelo da tela (guideModel)  @param {any} mem {offWarned, nearId, stopId, arrivedId, startedTrack}
+ *  @param {{arrivalRadiusM?:number, speedMps?:number|null}} [o]
+ *  @returns {{mem:any, effects:{vibrate:any, say:string}[]}} */
+export function guideAlerts(model, mem, o = {}) {
+  const m = { ...mem }, effects = [];
+  const off = !!model?.warn?.some(w => /da linha|linha do|Passou do ponto/.test(w));
+  if (off && !m.offWarned) effects.push({ vibrate: [70, 60, 70, 60, 70], say: 'Atenção: fora da linha.' });
+  m.offWarned = off;
+  const nearM = Math.max(3 * (o.arrivalRadiusM ?? 10), 8 * (o.speedMps ?? 0)), dM = model?.distM ?? NaN;
+  if (model?.state === 'go' && Number.isFinite(dM) && dM <= nearM && model.next?.id !== m.nearId) {
+    m.nearId = model.next.id; effects.push({ vibrate: 150, say: `Chegando ao ponto ${model.next.seq}: ${Math.round(dM)} metros.` });
+  }
+  if (model?.state === 'stop' && model.next?.id !== m.stopId) {
+    m.stopId = model.next.id; effects.push({ vibrate: 600, say: `Pare. Ponto ${model.next.seq} a ${Math.round(model.distM ?? 0)} metros.` });
+  }
+  if (model?.state === 'arrived') m.startedTrack = true; // chegou a um ponto: o sentido do tiro fica (3.20)
+  if (model?.state === 'arrived' && model.next?.id !== m.arrivedId) {
+    m.arrivedId = model.next.id; effects.push({ vibrate: [300, 100, 300, 100, 300], say: `Chegou ao ponto ${model.next.seq}, número ${model.next.number}.` });
+  }
+  return { mem: m, effects };
+}
+
 /** 3.17 · de moto ou a pé, pela velocidade (≥ 2,5 m/s ≈ 9 km/h: moto; parado ou andando: a pé). */
 export const MOTO_MPS = 2.5;
 export const modeOf = speedMps => (Number.isFinite(speedMps) && speedMps >= MOTO_MPS ? 'moto' : 'pe');

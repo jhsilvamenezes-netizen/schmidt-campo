@@ -1,0 +1,88 @@
+// 3.22 · arquitetura: (1) camadas — o motor (engine3) e o GPS (gps) não conhecem a tela nem o navegador; só as telas
+// tocam o DOM; sem ciclos de importação; (2) o worker responde no Node igual ao motor; (3) núcleo da guia sem DOM:
+// velocidade, moto/a pé e avisos (antes só testados no navegador).
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync, readdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { loadFields } from './legacy-engine.mjs';
+import * as P from '../src/app3/planner.mjs';
+import { reply } from '../src/app3/worker.mjs';
+import { speedStep, modeStep, guideAlerts } from '../src/app3/monitor.mjs';
+
+const src = fileURLToPath(new URL('../src/', import.meta.url));
+const read = p => readFileSync(src + p, 'utf8');
+const importsOf = p => [...read(p).matchAll(/^import[^\n]*from '([^']+)'/gm)].map(m => new URL(m[1], `file://${src}${p}`).pathname.slice(src.length));
+const mods = d => readdirSync(src + d).filter(f => f.endsWith('.mjs')).map(f => `${d}/${f}`);
+
+test('camadas: engine3 e gps puros (sem tela, sem navegador); motor da tela só por planner/monitor/worker e exceções listadas', () => {
+  for (const p of [...mods('engine3'), ...mods('gps')]) {
+    for (const i of importsOf(p)) assert.ok(i.startsWith('engine3/') || i.startsWith('gps/'), `${p} importa ${i} (camada de cima)`);
+    const code = read(p).replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, '');
+    assert.doesNotMatch(code, /\b(document|window|navigator|localStorage)\b/, `${p} usa o navegador`);
+  }
+  // núcleo da tela sem DOM: planner, monitor, worker, format, map (SVG em texto), views (HTML em texto), tokens4
+  for (const p of ['app3/planner.mjs', 'app3/monitor.mjs', 'app3/worker.mjs', 'app3/format.mjs', 'app3/views.mjs', 'app3/map.mjs', 'app3/tokens4.mjs']) {
+    const code = read(p).replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, '');
+    assert.doesNotMatch(code, /\b(document|window|navigator|localStorage)\s*\./, `${p} deveria ser sem DOM`);
+  }
+  // quem fala direto com o motor (engine3): os serviços da tela e as exceções conhecidas (arquivos e explicações)
+  const ok = new Set(['app3/planner.mjs', 'app3/monitor.mjs', 'app3/advanced.mjs', 'app3/backup.mjs', 'app3/blocks.mjs', 'app3/plan-file.mjs', 'app3/screen-enviar.mjs', 'app3/screen-mais.mjs', 'app3/screen-monitor.mjs']);
+  for (const p of mods('app3')) if (importsOf(p).some(i => i.startsWith('engine3/'))) assert.ok(ok.has(p), `${p} importa o motor direto (use planner.mjs ou monitor.mjs)`);
+});
+
+test('sem ciclos de importação em app3, engine3 e gps', () => {
+  const all = [...mods('app3'), ...mods('engine3'), ...mods('gps')], state = new Map();
+  const visit = (p, path) => {
+    if (state.get(p) === 2) return; assert.notEqual(state.get(p), 1, `ciclo: ${[...path, p].join(' → ')}`);
+    state.set(p, 1); for (const i of importsOf(p)) if (all.includes(i)) visit(i, [...path, p]); state.set(p, 2);
+  };
+  for (const p of all) visit(p, []);
+});
+
+test('worker: mesma resposta que o motor direto (recomendação, sugestão, +1 ponto) e erro vira texto', async () => {
+  const fields = await loadFields();
+  for (const k of ['Bananal|BC1', 'Bananal|BE1', 'RJ|RB9'].filter(x => fields[x])) {
+    const f = fields[k], rec = P.recommend(f, {}, 5, false);
+    assert.deepStrictEqual(reply({ id: 1, field: f, base: {}, people: 5, fitTeam: false }), { id: 1, rec, error: null }, k);
+    const params = rec.chosen.params, imp = reply({ kind: 'improve', id: 2, field: f, params, edits: null, people: 5 });
+    assert.deepStrictEqual(imp, { id: 2, kind: 'improve', r: P.minimaxEdits(f, params, null), plus: P.plusOne(f, params, 5) }, k);
+  }
+  const bad = reply({ id: 3, field: null, base: {}, people: 5 });
+  assert.equal(bad.rec, null); assert.equal(typeof bad.error, 'string');
+  assert.deepStrictEqual(reply({ kind: 'improve', id: 4, field: null }), { id: 4, kind: 'improve', r: null, plus: null });
+});
+
+test('núcleo da guia: GPS parado tremendo = 0 km/h e "A pé"; moto a 8 m/s vira moto só na 2ª leitura; volta a pé', () => {
+  let hist = [], prev = null, st = { mode: 'pe', n: 0 };
+  const step = (x, y, t, acc = 5) => { const pos = { x, y, at: t * 1000, accuracyM: acc, speedMps: null }; const s = speedStep(hist, prev, pos); hist = s.hist; pos.speedMps = s.speed; st = modeStep(st, s.speed); prev = pos; return { v: s.speed, mode: st.mode }; };
+  for (let t = 0; t < 12; t++) assert.equal(step(t % 2 ? 2.5 : -2.5, t % 3 ? 2 : -2, t).mode, 'pe', `tremor ${t}`);
+  assert.equal(prev.speedMps, 0, 'tremor não acumula velocidade');
+  const modes = []; for (let t = 12; t < 20; t++) modes.push(step((t - 12) * 8, 0, t).mode);
+  assert.equal(modes.indexOf('moto') > 3, true, `moto só depois da janela e de 2 leituras: ${modes}`);
+  const back = []; for (let t = 20; t < 30; t++) back.push(step(56, 0, t).mode);
+  assert.equal(back.at(-1), 'pe', `parado volta a pé: ${back}`);
+  // velocidade do próprio GPS vale direto (abaixo de 0,5 m/s = parado)
+  assert.equal(speedStep([], null, { x: 0, y: 0, at: 0, speedMps: 0.3 }).speed, 0);
+  assert.deepStrictEqual(modeStep({ mode: 'moto', n: 0 }, 2), { mode: 'moto', n: 0 }, 'entre 1,5 e 2,5 m/s mantém');
+});
+
+test('núcleo da guia: cada aviso uma vez por ponto (chegando, pare, chegou) e uma vez por saída da linha', () => {
+  const nx = id => ({ id, seq: id, number: 100 + id });
+  let mem = {}; const run = (model, o) => { const r = guideAlerts(model, mem, o); mem = r.mem; return r.effects.map(e => e.say); };
+  assert.deepStrictEqual(run({ state: 'go', distM: 50, next: nx(1), warn: [] }), [], 'longe: nada');
+  assert.deepStrictEqual(run({ state: 'go', distM: 25, next: nx(1), warn: [] }), ['Chegando ao ponto 1: 25 metros.']);
+  assert.deepStrictEqual(run({ state: 'go', distM: 20, next: nx(1), warn: [] }), [], 'não repete');
+  assert.deepStrictEqual(run({ state: 'go', distM: 60, next: nx(2), warn: [] }, { speedMps: 8 }), ['Chegando ao ponto 2: 60 metros.'], 'de moto avisa a 8 s');
+  assert.deepStrictEqual(run({ state: 'stop', distM: 18, next: nx(2), warn: [] }), ['Pare. Ponto 2 a 18 metros.']);
+  assert.deepStrictEqual(run({ state: 'stop', distM: 15, next: nx(2), warn: [] }), []);
+  assert.equal(mem.startedTrack, undefined);
+  assert.deepStrictEqual(run({ state: 'arrived', next: nx(2), warn: [] }), ['Chegou ao ponto 2, número 102.']);
+  assert.equal(mem.startedTrack, true, 'chegou: o sentido do tiro fica');
+  assert.deepStrictEqual(run({ state: 'arrived', next: nx(2), warn: [] }), []);
+  const off = { state: 'go', distM: 80, next: nx(3), warn: ['Você está 30 m à direita da linha: volte para a esquerda.'] };
+  assert.deepStrictEqual(run(off), ['Atenção: fora da linha.']); assert.deepStrictEqual(run(off), [], 'uma vez por saída');
+  run({ ...off, warn: [] }); assert.deepStrictEqual(run(off), ['Atenção: fora da linha.'], 'saiu de novo: avisa de novo');
+  const e = guideAlerts({ state: 'arrived', next: nx(9), warn: [] }, {}).effects[0];
+  assert.deepStrictEqual(e.vibrate, [300, 100, 300, 100, 300], 'chegou: 3 pulsos');
+});
