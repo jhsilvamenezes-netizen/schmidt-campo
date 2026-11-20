@@ -57,6 +57,17 @@ try {
     assert.match(t, /Próximo: Ponto 2/); assert.match(t, /Faltam \d+ m andando no tiro/);
     assert.deepStrictEqual(errors, []); await ctx.close();
   }
+  { // 3.20 · o tiro pode ser feito pelas duas pontas: perto da ponta final, a guia começa por ela (não manda à outra ponta)
+    const a = route.parts[0].entry, b = route.parts.at(-1).exit, L = Math.hypot(b[0] - a[0], b[1] - a[1]), ux = (b[0] - a[0]) / L, uy = (b[1] - a[1]) / L;
+    const { ctx, p, errors } = await open(b[0] + 120 * ux, b[1] + 120 * uy);
+    await p.waitForFunction(() => /ponta mais perto/.test(document.querySelector('.gsheet')?.textContent || ''), null, { timeout: 15000 });
+    const t = (await p.textContent('.gsheet')).replace(/\s+/g, ' '), d = +(/([\d.]+) m/.exec(await p.textContent('.guide .big'))[1].replace(/\./g, ''));
+    assert.ok(d < 200, `distância até a ponta perto: ${d} m (${t})`); assert.match(t, /0\/\d+/, 'nenhum ponto feito ainda');
+    // "Inverter" à mão continua valendo e desliga a escolha automática
+    await p.click('[data-act="gps-stop"]'); await p.click('[data-act="flip"]');
+    assert.match((await p.textContent('#view')).replace(/\s+/g, ' '), /Sentido: invertido|Sentido: do plano/);
+    assert.deepStrictEqual(errors, []); await ctx.close();
+  }
   { // 3.10 · vibração: a 20 m do ponto 2 (dentro de 3× o raio de chegada) um toque curto; no ponto, três pulsos
     const L = Math.hypot(p2.x - p1.x, p2.y - p1.y), ux = (p2.x - p1.x) / L, uy = (p2.y - p1.y) / L;
     const [lon, lat] = localToLonLat(p2.x - ux * 20, p2.y - uy * 20, f.centroidUTM);
@@ -149,5 +160,5 @@ try {
     assert.match(gpx, /<gpx/); assert.equal((gpx.match(/<wpt/g) || []).length, route.points.length, 'um ponto de passagem por ponto do tiro');
     assert.deepStrictEqual(errors, []); await ctx.close();
   }
-  console.log('Monitorar: próximo tiro ao terminar, entrada do tiro de longe, mapa grande com linha ao alvo, seta pequena, bússola, seguir, onde estou e GPX do tiro ok');
+  console.log('Monitorar: ponta mais perto, próximo tiro ao terminar, entrada do tiro de longe, mapa grande com linha ao alvo, seta pequena, bússola, seguir, onde estou e GPX do tiro ok');
 } finally { await browser.close(); server.close(); }
