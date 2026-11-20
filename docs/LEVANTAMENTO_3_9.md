@@ -217,3 +217,22 @@ Nos 51 lotes com 2 a 4 pessoas, só 2 de 100 casos melhoram, em cerca de 10 m. N
 | Voz a caminho | com a voz ligada, "Faltam N metros" a cada 100 m (só fala, sem vibrar), até o aviso de chegando. Vale também na ida até a entrada do tiro | Node: conta de 100 em 100; se a pessoa se afastar, volta a contar; alvo novo começa do zero |
 
 O teste de limite de palavras passou a descontar o aviso passageiro do rodapé (como já descontava os rótulos do mapa).
+
+## 20. 3.25 · qualidade do GPS para calibrar com dado real
+
+O raio de chegada (10 m) e a precisão aceita (15 m) ainda são valores iniciais, a confirmar em campo. A guia agora
+conta as leituras do GPS em faixas, no próprio aparelho. Não guarda coordenadas nem marca coleta.
+
+| Conta | Faixas |
+|---|---|
+| Precisão | ≤ 3, ≤ 5, ≤ 8, ≤ 10, ≤ 15, ≤ 25 e acima de 25 m |
+| Intervalo entre leituras | ≤ 1, ≤ 2, ≤ 3, ≤ 5, ≤ 10 e acima de 10 s |
+| Modo | moto ou a pé |
+
+- **Onde ver:** Mais → "Qualidade do GPS (calibrar)". Mostra o resumo e diz se o raio atual cobre 9 em 10 leituras.
+- **Arquivo:** "Compartilhar" gera um CSV só com faixas e contagens. "Zerar" recomeça.
+- **Gravação:** a cada 10 leituras, ao parar a guia e ao esconder a tela.
+- **Uso:** com 1 a 2 dias de uso da equipe, o arquivo mostra se raio e precisão precisam mudar. A decisão fica com o proprietário.
+
+Testes: Node (faixas, percentis, resumo, arquivo sem posição, leitura sem precisão ignorada) e navegador
+(guia de verdade, depois parar: contagem gravada sem x/y/lat/lon e tela de resumo).

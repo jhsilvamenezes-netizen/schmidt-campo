@@ -3,6 +3,7 @@
 import * as P from './planner.mjs';
 import * as V from './views.mjs';
 import { offlineText } from './offline.mjs';
+import { statsSummary, statsCsv } from './gps-stats.mjs';
 import * as VX from './views-mais.mjs';
 import { esc, num } from './format.mjs';
 import { makeBackup, readBackup, ITEM_LABELS } from './backup.mjs';
@@ -104,8 +105,15 @@ export function installMais(app) {
       // 3.24 · selo: o app já está guardado no celular para abrir sem sinal?
       + `<p class="ck${app.offline?.state === 'pronto' ? '' : ' alerta'}" data-offline="${esc(app.offline?.state || 'sem')}">${esc(offlineText(app.offline?.state || 'sem'))}</p>`
       + `<button class="lrow" data-act="design4" role="switch" aria-checked="${app.isDesign4()}"><span><b>Design 4.0 (prévia)</b><small>o visual novo, para comparar; desliga a qualquer hora</small></span><i class="tg" aria-hidden="true"></i></button>`
-      + (app.isDesign4() ? '<button class="lnk" data-open="vitrine">Vitrine do design 4.0</button>' : '') + V.menuBody([['glossario', 'Glossário: o que cada medida quer dizer'], ['arquivos', 'Arquivos e fichas'], ['dados', 'Dados do lote'], ['calculo', 'Como foi calculado'], ['versoes', 'Versões anteriores'],
+      + (app.isDesign4() ? '<button class="lnk" data-open="vitrine">Vitrine do design 4.0</button>' : '') + V.menuBody([['glossario', 'Glossário: o que cada medida quer dizer'], ['arquivos', 'Arquivos e fichas'], ['dados', 'Dados do lote'], ['calculo', 'Como foi calculado'], ['versoes', 'Versões anteriores'], ['gps', 'Qualidade do GPS (calibrar)'],
       ['copia', 'Cópia de segurança'], ['abrir', 'Abrir plano recebido']])),
+    // 3.25 · qualidade do GPS: o que os celulares da equipe medem em campo (sem posição), para calibrar raio e precisão
+    gps: () => {
+      const st = app.gpsStats?.() ?? null, sm = statsSummary(st, app.cur.sc.params.monitor);
+      app.openSheet('Qualidade do GPS', `<p class="mu">Contagem das leituras da guia neste aparelho: precisão, intervalo e moto ou a pé. Não guarda onde você esteve.</p>`
+        + `<div class="card">${sm.lines.map(t => `<p>${esc(t)}</p>`).join('')}</div>`
+        + (sm.n ? '<div class="two"><button class="btn p" data-act="gps-share">Compartilhar</button><button class="btn" data-act="gps-reset">Zerar</button></div>' : ''));
+    },
     // 4.0-b · vitrine: todos os componentes num lugar só, para revisar o design 4.0 sem procurar caso a caso
     vitrine: () => app.openSheet('Vitrine do design 4.0', VX.vitrineBody()),
     glossario: () => app.openSheet('Glossário', `<dl class="glos">${glossTerms().map(([t, d]) => `<dt>${esc(t)}</dt><dd>${esc(d)}</dd>`).join('')}</dl>`),
@@ -117,6 +125,16 @@ export function installMais(app) {
     calculo: () => app.openSheet('Como foi calculado', VX.calculoBody(explainScenario(app.cur.sc, app.cur.field))),
   });
   Object.assign(app.ACTIONS, {
+    // 3.25 · arquivo da qualidade do GPS: compartilhar (WhatsApp etc.) quando o aparelho deixa; senão baixa
+    'gps-share': async () => {
+      const name = `schmidt_gps_${stamp()}.csv`, text = statsCsv(app.gpsStats?.(), app.appVersion);
+      try {
+        const file = typeof window.File === 'function' ? new window.File([text], name, { type: 'text/csv' }) : null;
+        if (file && window.navigator.canShare?.({ files: [file] })) { await window.navigator.share({ title: 'Qualidade do GPS', files: [file] }); return; }
+      } catch (/** @type {any} */ e) { if (e?.name === 'AbortError') return; }
+      app.download(text, name, 'text/csv'); app.toast('Arquivo da qualidade do GPS baixado.');
+    },
+    'gps-reset': () => { app.resetGpsStats?.(); app.SHEETS.gps(); app.toast('Contagem do GPS zerada.'); },
     design4: () => { const on = !app.isDesign4(); app.setDesign4(on); app.SHEETS.menu(); app.toast(on ? 'Design 4.0 ligado (prévia).' : 'Design 4.0 desligado.'); },
     async backup() {
       try { const b = await doBackup(); app.download(JSON.stringify(b), `schmidt_copia_${stamp()}.json`, 'application/json'); try { storage.setItem(LAST_BACKUP, String(Date.now())); } catch { /* só não lembra */ } app.toast('Cópia de segurança baixada.'); }
