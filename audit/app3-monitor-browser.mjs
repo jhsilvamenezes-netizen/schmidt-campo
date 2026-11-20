@@ -63,7 +63,17 @@ try {
     await p.waitForFunction(() => /ponta mais perto/.test(document.querySelector('.gsheet')?.textContent || ''), null, { timeout: 15000 });
     const t = (await p.textContent('.gsheet')).replace(/\s+/g, ' '), d = +(/([\d.]+) m/.exec(await p.textContent('.guide .big'))[1].replace(/\./g, ''));
     assert.ok(d < 200, `distância até a ponta perto: ${d} m (${t})`); assert.match(t, /0\/\d+/, 'nenhum ponto feito ainda');
-    // "Inverter" à mão continua valendo e desliga a escolha automática
+    // 3.23 · "Outra ponta" com a guia ligada (a ponta perto pode não ter acesso): vai à entrada do plano e não volta sozinho
+    await p.click('.gsheet [data-act="flip"]');
+    await p.waitForFunction(() => /entrada do plano/.test(document.querySelector('.gsheet')?.textContent || ''), null, { timeout: 15000 });
+    const far = +(/([\d.]+) m/.exec(await p.textContent('.guide .big'))[1].replace(/\./g, ''));
+    assert.ok(far > L, `outra ponta: ${far} m (tiro de ${Math.round(L)} m)`);
+    await p.waitForTimeout(1500); assert.match(await p.textContent('.gsheet'), /entrada do plano/, 'a escolha à mão fica');
+    assert.match(await p.textContent('.gsheet'), /vá até a entrada do T1/, 'leva à entrada (não ao ponto mais perto)');
+    // chegou à entrada: segue normal, ponto 1 primeiro
+    const [lonE, latE] = localToLonLat(a[0] + 5 * ux, a[1] + 5 * uy, f.centroidUTM); await ctx.setGeolocation({ longitude: lonE, latitude: latE, accuracy: 5 });
+    await p.waitForFunction(() => /Ponto 1 de/.test(document.querySelector('.gsheet')?.textContent || ''), null, { timeout: 15000 });
+    // "Inverter" no cartão (guia parada) continua valendo
     await p.click('[data-act="gps-stop"]'); await p.click('[data-act="flip"]');
     assert.match((await p.textContent('#view')).replace(/\s+/g, ' '), /Sentido: invertido|Sentido: do plano/);
     assert.deepStrictEqual(errors, []); await ctx.close();

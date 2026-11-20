@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { loadFields } from './legacy-engine.mjs';
 import * as P from '../src/app3/planner.mjs';
 import { reply } from '../src/app3/worker.mjs';
-import { speedStep, modeStep, guideAlerts } from '../src/app3/monitor.mjs';
+import { speedStep, modeStep, guideAlerts, guideModel, routeFor, ENTRY_REACHED_M } from '../src/app3/monitor.mjs';
 
 const src = fileURLToPath(new URL('../src/', import.meta.url));
 const read = p => readFileSync(src + p, 'utf8');
@@ -85,4 +85,23 @@ test('núcleo da guia: cada aviso uma vez por ponto (chegando, pare, chegou) e u
   run({ ...off, warn: [] }); assert.deepStrictEqual(run(off), ['Atenção: fora da linha.'], 'saiu de novo: avisa de novo');
   const e = guideAlerts({ state: 'arrived', next: nx(9), warn: [] }, {}).effects[0];
   assert.deepStrictEqual(e.vibrate, [300, 100, 300, 100, 300], 'chegou: 3 pulsos');
+});
+
+test('3.23 · "Outra ponta" à mão: a guia leva à entrada mesmo perto da outra ponta; na entrada segue pelo ponto 1', async () => {
+  const fields = await loadFields(); let n = 0;
+  for (const k of Object.keys(fields)) {
+    const f = fields[k], sc = P.planInUse(f, P.recommend(f, {}, 5, false).chosen.params, null);
+    const t = sc.selected.find(tr => sc.units.filter(u => u.trackId === tr.id).length === 1); if (!t) continue;
+    const r = routeFor(sc, f, t.id, false), a = r.parts[0].entry, b = r.parts[0].exit, L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (L < 300 || r.points.length < 2) continue;
+    const ux = (b[0] - a[0]) / L, uy = (b[1] - a[1]) / L, now = 1e12, at = (x, y) => ({ x, y, accuracyM: 4, at: now });
+    const near = at(b[0] + 60 * ux, b[1] + 60 * uy);
+    const sem = guideModel(r, sc, f, near, now, {}), com = guideModel(r, sc, f, near, now, {}, { toEntry: true });
+    assert.notDeepStrictEqual(sem.to, a, `${k} sem a escolha: não vai à entrada (comportamento de retomar)`);
+    assert.deepStrictEqual(com.to, a, `${k} com a escolha: vai à entrada`); assert.equal(com.progress.done, 0, k);
+    const inside = guideModel(r, sc, f, at(a[0] + (ENTRY_REACHED_M - 5) * ux, a[1] + (ENTRY_REACHED_M - 5) * uy), now, {}, { toEntry: true });
+    assert.equal(inside.next.seq, 1, `${k} na entrada: ponto 1`);
+    n++;
+  }
+  assert.ok(n >= 30, `lotes: ${n}`);
 });

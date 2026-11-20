@@ -37,8 +37,8 @@ export function fixToPos(position, field, lastTimestamp, now) {
  * Modelo da tela da guia. `session` = memória da sessão (objeto mutável do chamador, ver schmidtGuideSession).
  * @returns {{state:string, title:string, distM?:number|null, seg?:number|null, progress?:any, big?:string, dir?:string, azimuth?:number, warn?:string[], next?:any, info?:string, to?:number[]}}
  */
-export function guideModel(route, sc, field, pos, now, session) {
-  const m = guideModelCore(route, sc, field, pos, now, session);
+export function guideModel(route, sc, field, pos, now, session, opts = {}) {
+  const m = guideModelCore(route, sc, field, pos, now, session, opts);
   // 3.4: progresso do tiro (pontos já passados), para a barra do modo navegação
   if (m.next) m.progress = { done: m.next.seq - (m.state === 'arrived' ? 0 : 1), total: route.nPoints };
   return m;
@@ -97,6 +97,9 @@ export function guideAlerts(model, mem, o = {}) {
   return { mem: m, effects };
 }
 
+/** 3.23 · a entrada do tiro conta como alcançada a até 30 m (3 × o raio de chegada padrão). */
+export const ENTRY_REACHED_M = 30;
+
 /** 3.17 · de moto ou a pé, pela velocidade (≥ 2,5 m/s ≈ 9 km/h: moto; parado ou andando: a pé). */
 export const MOTO_MPS = 2.5;
 export const modeOf = speedMps => (Number.isFinite(speedMps) && speedMps >= MOTO_MPS ? 'moto' : 'pe');
@@ -108,7 +111,8 @@ const eta = (m, speedMps) => {
 };
 
 /** @returns {any} */
-function guideModelCore(route, sc, field, pos, now, session) {
+/** @param {{toEntry?:boolean}} [opts] toEntry: ponta escolhida à mão e ainda não alcançada (3.23) */
+function guideModelCore(route, sc, field, pos, now, session, opts = {}) {
   const monitor = sc.params.monitor;
   if (!pos) return { state: 'wait', title: 'Aguardando o GPS', info: 'Fique a céu aberto. A seta aparece com a primeira posição.' };
   const ageMs = now - pos.at, key = `${field.farm}|${field.code}|${sc.signature}|${route.trackId}|${route.flipped}`;
@@ -120,6 +124,12 @@ function guideModelCore(route, sc, field, pos, now, session) {
   if (!g.accuracyOk) warn.push(`GPS impreciso (± ${num(pos.accuracyM)} m).`);
   // Longe do tiro (chegando ao lote): a guia leva à entrada do tiro, no início do sentido escolhido, sem avisos de linha.
   const farM = Math.max(150, 5 * (monitor.offLineWarnM || 0)), start = route.parts?.[0]?.entry;
+  // 3.23 · ponta escolhida à mão ("Outra ponta"): leva até a entrada antes de tudo (a pessoa pode estar perto da outra
+  // ponta, onde a escolha normal do próximo ponto já daria o tiro como andado)
+  if (start && opts.toEntry && Math.hypot(start[0] - pos.x, start[1] - pos.y) > ENTRY_REACHED_M && !g.stale) {
+    const dx = start[0] - pos.x, dy = start[1] - pos.y, az = azimuth(dx, dy);
+    return { state: 'go', title: `Primeiro: vá até a entrada do ${route.trackId}`, big: `${num(Math.hypot(dx, dy))} m`, dir: `para o ${cardinal(az)}`, azimuth: az, to: [start[0], start[1]], warn, next: route.points[0] ?? n };
+  }
   if (start && Number.isFinite(g.lateralM) && g.lateralM > farM && !g.arrived) {
     const dx = start[0] - pos.x, dy = start[1] - pos.y, az = azimuth(dx, dy);
     return { state: 'go', title: `Primeiro: vá até a entrada do ${route.trackId}`, big: `${num(Math.hypot(dx, dy))} m`, dir: `para o ${cardinal(az)}`, azimuth: az, to: [start[0], start[1]], warn, next: n };
