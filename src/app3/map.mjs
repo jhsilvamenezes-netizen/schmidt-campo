@@ -1,4 +1,5 @@
-// 3.0 · mapa do lote em SVG: contorno, tiros, pontos numerados, norte e escala. Norte para cima, sem rotação.
+// 3.0 · mapa do lote em SVG: contorno, tiros, pontos numerados, norte e escala. Norte para cima; só a guia seguindo
+// pode girar (4.1, "rumo para cima"): os textos ficam sempre em pé.
 // 3.1 (U03) · medidas como na 2.5, sem sobreposição: distância entre tiros (cota), intervalo entre pontos em cada
 // trecho, área de cada ponto (célula exata) e, ao tocar num ponto, as distâncias dele aos vizinhos e à borda.
 // Todo texto passa por um único verificador de espaço: o que não cabe sem cobrir ponto, número ou outro texto
@@ -73,22 +74,31 @@ function cota(cls, a, b) {
 /** Marcação SVG do lote ajustada a w × h px. `small` = mapa do Plano/guia (sem medidas).
  * @param {any} field @param {any} sc @param {number} w @param {number} h
  * @param {{sat?:{detail:any, context?:any, credit:string}|null, pad?:number|{t:number,r:number,b:number,l:number}, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null,
- *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null, hiTrack?:string|null, ruler?:{a:number[],b:number[],m:number}|null, grid?:boolean, border?:any, under?:number}} [opts] */
+ *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null, hiTrack?:string|null, ruler?:{a:number[],b:number[],m:number}|null, grid?:boolean, border?:any, under?:number, follow?:{k:number}|null, rot?:number}} [opts] */
 export function mapMarkup(field, sc, w, h, opts = {}) {
-  const { sat = null, pad: pad0 = 28, small = false, view = { k: 1, x: 0, y: 0 }, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null, hiTrack = null, ruler = null, grid = true, border = null, under = 0 } = opts;
+  const { sat = null, pad: pad0 = 28, small = false, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null, hiTrack = null, ruler = null, grid = true, border = null, under = 0, follow = null, rot: rot0 = 0 } = opts;
+  let view = opts.view ?? { k: 1, x: 0, y: 0 };
   // `under`: faixa de baixo coberta pela folha que sobe sobre o mapa (3.11); o lote e a escala ficam acima dela
   const pad = { ...(typeof pad0 === 'number' ? { t: pad0, r: pad0, b: pad0, l: pad0 } : pad0) }; pad.b += under;
   // Outros lotes (bloco): levados ao referencial do lote atual pela diferença dos centroides UTM.
   const shift = o => [o.field.centroidUTM[0] - field.centroidUTM[0], o.field.centroidUTM[1] - field.centroidUTM[1]];
   const extra = others.map(o => ({ ...o, d: shift(o) }));
   // `focus`: enquadra só estes pontos (guia: posição e alvo), com folga mínima de 250 m; senão o lote (e o bloco)
-  const pts = focus?.length ? focus.flatMap(([x, y]) => [[x - 125, y - 125], [x + 125, y + 125]])
+  // 4.1 · guia seguindo quem anda: quadro em volta da posição (vê o alvo), com o zoom da pinça e, se pedido, girado
+  const fol = follow && pos ? follow : null, rot = fol ? (((Number(rot0) || 0) % 360) + 360) % 360 : 0;
+  const half = fol && pos ? Math.max(150, 1.1 * (to ? Math.hypot(to[0] - pos.x, to[1] - pos.y) : 0)) : 0;
+  const pts = fol && pos ? [[pos.x - half, pos.y - half], [pos.x + half, pos.y + half]] : focus?.length ? focus.flatMap(([x, y]) => [[x - 125, y - 125], [x + 125, y + 125]])
     : [...field.geom.flat(2), ...extra.flatMap(o => o.field.geom.flat(2).map(([x, y]) => [x + o.d[0], y + o.d[1]]))], xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
   const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
   const iw = Math.max(40, w - pad.l - pad.r), ih = Math.max(40, h - pad.t - pad.b);
   const k = Math.min(iw / (x1 - x0 || 1), ih / (y1 - y0 || 1));
   const ox = pad.l + (iw - k * (x1 - x0)) / 2, oy = pad.b + (ih - k * (y1 - y0)) / 2;
-  const XY = (x, y) => [view.x + view.k * (ox + k * (x - x0)), view.y + view.k * (h - oy - k * (y - y0))];
+  // seguindo: a posição fica no meio da largura e a 60% da altura livre (mais mapa à frente de quem anda)
+  const S = fol ? [w / 2, pad.t + 0.6 * (h - pad.t - pad.b)] : [0, 0];
+  if (fol && pos) { const ax = ox + k * (pos.x - x0), ay = h - oy - k * (pos.y - y0); view = { k: fol.k, x: S[0] - ax * fol.k, y: S[1] - ay * fol.k }; }
+  const XY0 = (x, y) => [view.x + view.k * (ox + k * (x - x0)), view.y + view.k * (h - oy - k * (y - y0))];
+  const rc = Math.cos((rot * Math.PI) / 180), rs = -Math.sin((rot * Math.PI) / 180);
+  const XY = !rot ? XY0 : (x, y) => { const [a, b] = XY0(x, y), dx = a - S[0], dy = b - S[1]; return [S[0] + dx * rc - dy * rs, S[1] + dx * rs + dy * rc]; };
   const P = ([x, y]) => XY(x, y).map(f1).join(',');
   const kk = k * view.k, sp = space(w, h - under, measure);
   let r = small ? 9.5 : 11.5;
@@ -117,16 +127,18 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
       for (let gx = ax; gx <= bx; gx += len) { const X = XY(gx, 0)[0]; g += `M${f1(X)} 0V${h}`; }
       for (let gy = ay; gy <= by; gy += len) { const Y = XY(0, gy)[1]; g += `M0 ${f1(Y)}H${w}`; }
     }
-    if (g && grid && !sat) s += `<path class="mgrid" d="${g}"/>`;
+    if (g && grid && !sat && !rot) s += `<path class="mgrid" d="${g}"/>`;
   }
   // 3.26 · fundo de satélite (opcional): entorno largo + lote nítido, presos ao terreno (andam com o zoom), embaixo de
   // tudo, e um véu verde-escuro da marca por cima da foto para pontos, linhas e textos saltarem
   if (sat) {
+    if (rot) s += `<g transform="rotate(${-rot} ${f1(S[0])} ${f1(S[1])})">`;
     for (const [cls, img] of [['sat ctx', sat.context], ['sat', sat.detail]]) {
       if (!img) continue;
-      const [a, b] = [XY(img.local[0], img.local[3]), XY(img.local[2], img.local[1])];
+      const [a, b] = [XY0(img.local[0], img.local[3]), XY0(img.local[2], img.local[1])];
       s += `<image class="${cls}" href="${esc(img.href)}" x="${f1(a[0])}" y="${f1(a[1])}" width="${f1(b[0] - a[0])}" height="${f1(b[1] - a[1])}" preserveAspectRatio="none"/>`;
     }
+    if (rot) s += '</g>';
     s += `<rect class="satveil" x="0" y="0" width="${w}" height="${h}"/>`;
     sp.boxes.push([w - 230, h - 20 - under, w, h - under]);
   }
@@ -203,11 +215,11 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
     if (to) { const [tx, ty] = XY(to[0], to[1]); s += `<path class="togo" d="M${f1(px)},${f1(py)}L${f1(tx)},${f1(ty)}"/>`; }
     s += `<circle class="acc" cx="${f1(px)}" cy="${f1(py)}" r="${f1(acc)}"/>`;
     // para onde o celular aponta (bússola): cone curto à frente do ponto azul
-    if (Number.isFinite(heading)) s += `<path class="cone" transform="translate(${f1(px)} ${f1(py)}) rotate(${Number(heading).toFixed(0)})" d="M0 0L-11 -26A28 28 0 0 1 11 -26Z"/>`;
+    if (Number.isFinite(heading)) s += `<path class="cone" transform="translate(${f1(px)} ${f1(py)}) rotate(${(Number(heading) - rot).toFixed(0)})" d="M0 0L-11 -26A28 28 0 0 1 11 -26Z"/>`;
     s += `<circle class="me" cx="${f1(px)}" cy="${f1(py)}" r="7"/>`;
   }
   s += `<g class="scale" transform="translate(14 ${h - 14 - under})"><path d="M0 -6V0H${f1(L)}V-6"/><text x="0" y="-10">${num(len)} m</text></g>`;
-  s += `<g class="north" transform="translate(${w - 18} 16)"><text x="0" y="8">N</text><path d="M0 14V30M-4 19L0 14L4 19"/></g>`;
+  s += `<g class="north" transform="translate(${w - 18} 16)${rot ? ` rotate(${-rot} 0 22)` : ''}"><text x="0" y="8">N</text><path d="M0 14V30M-4 19L0 14L4 19"/></g>`;
   if (sat) s += `<text class="satcredit" x="${w - 8}" y="${h - 8 - under}">Imagem: ${esc(sat.credit)}</text>`;
   return s + '</svg>';
 }

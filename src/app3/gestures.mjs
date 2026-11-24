@@ -1,12 +1,12 @@
 // 3.0 · gestos do mapa: arrastar, pinça, duplo toque e roda do mouse. Mantém { k, x, y } (escala e deslocamento em
 // pixels da tela) e chama onChange; toque curto sem arrastar vira onTap(alvo). Sem dependências.
-export function attachGestures(el, { onChange, onTap, getView, setView }) {
+export function attachGestures(el, { onChange, onTap, getView, setView, minK = 1 }) {
   const pts = new Map();
   /** @type {any} */ let start = null;
   let moved = false, lastTap = 0;
   /** @type {any} */ let downTarget = null;
   const local = e => { const r = el.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
-  const zoomAt = (/** @type {number[]} */ [px, py], /** @type {number} */ f) => { const v = getView(), k = Math.max(1, Math.min(12, v.k * f)), g = k / v.k; setView({ k, x: px - (px - v.x) * g, y: py - (py - v.y) * g }); onChange(); };
+  const zoomAt = (/** @type {number[]} */ [px, py], /** @type {number} */ f) => { const v = getView(), k = Math.max(minK, Math.min(12, v.k * f)), g = k / v.k; setView({ k, x: px - (px - v.x) * g, y: py - (py - v.y) * g }); onChange(); };
   el.addEventListener('pointerdown', e => {
     if (/** @type {Element} */ (e.target).closest?.('button')) return;
     if (!pts.size) downTarget = e.target;
@@ -25,7 +25,7 @@ export function attachGestures(el, { onChange, onTap, getView, setView }) {
       moved = true;
       const d0 = Math.hypot(ini[0][0] - ini[1][0], ini[0][1] - ini[1][1]) || 1, d1 = Math.hypot(cur[0][0] - cur[1][0], cur[0][1] - cur[1][1]);
       const c0 = [(ini[0][0] + ini[1][0]) / 2, (ini[0][1] + ini[1][1]) / 2], c1 = [(cur[0][0] + cur[1][0]) / 2, (cur[0][1] + cur[1][1]) / 2];
-      const k = Math.max(1, Math.min(12, s.view.k * (d1 / d0))), g = k / s.view.k;
+      const k = Math.max(minK, Math.min(12, s.view.k * (d1 / d0))), g = k / s.view.k;
       setView({ k, x: c1[0] - (c0[0] - s.view.x) * g, y: c1[1] - (c0[1] - s.view.y) * g }); onChange();
     }
   });

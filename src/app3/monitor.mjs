@@ -30,7 +30,24 @@ export function fixToPos(position, field, lastTimestamp, now) {
   const [x, y] = lonLatToLocal(fix.coords.longitude, fix.coords.latitude, field.centroidUTM);
   // 3.17 · velocidade do próprio GPS (m/s), quando o aparelho informa; senão a tela calcula pela distância entre leituras
   const sp = fix.coords.speed;
-  return { x, y, accuracyM: fix.coords.accuracy, at: fix.timestamp, speedMps: Number.isFinite(sp) && sp >= 0 ? sp : null };
+  const hd = fix.coords.heading;
+  return { x, y, accuracyM: fix.coords.accuracy, at: fix.timestamp, speedMps: Number.isFinite(sp) && sp >= 0 ? sp : null,
+    gpsHeading: Number.isFinite(hd) && hd >= 0 ? hd : null };
+}
+
+/** 4.1 · rumo do deslocamento (graus, 0 = norte da grade, horário) para girar o mapa da guia "rumo para cima".
+ *  Com o celular andando (≥ 1,5 m/s) vale o rumo do próprio GPS; senão, o da reta entre a última âncora e a posição
+ *  nova, só quando andou o bastante para não ser tremor (≥ 8 m e ≥ 2 × a precisão). Parado, mantém o último rumo.
+ *  Na moto a bússola do celular erra (ímã e motor perto); o rumo do GPS não. */
+export const COURSE = Object.freeze({ gpsMinMps: 1.5, minM: 8 });
+export function courseStep(st, pos) {
+  const s = st || { at: null, deg: null };
+  if (!pos) return s;
+  if (Number.isFinite(pos.gpsHeading) && (pos.speedMps ?? 0) >= COURSE.gpsMinMps) return { at: [pos.x, pos.y], deg: pos.gpsHeading };
+  if (!s.at) return { at: [pos.x, pos.y], deg: s.deg };
+  const dx = pos.x - s.at[0], dy = pos.y - s.at[1];
+  if (Math.hypot(dx, dy) < Math.max(COURSE.minM, 2 * (pos.accuracyM ?? 0))) return s;
+  return { at: [pos.x, pos.y], deg: (((Math.atan2(dx, dy) * 180) / Math.PI) + 360) % 360 };
 }
 
 /**
