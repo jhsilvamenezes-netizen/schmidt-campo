@@ -354,3 +354,25 @@ e irregular, aceito) e BD5 (2,5×; o botão "Ponto no maior vazio" leva a 453 m)
 
 **Decisão do proprietário (20/11):** vale o rumo da planilha. Nenhum rumo foi alterado. As linhas da
 imagem podem ser de plantio, que não segue o rastro da pulverização, e a data da imagem é desconhecida.
+
+## 25. 4.1.0 · guia de moto: mapa que segue, gira e aceita pinça; telas mais limpas
+
+Pedido do proprietário (24/11): na guia, o mapa ficava parado ao seguir. A pinça não fazia nada e ele não
+girava com o sentido de quem anda de moto.
+
+**Mapa da guia (seguindo):**
+- A posição fica no meio da largura e a 60% da altura livre, com mais mapa à frente de quem anda.
+- Pinça e roda mudam o zoom sem largar o seguir (de 0,25× a 12×), para afastar e ver o lote todo e
+  o caminho ao redor. Arrastar não tira o mapa de quem anda; o botão ⤢ mostra o lote inteiro.
+- **Rumo para cima (padrão):** o mapa gira no sentido do deslocamento e os textos ficam em pé.
+  - Andando (≥ 1,5 m/s): vale o rumo do GPS. Na moto, a bússola erra perto do motor e do ímã.
+  - Sem rumo do GPS: vale a reta entre leituras (≥ 8 m e ≥ 2 × a precisão, para não pegar tremor).
+  - Parado: vale a bússola do celular; sem ela, o último rumo.
+  - O botão ▲/N troca entre rumo e norte para cima. O "N" do canto gira junto.
+  - Em `monitor.mjs`: `courseStep`, com teste.
+
+**Telas mais limpas:**
+- Guia: saiu a linha "seta pelo celular / com o norte para cima". Ela continua só para leitor de tela.
+- Plano: saiu "km por tiro" (repete a caminhada; o km de cada pessoa está na equipe). "Borda ≥ 54 m" não
+  quebra mais a linha.
+- Plano: "Sugestão do motor / áreas 7 → 6%" virou "Distribuir melhor os pontos / áreas por ponto mais iguais".

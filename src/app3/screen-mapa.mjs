@@ -13,7 +13,7 @@ const LAYERS_KEY = 'schmidt.mapa.v1';
 export function installMapa(app) {
   const { document, storage } = app;
   // cada mapa com o seu zoom: mexer no Mapa não tira o lote do quadro no Plano ou na guia
-  const ID = { k: 1, x: 0, y: 0 }, views = { full: ID, small: ID, guide: ID };
+  const ID = { k: 1, x: 0, y: 0 }, views = { full: ID, small: ID, guide: ID, follow: ID };
   const moved = v => v.k > 1.01 || v.k < 0.99 || Math.abs(v.x) > 2 || Math.abs(v.y) > 2;
   /** @type {string|null} */ let selectedPt = null;
   /** régua: segundo ponto tocado com um ponto já escolhido */
@@ -98,21 +98,25 @@ export function installMapa(app) {
       // 4.0-c · com a folha por cima do mapa inteiro, a faixa coberta é a altura da folha
       const sheet4 = app.isDesign4?.() && el.classList.contains('sm') && el.nextElementSibling?.classList.contains('scroll') ? el.nextElementSibling.getBoundingClientRect().height : 0;
       const g = guide ? app.guide() : null, under = sheet4 || parseFloat(document.defaultView.getComputedStyle(el).getPropertyValue('--under')) || 0;
-      const kind = full ? 'full' : guide ? 'guide' : 'small', view = guide && g.focus ? ID : views[kind];
+      const kind = full ? 'full' : guide ? 'guide' : 'small', following = !!(guide && g.follow && g.pos), view = guide && g.focus ? ID : views[kind];
       // 3.26 · satélite (camada opcional): no mapa principal e no da guia, onde ajuda a se orientar no campo
       const sat = layers.satelite && (full || guide) ? { ...satImage(cur.field), credit: SAT_CREDIT } : null;
       el.classList.toggle('sat', !!sat);
-      el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { sat, small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, hiTrack: full ? selTrack : !guide ? app.hiTrack : null, focus: guide ? g.focus : null, others: cur.others || [], under, ...opts })
+      el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { sat, small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, follow: following ? { k: views.follow.k } : null, rot: following ? g.rot : 0, hiTrack: full ? selTrack : !guide ? app.hiTrack : null, focus: guide ? g.focus : null, others: cur.others || [], under, ...opts })
         + (full ? (ruler ? `<div class="bal" role="status"><b>${num(ruler.m)} m</b><span>do ponto ${num(ruler.na)} ao ponto ${num(ruler.nb)} (em linha reta)</span><span>Toque fora para limpar</span></div>` : info ? balloon() : selTrack ? trackCard() : w ? hereCard(w) : '')
           + VMa.mapTools(layers, moved(view), !!here, panel, panel ? summary(cur, areas, bd) : null)
           : guide && g.pos ? `<button class="fit" data-act="follow" aria-pressed="${!!g.follow}" aria-label="${g.follow ? 'Ver o lote inteiro' : 'Seguir minha posição'}">${g.follow ? '⤢' : '◎'}</button>`
+            // 4.1 · seguindo: rumo para cima (o mapa gira com quem anda) ou norte para cima
+            + (g.follow ? `<button class="fit up" data-act="map-up" aria-pressed="${g.up === 'rumo'}" aria-label="${g.up === 'rumo' ? 'Mapa com o norte para cima' : 'Mapa girando com o rumo'}">${g.up === 'rumo' ? '▲' : 'N'}</button>` : '')
             : (moved(view) ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : '')
               // 3.15 · Plano: mapa maior com um toque (e de volta)
               + (kind === 'small' && !app.cur.block ? `<button class="fit grow" data-act="plan-grow" aria-pressed="${!!app.planBig}" aria-label="${app.planBig ? 'Mapa menor' : 'Mapa maior'}">${app.planBig ? '⌄' : '⌃'}</button>` : ''));
       if (!el.dataset.g) {
         el.dataset.g = '1';
         const k2 = full ? 'full' : el.dataset.map === 'guide' ? 'guide' : 'small';
-        attachGestures(el, { getView: () => views[k2], setView: v => { views[k2] = v; }, onChange: () => requestAnimationFrame(drawMaps),
+        // 4.1 · na guia seguindo, a pinça só muda o zoom em volta de quem anda (o quadro continua centrado nele)
+        const fk = () => k2 === 'guide' && app.guide().follow && app.guide().pos;
+        attachGestures(el, { minK: k2 === 'guide' ? 0.25 : 1, getView: () => (fk() ? views.follow : views[k2]), setView: v => { if (fk()) views.follow = { k: v.k, x: 0, y: 0 }; else views[k2] = v; }, onChange: () => requestAnimationFrame(drawMaps),
           onTap: target => {
             if (target.closest?.('.lpanel')) return; // toque dentro do painel não mexe no mapa
             const t = target.closest?.('[data-pt]'), id = t ? t.dataset.pt : null, trk = !id && k2 === 'full' ? target.closest?.('[data-trk]')?.dataset.trk ?? null : null;

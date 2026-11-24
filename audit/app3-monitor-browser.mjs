@@ -47,6 +47,17 @@ try {
     await p.waitForFunction(() => document.querySelector('[data-map="guide"] .cone'), null, { timeout: 3000 });
     // voz: liga e desliga (quando o navegador tem voz)
     if (await p.locator('[data-act="voice"]').count()) { await p.click('[data-act="voice"]'); await p.waitForSelector('[data-act="voice"][aria-pressed="true"]'); }
+    // 4.1 · seguindo: mapa gira com o rumo (aqui, parado, vale a bússola) e o norte do canto gira junto; pinça/roda
+    // muda o zoom sem largar quem anda (a escala muda); "N" volta ao norte para cima
+    for (let i = 0; i < 12; i++) { await p.evaluate(h => window.dispatchEvent(Object.assign(new Event('deviceorientation'), { webkitCompassHeading: h })), 120); await p.waitForTimeout(120); }
+    await p.waitForFunction(() => /rotate/.test(document.querySelector('[data-map="guide"] .north')?.getAttribute('transform') || ''), null, { timeout: 4000 });
+    const scale = () => p.textContent('[data-map="guide"] .scale text');
+    const s0 = await scale(), box = await p.locator('[data-map="guide"]').boundingBox();
+    for (let i = 0; i < 4; i++) { await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await p.mouse.wheel(0, 120); await p.waitForTimeout(60); }
+    await p.waitForFunction(v => document.querySelector('[data-map="guide"] .scale text')?.textContent !== v, s0, { timeout: 3000 });
+    assert.ok(await p.locator('[data-map="guide"] [data-act="follow"][aria-pressed="true"]').count(), 'zoom não larga o seguir');
+    await p.click('[data-map="guide"] [data-act="map-up"]'); await p.waitForSelector('[data-act="map-up"][aria-pressed="false"]');
+    assert.doesNotMatch(await p.getAttribute('[data-map="guide"] .north', 'transform'), /rotate/);
     // seguir ↔ lote inteiro
     await p.click('[data-map="guide"] [data-act="follow"]'); await p.waitForSelector('[data-act="follow"][aria-pressed="false"]');
     assert.deepStrictEqual(errors, []); await ctx.close();

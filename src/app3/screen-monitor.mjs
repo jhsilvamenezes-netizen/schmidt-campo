@@ -1,5 +1,5 @@
 // 3.1 (U02) · tela Monitorar: tiro e sentido, guia por GPS (política 2.0), tela acesa e vibração ao chegar.
-import { routeFor, fixToPos, guideModel, nearEndFlipped, speedStep, modeStep, guideAlerts, ENTRY_REACHED_M } from './monitor.mjs';
+import { routeFor, fixToPos, guideModel, nearEndFlipped, speedStep, modeStep, guideAlerts, ENTRY_REACHED_M, courseStep } from './monitor.mjs';
 import { headingOf, smoothHeading, arrowAngle } from './compass.mjs';
 import { toGPX } from '../engine3/exporters.mjs';
 import { statsAdd } from './gps-stats.mjs';
@@ -8,7 +8,7 @@ import { statsAdd } from './gps-stats.mjs';
 export function installMonitor(app) {
   const { document, window, ui } = app;
   /** Guia: tiro, sentido, GPS ligado, última posição, memória da sessão, trava de tela. */
-  /** @type {any} */ const mon = { mode: 'pe', modeN: 0, voice: false, follow: true, heading: null, compass: false, compassAt: 0, trackId: null, flipped: false, active: false, watchId: null, pos: null, session: {}, wake: null, arrivedId: null, ticker: 0 };
+  /** @type {any} */ const mon = { mode: 'pe', modeN: 0, voice: false, follow: true, up: 'rumo', course: null, heading: null, compass: false, compassAt: 0, trackId: null, flipped: false, active: false, watchId: null, pos: null, session: {}, wake: null, arrivedId: null, ticker: 0 };
 
   function monitorData() {
     const cur = app.cur, sc = cur.sc, tasks = new Map();
@@ -77,7 +77,7 @@ export function installMonitor(app) {
     const geo = window.navigator.geolocation;
     mon.watchId = geo.watchPosition(position => {
       const pos = fixToPos(position, app.cur.field, mon.pos?.at ?? 0, Date.now());
-      if (pos) { const sp = speedStep(mon.hist, mon.pos, pos), md = modeStep({ mode: mon.mode, n: mon.modeN }, sp.speed); mon.hist = sp.hist; mon.mode = md.mode; mon.modeN = md.n; pos.speedMps = sp.speed; pos.mode = md.mode; logFix(pos); mon.pos = pos; if (ui.view === 'monitorar') app.render(); }
+      if (pos) { const sp = speedStep(mon.hist, mon.pos, pos), md = modeStep({ mode: mon.mode, n: mon.modeN }, sp.speed); mon.hist = sp.hist; mon.mode = md.mode; mon.modeN = md.n; pos.speedMps = sp.speed; pos.mode = md.mode; mon.course = courseStep(mon.course, pos); logFix(pos); mon.pos = pos; if (ui.view === 'monitorar') app.render(); }
       // 3.17 · parado no ponto (coletando), o GPS não manda leitura nova: antes vinha "GPS indisponível" a cada 20 s.
       // Sem tempo-limite; leitura velha já aparece como "GPS sem atualização há N s" (guia)
     }, err => { if (err.code === 1) app.toast('Permita a localização para usar a guia.'); else if (!mon.pos) app.toast('Sem sinal do GPS ainda: fique a céu aberto.'); }, { enableHighAccuracy: true, maximumAge: 0 });
@@ -120,7 +120,12 @@ export function installMonitor(app) {
   app.monitorData = monitorData;
   app.guide = () => {
     const d = mon.active ? monitorData() : null, to = d?.model?.to || null;
-    return { target: d?.target ?? null, pos: mon.pos, to, heading: mon.heading, follow: mon.follow, focus: mon.follow && mon.pos ? [[mon.pos.x, mon.pos.y], ...(to ? [to] : [])] : null };
+    // 4.1 · seguindo: mapa centrado em quem anda, com a pinça livre (zoom próprio) e, em "rumo para cima", girado no
+    // sentido do deslocamento (GPS); andando devagar sem rumo ainda, vale a bússola; sem nada, norte para cima
+    const follow = mon.follow && !!mon.pos, moving = (mon.pos?.speedMps ?? 0) >= 1;
+    const rot = follow && mon.up === 'rumo' ? (moving && Number.isFinite(mon.course?.deg) ? mon.course.deg : Number.isFinite(mon.heading) ? mon.heading : mon.course?.deg ?? 0) : 0;
+    return { target: d?.target ?? null, pos: mon.pos, to, heading: mon.heading, follow: mon.follow, up: mon.up, rot: Math.round(rot / 3) * 3 % 360,
+      focus: follow ? [[mon.pos.x, mon.pos.y], ...(to ? [to] : [])] : null };
   };
   app.onLotChange.push(() => { if (mon.active) gpsStop(); mon.trackId = null; });
   app.clicks.push(t => { if (!t.dataset.track) return false; mon.trackId = t.dataset.track; mon.flipped = false; mon.manualDir = false; mon.autoDir = false; mon.startedTrack = false; mon.reachedEntry = false; mon.session = {}; mon.arrivedId = null; app.render(); return true; });
@@ -135,6 +140,7 @@ export function installMonitor(app) {
     'gps-stop': () => gpsStop(),
     voice: () => { mon.voice = !mon.voice; if (mon.voice) say('Voz ligada.'); app.render(); },
     follow: () => { mon.follow = !mon.follow; app.drawMaps(); },
+    'map-up': () => { mon.up = mon.up === 'rumo' ? 'norte' : 'rumo'; app.drawMaps(); },
     flip: () => { mon.flipped = !mon.flipped; mon.manualDir = true; mon.autoDir = false; mon.reachedEntry = false; mon.startedTrack = false; mon.session = {}; mon.nearId = null; mon.stopId = null; app.render(); },
     // 3.13 · segue para o próximo tiro sem parar a guia (sentido do plano, chegada e vibração zeradas)
     'next-track': () => { const n = monitorData().nextTrack; if (!n) return; mon.trackId = n.id; mon.flipped = false; mon.manualDir = false; mon.autoDir = false; mon.startedTrack = false; mon.reachedEntry = false; mon.session = {}; mon.arrivedId = null; mon.nearId = null; mon.stopId = null; app.render(); },

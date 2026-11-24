@@ -12,7 +12,7 @@ import { offlineStatus, OFFLINE_FILES } from '../src/app3/offline.mjs';
 import { satRequest, SAT_HOST, SAT_MAX_PX, SAT_CONTEXT_PX } from '../src/app3/satellite.mjs';
 import { statsAdd, statsSummary, statsCsv, binQuantile, ACC_BINS } from '../src/app3/gps-stats.mjs';
 import { mapMarkup } from '../src/app3/map.mjs';
-import { speedStep, modeStep, guideAlerts, VIBRA, guideModel, routeFor, ENTRY_REACHED_M } from '../src/app3/monitor.mjs';
+import { speedStep, modeStep, guideAlerts, VIBRA, guideModel, routeFor, ENTRY_REACHED_M, courseStep } from '../src/app3/monitor.mjs';
 
 const src = fileURLToPath(new URL('../src/', import.meta.url));
 const read = p => readFileSync(src + p, 'utf8');
@@ -177,4 +177,14 @@ test('4.0-e · vibrações com nome, mesmos padrões de antes; mapa sem textura 
   const fields = await loadFields(), f = fields['Bananal|BD3'], sc = P.planInUse(f, P.recommend(f, {}, 5, false).chosen.params, null);
   assert.doesNotMatch(mapMarkup(f, sc, 390, 600, {}), /class="rows"|clipPath/);
   assert.deepStrictEqual(VIBRA, { foraDaLinha: [70, 60, 70, 60, 70], chegando: 150, pare: 600, chegou: [300, 100, 300, 100, 300] });
+});
+
+test('4.1 · rumo do deslocamento para girar o mapa: GPS andando, reta entre leituras, ignora tremor', () => {
+  let st = courseStep(null, { x: 0, y: 0, accuracyM: 3, speedMps: 0 });
+  assert.equal(st.deg, null);
+  st = courseStep(st, { x: 3, y: 3, accuracyM: 3, speedMps: 0.5 }); assert.equal(st.deg, null, 'tremor de 4 m não vira rumo');
+  st = courseStep(st, { x: 20, y: 0, accuracyM: 3, speedMps: 1.2 }); assert.equal(Math.round(st.deg), 90, 'andou 20 m para leste');
+  st = courseStep(st, { x: 20, y: 2, accuracyM: 3, speedMps: 0 }); assert.equal(Math.round(st.deg), 90, 'parado mantém o último rumo');
+  st = courseStep(st, { x: 21, y: 3, accuracyM: 5, speedMps: 8, gpsHeading: 200 }); assert.equal(st.deg, 200, 'de moto vale o rumo do GPS');
+  st = courseStep(st, { x: 30, y: 3, accuracyM: 20, speedMps: 1 }); assert.equal(st.deg, 200, 'precisão ruim pede deslocamento maior');
 });
