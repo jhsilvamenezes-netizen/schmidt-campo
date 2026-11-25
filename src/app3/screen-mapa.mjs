@@ -79,7 +79,8 @@ export function installMapa(app) {
     return { code: cur.field.code, ha: cur.field.areaOfficialHa, entreTiros: f.entreTiros, entrePontos: f.entrePontos, cada, vazio: areas?.worstGapM ?? 0,
       borda: bd?.minM ?? 0, bordaPt: bd?.min.number ?? 0, bordMin: P.BORDADURA_M, bordLow: P.BORDA_MIN_M };
   }
-  function drawMaps() {
+  function drawMaps() { drawAll(); lotIn = false; }
+  function drawAll() {
     if (hereWatch !== null && app.ui.view !== 'mapa') stopHere(); // saiu do Mapa: para de acompanhar (bateria)
     const cur = app.cur;
     if (!cur) return;
@@ -102,19 +103,31 @@ export function installMapa(app) {
       // 3.26 · satélite (camada opcional): no mapa principal e no da guia, onde ajuda a se orientar no campo
       const sat = layers.satelite && (full || guide) ? { ...satImage(cur.field), credit: SAT_CREDIT } : null;
       el.classList.toggle('sat', !!sat);
-      el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { sat, small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, follow: following ? { k: views.follow.k } : null, rot: following ? g.rot : 0, hiTrack: full ? selTrack : !guide ? app.hiTrack : null, focus: guide ? g.focus : null, others: cur.others || [], under, ...opts })
+      el.__drawn = { ...view };
+      el.innerHTML = mapMarkup(cur.field, cur.sc, W, H, { sat, small: !full, view, selected: guide ? g.target : selectedPt, pos: guide ? g.pos : null, to: guide ? g.to : null, heading: guide ? g.heading : null, follow: following ? { k: views.follow.k } : null, rot: following ? g.rot : 0, hiTrack: full ? selTrack : guide ? g.trackId ?? null : app.hiTrack, trackDir: guide ? g.trackDir ?? null : null, focus: guide ? g.focus : null, others: cur.others || [], under, ...opts })
         + (full ? (ruler ? `<div class="bal" role="status"><b>${num(ruler.m)} m</b><span>do ponto ${num(ruler.na)} ao ponto ${num(ruler.nb)} (em linha reta)</span><span>Toque fora para limpar</span></div>` : info ? balloon() : selTrack ? trackCard() : w ? hereCard(w) : '')
           + VMa.mapTools(layers, moved(view), !!here, panel, panel ? summary(cur, areas, bd) : null)
           : guide && g.pos ? `<button class="fit" data-act="follow" aria-pressed="${!!g.follow}" aria-label="${g.follow ? 'Ver o lote inteiro' : 'Seguir minha posição'}">${g.follow ? '⤢' : '◎'}</button>`
             // 4.1 · seguindo: rumo para cima (o mapa gira com quem anda) ou norte para cima
             + (g.follow ? `<button class="fit up" data-act="map-up" aria-pressed="${g.up === 'rumo'}" aria-label="${g.up === 'rumo' ? 'Mapa com o norte para cima' : 'Mapa girando com o rumo'}">${g.up === 'rumo' ? '▲' : 'N'}</button>` : '')
             : (moved(view) ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : ''));
+      // 4.4 · guia seguindo: entre uma leitura do GPS (ou da bússola) e a seguinte o mapa desliza e gira até o lugar novo
+      // (transição de 0,6 s pela placa de vídeo), em vez de pular. A posição antiga aparece primeiro no centro; o
+      // desenho novo chega ao lugar dele. "Reduzir movimento" do aparelho desliga.
+      if (guide) glide(el);
+      if (lotIn && (full || kind === 'small')) el.querySelector('svg.map-svg')?.classList.add('lotin');
       if (!el.dataset.g) {
         el.dataset.g = '1';
         const k2 = full ? 'full' : el.dataset.map === 'guide' ? 'guide' : 'small';
         // 4.1 · na guia seguindo, a pinça só muda o zoom em volta de quem anda (o quadro continua centrado nele)
         const fk = () => k2 === 'guide' && app.guide().follow && app.guide().pos;
-        attachGestures(el, { minK: k2 === 'guide' ? 0.25 : 1, getView: () => (fk() ? views.follow : views[k2]), setView: v => { if (fk()) views.follow = { k: v.k, x: 0, y: 0 }; else views[k2] = v; }, onChange: () => requestAnimationFrame(drawMaps),
+        // 4.3 · prévia do gesto: o SVG já desenhado (com a vista `drawn`) é só deslocado/ampliado até a vista nova
+        const preview = () => {
+          const svg = el.querySelector('svg.map-svg'), d = el.__drawn, v = fk() ? null : views[k2];
+          if (!svg || !d || !v) { requestAnimationFrame(drawMaps); return; }
+          const r = v.k / d.k; svg.style.transformOrigin = '0 0'; svg.style.transform = `translate(${v.x - r * d.x}px,${v.y - r * d.y}px) scale(${r})`;
+        };
+        attachGestures(el, { minK: k2 === 'guide' ? 0.25 : 1, onPreview: preview, getView: () => (fk() ? views.follow : views[k2]), setView: v => { if (fk()) views.follow = { k: v.k, x: 0, y: 0 }; else views[k2] = v; }, onChange: () => requestAnimationFrame(drawMaps),
           onTap: target => {
             if (target.closest?.('.lpanel')) return; // toque dentro do painel não mexe no mapa
             const t = target.closest?.('[data-pt]'), id = t ? t.dataset.pt : null, trk = !id && k2 === 'full' ? target.closest?.('[data-trk]')?.dataset.trk ?? null : null;
@@ -127,6 +140,26 @@ export function installMapa(app) {
           } });
       }
     }
+  }
+  const reduce = () => { try { return app.window.matchMedia?.('(prefers-reduced-motion: reduce)').matches; } catch { return false; } };
+  /** 4.4 · o próximo desenho é de um lote recém-escolhido (entra com animação curta) */
+  let lotIn = false;
+  /** última câmera da guia (fora do elemento: a aba é remontada a cada leitura do GPS) */
+  /** @type {any} */ let lastCam = null;
+  /** @param {any} el */
+  function glide(el) {
+    const svg = el.querySelector('svg.map-svg'), d = svg?.dataset, prev = lastCam;
+    lastCam = d?.kk ? { px: +d.px, py: +d.py, rot: +d.rot } : null;
+    if (!svg || !d?.kk || !prev || reduce()) return;
+    const kk = +d.kk, sx = +d.sx, sy = +d.sy, r1 = +d.rot, a = (-r1 * Math.PI) / 180;
+    // onde a posição antiga fica no desenho novo (vetor a partir do centro S, já girado como o desenho novo)
+    const ux = (prev.px - +d.px) * kk, uy = -(prev.py - +d.py) * kk, P = [ux * Math.cos(a) - uy * Math.sin(a), ux * Math.sin(a) + uy * Math.cos(a)];
+    const dr = ((r1 - prev.rot + 540) % 360) - 180;
+    if (Math.hypot(P[0], P[1]) > 400 || (Math.abs(dr) < 0.5 && Math.hypot(P[0], P[1]) < 0.5)) return; // salto grande ou parado: direto
+    svg.style.transformOrigin = `${sx}px ${sy}px`; svg.style.transition = 'none';
+    svg.style.transform = `rotate(${dr}deg) translate(${-P[0]}px,${-P[1]}px)`;
+    void svg.getBoundingClientRect();
+    svg.style.transition = 'transform .6s linear'; svg.style.transform = 'rotate(0deg) translate(0px,0px)';
   }
   /** Pedido da imagem do lote, guardado por lote (o endereço não muda; o navegador reaproveita a imagem baixada). */
   const satMemo = new Map();
@@ -145,7 +178,7 @@ export function installMapa(app) {
   // Um único requestAnimationFrame: desenha antes da pintura do quadro (sem quadro vazio entre o render e o mapa).
   let pendingDraw = 0;
   app.requestDraw = () => { if (!pendingDraw) pendingDraw = requestAnimationFrame(() => { pendingDraw = 0; app.drawMaps(); }); };
-  app.onLotChange.push(() => { panel = false; stopHere(); views.full = views.small = views.guide = ID; selectedPt = null; rulerPt = null; selTrack = null; app.hiTrack = null; });
+  app.onLotChange.push(() => { lotIn = true; panel = false; stopHere(); views.full = views.small = views.guide = ID; selectedPt = null; rulerPt = null; selTrack = null; app.hiTrack = null; });
   Object.assign(app.ACTIONS, {
     fit: () => { views.full = views.small = views.guide = ID; drawMaps(); },
     // 3.17 · "Onde estou" acompanha cada movimento (antes pedia a posição uma vez só): liga e desliga no ◎; para

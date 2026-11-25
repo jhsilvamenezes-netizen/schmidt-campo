@@ -105,3 +105,9 @@
 [data-design="4"] .m small{white-space:normal;line-height:1.2}
 [data-design="4"] .m b{font-size:min(18px,4.6vw)}
 [data-design="4"] .m{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;gap:2px;text-align:left}
+/* 4.4 · números de largura fixa onde mudam ao vivo (a linha não "dança" quando 1.182 vira 1.179) */
+[data-design="4"] .big,[data-design="4"] .m b,[data-design="4"] .navpill,[data-design="4"] .cnt{font-variant-numeric:tabular-nums}
+/* 4.4 · lote novo entra suave (só na troca de lote; "reduzir movimento" desliga) */
+@keyframes lotin{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+[data-design="4"] .map-svg.lotin{animation:lotin .22s ease-out;transform-origin:50% 45%}
+@media (prefers-reduced-motion:reduce){[data-design="4"] .map-svg.lotin{animation:none}}

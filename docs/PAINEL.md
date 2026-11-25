@@ -4,7 +4,7 @@ Página única de entrada, para ler em 1 minuto. Atualizar a cada versão public
 Atualizado em 23/11/2026.
 
 ## Estado
-- **No ar:** 4.2.1 (https://jhsilvamenezes-netizen.github.io/schmidt-campo/). Os hashes de `index.html`,
+- **No ar:** 4.5.0 (https://jhsilvamenezes-netizen.github.io/schmidt-campo/). Os hashes de `index.html`,
   `motor.js` e `sw.js` batem com `VERSAO.json`.
 - **Design:** 4.0 é o único (o visual anterior saiu na 4.2.0).
 - **Transição completa (código, lógica, testes, CI, respostas):** `docs/TRANSICAO.md`.
@@ -29,7 +29,7 @@ Atualizado em 23/11/2026.
 | Legado | `legado/`, `src/engine/` e `src/application/block-planning.mjs` não mudam |
 
 ## Fila (por valor, com o porquê)
-1. `docs/PLANO_4_3.md`: fluidez (gestos pela placa de vídeo, guia sem redesenhar tudo, guarda de desempenho), depois visual avançado com prévia aprovada.
+1. Plano 4.3–4.5 entregue na 4.5.0 (`docs/LEVANTAMENTO_3_9.md`, seção 28). Próximo: teste da equipe e ajustes a partir do campo.
 2. Teste da equipe com a guia de moto (giro e pinça).
 3. Pendências de limpeza do proprietário (branches, PR #24, PR #74): `docs/PLANO_4_3.md`, fase C.
 

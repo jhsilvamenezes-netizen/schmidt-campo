@@ -325,3 +325,9 @@ main.tab-in>*:not(.map){animation:entra 180ms cubic-bezier(.2,.7,.2,1)}
 .map-svg.sat-on .me{stroke:#fff}
 .map-svg.sat-on :is(.cota-t,.cota-p,.cota-g,.vz,.vz-l,.bd-l,.rul,.togo,.sel-m path){filter:drop-shadow(0 0 1.5px #0b2018)}
 .map-svg .satcredit{font:600 10px var(--f);fill:#ffffffd9;text-anchor:end;stroke:#0b2018b3;stroke-width:3px;paint-order:stroke}
+.map-svg .chev{fill:none;stroke:var(--tr);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+/* 4.5 · faixa do guia numa linha só (sem quebrar "BC1 · T1" nem "GPS ± 4 m"); o que não cabe some por último */
+.navpill>*{white-space:nowrap;flex-shrink:0}.navpill{overflow:hidden}.navpill>span:not(.modo):not(.gps){flex-shrink:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+/* 4.5 · Sol: botão do mapa ligado continua visível (era branco sobre branco) */
+:root.sun .mt[aria-pressed="true"],:root.sun .fit[aria-pressed="true"],:root.sun .mt.lyr[aria-expanded="true"]{background:#000;color:#fff}
+:root.sun .fit,:root.sun .mt{color:#000}

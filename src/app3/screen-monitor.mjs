@@ -113,7 +113,10 @@ export function installMonitor(app) {
     // sentido do deslocamento (GPS); andando devagar sem rumo ainda, vale a bússola; sem nada, norte para cima
     const follow = mon.follow && !!mon.pos, moving = (mon.pos?.speedMps ?? 0) >= 1;
     const rot = follow && mon.up === 'rumo' ? (moving && Number.isFinite(mon.course?.deg) ? mon.course.deg : Number.isFinite(mon.heading) ? mon.heading : mon.course?.deg ?? 0) : 0;
-    return { target: d?.target ?? null, pos: mon.pos, to, heading: mon.heading, follow: mon.follow, up: mon.up, rot: Math.round(rot / 3) * 3 % 360,
+    // 4.5 · tiro em andamento destacado no mapa, com setas no sentido da caminhada
+    const rt = mon.active && mon.trackId ? routeFor(app.cur.sc, app.cur.field, mon.trackId, mon.flipped) : null, pts = rt?.points || [];
+    const trackDir = pts.length > 1 ? { a: [pts[0].x, pts[0].y], b: [pts.at(-1).x, pts.at(-1).y] } : null;
+    return { target: d?.target ?? null, pos: mon.pos, to, heading: mon.heading, follow: mon.follow, up: mon.up, trackId: mon.active ? mon.trackId : null, trackDir, rot: Math.round(rot / 3) * 3 % 360,
       focus: follow ? [[mon.pos.x, mon.pos.y], ...(to ? [to] : [])] : null };
   };
   app.onLotChange.push(() => { if (mon.active) gpsStop(); mon.trackId = null; });

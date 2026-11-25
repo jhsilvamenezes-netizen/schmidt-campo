@@ -137,7 +137,7 @@ export const modeOf = speedMps => (Number.isFinite(speedMps) && speedMps >= MOTO
 const eta = (m, speedMps) => {
   if (!Number.isFinite(speedMps) || speedMps < 0.8 || !(m > 0)) return '';
   const s = m / speedMps;
-  return s < 60 ? ` · ~${num(Math.max(5, Math.round(s / 5) * 5))} s` : ` · ~${num(Math.round(s / 60))} min`;
+  return s < 60 ? ` ·\u00a0~${num(Math.max(5, Math.round(s / 5) * 5))}\u00a0s` : ` ·\u00a0~${num(Math.round(s / 60))}\u00a0min`;
 };
 
 /** @returns {any} */
