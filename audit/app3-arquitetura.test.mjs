@@ -13,7 +13,7 @@ import { satRequest, SAT_HOST, SAT_MAX_PX, SAT_CONTEXT_PX } from '../src/app3/sa
 import { mapMarkup } from '../src/app3/map.mjs';
 import { num } from '../src/app3/format.mjs';
 import { numBR } from '../src/engine3/numero.mjs';
-import { speedStep, modeStep, guideAlerts, VIBRA, guideModel, routeFor, ENTRY_REACHED_M, courseStep } from '../src/app3/monitor.mjs';
+import { speedStep, modeStep, guideAlerts, VIBRA, guideModel, routeFor, ENTRY_REACHED_M, courseStep, kalmanStep } from '../src/app3/monitor.mjs';
 
 const src = fileURLToPath(new URL('../src/', import.meta.url));
 const read = p => readFileSync(src + p, 'utf8');
@@ -178,4 +178,16 @@ test('4.3 · número inteiro rápido = Intl pt-BR (milhar, arredondamento, negat
   const vals = [0, -0, 0.5, -0.5, 1.5, 2.5, -2.5, -0.4, 999.5, 1000, 999999.5, -1234567.5, 1e14 + 0.5];
   for (let i = 0; i < 5000; i++) { const e = i % 12; vals.push(((i * 7919) % 1000 / 1000 - 0.3) * 10 ** e, Math.round(((i * 104729) % 997 / 997 - 0.3) * 10 ** e)); }
   for (const v of vals) { assert.equal(num(v), I0.format(v), String(v)); if (Number.isInteger(v)) assert.equal(numBR(v), I3.format(v), String(v)); }
+});
+
+test('4.6 · Kalman da posição: tira o tremor sem atrasar, e recomeça em salto ou falta de leitura', () => {
+  let seed = 3; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647, g = () => Math.sqrt(-2 * Math.log(rnd())) * Math.cos(2 * Math.PI * rnd());
+  let st = null, eRaw = 0, eKf = 0;
+  for (let t = 0; t < 120; t++) { const tx = t * 1.3, pos = { x: tx + 5 * g(), y: 5 * g(), accuracyM: 5, at: t * 1000 }, r = kalmanStep(st, pos); st = r.st;
+    if (t > 10) { eRaw += (pos.x - tx) ** 2 + pos.y ** 2; eKf += (r.pos.x - tx) ** 2 + r.pos.y ** 2; } }
+  assert.ok(Math.sqrt(eKf) < 0.75 * Math.sqrt(eRaw), `erro ${Math.sqrt(eKf).toFixed(0)} vs ${Math.sqrt(eRaw).toFixed(0)}`);
+  const jump = kalmanStep(st, { x: 5000, y: 0, accuracyM: 5, at: 121000 });
+  assert.equal(jump.pos.x, 5000, 'salto grande: posição nova, sem arrastar');
+  const gap = kalmanStep(jump.st, { x: 5100, y: 0, accuracyM: 5, at: 140000 });
+  assert.equal(gap.pos.x, 5100, 'mais de 10 s sem leitura: recomeça');
 });
