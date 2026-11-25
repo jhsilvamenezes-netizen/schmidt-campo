@@ -7,7 +7,7 @@ import * as V from './views.mjs';
 import * as VMa from './views-mapa.mjs';
 import * as VMo from './views-monitor.mjs';
 import * as VP from './views-plano.mjs';
-import { esc, num, plural } from './format.mjs';
+import { esc, num } from './format.mjs';
 import { offlineStatus } from './offline.mjs';
 import { createSchmidtSessionLock, installSchmidtSessionLifecycle } from '../platform/browser-session-lock.mjs';
 import { installMapa } from './screen-mapa.mjs';

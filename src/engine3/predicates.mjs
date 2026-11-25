@@ -275,9 +275,5 @@ export function orient2d(ax, ay, bx, by, cx, cy) {
     return -rpOrient2dAdapt(ax, ay, bx, by, cx, cy, detsum);
 }
 
-function orient2dFast(ax, ay, bx, by, cx, cy) {
-    return (ay - cy) * (bx - cx) - (ax - cx) * (by - cy);
-}
-
 /** Lado exato de c em relação à reta a→b, com y para cima: > 0 à esquerda, < 0 à direita, 0 sobre a reta. */
 export function leftOf(ax, ay, bx, by, cx, cy) { return -orient2d(ax, ay, bx, by, cx, cy); }

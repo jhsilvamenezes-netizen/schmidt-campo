@@ -1,6 +1,10 @@
 {
+  "id": "./",
   "name": "SCHMIDT · Planejamento de amostragem",
   "short_name": "SCHMIDT",
+  "description": "Planejamento e guia de amostragem de solo por GPS, com uso sem internet.",
+  "lang": "pt-BR",
+  "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -16,13 +20,19 @@
       "src": "marca-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "marca-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "marca-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

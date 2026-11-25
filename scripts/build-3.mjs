@@ -13,7 +13,7 @@ export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', '
   'app3/advanced', 'app3/gestures', 'app3/monitor', 'app3/compass', 'platform/browser-session-lock',
   'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/offline',
   'app3/screen-mapa', 'app3/screen-monitor', 'app3/screen-plano', 'app3/screen-mais', 'app3/screen-lotes', 'app3/screen-bloco', 'app3/main'];
-export const APP_VERSION = '4.5.0';
+export const APP_VERSION = '4.5.1';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
 /** Cada módulo no seu escopo; importações do motor viram o namespace schmidtEngine2. */
@@ -79,7 +79,7 @@ export async function build3() {
   const [engine, app, css, shell] = [await bundleEngine('engine3'), await bundleApp(), (await readFile(root + 'src/app3/styles.css', 'utf8')) + cssTokens() + (await readFile(root + 'src/app3/styles-4.css', 'utf8')), await readFile(root + 'src/app3/shell.html', 'utf8')];
   for (const [n, t] of [['motor', engine], ['tela', app], ['dados', fields], ['safra', safra], ['recomendações', recs]]) if (/<\/script/i.test(t)) throw Error(`${n} contém </script>`);
   const nav = [['lotes', 'Lotes'], ['mapa', 'Mapa'], ['plano', 'Plano'], ['monitorar', 'Monitorar']]
-    .map(([k, l]) => `<button data-tab="${k}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>${l}</button>`).join('');
+    .map(([k, l]) => `<button type="button" data-tab="${k}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>${l}</button>`).join('');
   const csp = `default-src 'self'; script-src ${sha(engine)} ${sha(app)}; style-src ${sha(css)}; img-src 'self' data: blob: https://services.arcgisonline.com; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'`;
   const html = shell.replace('__CSP__', csp).replace('__CSS__', () => css).replace('__ICON_SOL__', ICONS.sol).replace('__ICON_MAIS__', ICONS.mais)
     .replace('__NAV__', nav).replace('__FIELDS__', () => fields).replace('__SAFRA__', () => safra).replace('__RECS__', () => recs).replace('__ENGINE__', () => engine).replace('__APP__', () => app);
