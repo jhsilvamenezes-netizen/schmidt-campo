@@ -1,16 +1,17 @@
 {
-  "entrega": "4.6.0",
+  "entrega": "4.7.0",
   "nome": "SCHMIDT Campo",
-  "data": "2026-11-20",
-  "versaoDoApp": "4.6.0",
+  "data": "2026-11-25",
+  "versaoDoApp": "4.7.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "84eea3ad8488d17cc58bc2f9fe7c6a5bf968c9f63543c50647288255eb8670ed",
-  "workerSha256": "d3a9c476bc39fed4f7d2bb032633a4ba44ebadf20f88177543d5b0ebc873e76a",
+  "htmlSha256": "3cd013f77c1a4500c302f5cfd4697c9dbb9c5d45ceaa7934ab569b7e256bc736",
+  "workerSha256": "5df2f66f5aa3868e4a6cc864450d7d2e651f9b936d7bca600cd1192b06b54e13",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "4.7.0: detalhes — marca única \"SCHMIDT CAMPO\" (mesma escrita e mesmo peso no topo, abertura, Mais, título da aba, app instalado e resumo para WhatsApp); a 360 px os 3 rótulos de medida cabem em uma linha, subtítulos das opções vão a 2 linhas em vez de cortar, \"igual por pessoa\" e \"os pontos\" não se separam, \"Hectares / por ponto\" quebra equilibrado; na guia de moto o nome da pessoa dá lugar à velocidade",
     "4.6.0: GPS com filtro de Kalman (posição e velocidade, ruído pela precisão de cada leitura): em simulação (900 trajetos a pé e de moto, ruído 4–8 m) o erro da posição cai 35–55%, a chegada ao ponto não atrasa (a pé deixa de avisar ~1,4 s antes por tremor) e não há aviso falso; recomeça após 10 s sem sinal ou salto grande",
     "4.5.1: auditoria completa (código, HTML, acessibilidade, visual, PWA) — janelas no computador ficam na coluna do app (abriam na tela inteira); glossário com o nome que a tela usa (\"Distribuir melhor os pontos\"); título para leitor de tela na guia; HTML válido (DOCTYPE, botões com type); manifesto do app instalável completo (id, idioma, descrição, ícone maskable separado); código morto removido; varredura de acessibilidade (axe, 3 temas, 11 telas) vira teste permanente: 0 violações",
     "4.5.0 (4.3–4.5): arrastar e pinçar o mapa sem refazer o desenho a cada movimento (p95 do quadro 33 → 17 ms no celular lento; guarda no teste); na guia o mapa desliza e gira até a leitura nova do GPS/bússola (0,6 s, pela placa de vídeo) em vez de pular; lote novo entra com animação curta; números de largura fixa; tiro em andamento destacado com setas no sentido da caminhada; faixa do topo da guia numa linha (velocidade sempre visível); modo Sol: botões do mapa ligados voltam a aparecer (estavam branco sobre branco)",
@@ -112,5 +113,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "c38821006fe39ff06c7faf884ee854069a5661fbd8b7a3576dc0cae9b9ea595f"
+  "motorSha256": "fa28a777391c9ee7dec0c1baf46bb358c719b9e1185b50ecc6090707db193c50"
 }
