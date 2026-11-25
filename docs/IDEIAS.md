@@ -15,15 +15,16 @@ Situação de cada ideia: **feito**, **aprovado** (vai entrar), **prévia** (ima
 ## 1. Ideias para a ferramenta atual (amostragem e guia)
 | Código | Ideia | Situação |
 |---|---|---|
-| P1+P2 | Aba Lotes: sem o cartão repetido; lista em tabela (lote, ha, pontos, tiros) | prévia |
-| P3+P4 | Aba Plano em 3 blocos: Resultado, Regra e Detalhes (fechado); texto da conferência sem corte | prévia |
+| P1+P2 | Aba Lotes: sem o cartão repetido; lista em tabela | **descartado**: a equipe validou e gosta da estrutura atual (25/11) |
+| P3 | Aba Plano em 3 blocos (Resultado, Regra e Detalhes) | **descartado**: estrutura atual validada pela equipe; refinar dentro dela (25/11) |
+| P4 | Textos cortados ou quebrados ("Plano conferido · Todos os tir…", "95% do lote" em 2 linhas a 360 px) | aprovado: refinamento |
 | N1 | "Ponto inacessível": sugere o lugar válido mais perto no mesmo tiro (bordadura e espaçamento), com motivo opcional | prévia |
 | N2 / M2 | Tempo estimado da equipe e o número de pessoas que basta para um prazo (velocidades "a confirmar" até medir em campo) | prévia |
 | N3 | "Relatar problema": texto pronto (versão, lote, tela, o que houve; sem localização) para o WhatsApp | prévia |
 | N4 | Guia econômica: com a tela apagada, só voz e vibração | ideia |
 | N5 | Aviso de GPS ruim (> 15 m) antes de iniciar a guia | prévia |
 | M3 | Calibrar o filtro de Kalman com o tremor real do campo | ideia |
-| M4 | Modo noite (vermelho escuro) | prévia |
+| M4 | Modo noite (vermelho escuro) | **descartado**: destoa da identidade visual firmada (25/11) |
 | M5 | "Próximo tiro a 250 m, à esquerda" quando a pessoa está entre os tiros | prévia |
 | Z1 | **Zonas de vigor (Sentinel-2, NDVI de várias safras) como visão opcional no mapa.** Não muda pontos. Ver a seção 3 | ideia: validar antes |
 | — | Densidade de pontos pelo semivariograma (laudos antigos com coordenada) | ideia: depende de laudos |
@@ -53,6 +54,16 @@ envolve:
 1. onde os dados ficam (só no celular ou num servidor da fazenda);
 2. quem vê o quê;
 3. como juntar o que vários celulares coletaram.
+
+**O que separa o app de uma plataforma como o Protector (25/11):** o celular monitora, a equipe **sincroniza**, os
+dados **sobem para uma plataforma** e viram um **painel com os índices** (por lote, por praga e ao longo do tempo).
+Para chegar lá é preciso agregar:
+1. registro no campo;
+2. sincronização entre aparelhos (que funcione sem sinal e envie depois);
+3. um servidor da fazenda;
+4. o painel.
+
+É um projeto novo sobre a base atual, não um ajuste.
 
 **Referência de mercado:** plataformas de monitoramento como o Protector (Syngenta Cropwise). Para superar, o
 diferencial possível é ser feito sob medida para a fazenda: os lotes e rumos reais, a barra de 36,48 m como base,
