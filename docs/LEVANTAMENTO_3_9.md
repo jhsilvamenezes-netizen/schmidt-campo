@@ -441,3 +441,18 @@ ele mede o lote encolhendo.
 | B3 · números que não tremem | Algarismos de largura fixa | — |
 | B4 · folha com física | Já existia desde a 4.0-c (segue o gesto rápido) | — |
 | B5 · Sol e escuro | Botões do mapa ligados ficavam brancos sobre branco no Sol (corrigido). A faixa do topo da guia fica numa linha, com a velocidade sempre visível | — |
+
+## 29. 4.5.1 · auditoria completa (25/11)
+
+Ferramentas usadas: ESLint, html-validate, axe-core (WCAG 2.2 AA e boas práticas), fotos em 390 px escuro e
+1440 px, e revisão do CSP e do manifesto.
+
+| Segmento | Achado | Correção |
+|---|---|---|
+| Código | 3 avisos: importação que sobrou da 4.2 e código morto | Removidos; 0 avisos |
+| HTML | `doctype` minúsculo; 7 botões sem `type` | Corrigidos; validador limpo |
+| Acessibilidade | Guia sem título (h1) para leitor de tela | Título oculto. **0 violações** em 3 temas × 11 telas, agora teste permanente (`app3-a11y-browser`) |
+| Visual no computador | Janelas e aviso abriam na tela inteira; o app fica numa coluna de 480 px | Ficam na coluna do app |
+| Texto | O glossário ainda dizia "Sugestão do motor" | "Distribuir melhor os pontos" |
+| App instalável | Faltavam id, idioma e descrição; ícone "any maskable" junto | Manifesto completo; ícone maskable separado (o logo tem margem de segurança) |
+| Segurança | CSP só com scripts e estilos assinados por hash; imagem externa só do satélite | Sem achado |

@@ -307,3 +307,4 @@ try {
   }
   console.log('3.0 no navegador: claro e escuro, sem erro, sem rolagem lateral, regras de palavras e arquivos ok');
 } finally { await browser.close(); server.close(); }
+await import('./app3-a11y-browser.mjs');

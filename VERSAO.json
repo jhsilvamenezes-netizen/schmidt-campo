@@ -1,16 +1,17 @@
 {
-  "entrega": "4.5.0",
+  "entrega": "4.5.1",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-20",
-  "versaoDoApp": "4.5.0",
+  "versaoDoApp": "4.5.1",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "b85659b91333a6455590e0042dbacf18a3a28b4b9e188a3dbd9b4d09f0438738",
-  "workerSha256": "8a0972362247df6ad7b9076cf23fb252b5bc70d2f95bf812389c92b0aead2b74",
+  "htmlSha256": "b17e30257cacef72771a96e85ec11f1a6488d33702578be4c483086131e1e077",
+  "workerSha256": "7bfd162fd64a6d3776cb8d016e9399694f47af23e9406b716fb5ba987fbd3338",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "4.5.1: auditoria completa (código, HTML, acessibilidade, visual, PWA) — janelas no computador ficam na coluna do app (abriam na tela inteira); glossário com o nome que a tela usa (\"Distribuir melhor os pontos\"); título para leitor de tela na guia; HTML válido (DOCTYPE, botões com type); manifesto do app instalável completo (id, idioma, descrição, ícone maskable separado); código morto removido; varredura de acessibilidade (axe, 3 temas, 11 telas) vira teste permanente: 0 violações",
     "4.5.0 (4.3–4.5): arrastar e pinçar o mapa sem refazer o desenho a cada movimento (p95 do quadro 33 → 17 ms no celular lento; guarda no teste); na guia o mapa desliza e gira até a leitura nova do GPS/bússola (0,6 s, pela placa de vídeo) em vez de pular; lote novo entra com animação curta; números de largura fixa; tiro em andamento destacado com setas no sentido da caminhada; faixa do topo da guia numa linha (velocidade sempre visível); modo Sol: botões do mapa ligados voltam a aparecer (estavam branco sobre branco)",
     "4.2.1: mais leve — pedidos de desenho do mapa no mesmo quadro viram um só (na abertura eram 4–5); números inteiros formatados direto (mesmo texto do Intl, ~2× mais rápido) e o motor sem toLocaleString por chamada; CPU na abertura + troca de abas ~−17% (celular lento simulado). Limpeza: 98 arquivos de docs (20,6 MB de prévias e relatórios antigos sem uso) e 26 relatórios JSON antigos do audit",
     "4.2.0: app enxuto — saíram do menu Mais (e do código) a vitrine do design, o visual anterior (reserva), Arquivos e fichas, Versões anteriores, Qualidade do GPS, Cópia de segurança e Abrir plano recebido; sem gravação automática de versões nem contagem do GPS (menos escrita no aparelho); linha da aba Lotes pronta no arquivo (sem recalcular a cobertura de cada lote): CPU ao trocar abas e lotes −46% no celular lento simulado; app 777 → 736 KB",
@@ -110,5 +111,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "97585a9acaf13f74516b680861de0d8e0a8b17ffad792e0e00f697a5a3da5648"
+  "motorSha256": "837637aa8214c118ffa5c8926067e5352ed317e49bec88dd383482d5d73879a7"
 }

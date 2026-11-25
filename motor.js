@@ -539,10 +539,6 @@ function orient2d(ax, ay, bx, by, cx, cy) {
     return -rpOrient2dAdapt(ax, ay, bx, by, cx, cy, detsum);
 }
 
-function orient2dFast(ax, ay, bx, by, cx, cy) {
-    return (ay - cy) * (bx - cx) - (ax - cx) * (by - cy);
-}
-
 /** Lado exato de c em relação à reta a→b, com y para cima: > 0 à esquerda, < 0 à direita, 0 sobre a reta. */
 function leftOf(ax, ay, bx, by, cx, cy) { return -orient2d(ax, ay, bx, by, cx, cy); }
 
@@ -3431,7 +3427,7 @@ const { num, range, km, plural } = __m_app3_format;
 // 3.0 · aplicação: monta o plano de um lote com o motor 2, a recomendação, a conferência, a equipe e a área
 // descoberta. Sem DOM: testável no Node com os 51 lotes.
 
-const ENGINE_LABEL = '4.5.0';
+const ENGINE_LABEL = '4.5.1';
 const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
