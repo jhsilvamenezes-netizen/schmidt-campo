@@ -50,16 +50,6 @@ try {
     await toastHas(p, /Não aplicado: Seriam 6\d\d pontos, acima do máximo de 600/);
     assert.notEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BC2'].haPerPoint), 1);
     await p.reload(); await ready(p); await p.waitForSelector('.map-svg .pt'); await ctx.close(); }
-  // C6 · versão anterior com valor fora da faixa: recusada
-  { const { ctx, p } = await page(state({ fieldKey: 'Bananal|BD3' })); await ready(p);
-    await p.evaluate(() => new Promise((ok, ko) => { const r = indexedDB.open('schmidt', 1);
-      r.onupgradeneeded = () => r.result.createObjectStore('versoes', { keyPath: 'id', autoIncrement: true }).createIndex('lote', 'lote');
-      r.onsuccess = () => { const tx = r.result.transaction('versoes', 'readwrite'); const st = tx.objectStore('versoes');
-        st.add({ lote: 'Bananal|BD3', em: Date.now(), estado: { params: { haPerPoint: 20 }, edits: null }, assinatura: 'a', resumo: 'boa' });
-        st.add({ lote: 'Bananal|BD3', em: Date.now() - 1000, estado: { params: { haPerPoint: 20, trackSpacingM: 2 }, edits: null }, assinatura: 'b', resumo: 'ruim' });
-        tx.oncomplete = ok; tx.onerror = ko; }; }));
-    await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="versoes"]'); await p.waitForSelector('[data-ver]');
-    await p.click('[data-ver]'); await toastHas(p, /Não aplicado: valor fora da faixa/); await ctx.close(); }
   // N17 · decimal com vírgula aceito; pessoas fracionárias recusadas com aviso
   { const { ctx, p } = await page(state({ fieldKey: 'Bananal|BD3' })); await ready(p);
     await p.click('[data-tab="plano"]'); await p.fill('#ha', '20,5'); await p.dispatchEvent('#ha', 'change');

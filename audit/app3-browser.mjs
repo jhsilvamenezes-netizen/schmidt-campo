@@ -129,17 +129,14 @@ try {
     assert.match((await p.textContent('[data-map="full"] .bal')).replace(/\s+/g, ' '), new RegExp(`Tiro ${tp.id} · [\\d.]+ m.*pontos?.*entra a`));
     assert.equal(await p.locator('[data-map="full"] .track.hi').count(), 1, 'tiro tocado destacado');
     await p.waitForTimeout(400); await p.mouse.click(box.x + 8, box.y + box.height - 90); await p.waitForFunction(() => !document.querySelector('[data-map="full"] .bal'));
-    // arquivos: plano (sem compartilhamento no navegador de teste → baixa) e CSV
-    // 3.1: arquivos saíram da aba Enviar e foram para o menu (Arquivos e fichas)
-    await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="arquivos"]');
-    const [plan] = await Promise.all([p.waitForEvent('download'), p.click('[data-act="share"]')]);
-    assert.match(plan.suggestedFilename(), /BD3_SIMULADO\.plano\.json$/);
-    const [csv] = await Promise.all([p.waitForEvent('download'), p.click('[data-act="csv"]')]);
-    assert.match(csv.suggestedFilename(), /\.csv$/);
+    // 4.2 · menu Mais enxuto: só glossário, dados do lote, como foi calculado e todos os lotes
+    await p.click('[data-open="menu"]');
+    assert.deepStrictEqual(await p.$$eval('.sheet [data-open]', b => b.map(x => x.dataset.open)), ['glossario', 'dados', 'calculo', 'todos']);
+    assert.equal(await p.locator('.sheet [data-act="design4"], .sheet [data-open="vitrine"]').count(), 0); await p.keyboard.press('Escape');
     assert.deepStrictEqual(errors, [], `${colorScheme}: erros no console`);
     await ctx.close();
   }
-  // R4.4 · cópia de segurança (ida e volta), versões, dados da safra, todos os lotes, fichas de campo
+  // R4.4 · dados da safra e aba Lotes (4.2: versões, cópia e fichas saíram do app)
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'pt-BR', acceptDownloads: true });
     const p = await ctx.newPage(), errors = [];
@@ -147,9 +144,6 @@ try {
     await p.goto(url); await ready(p);
     await p.click('button.lot'); await p.click('[data-lot="Bananal|BD3"]');
     await p.click('[data-tab="plano"]'); await p.fill('#ha', '15'); await p.dispatchEvent('#ha', 'change');
-    await p.waitForTimeout(6500); // versão guardada 4 s depois de o plano parar de mudar (folga para CI lento)
-    await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="versoes"]'); await p.waitForSelector('.sheet .li');
-    assert.match(await p.textContent('.sheet'), /1 ponto a cada 15 ha/); await p.keyboard.press('Escape');
     await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="dados"]');
     assert.match(await p.textContent('.sheet'), /ATAQUE I2X.*73,0 mm/s); await p.keyboard.press('Escape');
     // 3.1 · aba Lotes (no lugar de Enviar): fazenda desenhada, lote em uso em destaque e a lista com o plano de cada lote
@@ -163,32 +157,6 @@ try {
     await p.locator('.lotrow').first().click(); await p.waitForSelector('.hero'); assert.equal(await p.textContent('#lot-name'), outro.split('|')[1]);
     await p.click('.hero [data-go="mapa"]'); await p.waitForSelector('[data-map="full"] .pt');
     await p.click('button.lot'); await p.click('[data-lot="Bananal|BD3"]');
-    // cópia: baixa, muda o plano, restaura e volta ao de 15 ha
-    await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="copia"]');
-    const [dl] = await Promise.all([p.waitForEvent('download'), p.click('[data-act="backup"]')]);
-    const file = await dl.path(), backup = JSON.parse(await readFile(file, 'utf8'));
-    assert.equal(backup.schema, 'schmidt.backup.v2'); assert.ok(backup.historico.length >= 1); assert.equal(backup.dados['monitoramento.v03'].paramsByField['Bananal|BD3'].haPerPoint, 15);
-    await p.keyboard.press('Escape');
-    await p.click('[data-tab="plano"]'); await p.fill('#ha', '30'); await p.dispatchEvent('#ha', 'change');
-    await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="copia"]');
-    await p.setInputFiles('#backup-input', file); await p.waitForSelector('[data-act="restore-go"]');
-    assert.match(await p.textContent('.sheet'), /lotes com parâmetros próprios/);
-    const reloaded = p.waitForEvent('load', { timeout: 15000 });
-    // 3.19 · se a cópia "antes de restaurar" não chegar, mostra o aviso da tela e os erros (para achar a causa da falha rara)
-    const consoleLog = []; p.on('console', m => consoleLog.push(`${m.type()}: ${m.text()}`));
-    await Promise.all([p.waitForEvent('download', { timeout: 30000 }).catch(async e => { throw new Error(`${e.message} | aviso: ${await p.textContent('#toast').catch(() => '?')} | console: ${consoleLog.slice(-5).join(' / ')}`); }), p.click('[data-act="restore-go"]')]);
-
-    await reloaded; await ready(p);
-    assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3'].haPerPoint), 15);
-    // cópia alterada é recusada pelo hash
-    const bad = { ...backup, dados: { ...backup.dados, extra: 1 } };
-    await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="copia"]');
-    await p.setInputFiles('#backup-input', { name: 'x.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(bad)) });
-    await p.waitForFunction(() => /recusada/.test(document.getElementById('toast').textContent)); await p.keyboard.press('Escape');
-    // fichas de campo: uma por tiro
-    await p.evaluate(() => { window.print = () => { window.__printed = document.querySelectorAll('#print .ficha').length; }; });
-    await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="arquivos"]'); await p.click('[data-act="fichas"]');
-    assert.ok(await p.evaluate(() => window.__printed) >= 4);
     assert.deepStrictEqual(errors, []);
     await ctx.close();
   }
@@ -278,21 +246,14 @@ try {
     await p.click('[data-act="layers"]'); await p.click('[data-act="layer-satelite"]'); await p.waitForFunction(() => !document.querySelector('image.sat'));
     assert.deepStrictEqual(errors.filter(e => !/Service Worker/.test(e)), []); await ctx.close();
   }
-  // 3.15 · fonte embutida carregada; mapa grande no Plano; lote irregular (RB9) com sugestão de 1 ponto a mais
-  // (no visual anterior, a reserva: no 4.0 o "ampliar mapa" é a folha de 3 alturas, testada no bloco do 4.0)
+  // 3.15 · fonte embutida carregada; lote irregular (RB9) com sugestão de 1 ponto a mais
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'pt-BR', serviceWorkers: 'block' });
-    await ctx.addInitScript(() => { if (!localStorage.getItem('monitoramento.v03')) localStorage.setItem('monitoramento.v03', JSON.stringify({ design: '3' })); });
     const p = await ctx.newPage(), errors = []; p.on('pageerror', e => errors.push(e.message));
     await p.goto(url); await ready(p);
     await p.evaluate(() => document.fonts.ready);
     assert.ok(await p.evaluate(() => document.fonts.check('16px Inter') && [...document.fonts].some(f => f.family.replace(/"/g, '') === 'Inter' && f.status === 'loaded')), 'Inter carregada');
     await p.click('button.lot'); await p.click('[data-lot="Rio de Janeiro|RB9"]'); await p.click('[data-tab="plano"]');
-    const h0 = await p.evaluate(() => document.querySelector('[data-map="small"]').getBoundingClientRect().height);
-    await p.click('[data-act="plan-grow"]'); await p.waitForSelector('.map.sm.big [data-act="plan-grow"][aria-pressed="true"]');
-    const h1 = await p.evaluate(() => document.querySelector('[data-map="small"]').getBoundingClientRect().height);
-    assert.ok(h1 > h0 * 1.5, `mapa maior (${h0} → ${h1})`);
-    await p.click('[data-act="plan-grow"]'); await p.waitForSelector('.map.sm:not(.big)');
     await p.waitForSelector('[data-act="plus1"]', { timeout: 30000 });
     assert.match(await p.textContent('[data-act="plus1"]'), /Lote irregular: 4 pontos \(1 a mais\)/);
     await p.click('[data-act="plus1"]');
@@ -300,18 +261,12 @@ try {
     assert.match(await p.textContent('#toast'), /4 pontos \(1 acima do mínimo\)/);
     assert.deepStrictEqual(errors, []); await ctx.close();
   }
-  // 4.0-f · o 4.0 é o padrão: alça e folha de 3 alturas; vitrine; o visual anterior (reserva) liga no menu, fica gravado
-  // ao reabrir e desliga de volta ao 4.0
+  // 4.0-f · o 4.0 é o único visual (4.2: a reserva saiu): alça e folha de 3 alturas
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'pt-BR', serviceWorkers: 'block' });
     const p = await ctx.newPage(), errors = []; p.on('pageerror', e => errors.push(e.message));
     await p.goto(url); await ready(p);
     assert.equal(await p.evaluate(() => document.documentElement.dataset.design), '4', 'padrão: design 4.0');
-    await p.click('[data-open="menu"]');
-    assert.equal(await p.getAttribute('[data-act="design4"]', 'aria-checked'), 'false', 'visual anterior desligado');
-    await p.click('[data-open="vitrine"]'); await p.waitForSelector('.vt-sw');
-    assert.ok(await p.locator('.vt-c').count() >= 20, 'vitrine com as cores');
-    await p.click('.close');
     // 4.0-c · folha de 3 alturas no Plano: tocar na alça alterna; arrastar para cima vai para "cheia"; o mapa fica atrás
     await p.click('[data-tab="plano"]'); await p.waitForSelector('.grabber');
     const hOf = () => p.evaluate(() => document.querySelector('.map.sm+.scroll').getBoundingClientRect().height);
@@ -324,16 +279,6 @@ try {
     await p.mouse.move(g.x + g.width / 2, g.y + g.height / 2); await p.mouse.down(); await p.mouse.move(g.x + g.width / 2, g.y - 200, { steps: 8 }); await p.mouse.up();
     await p.waitForFunction(() => ['meia', 'cheia'].includes(document.querySelector('#view').dataset.snap));
     assert.ok(await p.evaluate(() => getComputedStyle(document.querySelector('.map.sm')).position === 'absolute'), 'mapa atrás da folha');
-    // reserva: o visual anterior liga, sem alça; fica gravado ao reabrir; desliga de volta ao 4.0
-    await p.click('[data-open="menu"]'); await p.click('[data-act="design4"]');
-    await p.waitForFunction(() => !document.documentElement.dataset.design);
-    assert.equal(await p.getAttribute('[data-act="design4"]', 'aria-checked'), 'true');
-    await p.keyboard.press('Escape');
-    assert.equal(await p.locator('.grabber:visible').count(), 0, 'no visual anterior a alça não aparece');
-    await p.reload(); await ready(p);
-    assert.equal(await p.evaluate(() => document.documentElement.dataset.design ?? null), null, 'reserva fica ligada ao reabrir');
-    await p.click('[data-open="menu"]'); await p.click('[data-act="design4"]');
-    await p.waitForFunction(() => document.documentElement.dataset.design === '4');
     assert.deepStrictEqual(errors, []); await ctx.close();
   }
   // R4.3 · Monitorar com GPS simulado: no ponto 1 do T1 → "Chegou"; 150 m antes → seta e distância

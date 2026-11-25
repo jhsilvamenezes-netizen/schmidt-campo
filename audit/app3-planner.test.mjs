@@ -194,7 +194,12 @@ test('U05 · recomendações embutidas no arquivo = motor da tela, nos 51 lotes 
   const data = JSON.parse(await recsData(fields));
   assert.equal(data.motor, P.ENGINE_LABEL);
   assert.deepStrictEqual(Object.keys(data.recs).sort(), keys);
-  for (const k of keys) assert.deepStrictEqual(data.recs[k], JSON.parse(JSON.stringify(P.recommend(fields[k], {}, RECS_PEOPLE, false))), k);
+  for (const k of keys) {
+    const { linha, ...rec } = data.recs[k], want = P.recommend(fields[k], {}, RECS_PEOPLE, false), sc = P.planInUse(fields[k], want.chosen.params, null);
+    assert.deepStrictEqual(rec, JSON.parse(JSON.stringify(want)), k);
+    // 4.2 · linha pronta da aba Lotes = plano em uso calculado na hora
+    assert.deepStrictEqual(linha, { pontos: sc.samples.length, tiros: sc.selected.length, p95: sc.coverage.p95, alerts: sc.warnings.filter(w => w.level !== 'info').length }, k);
+  }
 });
 
 test('U08 · bússola: rumo do iPhone e do Android, tela deitada, suavização pelo caminho curto e ângulo da seta', async () => {

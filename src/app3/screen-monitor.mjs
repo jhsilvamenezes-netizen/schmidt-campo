@@ -2,7 +2,6 @@
 import { routeFor, fixToPos, guideModel, nearEndFlipped, speedStep, modeStep, guideAlerts, ENTRY_REACHED_M, courseStep } from './monitor.mjs';
 import { headingOf, smoothHeading, arrowAngle } from './compass.mjs';
 import { toGPX } from '../engine3/exporters.mjs';
-import { statsAdd } from './gps-stats.mjs';
 
 /** @param {any} app */
 export function installMonitor(app) {
@@ -77,21 +76,11 @@ export function installMonitor(app) {
     const geo = window.navigator.geolocation;
     mon.watchId = geo.watchPosition(position => {
       const pos = fixToPos(position, app.cur.field, mon.pos?.at ?? 0, Date.now());
-      if (pos) { const sp = speedStep(mon.hist, mon.pos, pos), md = modeStep({ mode: mon.mode, n: mon.modeN }, sp.speed); mon.hist = sp.hist; mon.mode = md.mode; mon.modeN = md.n; pos.speedMps = sp.speed; pos.mode = md.mode; mon.course = courseStep(mon.course, pos); logFix(pos); mon.pos = pos; if (ui.view === 'monitorar') app.render(); }
+      if (pos) { const sp = speedStep(mon.hist, mon.pos, pos), md = modeStep({ mode: mon.mode, n: mon.modeN }, sp.speed); mon.hist = sp.hist; mon.mode = md.mode; mon.modeN = md.n; pos.speedMps = sp.speed; pos.mode = md.mode; mon.course = courseStep(mon.course, pos); mon.pos = pos; if (ui.view === 'monitorar') app.render(); }
       // 3.17 · parado no ponto (coletando), o GPS não manda leitura nova: antes vinha "GPS indisponível" a cada 20 s.
       // Sem tempo-limite; leitura velha já aparece como "GPS sem atualização há N s" (guia)
     }, err => { if (err.code === 1) app.toast('Permita a localização para usar a guia.'); else if (!mon.pos) app.toast('Sem sinal do GPS ainda: fique a céu aberto.'); }, { enableHighAccuracy: true, maximumAge: 0 });
   }
-  // 3.25 · qualidade do GPS (precisão, intervalo, moto/a pé), sem posição: grava a cada 10 leituras, ao parar e ao esconder
-  function logFix(/** @type {any} */ pos) {
-    const day = new Date(pos.at - new Date(pos.at).getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-    mon.stats = statsAdd(mon.stats ?? app.saved().gpsStats, { accuracyM: pos.accuracyM, dtS: mon.lastFixAt ? (pos.at - mon.lastFixAt) / 1000 : null, mode: pos.mode ?? null, day });
-    mon.lastFixAt = pos.at;
-    if (++mon.unsaved >= 10) flushStats();
-  }
-  function flushStats() { if (mon.stats && mon.unsaved) { app.store.update({ gpsStats: mon.stats }); mon.unsaved = 0; } }
-  app.gpsStats = () => mon.stats ?? app.saved().gpsStats ?? null;
-  app.resetGpsStats = () => { mon.stats = null; mon.unsaved = 0; app.store.update({ gpsStats: null }); };
   function unwatch() { if (mon.watchId !== null) window.navigator.geolocation?.clearWatch(mon.watchId); mon.watchId = null; }
   function gpsStart() {
     if (!window.navigator.geolocation) { app.toast('Este aparelho não oferece GPS ao navegador.'); return; }
@@ -103,12 +92,12 @@ export function installMonitor(app) {
   }
   function gpsStop() {
     try { window.screen?.orientation?.unlock?.(); } catch { /* sem trava */ }
-    flushStats(); unwatch(); mon.active = false; clearInterval(mon.ticker); compassOff(); keepAwake(false); window.speechSynthesis?.cancel?.(); app.render();
+    unwatch(); mon.active = false; clearInterval(mon.ticker); compassOff(); keepAwake(false); window.speechSynthesis?.cancel?.(); app.render();
   }
   // Tela apagada ou app em segundo plano: GPS e bússola param (bateria); ao voltar, retomam sozinhos.
   document.addEventListener('visibilitychange', () => {
     if (!mon.active) return;
-    if (document.visibilityState === 'hidden') { flushStats(); unwatch(); compassOff(); }
+    if (document.visibilityState === 'hidden') { unwatch(); compassOff(); }
     else { if (mon.watchId === null) watch(); compassOn(); keepAwake(true); }
   });
   /** Voz (opcional): fala a chegada e o próximo ponto, para andar sem olhar a tela. */

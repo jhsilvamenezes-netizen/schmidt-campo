@@ -1,22 +1,18 @@
-// 3.1 (U02) · menu Mais e folhas: escolher lote (busca e recentes), todos os lotes, dados do lote, como foi calculado,
-// versões anteriores e cópia de segurança.
+// 3.1 (U02) · menu Mais e folhas: escolher lote (busca e recentes), todos os lotes, dados do lote e como foi calculado.
+// 4.2: saíram vitrine, visual anterior, arquivos e fichas, versões, qualidade do GPS e cópia (pedido do proprietário).
 import * as P from './planner.mjs';
 import * as V from './views.mjs';
 import { offlineText } from './offline.mjs';
-import { statsSummary, statsCsv } from './gps-stats.mjs';
 import * as VX from './views-mais.mjs';
 import { esc, num } from './format.mjs';
-import { makeBackup, readBackup, ITEM_LABELS } from './backup.mjs';
-import { createSchmidtBackupService } from '../persistence/backup-service.mjs';
-import { createSchmidtJournal, createSchmidtImageRepository } from '../platform/browser-backup-adapters.mjs';
 import { explainScenario } from '../engine3/explain.mjs';
 import { assessField } from '../engine3/dataQuality.mjs';
 
-const RECENT_KEY = 'schmidt3.recentes', LAST_BACKUP = 'schmidt3.ultimaCopia';
+const RECENT_KEY = 'schmidt3.recentes';
 
 /** @param {any} app */
 export function installMais(app) {
-  const { window, fields, keys, ui, store, storage, versions, safra } = app;
+  const { fields, keys, ui, store, storage, safra } = app;
   const recents = () => { try { return JSON.parse(storage.getItem(RECENT_KEY) || '[]').filter(k => fields[k]); } catch { return []; } };
   const pushRecent = k => { try { storage.setItem(RECENT_KEY, JSON.stringify([k, ...recents().filter(x => x !== k)].slice(0, 4))); } catch { /* sem armazenamento: só não lembra */ } };
   const lotButton = k => `<button class="lotb${k === ui.key ? ' on' : ''}" data-lot="${esc(k)}">${esc(fields[k].code)}<small>${num(fields[k].areaOfficialHa)} ha</small></button>`;
@@ -38,7 +34,10 @@ export function installMais(app) {
     const id = `${k}|${JSON.stringify(params)}|${JSON.stringify(edits ?? null)}`;
     if (!rowCache.has(id)) {
       let row;
-      try { const sc = P.planInUse(f, params, edits); row = { key: k, code: f.code, farm: f.farm, pontos: sc.samples.length, tiros: sc.selected.length, p95: sc.coverage.p95, alerts: sc.warnings.filter(w => w.level !== 'info').length }; }
+      // 4.2 · plano recomendado sem ajuste: a linha já vem pronta no arquivo (mesmos números, conferidos no teste)
+      const pre = !st.paramsByField?.[k] && !edits ? app.recNow(f, {}, k)?.linha : null;
+      if (pre) row = { key: k, code: f.code, farm: f.farm, ...pre };
+      else try { const sc = P.planInUse(f, params, edits); row = { key: k, code: f.code, farm: f.farm, pontos: sc.samples.length, tiros: sc.selected.length, p95: sc.coverage.p95, alerts: sc.warnings.filter(w => w.level !== 'info').length }; }
       catch { row = { key: k, code: f.code, farm: f.farm, pontos: 0, tiros: 0, p95: null, alerts: 1 }; }
       rowCache.set(id, row);
     }
@@ -59,19 +58,6 @@ export function installMais(app) {
       else app.openSheet('Todos os lotes', VX.allLotsBody(rows));
     };
     setTimeout(step, 0);
-  }
-
-  // ---------- cópia de segurança (mesmo formato da 2.x) ----------
-  const backupService = window.indexedDB && app.persistent ? createSchmidtBackupService({ storage, images: createSchmidtImageRepository(window.indexedDB), history: versions.history, journal: createSchmidtJournal(window.indexedDB),
-    exclusive: window.navigator.locks ? op => app.session.exclusive(op) : op => op() }) : null;
-  /** @type {any} */ let pendingRestore = null;
-  const lastBackup = () => { try { const t = storage.getItem(LAST_BACKUP); return t ? new Date(+t).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : ''; } catch { return ''; } };
-  const stamp = () => { const d = new Date(), z = v => String(v).padStart(2, '0'); return `${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}`; };
-  const toBase64 = blob => new Promise((ok, ko) => { const r = new window.FileReader(); r.onload = () => ok(String(r.result).split(',')[1] || ''); r.onerror = () => ko(r.error); r.readAsDataURL(blob); });
-  const fromBase64 = (b, type) => { const s = window.atob(b), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return new Blob([u], { type: type || 'image/png' }); };
-  async function doBackup() {
-    if (!backupService) throw Error('este navegador não guarda dados locais');
-    return makeBackup({ service: backupService, subtle: window.crypto.subtle, encodeBlob: toBase64, version: app.appVersion, engine: P.ENGINE_LABEL });
   }
 
   // 3.9 · glossário: cada termo da tela em uma frase, com o número do lote em uso quando ajuda
@@ -104,70 +90,21 @@ export function installMais(app) {
     menu: () => app.openSheet('Mais', `<div class="brand"><img src="marca-logo.png" alt="SCHMIDT" width="88" height="88"><span><b>SCHMIDT Campo</b><small>Planejamento de amostragem · versão ${app.appVersion}</small></span></div>`
       // 3.24 · selo: o app já está guardado no celular para abrir sem sinal?
       + `<p class="ck${app.offline?.state === 'pronto' ? '' : ' alerta'}" data-offline="${esc(app.offline?.state || 'sem')}">${esc(offlineText(app.offline?.state || 'sem'))}</p>`
-      + `<button class="lrow" data-act="design4" role="switch" aria-checked="${!app.isDesign4()}"><span><b>Visual anterior (reserva)</b><small>o visual da 3.x, por mais uma versão; volta a qualquer hora</small></span><i class="tg" aria-hidden="true"></i></button>`
-      + (app.isDesign4() ? '<button class="lnk" data-open="vitrine">Vitrine do design 4.0</button>' : '') + V.menuBody([['glossario', 'Glossário: o que cada medida quer dizer'], ['arquivos', 'Arquivos e fichas'], ['dados', 'Dados do lote'], ['calculo', 'Como foi calculado'], ['versoes', 'Versões anteriores'], ['gps', 'Qualidade do GPS (calibrar)'],
-      ['copia', 'Cópia de segurança'], ['abrir', 'Abrir plano recebido']])),
-    // 3.25 · qualidade do GPS: o que os celulares da equipe medem em campo (sem posição), para calibrar raio e precisão
-    gps: () => {
-      const st = app.gpsStats?.() ?? null, sm = statsSummary(st, app.cur.sc.params.monitor);
-      app.openSheet('Qualidade do GPS', `<p class="mu">Contagem das leituras da guia neste aparelho: precisão, intervalo e moto ou a pé. Não guarda onde você esteve.</p>`
-        + `<div class="card">${sm.lines.map(t => `<p>${esc(t)}</p>`).join('')}</div>`
-        + (sm.n ? '<div class="two"><button class="btn p" data-act="gps-share">Compartilhar</button><button class="btn" data-act="gps-reset">Zerar</button></div>' : ''));
-    },
-    // 4.0-b · vitrine: todos os componentes num lugar só, para revisar o design 4.0 sem procurar caso a caso
-    vitrine: () => app.openSheet('Vitrine do design 4.0', VX.vitrineBody()),
+      // 4.2 · só o que a equipe usa: glossário, dados do lote, como foi calculado e todos os lotes
+      + V.menuBody([['glossario', 'Glossário: o que cada medida quer dizer'], ['dados', 'Dados do lote'], ['calculo', 'Como foi calculado'], ['todos', 'Todos os lotes']])),
     glossario: () => app.openSheet('Glossário', `<dl class="glos">${glossTerms().map(([t, d]) => `<dt>${esc(t)}</dt><dd>${esc(d)}</dd>`).join('')}</dl>`),
     todos: openAll,
-    versoes: async () => { app.openSheet(`Versões · ${app.cur.field.code}`, '<p class="mu">…</p>'); const rows = await versions.list(ui.key); app.openSheet(`Versões · ${app.cur.field.code}`, VX.versionsBody(rows)); },
-    copia: () => app.openSheet('Cópia de segurança', VX.backupBody('', lastBackup())),
     lote: () => app.openSheet('Escolher lote', lotPicker()),
     dados: () => app.openSheet(`Dados · ${app.cur.field.code}`, VX.dadosBody(app.cur.field, assessField(app.cur.field), safra?.data?.[ui.key], safra?.source)),
     calculo: () => app.openSheet('Como foi calculado', VX.calculoBody(explainScenario(app.cur.sc, app.cur.field))),
   });
-  Object.assign(app.ACTIONS, {
-    // 3.25 · arquivo da qualidade do GPS: compartilhar (WhatsApp etc.) quando o aparelho deixa; senão baixa
-    'gps-share': async () => {
-      const name = `schmidt_gps_${stamp()}.csv`, text = statsCsv(app.gpsStats?.(), app.appVersion);
-      try {
-        const file = typeof window.File === 'function' ? new window.File([text], name, { type: 'text/csv' }) : null;
-        if (file && window.navigator.canShare?.({ files: [file] })) { await window.navigator.share({ title: 'Qualidade do GPS', files: [file] }); return; }
-      } catch (/** @type {any} */ e) { if (e?.name === 'AbortError') return; }
-      app.download(text, name, 'text/csv'); app.toast('Arquivo da qualidade do GPS baixado.');
-    },
-    'gps-reset': () => { app.resetGpsStats?.(); app.SHEETS.gps(); app.toast('Contagem do GPS zerada.'); },
-    design4: () => { const on = !app.isDesign4(); app.setDesign4(on); app.SHEETS.menu(); app.toast(on ? 'Visual 4.0 de volta.' : 'Visual anterior ligado (reserva).'); },
-    async backup() {
-      try { const b = await doBackup(); app.download(JSON.stringify(b), `schmidt_copia_${stamp()}.json`, 'application/json'); try { storage.setItem(LAST_BACKUP, String(Date.now())); } catch { /* só não lembra */ } app.toast('Cópia de segurança baixada.'); }
-      catch (e) { app.toast(`Cópia não feita: ${/** @type {Error} */ (e).message}.`); }
-    },
-    'restore-pick': () => window.document.querySelector('#backup-input').click(),
-    async 'restore-go'() {
-      if (!pendingRestore) return;
-      try { const before = await doBackup(); app.download(JSON.stringify(before), `schmidt_antes_de_restaurar_${stamp()}.json`, 'application/json'); } catch { /* sem cópia anterior possível: segue com o diário de restauração */ }
-      try {
-        const b = pendingRestore;
-        if (!backupService) return;
-        app.freeze(); // o estado da memória é o de antes: não pode voltar a ser gravado
-        await backupService.restore({ data: b.dados, images: b.imagens.map(i => ({ key: i.chave, rec: { blob: fromBase64(i.base64, i.tipo), name: i.nome, world: i.world, width: i.largura, height: i.altura, crs: i.crs } })), history: b.historico || [], legacy: !!b.legado });
-        app.toast('Restaurado. Abrindo de novo…'); setTimeout(() => window.location.reload(), 600);
-      } catch (e) { app.freeze(false); app.toast(`Falha ao restaurar: ${/** @type {Error} */ (e).message}.`); }
-    },
-  });
   app.clicks.push(t => {
-    if (t.dataset.ver) { versions.list(ui.key).then(rows => { const r = rows.find(x => String(x.id) === t.dataset.ver); if (r?.estado?.params) { app.closeSheet(); app.setParams(r.estado.params, 'Versão anterior em uso', r.estado.edits ?? null); } }); return true; }
     if (t.dataset.lot) {
       for (const f of app.onLotChange) f();
       ui.key = t.dataset.lot; pushRecent(ui.key); store.update({ fieldKey: ui.key }); app.closeSheet(); app.render(); return true;
     }
     return false;
   });
-  app.changes.push(t => {
-    if (t.id !== 'backup-input' || !t.files?.[0]) return false;
-    t.files[0].text().then(text => readBackup(text, window.crypto.subtle)).then(({ backup, items }) => { pendingRestore = backup; app.openSheet('Restaurar cópia', VX.backupBody(VX.restoreConfirm(items, ITEM_LABELS), lastBackup())); })
-      .catch(err => app.toast(`Cópia recusada: ${err.message}.`)).finally(() => { t.value = ''; });
-    return true;
-  });
   app.inputs.push(t => { if (!t.hasAttribute?.('data-search')) return false; app.host.querySelector('[data-lots]').innerHTML = lotList(t.value); return true; });
-  backupService?.recover().catch(() => app.toast('Restauração anterior incompleta: faça uma nova cópia.'));
   pushRecent(ui.key);
 }

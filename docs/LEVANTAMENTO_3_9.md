@@ -376,3 +376,31 @@ girava com o sentido de quem anda de moto.
 - Plano: saiu "km por tiro" (repete a caminhada; o km de cada pessoa está na equipe). "Borda ≥ 54 m" não
   quebra mais a linha.
 - Plano: "Sugestão do motor / áreas 7 → 6%" virou "Distribuir melhor os pontos / áreas por ponto mais iguais".
+
+## 26. 4.2.0 · app enxuto e mais leve (pedido do proprietário, 25/11)
+
+**Saiu do app (menu Mais e código):**
+- vitrine do design;
+- visual anterior (a reserva da 4.0, cumprida a condição de uma versão);
+- Arquivos e fichas: compartilhar plano, fichas impressas, GPX/KML/CSV/GeoJSON e copiar resumo;
+- Abrir plano recebido;
+- Versões anteriores, e a gravação automática delas;
+- Qualidade do GPS, e a contagem das leituras;
+- Cópia de segurança.
+
+O menu Mais ficou com glossário, dados do lote, como foi calculado e todos os lotes. O GPX do tiro na aba Monitorar
+continua.
+
+**Travadas:**
+- O profiler (CPU 6×, trocar 6 abas e 2 lotes) mostrou que o maior custo era a aba Lotes recalculando a cobertura de
+  cada lote da fazenda.
+- Agora a linha de cada lote no plano recomendado vem pronta no arquivo (`recs-data`, conferida no teste U05).
+
+| Medida | 4.1.0 | 4.2.0 |
+|---|---|---|
+| CPU ocupada na sequência | 1.476 ms | 802 ms (−46%) |
+| Tamanho do app | 777 KB | 736 KB |
+
+**Testes:**
+- Saíram os blocos das funções removidas e as 8 telas do visual anterior; ficaram 16 telas.
+- O teste do menu confere que só sobraram os 4 itens.

@@ -1,16 +1,17 @@
 {
-  "entrega": "4.1.0",
+  "entrega": "4.2.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-20",
-  "versaoDoApp": "4.1.0",
+  "versaoDoApp": "4.2.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "b93c16f3045c1a3d3bd663885429dadcabaf5d217b4761475d8abea0fa7bc6e7",
-  "workerSha256": "c215703077f3cd22f610ba48f5b170b58cf5806464a369b8583278f74cb26ae3",
+  "htmlSha256": "d1bb880b8b2b7cdc90cc6544d72630cf0dfb80ecc13fecb0116806c72dc7ef15",
+  "workerSha256": "bf03e3931608bfe114bcfc781a740aa42eabe3b64a7baebcf790286f586de41b",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "4.2.0: app enxuto — saíram do menu Mais (e do código) a vitrine do design, o visual anterior (reserva), Arquivos e fichas, Versões anteriores, Qualidade do GPS, Cópia de segurança e Abrir plano recebido; sem gravação automática de versões nem contagem do GPS (menos escrita no aparelho); linha da aba Lotes pronta no arquivo (sem recalcular a cobertura de cada lote): CPU ao trocar abas e lotes −46% no celular lento simulado; app 777 → 736 KB",
     "4.1.0: guia de moto — mapa seguindo com pinça (0,25× a 12×) sem largar quem anda, rumo para cima (GPS andando, bússola parado; botão ▲/N) com textos em pé; telas mais limpas (sem 'seta pelo celular', sem 'km por tiro', sugestão em palavras simples)",
     "4.0.2: guarda de qualidade do motor — retrato dos 51 lotes (95% do lote, maior vazio, área descoberta, caminhada, pessoa mais longa, bordadura, tiros de 1 ponto) no CI; versão que piora qualquer lote é barrada, salvo decisão registrada com motivo. Guarda da bordadura mínima (15 m): o tiro com ponto na faixa desliza ao longo do tiro (mesmo espaçamento), com teto de +15% no maior vazio; BC3: ponto de 10,5 m → 15 m da borda, maior vazio 321 → 354 m; demais 50 lotes idênticos",
     "4.0.1: ponto no maior vazio — a sugestão de 1 ponto a mais também testa manter o plano e pôr o ponto num tiro existente onde mais encurta o maior vazio (fora da bordadura mínima, a 30 m das pontas e 60 m dos vizinhos); BD5: maior vazio 689 → 453 m (antes 602 m). Medido: nos 51 lotes o \"95% do lote\" já fica a 1,01 × o limite teórico (malha hexagonal ideal)",
@@ -107,5 +108,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "2e4c4a9dd912077a904a07feffb7021d5a6072ac2374157feca62ffa74a38adf"
+  "motorSha256": "68a1f90535499a6e768f4224a857e286742a6215ed3c17a3101055c3bbcf85a5"
 }
