@@ -26,7 +26,7 @@ test('plano em uso, números e conferência nos 51 lotes', () => {
     assert.ok(P.sameShape(sc.params, rec.chosen.params), k);
     for (const a of rec.alternatives.filter(Boolean)) assert.ok(!P.sameShape(sc.params, a.params), `${k} ${a.id}`);
     const team = P.team(sc, 5); assert.equal(team.pessoas.length, Math.min(5, sc.selected.length) || 5, k);
-    assert.match(P.summaryText(f, sc, 5, list, team), /SCHMIDT · Plano/);
+    assert.match(P.summaryText(f, sc, 5, list, team), /SCHMIDT CAMPO · Plano/);
   }
 });
 

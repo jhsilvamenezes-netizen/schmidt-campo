@@ -87,7 +87,7 @@ export function installMais(app) {
     return true;
   });
   Object.assign(app.SHEETS, {
-    menu: () => app.openSheet('Mais', `<div class="brand"><img src="marca-logo.png" alt="SCHMIDT" width="88" height="88"><span><b>SCHMIDT Campo</b><small>Planejamento de amostragem · versão ${app.appVersion}</small></span></div>`
+    menu: () => app.openSheet('Mais', `<div class="brand"><img src="marca-logo.png" alt="SCHMIDT" width="88" height="88"><span><b class="wm">SCHMIDT CAMPO</b><small>Planejamento de amostragem · versão ${app.appVersion}</small></span></div>`
       // 3.24 · selo: o app já está guardado no celular para abrir sem sinal?
       + `<p class="ck${app.offline?.state === 'pronto' ? '' : ' alerta'}" data-offline="${esc(app.offline?.state || 'sem')}">${esc(offlineText(app.offline?.state || 'sem'))}</p>`
       // 4.2 · só o que a equipe usa: glossário, dados do lote, como foi calculado e todos os lotes

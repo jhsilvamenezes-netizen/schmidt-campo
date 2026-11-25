@@ -480,3 +480,16 @@ Ferramentas usadas: ESLint, html-validate, axe-core (WCAG 2.2 AA e boas prática
 - **Avisos falsos:** 0.
 - **Ressalva:** o GPS do celular já filtra um pouco e o ruído real não é independente entre leituras. O ganho em campo
   tende a ser menor que o simulado, mas não piora: o filtro recomeça em qualquer salto.
+
+## 31. 4.7.0 · detalhes de escrita e marca (25/11)
+Pedido do proprietário: "SCHMIDT Campo" aparecia em maiúsculas num lugar e não no outro.
+| Onde | Antes | Agora |
+|---|---|---|
+| Topo, abertura, Mais | Tamanhos e grafias diferentes | "SCHMIDT CAMPO", classe única `.wm` (peso 800, espaçamento .14em) |
+| Título da aba, app instalado, resumo do WhatsApp | "SCHMIDT Campo" / "SCHMIDT · Plano" | "SCHMIDT CAMPO" |
+| 360 px | 3 rótulos de medida em 2 linhas; subtítulos cortados com "…" | 1 linha; subtítulos em até 2 linhas |
+| Quebras | "igual por / pessoa", "os / pontos", "Hectares por / ponto" | Expressões juntas; quebra equilibrada |
+| Guia de moto | Nome da pessoa cortado ("Pes…") | Mostra a velocidade |
+
+Medido com varredura automática das 4 abas a 360 px: nenhum texto curto quebrado ou cortado.
+

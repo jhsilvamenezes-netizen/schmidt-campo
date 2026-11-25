@@ -331,3 +331,13 @@ main.tab-in>*:not(.map){animation:entra 180ms cubic-bezier(.2,.7,.2,1)}
 /* 4.5 · Sol: botão do mapa ligado continua visível (era branco sobre branco) */
 :root.sun .mt[aria-pressed="true"],:root.sun .fit[aria-pressed="true"],:root.sun .mt.lyr[aria-expanded="true"]{background:#000;color:#fff}
 :root.sun .fit,:root.sun .mt{color:#000}
+/* 4.7 · marca única "SCHMIDT CAMPO": as duas palavras com a mesma caixa, peso, tamanho e espaçamento em todo lugar
+   (topo, abertura, menu); só o tamanho de base muda por lugar */
+.wm{font-weight:800;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
+.logo .wm{font-size:13px}.brand .wm{font-size:18px;color:var(--ink)}#splash .wm{font-size:22px}
+@media (max-width:374px){.logo .wm{font-size:11.5px;letter-spacing:.1em}}
+/* 4.7 · celular estreito (< 375 px): os 3 números do plano cabem numa linha cada ("95% do lote" não quebra) */
+@media (max-width:374px){[data-design="4"] .m3{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1.06fr);gap:6px}[data-design="4"] .m{padding:11px 7px}[data-design="4"] .m small{white-space:nowrap;letter-spacing:-.01em}}
+/* 4.7 · resumo das dobras (Plano conferido, Equipe…) em até 2 linhas, sem reticências */
+.fold>summary .x .sub{white-space:normal;overflow:visible;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.step>label{text-wrap:balance}
