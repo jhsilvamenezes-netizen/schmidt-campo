@@ -1,5 +1,5 @@
 // 3.1 (U02) · tela Monitorar: tiro e sentido, guia por GPS (política 2.0), tela acesa e vibração ao chegar.
-import { routeFor, fixToPos, guideModel, nearEndFlipped, speedStep, modeStep, guideAlerts, ENTRY_REACHED_M, courseStep } from './monitor.mjs';
+import { routeFor, fixToPos, guideModel, nearEndFlipped, speedStep, modeStep, guideAlerts, ENTRY_REACHED_M, courseStep, kalmanStep } from './monitor.mjs';
 import { headingOf, smoothHeading, arrowAngle } from './compass.mjs';
 import { toGPX } from '../engine3/exporters.mjs';
 
@@ -75,7 +75,8 @@ export function installMonitor(app) {
   function watch() {
     const geo = window.navigator.geolocation;
     mon.watchId = geo.watchPosition(position => {
-      const pos = fixToPos(position, app.cur.field, mon.pos?.at ?? 0, Date.now());
+      const raw = fixToPos(position, app.cur.field, mon.pos?.at ?? 0, Date.now()), kf = raw ? kalmanStep(mon.kf, raw) : null, pos = kf?.pos ?? null;
+      if (kf) mon.kf = kf.st;
       if (pos) { const sp = speedStep(mon.hist, mon.pos, pos), md = modeStep({ mode: mon.mode, n: mon.modeN }, sp.speed); mon.hist = sp.hist; mon.mode = md.mode; mon.modeN = md.n; pos.speedMps = sp.speed; pos.mode = md.mode; mon.course = courseStep(mon.course, pos); mon.pos = pos; if (ui.view === 'monitorar') app.render(); }
       // 3.17 · parado no ponto (coletando), o GPS não manda leitura nova: antes vinha "GPS indisponível" a cada 20 s.
       // Sem tempo-limite; leitura velha já aparece como "GPS sem atualização há N s" (guia)
@@ -84,7 +85,7 @@ export function installMonitor(app) {
   function unwatch() { if (mon.watchId !== null) window.navigator.geolocation?.clearWatch(mon.watchId); mon.watchId = null; }
   function gpsStart() {
     if (!window.navigator.geolocation) { app.toast('Este aparelho não oferece GPS ao navegador.'); return; }
-    mon.active = true; mon.pos = null; mon.lastFixAt = 0; mon.unsaved = mon.unsaved || 0; mon.session = {}; mon.startedTrack = false; mon.reachedEntry = false; mon.arrivedId = null; mon.nearId = null; mon.stopId = null; mon.hist = [];
+    mon.active = true; mon.pos = null; mon.kf = null; mon.lastFixAt = 0; mon.unsaved = mon.unsaved || 0; mon.session = {}; mon.startedTrack = false; mon.reachedEntry = false; mon.arrivedId = null; mon.nearId = null; mon.stopId = null; mon.hist = [];
     watch(); compassOn(); keepAwake(true);
     // 4.0-e · na guia a tela fica em pé (só onde o aparelho deixa: app instalado/tela cheia; senão nada muda)
     if (app.isDesign4?.()) { try { window.screen?.orientation?.lock?.('portrait')?.catch?.(() => {}); } catch { /* sem trava */ } } clearInterval(mon.ticker); mon.ticker = setInterval(() => { if (mon.active && ui.view === 'monitorar') app.render(); }, 5000);

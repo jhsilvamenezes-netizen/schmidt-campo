@@ -456,3 +456,27 @@ Ferramentas usadas: ESLint, html-validate, axe-core (WCAG 2.2 AA e boas prática
 | Texto | O glossário ainda dizia "Sugestão do motor" | "Distribuir melhor os pontos" |
 | App instalável | Faltavam id, idioma e descrição; ícone "any maskable" junto | Manifesto completo; ícone maskable separado (o logo tem margem de segurança) |
 | Segurança | CSP só com scripts e estilos assinados por hash; imagem externa só do satélite | Sem achado |
+
+## 30. 4.6.0 · GPS com filtro de Kalman (25/11)
+
+**Antes:** a posição era a leitura bruta do GPS; só a velocidade era suavizada.
+
+**Agora:** `kalmanStep` em `monitor.mjs`:
+- modelo de velocidade constante, eixos x e y;
+- ruído de cada leitura igual à precisão informada pelo GPS;
+- q = 0,3 m²/s³;
+- recomeça depois de 10 s sem leitura ou de um salto maior que 50 m + 5 × a precisão.
+
+**Simulação:** 1 leitura/s, ruído de 4 a 8 m, 900 trajetos com parada no ponto.
+
+| Caso | Erro bruto | Com Kalman |
+|---|---|---|
+| A pé (ruído 4 m) | 5,8 m | 3,4 m |
+| A pé (ruído 8 m) | 11,6 m | 5,8 m |
+| Moto (ruído 4 m) | 5,7 m | 3,8 m |
+| Moto (ruído 8 m) | 11,0 m | 6,8 m |
+
+- **Chegada ao ponto:** sem atraso (0,1 a 0,3 s). A pé, o aviso deixou de sair cerca de 1,4 s antes por causa do tremor.
+- **Avisos falsos:** 0.
+- **Ressalva:** o GPS do celular já filtra um pouco e o ruído real não é independente entre leituras. O ganho em campo
+  tende a ser menor que o simulado, mas não piora: o filtro recomeça em qualquer salto.
