@@ -45,6 +45,7 @@ testes; a tabela abaixo diz quais estão vivos.
 | Documento | Para quê |
 |---|---|
 | `docs/PAINEL.md` | Esta página |
+| `docs/IDEIAS.md` | Repositório de ideias e a visão de longo prazo (monitoramento e qualidade das operações) |
 | `docs/TRANSICAO.md` | Tudo de ponta a ponta, para quem assume o projeto |
 | `docs/ARQUITETURA_3.md` | Camadas, módulos e onde mexer |
 | `docs/LEVANTAMENTO_3_9.md` | Decisões medidas da 3.9 em diante (seções numeradas) |
