@@ -253,7 +253,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
       rows: c.sc.trackRows.map(r => ({ ...r, d: c.block ? null : (c.details ??= new Map()).get(r.trackId) ?? c.details.set(r.trackId, P.trackDetail(c.field, c.sc, r.trackId)).get(r.trackId) })) });
     else if (ui.view === 'lotes') main.innerHTML = app.lotesView();
     else main.innerHTML = VMo.monitorView(app.monitorData());
-    requestAnimationFrame(app.drawMaps);
+    app.requestDraw();
   }
 
   // 4.0-c · folha sobre o mapa com 3 alturas (baixa, meia, cheia), só no design 4.0: arrastar pela alça escolhe a mais
@@ -316,17 +316,17 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   document.addEventListener('input', e => { for (const h of app.inputs) if (h(e.target)) return; });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && host.innerHTML) app.closeSheet(); });
   window.addEventListener('popstate', () => { if (ignorePop) { ignorePop--; return; } if (host.innerHTML) app.closeSheet(true); });
-  const sun = on => { document.documentElement.classList.toggle('sun', on); $('#sol').setAttribute('aria-pressed', String(on)); requestAnimationFrame(() => app.drawMaps?.()); };
+  const sun = on => { document.documentElement.classList.toggle('sun', on); $('#sol').setAttribute('aria-pressed', String(on)); app.requestDraw?.(); };
   $('#sol').addEventListener('click', () => { const on = !saved().sunMode; store.update({ sunMode: on }); sun(on); toast(on ? 'Sol: contraste alto para a luz do dia.' : 'Sol desligado.'); });
   sun(!!saved().sunMode);
   // 4.0 · design novo em prévia, atrás de uma chave (Mais → Design 4.0): liga e desliga na hora, sem mexer no plano
-  const design4 = on => { if (on) document.documentElement.dataset.design = '4'; else delete document.documentElement.dataset.design; requestAnimationFrame(() => app.drawMaps?.()); };
+  const design4 = on => { if (on) document.documentElement.dataset.design = '4'; else delete document.documentElement.dataset.design; app.requestDraw?.(); };
   // 4.0-f · o 4.0 é o padrão (aprovado em 20/11, depois de empatar ou ganhar em cada medida); o visual anterior fica como
   // reserva por uma versão (Mais → Visual anterior), gravado como design '3'
   // 4.2 · o visual anterior (reserva da 4.0) saiu: o 4.0 é o único
   app.isDesign4 = () => true;
   design4(true);
-  new window.ResizeObserver(() => app.cur && app.drawMaps()).observe($('#view'));
+  new window.ResizeObserver(() => app.cur && app.requestDraw()).observe($('#view'));
   render();
   document.documentElement.dataset.ready = '1';
   // 3.24 · selo "pronto sem internet" (o service worker é registrado fora daqui)

@@ -11,6 +11,8 @@ import { reply } from '../src/app3/worker.mjs';
 import { offlineStatus, OFFLINE_FILES } from '../src/app3/offline.mjs';
 import { satRequest, SAT_HOST, SAT_MAX_PX, SAT_CONTEXT_PX } from '../src/app3/satellite.mjs';
 import { mapMarkup } from '../src/app3/map.mjs';
+import { num } from '../src/app3/format.mjs';
+import { numBR } from '../src/engine3/numero.mjs';
 import { speedStep, modeStep, guideAlerts, VIBRA, guideModel, routeFor, ENTRY_REACHED_M, courseStep } from '../src/app3/monitor.mjs';
 
 const src = fileURLToPath(new URL('../src/', import.meta.url));
@@ -169,4 +171,11 @@ test('4.1 · rumo do deslocamento para girar o mapa: GPS andando, reta entre lei
   st = courseStep(st, { x: 20, y: 2, accuracyM: 3, speedMps: 0 }); assert.equal(Math.round(st.deg), 90, 'parado mantém o último rumo');
   st = courseStep(st, { x: 21, y: 3, accuracyM: 5, speedMps: 8, gpsHeading: 200 }); assert.equal(st.deg, 200, 'de moto vale o rumo do GPS');
   st = courseStep(st, { x: 30, y: 3, accuracyM: 20, speedMps: 1 }); assert.equal(st.deg, 200, 'precisão ruim pede deslocamento maior');
+});
+
+test('4.3 · número inteiro rápido = Intl pt-BR (milhar, arredondamento, negativo e -0)', () => {
+  const I0 = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 }), I3 = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 3 });
+  const vals = [0, -0, 0.5, -0.5, 1.5, 2.5, -2.5, -0.4, 999.5, 1000, 999999.5, -1234567.5, 1e14 + 0.5];
+  for (let i = 0; i < 5000; i++) { const e = i % 12; vals.push(((i * 7919) % 1000 / 1000 - 0.3) * 10 ** e, Math.round(((i * 104729) % 997 / 997 - 0.3) * 10 ** e)); }
+  for (const v of vals) { assert.equal(num(v), I0.format(v), String(v)); if (Number.isInteger(v)) assert.equal(numBR(v), I3.format(v), String(v)); }
 });

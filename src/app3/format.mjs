@@ -3,6 +3,11 @@ const cache = new Map();
 /** Número pt-BR com `d` casas (padrão 0). */
 export function num(v, d = 0) {
   if (v == null || !Number.isFinite(v)) return '—';
+  // 4.3 · sem casas (a maioria das chamadas, ex.: rótulos do mapa): milhar direto, mesmo texto do Intl (teste)
+  if (d === 0 && Math.abs(v) < 1e15) {
+    const a = Math.round(Math.abs(v)), t = a < 1000 ? String(a) : String(a).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return v < 0 || Object.is(v, -0) ? `-${t}` : t;
+  }
   let f = cache.get(d);
   if (!f) cache.set(d, (f = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d })));
   return f.format(v);

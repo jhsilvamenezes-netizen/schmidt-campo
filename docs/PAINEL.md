@@ -4,7 +4,7 @@ Página única de entrada, para ler em 1 minuto. Atualizar a cada versão public
 Atualizado em 23/11/2026.
 
 ## Estado
-- **No ar:** 4.2.0 (https://jhsilvamenezes-netizen.github.io/schmidt-campo/). Os hashes de `index.html`,
+- **No ar:** 4.2.1 (https://jhsilvamenezes-netizen.github.io/schmidt-campo/). Os hashes de `index.html`,
   `motor.js` e `sw.js` batem com `VERSAO.json`.
 - **Design:** 4.0 é o único (o visual anterior saiu na 4.2.0).
 - **Transição completa (código, lógica, testes, CI, respostas):** `docs/TRANSICAO.md`.
@@ -29,8 +29,9 @@ Atualizado em 23/11/2026.
 | Legado | `legado/`, `src/engine/` e `src/application/block-planning.mjs` não mudam |
 
 ## Fila (por valor, com o porquê)
-1. Teste da equipe com a guia de moto (giro e pinça) e ajuste fino a partir disso.
-2. PR #74 (Dependabot/CodeQL): revisar conforme `docs/TRANSICAO.md` E2.
+1. `docs/PLANO_4_3.md`: fluidez (gestos pela placa de vídeo, guia sem redesenhar tudo, guarda de desempenho), depois visual avançado com prévia aprovada.
+2. Teste da equipe com a guia de moto (giro e pinça).
+3. Pendências de limpeza do proprietário (branches, PR #24, PR #74): `docs/PLANO_4_3.md`, fase C.
 
 Feito em 23/11: este painel e `docs/DESIGN.md`. Os 93 documentos antigos não foram movidos, porque scripts
 e testes apontam para eles; a tabela abaixo diz quais estão vivos.
@@ -48,6 +49,7 @@ e testes apontam para eles; a tabela abaixo diz quais estão vivos.
 | `docs/ARQUITETURA_3.md` | Camadas, módulos e onde mexer |
 | `docs/LEVANTAMENTO_3_9.md` | Decisões medidas da 3.9 em diante (seções numeradas) |
 | `docs/DESIGN.md` | Regras de design para tela nova (1 página) |
+| `docs/PLANO_4_3.md` | Plano de fluidez, visual e limpeza contínua |
 | `docs/PLANO_DESIGN_4_0.md` | Design 4.0 e a comparação com o anterior |
 | `VERSAO.json` | Versão, hashes e o que entrou em cada versão |
 

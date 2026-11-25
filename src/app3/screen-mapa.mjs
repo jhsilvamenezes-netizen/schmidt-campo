@@ -44,7 +44,7 @@ export function installMapa(app) {
   };
 
   // 3.15 · com a fonte embutida carregada, mede os rótulos de novo (a primeira medida pode ter sido com a letra do aparelho)
-  try { document.fonts?.ready.then(() => { measured.clear(); app.drawMaps?.(); }); } catch { /* sem API de fontes */ }
+  try { document.fonts?.ready.then(() => { measured.clear(); app.requestDraw?.(); }); } catch { /* sem API de fontes */ }
 
   function balloon() {
     const cur = app.cur, i = /** @type {any} */ (selectedPt && P.pointInfo(cur.field, cur.sc, selectedPt));
@@ -141,6 +141,10 @@ export function installMapa(app) {
   function stopHere() { if (hereWatch !== null) app.window.navigator.geolocation?.clearWatch(hereWatch); hereWatch = null; here = null; }
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && hereWatch !== null) stopHere(); });
   app.drawMaps = drawMaps;
+  // 4.2.1 · pedidos de desenho no mesmo quadro viram um só (na abertura eram 4–5 seguidos: tela, tamanho, fonte, tema).
+  // Um único requestAnimationFrame: desenha antes da pintura do quadro (sem quadro vazio entre o render e o mapa).
+  let pendingDraw = 0;
+  app.requestDraw = () => { if (!pendingDraw) pendingDraw = requestAnimationFrame(() => { pendingDraw = 0; app.drawMaps(); }); };
   app.onLotChange.push(() => { panel = false; stopHere(); views.full = views.small = views.guide = ID; selectedPt = null; rulerPt = null; selTrack = null; app.hiTrack = null; });
   Object.assign(app.ACTIONS, {
     fit: () => { views.full = views.small = views.guide = ID; drawMaps(); },
