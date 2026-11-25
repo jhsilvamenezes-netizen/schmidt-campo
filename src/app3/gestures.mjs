@@ -1,6 +1,8 @@
 // 3.0 · gestos do mapa: arrastar, pinça, duplo toque e roda do mouse. Mantém { k, x, y } (escala e deslocamento em
 // pixels da tela) e chama onChange; toque curto sem arrastar vira onTap(alvo). Sem dependências.
-export function attachGestures(el, { onChange, onTap, getView, setView, minK = 1 }) {
+// 4.3 · com `onPreview`, arrastar e pinçar só movem o desenho pronto (transform, placa de vídeo) e o mapa é refeito uma
+// vez, ao soltar: no celular fraco o gesto não espera o SVG ser refeito a cada movimento.
+export function attachGestures(el, { onChange, onTap, getView, setView, minK = 1, onPreview = /** @type {any} */ (null) }) {
   const pts = new Map();
   /** @type {any} */ let start = null;
   let moved = false, lastTap = 0;
@@ -20,19 +22,20 @@ export function attachGestures(el, { onChange, onTap, getView, setView, minK = 1
     if (cur.length === 1 && ini.length === 1) {
       const dx = cur[0][0] - ini[0][0], dy = cur[0][1] - ini[0][1];
       if (!moved && Math.hypot(dx, dy) < 6) return;
-      moved = true; setView({ k: s.view.k, x: s.view.x + dx, y: s.view.y + dy }); onChange();
+      moved = true; setView({ k: s.view.k, x: s.view.x + dx, y: s.view.y + dy }); (onPreview || onChange)();
     } else if (cur.length >= 2 && ini.length >= 2) {
       moved = true;
       const d0 = Math.hypot(ini[0][0] - ini[1][0], ini[0][1] - ini[1][1]) || 1, d1 = Math.hypot(cur[0][0] - cur[1][0], cur[0][1] - cur[1][1]);
       const c0 = [(ini[0][0] + ini[1][0]) / 2, (ini[0][1] + ini[1][1]) / 2], c1 = [(cur[0][0] + cur[1][0]) / 2, (cur[0][1] + cur[1][1]) / 2];
       const k = Math.max(minK, Math.min(12, s.view.k * (d1 / d0))), g = k / s.view.k;
-      setView({ k, x: c1[0] - (c0[0] - s.view.x) * g, y: c1[1] - (c0[1] - s.view.y) * g }); onChange();
+      setView({ k, x: c1[0] - (c0[0] - s.view.x) * g, y: c1[1] - (c0[1] - s.view.y) * g }); (onPreview || onChange)();
     }
   });
   const end = e => {
     if (!pts.has(e.pointerId)) return;
     const at = pts.get(e.pointerId); pts.delete(e.pointerId);
     if (pts.size) { start = { view: { ...getView() }, pts: new Map([...pts].map(([k, v]) => [k, [...v]])) }; return; }
+    if (moved && onPreview) onChange(); // fim do gesto: o mapa é refeito uma vez, no lugar final
     if (!moved && e.type === 'pointerup') {
       const now = Date.now();
       if (now - lastTap < 300) { lastTap = 0; zoomAt(at, 2); return; }

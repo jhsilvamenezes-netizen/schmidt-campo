@@ -41,7 +41,16 @@ try {
   await p.fill('#ha', '25'); await p.dispatchEvent('#ha', 'change');
   await p.waitForFunction(w => { const s = JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BA2']; return s && s.trackSpacingM === w.trackSpacingM && s.trackPhaseM === w.trackPhaseM; }, want, { timeout: 60000 });
   const regraTravada = Math.round(await p.evaluate(() => window.__long));
-  console.log(JSON.stringify({ loteMs: lote, abaMs: aba, todosMs: todos, maiorTravadaMs: maiorTravada, regraMaiorTravadaMs: regraTravada }));
+  // 4.3 · arrastar o mapa: durante o gesto o SVG não é refeito (só deslocado); ao soltar, refeito uma vez
+  await p.click('[data-tab="mapa"]'); await p.waitForSelector('[data-map="full"] .pt'); await p.waitForTimeout(300);
+  await p.evaluate(() => { window.__redraw = 0; new MutationObserver(() => window.__redraw++).observe(document.querySelector('[data-map="full"]'), { childList: true }); });
+  const mb = await p.locator('[data-map="full"]').boundingBox(), mx = mb.x + 200, my = mb.y + 300;
+  await p.mouse.move(mx, my); await p.mouse.down(); for (let i = 1; i <= 30; i++) await p.mouse.move(mx + i * 4, my + i * 3);
+  const duranteArraste = await p.evaluate(() => window.__redraw); await p.mouse.up(); await p.waitForTimeout(400);
+  const aoSoltar = await p.evaluate(() => window.__redraw);
+  assert.equal(duranteArraste, 0, `mapa refeito ${duranteArraste} vezes durante o arraste`);
+  assert.ok(aoSoltar >= 1 && aoSoltar <= 2, `mapa refeito ${aoSoltar} vezes ao soltar`);
+  console.log(JSON.stringify({ loteMs: lote, abaMs: aba, todosMs: todos, maiorTravadaMs: maiorTravada, regraMaiorTravadaMs: regraTravada, refeitoNoArraste: duranteArraste, refeitoAoSoltar: aoSoltar }));
   assert.ok(regraTravada < 400, `mudar a regra (motor em segundo plano) travou ${regraTravada} ms`);
   assert.ok(Math.max(...lote) < 400, `trocar de lote: ${lote} ms`);
   assert.ok(Math.max(...aba) < 300, `trocar de aba: ${aba} ms`);

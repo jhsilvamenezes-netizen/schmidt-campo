@@ -427,3 +427,17 @@ continua.
 
 **Teste corrigido:** o teste do zoom no guia passava sem verificar nada (a escala já estava no máximo, 5.000 m). Agora
 ele mede o lote encolhendo.
+
+## 28. 4.5.0 · fluidez e visual (plano 4.3 a 4.5, aprovado em 25/11)
+
+| Item | Feito | Medido |
+|---|---|---|
+| A1 · gestos pela placa de vídeo | Arrastar e pinçar só deslocam o desenho pronto (`transform`); o mapa é refeito uma vez ao soltar | p95 do quadro no arraste: 33 → 17 ms (CPU 6×) |
+| A2 · guia sem refazer a tela | **Não feito:** cada leitura do GPS custa 21 ms a 6× (cerca de 2% do processador); o risco não compensa | — |
+| A3 · movimento suave | Na guia seguindo, o mapa desliza e gira até a leitura nova em 0,6 s, pela placa de vídeo. Salto maior que 400 px vai direto. "Reduzir movimento" desliga | Conferido no navegador (transição aplicada) |
+| A4 · guarda de desempenho | `app3-perf-browser`: o mapa não pode ser refeito durante o arraste e é refeito 1 a 2 vezes ao soltar | O próprio teste |
+| B1 · câmera animada | Lote novo entra com animação de 0,22 s | — |
+| B2 · hierarquia no mapa | Tiro em andamento destacado, com setas no sentido da caminhada | Prévia aprovada pelo proprietário (claro e Sol) |
+| B3 · números que não tremem | Algarismos de largura fixa | — |
+| B4 · folha com física | Já existia desde a 4.0-c (segue o gesto rápido) | — |
+| B5 · Sol e escuro | Botões do mapa ligados ficavam brancos sobre branco no Sol (corrigido). A faixa do topo da guia fica numa linha, com a velocidade sempre visível | — |

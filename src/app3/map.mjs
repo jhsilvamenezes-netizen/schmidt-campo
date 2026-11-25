@@ -74,9 +74,9 @@ function cota(cls, a, b) {
 /** Marcação SVG do lote ajustada a w × h px. `small` = mapa do Plano/guia (sem medidas).
  * @param {any} field @param {any} sc @param {number} w @param {number} h
  * @param {{sat?:{detail:any, context?:any, credit:string}|null, pad?:number|{t:number,r:number,b:number,l:number}, small?:boolean, view?:{k:number,x:number,y:number}, selected?:string|null,
- *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null, hiTrack?:string|null, ruler?:{a:number[],b:number[],m:number}|null, grid?:boolean, border?:any, under?:number, follow?:{k:number}|null, rot?:number}} [opts] */
+ *   pos?:{x:number,y:number,accuracyM:number}|null, others?:{field:any, sc:any}[], measures?:boolean, areas?:any, info?:any, reserve?:number[][], measure?:Measure, focus?:number[][]|null, to?:number[]|null, heading?:number|null, hiTrack?:string|null, ruler?:{a:number[],b:number[],m:number}|null, grid?:boolean, border?:any, under?:number, follow?:{k:number}|null, rot?:number, trackDir?:{a:number[],b:number[]}|null}} [opts] */
 export function mapMarkup(field, sc, w, h, opts = {}) {
-  const { sat = null, pad: pad0 = 28, small = false, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null, hiTrack = null, ruler = null, grid = true, border = null, under = 0, follow = null, rot: rot0 = 0 } = opts;
+  const { sat = null, pad: pad0 = 28, small = false, selected = null, pos = null, others = [], measures = false, areas = null, info = null, reserve = [], measure = estimate, focus = null, to = null, heading = null, hiTrack = null, ruler = null, grid = true, border = null, under = 0, follow = null, rot: rot0 = 0, trackDir = null } = opts;
   let view = opts.view ?? { k: 1, x: 0, y: 0 };
   // `under`: faixa de baixo coberta pela folha que sobe sobre o mapa (3.11); o lote e a escala ficam acima dela
   const pad = { ...(typeof pad0 === 'number' ? { t: pad0, r: pad0, b: pad0, l: pad0 } : pad0) }; pad.b += under;
@@ -117,7 +117,7 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
     const c = XY(o.d[0], o.d[1]); s0 += `<text class="oname" x="${f1(c[0])}" y="${f1(c[1])}">${o.field.code}</text>`;
   }
   const ring = field.geom.map(pg => pg.map(rg => `M${rg.map(P).join('L')}Z`).join('')).join('');
-  let s = `<svg class="map-svg${sat ? ' sat-on' : ''}" viewBox="0 0 ${w} ${h}" role="img" aria-label="Lote ${field.code}: ${sc ? `${plural(sc.samples.length, 'ponto', 'pontos')} em ${plural(sc.selected.length, 'tiro', 'tiros')}` : 'sem plano'}">`;
+  let s = `<svg class="map-svg${sat ? ' sat-on' : ''}"${fol && pos ? ` data-sx="${f1(S[0])}" data-sy="${f1(S[1])}" data-kk="${(k * view.k).toFixed(5)}" data-rot="${rot}" data-px="${f1(pos.x)}" data-py="${f1(pos.y)}"` : ''} viewBox="0 0 ${w} ${h}" role="img" aria-label="Lote ${field.code}: ${sc ? `${plural(sc.samples.length, 'ponto', 'pontos')} em ${plural(sc.selected.length, 'tiro', 'tiros')}` : 'sem plano'}">`;
   // 3.2 (G1) · grade em METROS: cada quadrado tem o tamanho da barra de escala (ex.: 500 m), presa ao terreno (anda com o zoom)
   {
     const wx = sx => x0 + ((sx - view.x) / view.k - ox) / k, wy = sy => y0 + (h - oy - (sy - view.y) / view.k) / k;
@@ -155,6 +155,19 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
     // área de cada ponto: contornos das células por baixo dos tiros
     if (areas && !small) s += `<g class="cells">${areas.cells.map(c => `<path d="${c.rings.map(rg => `M${rg.map(P).join('L')}Z`).join('')}"/>`).join('')}</g>`;
     for (const u of sc.units) s += `<path class="track${hiTrack ? (u.trackId === hiTrack ? ' hi' : ' lo') : ''}" d="M${u.line.map(P).join('L')}"/>`;
+    // 4.5 · guia: setas no tiro em andamento, no sentido da caminhada (do 1º ao último ponto da rota), a cada ~90 px
+    if (hiTrack && trackDir) {
+      const dx = trackDir.b[0] - trackDir.a[0], dy = trackDir.b[1] - trackDir.a[1];
+      let ch = '';
+      for (const u of sc.units) if (u.trackId === hiTrack) for (let j = 1; j < u.line.length; j++) {
+        const [x0, y0] = u.line[j - 1], [x1, y1] = u.line[j], fwd = (x1 - x0) * dx + (y1 - y0) * dy >= 0;
+        const A = XY(...(fwd ? [x0, y0] : [x1, y1])), B = XY(...(fwd ? [x1, y1] : [x0, y0])), L = Math.hypot(B[0] - A[0], B[1] - A[1]);
+        if (L < 60) continue;
+        const ang = (Math.atan2(B[1] - A[1], B[0] - A[0]) * 180) / Math.PI;
+        for (let t = 45; t < L - 30; t += 90) ch += `<path class="chev" transform="translate(${f1(A[0] + ((B[0] - A[0]) * t) / L)} ${f1(A[1] + ((B[1] - A[1]) * t) / L)}) rotate(${ang.toFixed(0)})" d="M-5 -6L3 0L-5 6"/>`;
+      }
+      s += ch;
+    }
     // 3.12 · faixa invisível de toque sobre cada tiro (no mapa grande): tocar no tiro mostra o tiro inteiro
     if (!small) for (const u of sc.units) s += `<path class="thit" data-trk="${esc(u.trackId)}" d="M${u.line.map(P).join('L')}"/>`;
     // ponto tocado primeiro: as distâncias dele têm prioridade sobre os demais textos
