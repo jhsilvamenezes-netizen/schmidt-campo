@@ -1,16 +1,17 @@
 {
-  "entrega": "4.2.0",
+  "entrega": "4.2.1",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-20",
-  "versaoDoApp": "4.2.0",
+  "versaoDoApp": "4.2.1",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "d1bb880b8b2b7cdc90cc6544d72630cf0dfb80ecc13fecb0116806c72dc7ef15",
-  "workerSha256": "bf03e3931608bfe114bcfc781a740aa42eabe3b64a7baebcf790286f586de41b",
+  "htmlSha256": "9780fd866a0913fac6fe6da723fa09b24805c9ca7ae77a65e65f106a660e2a22",
+  "workerSha256": "69e5678bc9534ddd5807c55235901781c0733760f9c4c8c7f29634eba1b22aa3",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "4.2.1: mais leve — pedidos de desenho do mapa no mesmo quadro viram um só (na abertura eram 4–5); números inteiros formatados direto (mesmo texto do Intl, ~2× mais rápido) e o motor sem toLocaleString por chamada; CPU na abertura + troca de abas ~−17% (celular lento simulado). Limpeza: 98 arquivos de docs (20,6 MB de prévias e relatórios antigos sem uso) e 26 relatórios JSON antigos do audit",
     "4.2.0: app enxuto — saíram do menu Mais (e do código) a vitrine do design, o visual anterior (reserva), Arquivos e fichas, Versões anteriores, Qualidade do GPS, Cópia de segurança e Abrir plano recebido; sem gravação automática de versões nem contagem do GPS (menos escrita no aparelho); linha da aba Lotes pronta no arquivo (sem recalcular a cobertura de cada lote): CPU ao trocar abas e lotes −46% no celular lento simulado; app 777 → 736 KB",
     "4.1.0: guia de moto — mapa seguindo com pinça (0,25× a 12×) sem largar quem anda, rumo para cima (GPS andando, bússola parado; botão ▲/N) com textos em pé; telas mais limpas (sem 'seta pelo celular', sem 'km por tiro', sugestão em palavras simples)",
     "4.0.2: guarda de qualidade do motor — retrato dos 51 lotes (95% do lote, maior vazio, área descoberta, caminhada, pessoa mais longa, bordadura, tiros de 1 ponto) no CI; versão que piora qualquer lote é barrada, salvo decisão registrada com motivo. Guarda da bordadura mínima (15 m): o tiro com ponto na faixa desliza ao longo do tiro (mesmo espaçamento), com teto de +15% no maior vazio; BC3: ponto de 10,5 m → 15 m da borda, maior vazio 321 → 354 m; demais 50 lotes idênticos",
@@ -108,5 +109,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "68a1f90535499a6e768f4224a857e286742a6215ed3c17a3101055c3bbcf85a5"
+  "motorSha256": "b6dde71fda482582151a1e255e8827e61bd25bc735d8110aab2a87f202947a6f"
 }

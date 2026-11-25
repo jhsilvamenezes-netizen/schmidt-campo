@@ -404,3 +404,26 @@ continua.
 **Testes:**
 - Saíram os blocos das funções removidas e as 8 telas do visual anterior; ficaram 16 telas.
 - O teste do menu confere que só sobraram os 4 itens.
+
+## 27. 4.2.1 · limpeza e leveza (25/11)
+
+**Repositório:**
+- Saíram 98 arquivos de `docs/` (20,6 MB): prévias e relatórios antigos que nenhum código, teste ou documento vivo
+  usa. Continuam no histórico do Git.
+- Saíram 26 relatórios JSON antigos de `audit/`.
+- Branches: ver `docs/PLANO_4_3.md`, fase C. Apagar exige permissão que esta sessão não tem.
+
+**Leveza:**
+- Os pedidos de desenho do mapa no mesmo quadro viram um só. Na abertura eram 4 a 5 seguidos.
+- Número inteiro é formatado direto: mesmo texto do `Intl` em 400 mil valores, com teste, e cerca de 2× mais rápido.
+- O motor deixou de usar `toLocaleString` com opções a cada chamada.
+
+**Medido (CPU 6×):**
+
+| Medida | 4.2.0 | 4.2.1 |
+|---|---|---|
+| CPU na abertura + troca de abas | ~1.000 ms | ~825 ms |
+| Maior travada | 98–123 ms | 50 ms |
+
+**Teste corrigido:** o teste do zoom no guia passava sem verificar nada (a escala já estava no máximo, 5.000 m). Agora
+ele mede o lote encolhendo.

@@ -2,6 +2,7 @@
 // Só direciona: não registra coleta. O próximo ponto vem de `nextPoint` (src/gps/guide-next.mjs), injetado.
 import { geomCentroid } from './geometry.mjs';
 import { locate, pointAt } from './polyline.mjs';
+import { numBR } from './numero.mjs';
 
 export const CARDINAIS = ['norte', 'nordeste', 'leste', 'sudeste', 'sul', 'sudoeste', 'oeste', 'noroeste'];
 export const GPS_MAX_AGE_MS = 15e3;
@@ -14,7 +15,7 @@ export function stepsFor(meters, stepLengthM) {
   const steps = meters / stepLengthM, unit = steps < 100 ? 5 : 10;
   return Math.max(0, Math.round(steps / unit) * unit);
 }
-const metersText = m => `${Math.round(m).toLocaleString('pt-BR')} m`;
+const metersText = m => `${numBR(Math.round(m))} m`;
 
 /** Roteiro de um tiro: partes na ordem de caminhada, pontos com distância desde a entrada e passos. */
 export function buildRoute(sc, field, trackId, opts = {}) {
@@ -65,7 +66,7 @@ export function instructions(route) {
     if (part.toNextPartM !== null) out.push(`Saia do lote e vá até a próxima parte (≈ ${metersText(part.toNextPartM)} em linha reta).`);
   }
   for (const p of route.points.filter(q => q.unitId === null)) out.push(`${pointLabel(p, route)}: fora da linha do tiro — use o GPS para chegar.`);
-  out.push(`Passos estimados com passo de ${step.toLocaleString('pt-BR')} m; confira com o GPS quando possível.`);
+  out.push(`Passos estimados com passo de ${numBR(step)} m; confira com o GPS quando possível.`);
   return out;
 }
 

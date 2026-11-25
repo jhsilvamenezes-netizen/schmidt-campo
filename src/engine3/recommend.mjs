@@ -30,7 +30,7 @@ export function metricsOf(sc) {
 }
 
 const withoutShape = given => { const p = { ...(given || {}) }; for (const k of SHAPE_KEYS) delete p[k]; return p; };
-const ha1 = v => v.toLocaleString('pt-BR', { maximumFractionDigits: 1 }), int = v => numBR(Math.round(v));
+const ha1 = v => numBR(v, 0, 1), int = v => numBR(Math.round(v));
 const byCoverageThenWalk = (a, b) => (Math.abs(a.p95 - b.p95) > 1 ? a.p95 - b.p95 : a.km - b.km);
 
 export function recommendPlan(field, given = {}, opts = {}, build) {
@@ -124,7 +124,7 @@ export function recommendPlan(field, given = {}, opts = {}, build) {
     a.nota = `${a.m.pontos - N === 1 ? '1 ponto' : `${a.m.pontos - N} pontos`} acima do mínimo. ${a.nota || ''}`.trim();
   const m = chosen.m;
   const porque = [
-    `Mínimo da regra: ${N} pontos (${field.areaOfficialHa.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ha ÷ ${haPerPoint} ha).`,
+    `Mínimo da regra: ${N} pontos (${numBR(field.areaOfficialHa, 0, 2)} ha ÷ ${haPerPoint} ha).`,
     `Com ${N} pontos, cada um cobre um quadrado de cerca de ${int(idealM)} m de lado.`,
     `Por isso ${m.tiros} tiros a ${int(chosen.espacamentoM)} m um do outro, medidos de lado${chosen.passes ? ` (${chosen.passes} passadas da barra)` : ''}.`,
     ...(pick.phase ? [`Conjunto de tiros deslocado ${int(pick.phase)} m (${Math.round(pick.phase / boom)} passadas) a partir do ponto A, para cobrir melhor as bordas do lote.`] : []),

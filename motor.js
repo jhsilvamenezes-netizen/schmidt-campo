@@ -63,14 +63,21 @@ const __numero=(()=>{
 // Motor 2 · número no formato brasileiro (vírgula decimal, ponto de milhar), com formatadores em cache.
 const formatters = new Map();
 /** numBR(1234.5, 1) → "1.234,5". `min` casas fixas; até `max` casas quando houver (mínimo = min). */
+/** 4.3 · inteiro sem casas: separador de milhar direto (mesmo texto do Intl pt-BR, conferido no teste; ~2× mais rápido). */
+function intBR(n) {
+  if (Object.is(n, -0)) return '-0';
+  const a = Math.abs(n), s = a < 1000 ? String(a) : String(a).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return n < 0 ? `-${s}` : s;
+}
 function numBR(value, min = 0, max = 3) {
+  if (min === 0 && Number.isInteger(value) && Math.abs(value) < 1e15) return intBR(value);
   const key = min * 100 + max;
   let f = formatters.get(key);
   if (!f) { f = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: min, maximumFractionDigits: Math.max(min, max) }); formatters.set(key, f); }
   return f.format(value);
 }
 
-return Object.freeze({numBR});
+return Object.freeze({intBR,numBR});
 })();
 // src/engine3/projection.mjs
 const __projection=(()=>{
@@ -2715,6 +2722,7 @@ return Object.freeze({regularityWord,explainScenario});
 const __guidance=(()=>{
 const { geomCentroid } = __geometry;
 const { locate, pointAt } = __polyline;
+const { numBR } = __numero;
 // Motor 2 · roteiro do tiro e direção ao próximo ponto (reescrita do módulo route do motor 0.5.1).
 // Só direciona: não registra coleta. O próximo ponto vem de `nextPoint` (src/gps/guide-next.mjs), injetado.
 
@@ -2729,7 +2737,7 @@ function stepsFor(meters, stepLengthM) {
   const steps = meters / stepLengthM, unit = steps < 100 ? 5 : 10;
   return Math.max(0, Math.round(steps / unit) * unit);
 }
-const metersText = m => `${Math.round(m).toLocaleString('pt-BR')} m`;
+const metersText = m => `${numBR(Math.round(m))} m`;
 
 /** Roteiro de um tiro: partes na ordem de caminhada, pontos com distância desde a entrada e passos. */
 function buildRoute(sc, field, trackId, opts = {}) {
@@ -2780,7 +2788,7 @@ function instructions(route) {
     if (part.toNextPartM !== null) out.push(`Saia do lote e vá até a próxima parte (≈ ${metersText(part.toNextPartM)} em linha reta).`);
   }
   for (const p of route.points.filter(q => q.unitId === null)) out.push(`${pointLabel(p, route)}: fora da linha do tiro — use o GPS para chegar.`);
-  out.push(`Passos estimados com passo de ${step.toLocaleString('pt-BR')} m; confira com o GPS quando possível.`);
+  out.push(`Passos estimados com passo de ${numBR(step)} m; confira com o GPS quando possível.`);
   return out;
 }
 
@@ -3149,7 +3157,7 @@ function metricsOf(sc) {
 }
 
 const withoutShape = given => { const p = { ...(given || {}) }; for (const k of SHAPE_KEYS) delete p[k]; return p; };
-const ha1 = v => v.toLocaleString('pt-BR', { maximumFractionDigits: 1 }), int = v => numBR(Math.round(v));
+const ha1 = v => numBR(v, 0, 1), int = v => numBR(Math.round(v));
 const byCoverageThenWalk = (a, b) => (Math.abs(a.p95 - b.p95) > 1 ? a.p95 - b.p95 : a.km - b.km);
 
 function recommendPlan(field, given = {}, opts = {}, build) {
@@ -3243,7 +3251,7 @@ function recommendPlan(field, given = {}, opts = {}, build) {
     a.nota = `${a.m.pontos - N === 1 ? '1 ponto' : `${a.m.pontos - N} pontos`} acima do mínimo. ${a.nota || ''}`.trim();
   const m = chosen.m;
   const porque = [
-    `Mínimo da regra: ${N} pontos (${field.areaOfficialHa.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ha ÷ ${haPerPoint} ha).`,
+    `Mínimo da regra: ${N} pontos (${numBR(field.areaOfficialHa, 0, 2)} ha ÷ ${haPerPoint} ha).`,
     `Com ${N} pontos, cada um cobre um quadrado de cerca de ${int(idealM)} m de lado.`,
     `Por isso ${m.tiros} tiros a ${int(chosen.espacamentoM)} m um do outro, medidos de lado${chosen.passes ? ` (${chosen.passes} passadas da barra)` : ''}.`,
     ...(pick.phase ? [`Conjunto de tiros deslocado ${int(pick.phase)} m (${Math.round(pick.phase / boom)} passadas) a partir do ponto A, para cobrir melhor as bordas do lote.`] : []),
@@ -3385,6 +3393,11 @@ const cache = new Map();
 /** Número pt-BR com `d` casas (padrão 0). */
 function num(v, d = 0) {
   if (v == null || !Number.isFinite(v)) return '—';
+  // 4.3 · sem casas (a maioria das chamadas, ex.: rótulos do mapa): milhar direto, mesmo texto do Intl (teste)
+  if (d === 0 && Math.abs(v) < 1e15) {
+    const a = Math.round(Math.abs(v)), t = a < 1000 ? String(a) : String(a).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return v < 0 || Object.is(v, -0) ? `-${t}` : t;
+  }
   let f = cache.get(d);
   if (!f) cache.set(d, (f = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d })));
   return f.format(v);
@@ -3418,7 +3431,7 @@ const { num, range, km, plural } = __m_app3_format;
 // 3.0 · aplicação: monta o plano de um lote com o motor 2, a recomendação, a conferência, a equipe e a área
 // descoberta. Sem DOM: testável no Node com os 51 lotes.
 
-const ENGINE_LABEL = '4.2.0';
+const ENGINE_LABEL = '4.2.1';
 const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
