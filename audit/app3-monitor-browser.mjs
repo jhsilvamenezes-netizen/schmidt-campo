@@ -100,13 +100,7 @@ try {
     await p.waitForFunction(() => window.__vib.some(v => v === 150), null, { timeout: 15000 });
     const [lon2, lat2] = localToLonLat(p2.x, p2.y, f.centroidUTM); await ctx.setGeolocation({ longitude: lon2, latitude: lat2, accuracy: 5 });
     await p.waitForFunction(() => window.__vib.some(v => Array.isArray(v) && v.length === 5), null, { timeout: 15000 });
-    // 3.25 · qualidade do GPS: ao parar a guia grava só contagens (sem posição) e aparece em Mais → Qualidade do GPS
     await p.click('[data-act="gps-stop"]');
-    const gs = await p.evaluate(() => JSON.parse(localStorage.getItem('monitoramento.v03')).gpsStats);
-    assert.ok(gs && gs.n >= 2, `leituras contadas: ${gs?.n}`); assert.doesNotMatch(JSON.stringify(gs), /"(x|y|lat|lon|latitude|longitude)"/, 'sem posição');
-    await p.click('[data-open="menu"]'); await p.click('[data-open="gps"]');
-    await p.waitForFunction(() => /leituras/.test(document.querySelector('.sheet.menu')?.textContent || ''));
-    assert.match(await p.textContent('.sheet.menu'), /Precisão: metade até 5 m/);
     assert.deepStrictEqual(errors, []); await ctx.close();
   }
   { // 3.13 (V3) · ao chegar ao último ponto do tiro: "Próximo tiro" da mesma pessoa (1 pessoa = todos os tiros), sem parar a guia

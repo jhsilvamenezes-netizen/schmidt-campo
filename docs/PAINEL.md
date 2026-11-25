@@ -4,9 +4,10 @@ Página única de entrada, para ler em 1 minuto. Atualizar a cada versão public
 Atualizado em 23/11/2026.
 
 ## Estado
-- **No ar:** 4.1.0 (https://jhsilvamenezes-netizen.github.io/schmidt-campo/). Os hashes de `index.html`,
+- **No ar:** 4.2.0 (https://jhsilvamenezes-netizen.github.io/schmidt-campo/). Os hashes de `index.html`,
   `motor.js` e `sw.js` batem com `VERSAO.json`.
-- **Design:** 4.0 é o padrão. O visual anterior fica de reserva até a 4.1 e só é removido com o ok do proprietário.
+- **Design:** 4.0 é o único (o visual anterior saiu na 4.2.0).
+- **Transição completa (código, lógica, testes, CI, respostas):** `docs/TRANSICAO.md`.
 - **Guardas automáticas no CI:**
   - qualidade dos 51 lotes (`audit/engine-quality.*`);
   - camadas do código (`app3-arquitetura`);
@@ -23,12 +24,13 @@ Atualizado em 23/11/2026.
 | Tiro | Pode ser feito por qualquer ponta |
 | Tiro de 1 ponto | Aceito em lote pequeno e irregular (RA9, RB9). Nos maiores, só no bico. RB8 fica como está |
 | Dados | Não inventar valor (o que não foi conferido fica "a confirmar"). Não inferir divisa. Sem marcação de coleta |
-| Fora de escopo | Cadastro de pessoas, resumo por pessoa, lote novo, KML novo, drone, envio do arquivo de GPS, alertas em selo, textura de plantio |
+| Fora de escopo | Arquivos e fichas, versões, cópia, qualidade do GPS, vitrine (saíram na 4.2), cadastro de pessoas, resumo por pessoa, lote novo, KML novo, drone, envio do arquivo de GPS, alertas em selo, textura de plantio |
 | Satélite | Esri World Imagery, desligado por padrão. A licença está "a confirmar" com a Esri |
 | Legado | `legado/`, `src/engine/` e `src/application/block-planning.mjs` não mudam |
 
 ## Fila (por valor, com o porquê)
-1. **Remover o visual de reserva (4.1).** Só com o ok do proprietário. Tira código e testes em dobro.
+1. Teste da equipe com a guia de moto (giro e pinça) e ajuste fino a partir disso.
+2. PR #74 (Dependabot/CodeQL): revisar conforme `docs/TRANSICAO.md` E2.
 
 Feito em 23/11: este painel e `docs/DESIGN.md`. Os 93 documentos antigos não foram movidos, porque scripts
 e testes apontam para eles; a tabela abaixo diz quais estão vivos.
@@ -42,6 +44,7 @@ e testes apontam para eles; a tabela abaixo diz quais estão vivos.
 | Documento | Para quê |
 |---|---|
 | `docs/PAINEL.md` | Esta página |
+| `docs/TRANSICAO.md` | Tudo de ponta a ponta, para quem assume o projeto |
 | `docs/ARQUITETURA_3.md` | Camadas, módulos e onde mexer |
 | `docs/LEVANTAMENTO_3_9.md` | Decisões medidas da 3.9 em diante (seções numeradas) |
 | `docs/DESIGN.md` | Regras de design para tela nova (1 página) |

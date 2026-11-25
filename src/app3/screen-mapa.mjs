@@ -108,9 +108,7 @@ export function installMapa(app) {
           : guide && g.pos ? `<button class="fit" data-act="follow" aria-pressed="${!!g.follow}" aria-label="${g.follow ? 'Ver o lote inteiro' : 'Seguir minha posição'}">${g.follow ? '⤢' : '◎'}</button>`
             // 4.1 · seguindo: rumo para cima (o mapa gira com quem anda) ou norte para cima
             + (g.follow ? `<button class="fit up" data-act="map-up" aria-pressed="${g.up === 'rumo'}" aria-label="${g.up === 'rumo' ? 'Mapa com o norte para cima' : 'Mapa girando com o rumo'}">${g.up === 'rumo' ? '▲' : 'N'}</button>` : '')
-            : (moved(view) ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : '')
-              // 3.15 · Plano: mapa maior com um toque (e de volta)
-              + (kind === 'small' && !app.cur.block ? `<button class="fit grow" data-act="plan-grow" aria-pressed="${!!app.planBig}" aria-label="${app.planBig ? 'Mapa menor' : 'Mapa maior'}">${app.planBig ? '⌄' : '⌃'}</button>` : ''));
+            : (moved(view) ? '<button class="fit" data-act="fit" aria-label="Enquadrar o lote">⤢</button>' : ''));
       if (!el.dataset.g) {
         el.dataset.g = '1';
         const k2 = full ? 'full' : el.dataset.map === 'guide' ? 'guide' : 'small';
@@ -146,7 +144,6 @@ export function installMapa(app) {
   app.onLotChange.push(() => { panel = false; stopHere(); views.full = views.small = views.guide = ID; selectedPt = null; rulerPt = null; selTrack = null; app.hiTrack = null; });
   Object.assign(app.ACTIONS, {
     fit: () => { views.full = views.small = views.guide = ID; drawMaps(); },
-    'plan-grow': () => { app.planBig = !app.planBig; views.small = ID; app.render(); },
     // 3.17 · "Onde estou" acompanha cada movimento (antes pedia a posição uma vez só): liga e desliga no ◎; para
     // sozinho ao sair do Mapa, ao trocar de lote e com a tela apagada (bateria)
     where() {

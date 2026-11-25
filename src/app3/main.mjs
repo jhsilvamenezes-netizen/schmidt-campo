@@ -8,13 +8,11 @@ import * as VMa from './views-mapa.mjs';
 import * as VMo from './views-monitor.mjs';
 import * as VP from './views-plano.mjs';
 import { esc, num, plural } from './format.mjs';
-import { createVersions } from './versions.mjs';
 import { offlineStatus } from './offline.mjs';
 import { createSchmidtSessionLock, installSchmidtSessionLifecycle } from '../platform/browser-session-lock.mjs';
 import { installMapa } from './screen-mapa.mjs';
 import { installMonitor } from './screen-monitor.mjs';
 import { installPlano } from './screen-plano.mjs';
-import { installEnviar } from './screen-enviar.mjs';
 import { installLotes } from './screen-lotes.mjs';
 import { installMais } from './screen-mais.mjs';
 import { installBloco } from './screen-bloco.mjs';
@@ -81,7 +79,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   const recCache = new Map();
   // U05: recomendações da regra padrão já vêm calculadas no arquivo (mesmo motor; conferidas no teste)
   if (recs?.motor === P.ENGINE_LABEL) for (const [k, r] of Object.entries(recs.recs || {})) if (fields[k]) recCache.set(`${k}|{}|${recs.pessoas}|false`, r);
-  let toastTimer = 0, versionTimer = 0;
+  let toastTimer = 0;
   /** @type {any} */ let toastAction = null;
   /** @type {string|null} */ let warnedInvalid = null;
   /** @type {any} */ let memo = null;
@@ -154,7 +152,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   let ignorePop = 0;
   /** Contexto comum: cada tela (screen-*.mjs) lê daqui e registra as suas folhas, ações e eventos. */
   /** @type {any} */ const app = {
-    document, window, fields, keys, ui, store, storage, persistent, session, safra, appVersion, host, versions: createVersions(window.indexedDB),
+    document, window, fields, keys, ui, store, storage, persistent, session, safra, appVersion, host,
     cur: null, hiTrack: null, toast, saved, people, recFor, whenRec, render, setParams,
     /** Recomendação já pronta (sem calcular), ou undefined. */
     /** Recomendação já pronta ou feita na hora (para listas e bloco, que precisam do valor já). */
@@ -173,7 +171,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     },
     clearInvalid: () => { warnedInvalid = null; },
     /** Para de gravar até recarregar (usado ao restaurar uma cópia). */
-    freeze: (on = true) => { frozen = on; clearTimeout(versionTimer); },
+    freeze: (on = true) => { frozen = on; },
     download(text, name, type) {
       const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name;
       document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
@@ -221,18 +219,9 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
       return store.update({ paramsByField: { ...(now.paramsByField || {}), [key]: p }, editsByField: editsBy, fieldKey: key });
     };
     if (!write(params, edits)) { render(); return false; }
-    render(); scheduleVersion();
+    render();
     toast(msg, { label: 'Desfazer', run: () => { if (write(before.params, before.edits ?? null)) { ui.key = key; render(); toast('Desfeito'); } } });
     return true;
-  }
-  /** Guarda uma versão do plano quando ele para de mudar (4 s), como na 2.x. */
-  function scheduleVersion() {
-    clearTimeout(versionTimer);
-    versionTimer = setTimeout(() => {
-      const st = saved(), key = ui.key, sc = app.cur.sc;
-      app.versions.save(key, { params: st.paramsByField?.[key] ?? null, edits: st.editsByField?.[key] ?? null },
-        [plural(sc.selected.length, 'tiro', 'tiros'), plural(sc.samples.length, 'ponto', 'pontos'), `95% < ${num(sc.coverage.p95 ?? 0)} m`, `1 ponto a cada ${sc.params.haPerPoint} ha`].join(' · '));
-    }, 4000);
   }
   function render() {
     const main = $('#view');
@@ -303,7 +292,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   app.applySnap = applySnap;
 
   // cada tela registra o que é seu
-  installBloco(app); installMapa(app); installMonitor(app); installPlano(app); installEnviar(app); installMais(app); installLotes(app);
+  installBloco(app); installMapa(app); installMonitor(app); installPlano(app); installMais(app); installLotes(app);
 
   // ---------- eventos (um ouvinte por tipo; cada tela responde pelos seus botões e campos) ----------
   let tabTimer = 0;
@@ -334,9 +323,9 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   const design4 = on => { if (on) document.documentElement.dataset.design = '4'; else delete document.documentElement.dataset.design; requestAnimationFrame(() => app.drawMaps?.()); };
   // 4.0-f · o 4.0 é o padrão (aprovado em 20/11, depois de empatar ou ganhar em cada medida); o visual anterior fica como
   // reserva por uma versão (Mais → Visual anterior), gravado como design '3'
-  app.isDesign4 = () => saved().design !== '3';
-  app.setDesign4 = on => { store.update({ design: on ? '4' : '3' }); design4(on); render(); };
-  design4(app.isDesign4());
+  // 4.2 · o visual anterior (reserva da 4.0) saiu: o 4.0 é o único
+  app.isDesign4 = () => true;
+  design4(true);
   new window.ResizeObserver(() => app.cur && app.drawMaps()).observe($('#view'));
   render();
   document.documentElement.dataset.ready = '1';

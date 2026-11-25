@@ -62,7 +62,6 @@ function layoutDiff(a, b) {
 const SCENES = [
   ...['light', 'dark', 'sun'].map(theme => ({ theme, w: 390 })),
   { theme: 'light', w: 360 },
-  ...(process.env.VISUAL_V3 === '0' ? [] : [{ theme: 'light', w: 390, v3: true }, { theme: 'dark', w: 390, v3: true }]),
 ];
 const TABS = ['lotes', 'mapa', 'plano', 'monitorar'];
 

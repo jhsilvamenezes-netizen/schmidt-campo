@@ -10,7 +10,6 @@ import * as P from '../src/app3/planner.mjs';
 import { reply } from '../src/app3/worker.mjs';
 import { offlineStatus, OFFLINE_FILES } from '../src/app3/offline.mjs';
 import { satRequest, SAT_HOST, SAT_MAX_PX, SAT_CONTEXT_PX } from '../src/app3/satellite.mjs';
-import { statsAdd, statsSummary, statsCsv, binQuantile, ACC_BINS } from '../src/app3/gps-stats.mjs';
 import { mapMarkup } from '../src/app3/map.mjs';
 import { speedStep, modeStep, guideAlerts, VIBRA, guideModel, routeFor, ENTRY_REACHED_M, courseStep } from '../src/app3/monitor.mjs';
 
@@ -26,12 +25,12 @@ test('camadas: engine3 e gps puros (sem tela, sem navegador); motor da tela só 
     assert.doesNotMatch(code, /\b(document|window|navigator|localStorage)\b/, `${p} usa o navegador`);
   }
   // núcleo da tela sem DOM: planner, monitor, worker, format, map (SVG em texto), views (HTML em texto), tokens4
-  for (const p of ['app3/planner.mjs', 'app3/monitor.mjs', 'app3/worker.mjs', 'app3/offline.mjs', 'app3/gps-stats.mjs', 'app3/satellite.mjs', 'app3/format.mjs', 'app3/views.mjs', 'app3/views-mapa.mjs', 'app3/views-plano.mjs', 'app3/views-monitor.mjs', 'app3/views-mais.mjs', 'app3/map.mjs', 'app3/tokens4.mjs']) {
+  for (const p of ['app3/planner.mjs', 'app3/monitor.mjs', 'app3/worker.mjs', 'app3/offline.mjs', 'app3/satellite.mjs', 'app3/format.mjs', 'app3/views.mjs', 'app3/views-mapa.mjs', 'app3/views-plano.mjs', 'app3/views-monitor.mjs', 'app3/views-mais.mjs', 'app3/map.mjs', 'app3/tokens4.mjs']) {
     const code = read(p).replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, '');
     assert.doesNotMatch(code, /\b(document|window|navigator|localStorage)\s*\./, `${p} deveria ser sem DOM`);
   }
   // quem fala direto com o motor (engine3): os serviços da tela e as exceções conhecidas (arquivos e explicações)
-  const ok = new Set(['app3/planner.mjs', 'app3/monitor.mjs', 'app3/advanced.mjs', 'app3/backup.mjs', 'app3/blocks.mjs', 'app3/plan-file.mjs', 'app3/screen-enviar.mjs', 'app3/screen-mais.mjs', 'app3/screen-monitor.mjs']);
+  const ok = new Set(['app3/planner.mjs', 'app3/monitor.mjs', 'app3/advanced.mjs', 'app3/blocks.mjs', 'app3/plan-file.mjs', 'app3/screen-mais.mjs', 'app3/screen-monitor.mjs']);
   for (const p of mods('app3')) if (importsOf(p).some(i => i.startsWith('engine3/'))) assert.ok(ok.has(p), `${p} importa o motor direto (use planner.mjs ou monitor.mjs)`);
 });
 
@@ -134,23 +133,6 @@ test('3.24 · selo "pronto sem internet": pronto só com todos os arquivos no ca
   // a lista confere com o que o service worker guarda
   const sw = readFileSync(new URL('../sw.js', import.meta.url), 'utf8'), arq = /const ARQUIVOS = \[([^\]]*)\]/.exec(sw)[1];
   for (const f of OFFLINE_FILES) assert.match(arq, new RegExp(`'${f.replace('.', '\\.')}'`), `${f} está no service worker`);
-});
-
-test('3.25 · qualidade do GPS: faixas de precisão e intervalo, moto/a pé, resumo honesto e arquivo sem posição', () => {
-  let st = null; const day = '2026-11-20';
-  const accs = [2, 4, 4, 6, 9, 9, 12, 14, 20, 40];
-  accs.forEach((a, i) => { st = statsAdd(st, { accuracyM: a, dtS: i ? (i % 3 ? 1 : 6) : null, mode: i < 3 ? 'moto' : 'pe', day }); });
-  assert.equal(st.n, 10); assert.deepStrictEqual(st.acc, [1, 2, 1, 2, 2, 1, 1]); assert.equal(st.dt.reduce((a, b) => a + b, 0), 9, '1ª leitura sem intervalo');
-  assert.equal(st.moto, 3); assert.equal(st.pe, 7);
-  assert.equal(binQuantile(st.acc, ACC_BINS, 0.5), 10); assert.equal(binQuantile(st.acc, ACC_BINS, 0.9), 25);
-  const sm = statsSummary(st, { arrivalRadiusM: 10, gpsAccuracyMaxM: 15 });
-  assert.match(sm.lines[0], /^10 leituras \(20\/11\/2026\)\.$/); assert.match(sm.lines.join(' '), /metade até 10 m; 9 em 10 até 25 m/); assert.match(sm.lines.join(' '), /Até 5 m: 30% · até 10 m: 60% · até 15 m: 80%/);
-  assert.match(sm.lines.join(' '), /menor que a precisão de 9 em 10 leituras/); assert.match(sm.lines.join(' '), /20% das leituras acima de 15 m/);
-  assert.match(statsSummary(statsAdd(null, { accuracyM: 3, dtS: null, mode: 'pe', day }), { arrivalRadiusM: 10, gpsAccuracyMaxM: 15 }).lines.join(' '), /cobre 9 em 10/);
-  assert.equal(statsSummary(null, { arrivalRadiusM: 10, gpsAccuracyMaxM: 15 }).n, 0);
-  const csv = statsCsv(st, '3.25.0');
-  assert.match(csv, /^tipo;faixa;leituras\nprecisao_m;<=3;1\n/); assert.match(csv, /modo;moto;3/); assert.doesNotMatch(csv, /lat|lon|-1[0-9]\.\d{4}/, 'sem posição');
-  assert.equal(statsAdd(st, { accuracyM: NaN, dtS: 1, mode: 'pe', day }), st, 'leitura sem precisão não conta');
 });
 
 test('3.26 · satélite: lote nítido com folga e entorno largo que cobre a tela, no fuso 23S, sem distorcer; CSP só libera esse servidor', async () => {
