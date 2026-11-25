@@ -33,8 +33,8 @@ Atualizado em 23/11/2026.
 2. Teste da equipe com a guia de moto (giro e pinça).
 3. Pendências de limpeza do proprietário (branches, PR #24, PR #74): `docs/PLANO_4_3.md`, fase C.
 
-Feito em 23/11: este painel e `docs/DESIGN.md`. Os 93 documentos antigos não foram movidos, porque scripts
-e testes apontam para eles; a tabela abaixo diz quais estão vivos.
+Na 4.2.1 saíram 98 documentos e imagens antigos sem uso (20,6 MB). Os ~45 que ficaram são usados por scripts e
+testes; a tabela abaixo diz quais estão vivos.
 
 ## Aguardando o proprietário
 - Laudos de solo com coordenada e mapas de colheita. Destravam a densidade pelo semivariograma e a
