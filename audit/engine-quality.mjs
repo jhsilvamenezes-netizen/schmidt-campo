@@ -1,6 +1,7 @@
 // 4.0.2 · guarda de qualidade do motor: retrato do plano recomendado (5 pessoas) nos 51 lotes.
 // Uso: `node engine-quality.mjs` compara com engine-quality-baseline.json; `--update --motivo "…"` grava um retrato
 // novo (só quando a mudança for intencional e medida; o motivo e o que mudou ficam no histórico do arquivo). O teste engine-quality.test.mjs usa as mesmas funções.
+import { teamPlan } from '../src/engine3/team.mjs';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { loadFields } from './lotes.mjs';
@@ -17,7 +18,7 @@ export const hexRadiusM = (areaM2, n) => Math.sqrt((2 * areaM2) / (3 * Math.sqrt
 
 export function measure(field) {
   const rec = P.recommend(field, {}, PEOPLE, false), sc = P.planInUse(field, rec.chosen.params, null);
-  const areas = P.pointAreas(field, sc), border = P.borderStats(field, sc), blind = P.uncovered(field, sc), team = P.team(sc, PEOPLE);
+  const areas = P.pointAreas(field, sc), border = P.borderStats(field, sc), blind = P.uncovered(field, sc), team = teamPlan(sc, PEOPLE);
   const hex = hexRadiusM(field.areaOfficialHa * 1e4, sc.samples.length);
   return {
     pontos: sc.samples.length, minimo: sc.minPoints, tiros: sc.selected.length,

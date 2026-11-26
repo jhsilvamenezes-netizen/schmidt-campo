@@ -7,6 +7,7 @@ import * as V from './views.mjs';
 /** @param {any} app */
 export function installLotes(app) {
   const { document, fields, keys, ui, store } = app;
+  const cult = (/** @type {string} */ k) => app.culturas?.[k];
   const ID = { k: 1, x: 0, y: 0 };
   /** @type {any} */ let view = ID, farm = null, run = 0;
   const farms = () => [...new Set(keys.map(k => fields[k].farm))];
@@ -71,7 +72,7 @@ export function installLotes(app) {
   const rowHtml = k => {
     const f = fields[k], r = ready.get(k), on = k === ui.key;
     return `<button class="li lotrow${on ? ' on' : ''}" data-pick="${esc(k)}" aria-pressed="${on}"><span class="id">${esc(f.code)}</span><span class="x"><b>${num(f.areaOfficialHa, 1)} ha</b>`
-      + `<small class="sub">${r ? `${plural(r.pontos, 'ponto', 'pontos')} · ${plural(r.tiros, 'tiro', 'tiros')} · 95% &lt; ${num(r.p95)} m` : '<span class="sk">calculando…</span>'}</small></span>`
+      + `<small class="sub">${r ? `${plural(r.pontos, 'ponto', 'pontos')} · ${plural(r.tiros, 'tiro', 'tiros')}${cult(k) ? ` · ${esc(cult(k).cultura)}` : ''}` : '<span class="sk">calculando…</span>'}</small></span>`
       + '</button>';
   };
   function totals(ks) {
@@ -90,7 +91,7 @@ export function installLotes(app) {
     if (cs) ready.set(ui.key, { key: ui.key, pontos: cs.samples.length, tiros: cs.selected.length, p95: cs.coverage.p95, alerts: cs.warnings.filter(w => w.level !== 'info').length });
     const fs = farms(), ks = farmKeys(farm), f = fields[ui.key], r = ready.get(ui.key);
     const seg = `<div class="seg${fs.length > 2 ? ' s3' : ''}" role="group" aria-label="Fazenda">${fs.map(x => `<button data-farm-pick="${esc(x)}" class="${x === farm ? 'on' : ''}" aria-pressed="${x === farm}">${esc(x)}</button>`).join('')}</div>`;
-    const sel = f.farm === farm ? `<section class="card hero"><div class="row-sb"><div><p class="eyebrow">Lote em uso</p><p class="big">${esc(f.code)} <span>· ${num(f.areaOfficialHa, 1)} ha</span></p></div>`
+    const sel = f.farm === farm ? `<section class="card hero"><div class="row-sb"><div><p class="eyebrow">Lote em uso</p><p class="big">${esc(f.code)} <span>· ${num(f.areaOfficialHa, 1)} ha</span></p>${cult(ui.key) ? `<p class="mu">${esc(cult(ui.key).cultura)} · ${esc(cult(ui.key).variedade)}</p>` : ''}</div>`
       + '</div>'
       + `<p class="mu">${r ? `${plural(r.pontos, 'ponto', 'pontos')} · ${plural(r.tiros, 'tiro', 'tiros')} · 95% do lote &lt; ${num(r.p95)} m` : '<span class="sk">Calculando o plano…</span>'}</p>`
       + '<div class="two"><button class="btn p" data-go="mapa">Abrir no mapa</button><button class="btn" data-go="plano">Plano</button></div></section>' : '';

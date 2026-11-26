@@ -162,7 +162,6 @@ export const ENTRY_REACHED_M = 30;
 
 /** 3.17 · de moto ou a pé, pela velocidade (≥ 2,5 m/s ≈ 9 km/h: moto; parado ou andando: a pé). */
 export const MOTO_MPS = 2.5;
-export const modeOf = speedMps => (Number.isFinite(speedMps) && speedMps >= MOTO_MPS ? 'moto' : 'pe');
 /** Tempo até o ponto na velocidade atual (só em movimento). */
 const eta = (m, speedMps) => {
   if (!Number.isFinite(speedMps) || speedMps < 0.8 || !(m > 0)) return '';
@@ -215,7 +214,7 @@ function guideModelCore(route, sc, field, pos, now, session, opts = {}) {
   // 3.19 · de moto, perto do ponto: pare aqui (a chegada vem depois, a pé ou parado no raio normal)
   if (g.stopHere) return { state: 'stop', distM: g.distM, to: [n.x, n.y], title: `Pare aqui: ponto ${n.seq} de ${route.nPoints}`, big: `${num(g.distM)} m`, dir: `para o ${g.direction}`, azimuth: g.azimuthDeg, info: 'Pare a moto e vá até o ponto.', warn, next: n };
   const a = g.alvo;
-  return { state: 'go', distM: entry ? null : a.distM, goM: a.distM, to: [a.x, a.y], title: entry ? 'Primeiro: vá até a entrada do tiro' : `Próximo: ${label}`, big: `${num(a.distM)} m`, dir: `para o ${a.direction}`, azimuth: a.azimuthDeg,
+  return { state: 'go', distM: entry ? null : a.distM, goM: a.distM, to: [a.x, a.y], title: entry ? `Primeiro: vá até a entrada do ${route.trackId}` : `Próximo: ${label}`, big: `${num(a.distM)} m`, dir: `para o ${a.direction}`, azimuth: a.azimuthDeg,
     info: g.trecho && !entry ? `Faltam ${num(Math.max(0, g.trecho.faltaM))} m andando no tiro${eta(Math.max(0, g.trecho.faltaM), pos.speedMps)}` : undefined, warn, next: n,
     // 3.16 · quanto do trecho até o ponto já foi andado (0–1), para o anel em volta da seta
     seg: g.trecho && !entry && g.trecho.totalM > 0 ? Math.max(0, Math.min(1, g.trecho.andadoM / g.trecho.totalM)) : null };

@@ -61,8 +61,8 @@ function registerWorker(window, toast, setOffline) {
   });
 }
 
-/** @param {{document:any, window:any, fields:any, appVersion:string, safra?:any, recs?:any, session:any}} opts */
-function runApp({ document, window, fields, appVersion, safra = null, recs = null, session }) {
+/** @param {{document:any, window:any, fields:any, appVersion:string, culturas?:any, recs?:any, session:any}} opts */
+function runApp({ document, window, fields, appVersion, culturas = null, recs = null, session }) {
   const $ = s => document.querySelector(s);
   let blockedShown = false;
   // C2: sem armazenamento (modo privado restrito) o app abre igual, só não guarda depois de fechar.
@@ -91,18 +91,20 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.innerHTML = ''; toastAction = null; }, action ? 6000 : 4000);
   };
   const saved = () => store.get();
-  const people = () => Math.max(1, Math.min(60, Math.round(saved().quickMonitors ?? 5)));
+  // 5.0 · "Pessoas" saiu da tela: não muda o plano recomendado (0 de 357 casos medidos). Valor interno fixo (mesmo das
+  // recomendações prontas do arquivo), e "limitar à equipe" desligado (1 tiro = 1 pessoa)
+  const people = () => 5;
   /** Recomendação do lote. Vem pronta do arquivo (regra padrão) ou é montada no motor em segundo plano (motor.js,
    *  Web Worker): a tela não trava; enquanto isso o lote mostra o plano gravado e "calculando o recomendado".
    *  Sem worker (navegador antigo ou arquivo local): recomendação base na hora e equilíbrio aos poucos. */
-  const recId = (base, key) => `${key}|${JSON.stringify(base)}|${people()}|${!!saved().fitTeam}`;
+  const recId = (base, key) => `${key}|${JSON.stringify(base)}|${people()}|false`;
   /** @type {Map<string, {field:any, base:any, key:string, fns:Function[]}>} */ const pending = new Map();
   /** @type {any} */ let worker = null;
   try {
     if (/^https?:$/.test(window.location.protocol) && window.Worker) {
       worker = new window.Worker('motor.js');
-      worker.onmessage = e => { const { id, rec, error } = e.data || {}; const p = pending.get(id); if (!p) return; pending.delete(id); done(id, error ? P.recommendBase(p.field, p.base, people(), saved().fitTeam) : rec, p); };
-      worker.onerror = () => { worker = null; for (const [id, p] of [...pending]) { pending.delete(id); done(id, P.recommend(p.field, p.base, people(), saved().fitTeam), p); } };
+      worker.onmessage = e => { const { id, rec, error } = e.data || {}; const p = pending.get(id); if (!p) return; pending.delete(id); done(id, error ? P.recommendBase(p.field, p.base, people(), false) : rec, p); };
+      worker.onerror = () => { worker = null; for (const [id, p] of [...pending]) { pending.delete(id); done(id, P.recommend(p.field, p.base, people(), false), p); } };
     }
   } catch { worker = null; }
   function done(id, rec, p) {
@@ -114,10 +116,10 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     const id = recId(base, key);
     if (recCache.has(id)) return recCache.get(id);
     if (worker) {
-      if (!pending.has(id)) { pending.set(id, { field, base, key, fns: [] }); worker.postMessage({ id, field, base, people: people(), fitTeam: !!saved().fitTeam }); }
+      if (!pending.has(id)) { pending.set(id, { field, base, key, fns: [] }); worker.postMessage({ id, field, base, people: people(), fitTeam: false }); }
       return null;
     }
-    const first = P.recommendBase(field, base, people(), saved().fitTeam);
+    const first = P.recommendBase(field, base, people(), false);
     recCache.set(id, first);
     if (first) balanceLater(id, field, base, key, first);
     return first;
@@ -152,12 +154,12 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   let ignorePop = 0;
   /** Contexto comum: cada tela (screen-*.mjs) lê daqui e registra as suas folhas, ações e eventos. */
   /** @type {any} */ const app = {
-    document, window, fields, keys, ui, store, storage, persistent, session, safra, appVersion, host,
+    document, window, fields, keys, ui, store, storage, persistent, session, culturas, appVersion, host,
     cur: null, hiTrack: null, toast, saved, people, recFor, whenRec, render, setParams,
     /** Recomendação já pronta (sem calcular), ou undefined. */
     /** Recomendação já pronta ou feita na hora (para listas e bloco, que precisam do valor já). */
-    recNow: (field, base, key = ui.key) => recFor(field, base, key) ?? P.recommendBase(field, base, people(), saved().fitTeam),
-    peekRec: (field, base, key = ui.key) => recCache.get(`${key}|${JSON.stringify(base)}|${people()}|${!!saved().fitTeam}`),
+    recNow: (field, base, key = ui.key) => recFor(field, base, key) ?? P.recommendBase(field, base, people(), false),
+    peekRec: (field, base, key = ui.key) => recCache.get(recId(base, key)),
     SHEETS: {}, ACTIONS: {}, clicks: [], changes: [], inputs: [], onLotChange: [], onCloseSheet: [],
     // 3.13 (X3) · janela aberta ocupa uma entrada no histórico: o Voltar do celular fecha a janela em vez de sair do app
     openSheet: (title, body) => {
@@ -192,19 +194,23 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     /** @type {string|null} */ let invalid = null;
     // C1/C4/C6: um plano gravado que não abre (valor fora da faixa, trajeto importado, versão antiga) não derruba o app:
     // abre com o recomendado e avisa; o gravado só é trocado quando a pessoa mudar algo.
+    // 5.0 · plano com ajuste avançado (saiu da tela) volta ao recomendado e grava; avisa uma vez
+    let legacy = false;
+    if (P.legacyAdvanced(params)) { legacy = true; params = undefined; edits = undefined; const ed = { ...(st.editsByField || {}) }; delete ed[ui.key]; store.update({ editsByField: ed }); }
     let tried = params ? P.tryPlan(field, params, edits) : null;
     if (tried?.error) { invalid = tried.error; params = undefined; edits = undefined; tried = null; }
     const base = P.baseOf(params);
     const rec = recFor(field, base);
     if (!params && rec) { params = { ...base, ...rec.chosen.params }; if (!invalid) store.update({ paramsByField: { ...(st.paramsByField || {}), [ui.key]: params } }); }
     const sc = tried?.sc || P.planInUse(field, params || base, edits);
+    if (legacy && warnedInvalid !== ui.key) { warnedInvalid = ui.key; setTimeout(() => toast(`O plano gravado de ${field.code} usava ajustes avançados (saíram na 5.0): agora é o recomendado.`), 0); }
     if (invalid && warnedInvalid !== ui.key) { warnedInvalid = ui.key; setTimeout(() => toast(`O plano gravado de ${field.code} não abre (${invalid}). Mostrando o recomendado.`), 0); }
-    const blind = P.uncovered(field, sc), list = P.checks(sc, people(), blind), split = P.team(sc, people());
+    const blind = P.uncovered(field, sc), list = P.checks(sc, blind), split = null;
     // 3.8 · bordadura na conferência: o ponto mais perto da borda (atenção se a menos do mínimo)
     const bd = P.borderStats(field, sc);
     if (bd) list.push(bd.minM < P.BORDA_MIN_M ? { level: 'alerta', text: `Ponto ${bd.min.number} (${bd.min.trackId}) a ${num(bd.minM)} m da borda (mínimo ${P.BORDA_MIN_M} m)` }
       : bd.minM < P.BORDADURA_M ? { level: 'ok', text: `Ponto ${bd.min.number} a ${num(bd.minM)} m da borda (bordadura do plantio: ${P.BORDADURA_M} m)` }
-        : { level: 'ok', text: `Pontos fora da bordadura (${num(bd.minM)} m ou mais da borda)` });
+        : { level: 'ok', text: `Bordadura ok (≥ ${num(bd.minM)} m da borda)` });
     return { field, params: params || base, base, rec, recPending: rec === null && !!worker, sc, f: P.figures(sc), blind, list, split, inUseIsRec: !!rec && P.sameShape(params, rec.chosen.params), block: null, others: [] };
   }
   /** Troca o plano do lote (com Desfazer). `edits`: undefined = manter, null = apagar, objeto = gravar. */
@@ -249,7 +255,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     for (const a of document.querySelectorAll('[data-tab]')) { const on = a.dataset.tab === ui.view; a.classList.toggle('on', on); a.setAttribute('aria-current', on ? 'page' : 'false'); }
     main.dataset.view = ui.view; app.applySnap?.();
     if (ui.view === 'mapa') main.innerHTML = VMa.mapaView(c);
-    else if (ui.view === 'plano') main.innerHTML = VP.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), hiTrack: app.hiTrack, bigMap: !!app.planBig, hint: c.block ? null : app.hint?.(), border: (b => (b ? { minM: b.minM, n: b.min.number, near: b.minM < P.BORDADURA_M, low: b.minM < P.BORDA_MIN_M } : null))(P.borderStats(c.field, c.sc)),
+    else if (ui.view === 'plano') main.innerHTML = VP.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), hiTrack: app.hiTrack, bigMap: !!app.planBig, hint: c.block ? null : app.hint?.(), border: (b => (b ? { minM: b.minM, n: b.min.number, near: b.minM < P.BORDADURA_M, low: b.minM < P.BORDA_MIN_M } : null))(P.borderStats(c.field, c.sc)),
       rows: c.sc.trackRows.map(r => ({ ...r, d: c.block ? null : (c.details ??= new Map()).get(r.trackId) ?? c.details.set(r.trackId, P.trackDetail(c.field, c.sc, r.trackId)).get(r.trackId) })) });
     else if (ui.view === 'lotes') main.innerHTML = app.lotesView();
     else main.innerHTML = VMo.monitorView(app.monitorData());

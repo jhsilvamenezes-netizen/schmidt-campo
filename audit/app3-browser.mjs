@@ -72,34 +72,26 @@ try {
     await p.click('.res [data-term="Entre pontos"]'); await p.waitForSelector('.glos1'); await p.click('.close');
     await p.waitForFunction(() => !history.state?.sheet);
     assert.ok(await p.evaluate(() => history.length) <= len0 + 2, 'sem acumular entradas');
-    // 3.10: redesenhar o Plano (mudar pessoas, recomendação que chega do motor) mantém o tiro aberto
+    // 3.10: redesenhar o Plano (mudar a regra e voltar) mantém o tiro aberto
     await p.click('details.trk >> nth=2 >> summary');
-    await p.click('[data-inc="people"]'); await p.click('[data-dec="people"]');
+    await p.click('[data-ha-set="25"]'); await p.click('[data-ha-set="20"]');
     assert.ok(await p.locator('details.trk >> nth=2').evaluate(d => d.open), 'tiro aberto fechou ao redesenhar o Plano');
+    // 5.0 · sem pessoas, sem outras opções e sem ajustes avançados; 4 blocos (resultado, ajustar, tiros, conferência)
+    for (const sel of ['#people', '[data-alt]', '[data-open="ajustes"]']) assert.equal(await p.locator(sel).count(), 0, sel);
+    assert.match(await p.textContent('.card.conf'), /Conferência/);
     await p.click('[data-tab="mapa"]');
-    // pessoas e opções
-    await p.click('[data-tab="plano"]'); await p.click('[data-inc="people"]');
-    assert.equal(await p.inputValue('#people'), '6');
     // menu, cálculo, Esc fecha
     await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="calculo"]');
     assert.ok(await p.locator('details.ex').count() >= 6); await p.keyboard.press('Escape'); assert.equal(await p.locator('.ov').count(), 0);
-    // R4.2 · desfazer: usar outra opção e voltar
+    // R4.2 · desfazer: trocar a regra e voltar
     await p.click('[data-tab="plano"]');
     const before = await p.evaluate(() => JSON.stringify(JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3']));
-    await p.click('[data-alt="0"]'); await p.click('#toast [data-toast]');
-    assert.equal(await p.evaluate(() => JSON.stringify(JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3'])), before, 'Desfazer volta o plano');
+    await p.click('[data-ha-set="10"]'); await p.waitForSelector('#toast [data-toast]'); await p.click('#toast [data-toast]');
+    assert.deepStrictEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3']), JSON.parse(before), 'Desfazer volta o plano');
     // busca de lote e recentes
     await p.click('button.lot'); await p.fill('[data-search]', 'bd'); assert.ok(await p.locator('[data-lots] .lotb').count() >= 3);
     await p.fill('[data-search]', 'zzz'); assert.match(await p.textContent('[data-lots]'), /Nenhum lote/);
     await p.fill('[data-search]', ''); assert.match(await p.textContent('[data-lots]'), /Recentes/); await p.keyboard.press('Escape');
-    // ajustes avançados: valor fora da faixa é recusado; válido recalcula; restaurar volta ao recomendado
-    await p.click('[data-open="ajustes"]');
-    await p.fill('[name="trackSpacingM"]', '5'); await p.dispatchEvent('[name="trackSpacingM"]', 'change');
-    assert.match(await p.textContent('[data-err]'), /mínimo/);
-    await p.fill('[name="trackSpacingM"]', '300'); await p.dispatchEvent('[name="trackSpacingM"]', 'change');
-    assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3'].trackSpacingM), 300);
-    await p.click('[data-set="pointMode"][data-v="por_tiro"]'); await p.waitForSelector('[name="pointsPerTrack"]', { timeout: 5000 });
-    await p.click('[data-act="restore"]'); await p.keyboard.press('Escape');
     assert.match(await p.textContent('.card.regra'), /Hectares/);
     // gestos: duplo toque amplia (aparece "enquadrar"), enquadrar volta; tocar num ponto mostra o balão
     await p.click('[data-tab="mapa"]'); await p.waitForSelector('.map-svg .pt');
@@ -136,7 +128,7 @@ try {
     assert.deepStrictEqual(errors, [], `${colorScheme}: erros no console`);
     await ctx.close();
   }
-  // R4.4 · dados da safra e aba Lotes (4.2: versões, cópia e fichas saíram do app)
+  // R4.4 · dados do lote e aba Lotes (4.2: versões, cópia e fichas saíram do app)
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'pt-BR', acceptDownloads: true });
     const p = await ctx.newPage(), errors = [];
@@ -145,7 +137,8 @@ try {
     await p.click('button.lot'); await p.click('[data-lot="Bananal|BD3"]');
     await p.click('[data-tab="plano"]'); await p.fill('#ha', '15'); await p.dispatchEvent('#ha', 'change');
     await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="dados"]');
-    assert.match(await p.textContent('.sheet'), /ATAQUE I2X.*73,0 mm/s); await p.keyboard.press('Escape');
+    // 5.0 · dados do lote: cultura e variedade; sem chuva, stand e sementes
+    assert.match(await p.textContent('.sheet'), /Soja.*ATAQUE I2X/s); assert.doesNotMatch(await p.textContent('.sheet'), /Chuva|Stand|Sementes/); await p.keyboard.press('Escape');
     // 3.1 · aba Lotes (no lugar de Enviar): fazenda desenhada, lote em uso em destaque e a lista com o plano de cada lote
     await p.click('[data-tab="lotes"]'); await p.waitForSelector('[data-farm] .flot.on');
     const fazenda = await p.locator('[data-farm-pick][aria-pressed="true"]').textContent();
@@ -211,7 +204,7 @@ try {
     assert.equal(await p.textContent('#lot-name') !== '…', true, 'abre sem internet');
     await ctx.setOffline(false);
     const second = await ctx.newPage(); await second.goto(url); await ready(second);
-    await second.click('[data-tab="plano"]'); await second.click('[data-inc="people"]');
+    await second.click('[data-tab="plano"]'); await second.click('[data-ha-set="25"]');
     await second.waitForFunction(() => /Outra janela do SCHMIDT está aberta/.test(document.getElementById('toast').textContent));
     await second.close();
     // 3.12 · versão nova publicada: o worker novo espera; aparece "Versão nova pronta · Atualizar"; o toque troca e recarrega

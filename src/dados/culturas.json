@@ -1,0 +1,214 @@
+{
+ "fonte": "Proprietário, 27/11/2026: plantio de milho e estratificação de algodão safra 2026/27; soja: Stand_Soja_Bananal_RJ_2026-27-1.xlsx (30/10/2026)",
+ "lotes": {
+  "Bananal|BA1": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Bananal|BA2": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Bananal|BA3": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Bananal|BB1": {
+   "cultura": "Algodão",
+   "variedade": "TMG 91 WS3"
+  },
+  "Bananal|BB2": {
+   "cultura": "Milho",
+   "variedade": "B 2801 PWU"
+  },
+  "Bananal|BB3": {
+   "cultura": "Soja",
+   "variedade": "NEO 811 I2X"
+  },
+  "Bananal|BC1": {
+   "cultura": "Algodão",
+   "variedade": "TMG 91 WS3"
+  },
+  "Bananal|BC2": {
+   "cultura": "Milho",
+   "variedade": "B 2801 PWU"
+  },
+  "Bananal|BC3": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Bananal|BC4": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Bananal|BD1": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Bananal|BD2": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Bananal|BD3": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Bananal|BD4": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Bananal|BD5": {
+   "cultura": "Soja",
+   "variedade": "NEO 811 I2X"
+  },
+  "Bananal|BE1": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Bananal|BE2": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Bananal|BE3": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Rio de Janeiro|P1": {
+   "cultura": "Soja",
+   "variedade": "SPARTA I2X",
+   "segundaSafra": "Algodão FM 911 GLTP"
+  },
+  "Rio de Janeiro|P2": {
+   "cultura": "Soja",
+   "variedade": "ITAÚBA I2X",
+   "segundaSafra": "Algodão FM 911 GLTP"
+  },
+  "Rio de Janeiro|P3": {
+   "cultura": "Algodão",
+   "variedade": "TMG 91 WS3"
+  },
+  "Rio de Janeiro|P4": {
+   "cultura": "Soja",
+   "variedade": "SPARTA I2X",
+   "segundaSafra": "Algodão FM 911 GLTP"
+  },
+  "Rio de Janeiro|P5": {
+   "cultura": "Soja",
+   "variedade": "ITAÚBA I2X",
+   "segundaSafra": "Algodão FM 911 GLTP"
+  },
+  "Rio de Janeiro|P6": {
+   "cultura": "Soja",
+   "variedade": "ITAÚBA I2X",
+   "segundaSafra": "Algodão FM 911 GLTP"
+  },
+  "Rio de Janeiro|P7": {
+   "cultura": "Algodão",
+   "variedade": "TMG 91 WS3"
+  },
+  "Rio de Janeiro|RA1": {
+   "cultura": "Soja",
+   "variedade": "OLIMPO IPRO"
+  },
+  "Rio de Janeiro|RA2": {
+   "cultura": "Soja",
+   "variedade": "OLIMPO IPRO"
+  },
+  "Rio de Janeiro|RA3": {
+   "cultura": "Soja",
+   "variedade": "OLIMPO IPRO"
+  },
+  "Rio de Janeiro|RA4": {
+   "cultura": "Algodão",
+   "variedade": "TMG 91 WS3"
+  },
+  "Rio de Janeiro|RA5": {
+   "cultura": "Algodão",
+   "variedade": "TMG 91 WS3"
+  },
+  "Rio de Janeiro|RA6": {
+   "cultura": "Algodão",
+   "variedade": "TMG 91 WS3"
+  },
+  "Rio de Janeiro|RA7": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Rio de Janeiro|RA8": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Rio de Janeiro|RA9": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Rio de Janeiro|RB1": {
+   "cultura": "Algodão",
+   "variedade": "TMG 44 B2RF"
+  },
+  "Rio de Janeiro|RB2": {
+   "cultura": "Algodão",
+   "variedade": "TMG 44 B2RF"
+  },
+  "Rio de Janeiro|RB3": {
+   "cultura": "Algodão",
+   "variedade": "TMG 44 B2RF"
+  },
+  "Rio de Janeiro|RB4": {
+   "cultura": "Algodão",
+   "variedade": "TMG 44 B2RF"
+  },
+  "Rio de Janeiro|RB5": {
+   "cultura": "Algodão",
+   "variedade": "TMG 44 B2RF"
+  },
+  "Rio de Janeiro|RB6": {
+   "cultura": "Algodão",
+   "variedade": "TMG 44 B2RF"
+  },
+  "Rio de Janeiro|RB7": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Rio de Janeiro|RB8": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Rio de Janeiro|RB9": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Rio de Janeiro|RC1": {
+   "cultura": "Soja",
+   "variedade": "NEO 811 I2X"
+  },
+  "Rio de Janeiro|RC2": {
+   "cultura": "Soja",
+   "variedade": "NEO 811 I2X"
+  },
+  "Rio de Janeiro|RC3": {
+   "cultura": "Soja",
+   "variedade": "NEO 811 I2X"
+  },
+  "Rio de Janeiro|RC4": {
+   "cultura": "Algodão",
+   "variedade": "TMG 88 B3XF"
+  },
+  "Rio de Janeiro|RC5": {
+   "cultura": "Algodão",
+   "variedade": "TMG 91 WS3"
+  },
+  "Rio de Janeiro|RC6": {
+   "cultura": "Algodão",
+   "variedade": "TMG 91 WS3"
+  },
+  "Rio de Janeiro|RC7": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  },
+  "Rio de Janeiro|RC8": {
+   "cultura": "Soja",
+   "variedade": "ATAQUE I2X"
+  }
+ }
+}

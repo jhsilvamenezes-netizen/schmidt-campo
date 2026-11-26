@@ -55,7 +55,7 @@ try {
     await p.click('[data-tab="plano"]'); await p.fill('#ha', '20,5'); await p.dispatchEvent('#ha', 'change');
     await toastHas(p, /1 ponto a cada 20,5 ha/);
     assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3'].haPerPoint), 20.5);
-    await p.fill('#people', '2,5'); await p.dispatchEvent('#people', 'change'); await toastHas(p, /Pessoas: número inteiro de 1 a 60/);
+    await p.fill('#tiros', '2,5'); await p.dispatchEvent('#tiros', 'change'); await toastHas(p, /Tiros: número inteiro de 1 a 60/);
     await ctx.close(); }
   // A6 · sem o motor em segundo plano (motor.js indisponível): mudar a regra continua funcionando e chega ao mesmo plano
   { const { ctx, p, errors } = await page(state({ fieldKey: 'Bananal|BA2' }));

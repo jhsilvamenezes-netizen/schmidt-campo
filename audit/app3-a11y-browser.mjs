@@ -1,5 +1,5 @@
 // 4.5.1 · acessibilidade (axe: WCAG 2.2 AA + boas práticas) em claro, escuro e Sol: 4 abas, camadas do mapa, menu e
-// suas 4 janelas, escolher lote, ajustes avançados e a guia ativa. Qualquer regra violada reprova.
+// suas 4 janelas, escolher lote, o Plano e a guia ativa. Qualquer regra violada reprova.
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 import { readFile } from 'node:fs/promises';
@@ -22,7 +22,7 @@ for (const [theme, sun] of [['light', false], ['dark', false], ['light', true]])
   await p.click('[data-open="menu"]'); await p.waitForTimeout(300); await run(p, `${t}/menu`);
   for (const s of ['glossario', 'dados', 'calculo', 'todos']) { await p.click(`.sheet [data-open="${s}"]`).catch(() => {}); await p.waitForTimeout(600); await run(p, `${t}/${s}`); await p.keyboard.press('Escape'); await p.click('[data-open="menu"]').catch(() => {}); await p.waitForTimeout(200); }
   await p.keyboard.press('Escape'); await p.click('button.lot'); await p.waitForTimeout(300); await run(p, `${t}/escolher-lote`); await p.keyboard.press('Escape');
-  await p.click('[data-tab="plano"]'); await p.click('[data-open="ajustes"]').catch(() => {}); await p.waitForTimeout(400); await run(p, `${t}/ajustes`); await p.keyboard.press('Escape');
+  await p.click('[data-tab="plano"]'); await p.waitForTimeout(400); await run(p, `${t}/plano-cheio`);
   await p.click('[data-tab="monitorar"]'); await p.click('[data-act="gps-start"]'); await p.waitForSelector('.guide', { timeout: 15000 }); await p.waitForTimeout(800); await run(p, `${t}/guia`);
   await ctx.close();
 }

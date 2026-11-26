@@ -10,10 +10,10 @@ import { ICONS } from '../src/app3/views.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
 /** Módulos da tela, caminho relativo a src/ (ordem: dependências primeiro). Motor: src/engine via schmidtEngine2. */
 export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', 'app3/store', 'app3/planner', 'app3/satellite', 'app3/map', 'app3/views', 'app3/views-mapa', 'app3/views-plano', 'app3/views-monitor', 'app3/views-mais',
-  'app3/advanced', 'app3/gestures', 'app3/monitor', 'app3/compass', 'platform/browser-session-lock',
+  'app3/gestures', 'app3/monitor', 'app3/compass', 'platform/browser-session-lock',
   'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/offline',
   'app3/screen-mapa', 'app3/screen-monitor', 'app3/screen-plano', 'app3/screen-mais', 'app3/screen-lotes', 'app3/screen-bloco', 'app3/main'];
-export const APP_VERSION = '4.10.0';
+export const APP_VERSION = '5.0.0';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
 /** Cada módulo no seu escopo; importações do motor viram o namespace schmidtEngine2. */
@@ -44,7 +44,7 @@ async function bundleModules(MODULES, tail) {
   }
   return `(()=>{\n'use strict';\n${parts.join('\n')}\n${tail}\n})();`;
 }
-const bundleApp = () => bundleModules(APP_MODULES, `${ident('app3/main')}.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),recs:JSON.parse(document.getElementById('recs-data').textContent),appVersion:'${APP_VERSION}'});`);
+const bundleApp = () => bundleModules(APP_MODULES, `${ident('app3/main')}.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,culturas:JSON.parse(document.getElementById('culturas-dados').textContent).lotes,recs:JSON.parse(document.getElementById('recs-data').textContent),appVersion:'${APP_VERSION}'});`);
 
 /** U17/A6 · motor em segundo plano (Web Worker): recomendação equilibrada sem travar a tela. Mesmo código da tela. */
 export const WORKER_MODULES = ['app3/format', 'app3/planner', 'app3/worker'];
@@ -60,7 +60,8 @@ export async function recsData(fields) {
   for (const k of Object.keys(fields).sort()) {
     const rec = P.recommend(fields[k], {}, RECS_PEOPLE, false), sc = P.planInUse(fields[k], rec.chosen.params, null);
     // 4.2 · linha pronta da aba Lotes (plano recomendado): a lista abre sem recalcular a cobertura de cada lote
-    recs[k] = { ...rec, linha: { pontos: sc.samples.length, tiros: sc.selected.length, p95: sc.coverage.p95, alerts: sc.warnings.filter(w => w.level !== 'info').length } };
+    // 5.0 · sem "Outras opções" na tela: as alternativas não vão no arquivo (−74 KB)
+    recs[k] = { ...rec, alternatives: [], linha: { pontos: sc.samples.length, tiros: sc.selected.length, p95: sc.coverage.p95, alerts: sc.warnings.filter(w => w.level !== 'info').length } };
   }
   return JSON.stringify({ schema: 'schmidt3.recomendacoes.v1', motor: P.ENGINE_LABEL, pessoas: RECS_PEOPLE, recs });
 }
@@ -68,16 +69,16 @@ export async function recsData(fields) {
 const sha = t => `'sha256-${createHash('sha256').update(t).digest('base64')}'`;
 
 export async function build3() {
-  // Dados dos lotes e da safra: arquivos próprios em src/dados/ (os mesmos bytes que vinham da 2.5, aposentada na 4.9)
-  const fields = await readFile(root + 'src/dados/lotes.json', 'utf8'), safra = await readFile(root + 'src/dados/safra.json', 'utf8');
+  // Dados dos lotes e cultura/variedade de cada um (5.0: chuva, stand e sementes saíram da tela)
+  const fields = await readFile(root + 'src/dados/lotes.json', 'utf8'), culturas = await readFile(root + 'src/dados/culturas.json', 'utf8');
   const recs = await recsData(JSON.parse(fields).fields);
   const [engine, app, css, shell] = [await bundleEngine('engine3'), await bundleApp(), (await readFile(root + 'src/app3/styles.css', 'utf8')) + cssTokens() + (await readFile(root + 'src/app3/styles-4.css', 'utf8')), await readFile(root + 'src/app3/shell.html', 'utf8')];
-  for (const [n, t] of [['motor', engine], ['tela', app], ['dados', fields], ['safra', safra], ['recomendações', recs]]) if (/<\/script/i.test(t)) throw Error(`${n} contém </script>`);
+  for (const [n, t] of [['motor', engine], ['tela', app], ['dados', fields], ['culturas', culturas], ['recomendações', recs]]) if (/<\/script/i.test(t)) throw Error(`${n} contém </script>`);
   const nav = [['lotes', 'Lotes'], ['mapa', 'Mapa'], ['plano', 'Plano'], ['monitorar', 'Monitorar']]
     .map(([k, l]) => `<button type="button" data-tab="${k}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>${l}</button>`).join('');
   const csp = `default-src 'self'; script-src ${sha(engine)} ${sha(app)}; style-src ${sha(css)}; img-src 'self' data: blob: https://services.arcgisonline.com; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'`;
   const html = shell.replace('__CSP__', csp).replace('__CSS__', () => css).replace('__ICON_SOL__', ICONS.sol).replace('__ICON_MAIS__', ICONS.mais)
-    .replace('__NAV__', nav).replace('__FIELDS__', () => fields).replace('__SAFRA__', () => safra).replace('__RECS__', () => recs).replace('__ENGINE__', () => engine).replace('__APP__', () => app);
+    .replace('__NAV__', nav).replace('__FIELDS__', () => fields).replace('__CULTURAS__', () => culturas).replace('__RECS__', () => recs).replace('__ENGINE__', () => engine).replace('__APP__', () => app);
   if (/__[A-Z_]+__/.test(html)) throw Error('Marcador do modelo sem valor');
   if (/\sstyle=/.test(html.replace(/<script[\s\S]*?<\/script>/g, ''))) throw Error('Estilo inline no HTML (CSP)');
   await mkdir(root + 'build/3', { recursive: true });

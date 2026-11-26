@@ -10,9 +10,8 @@ export function installMonitor(app) {
   /** @type {any} */ const mon = { mode: 'pe', modeN: 0, voice: false, follow: true, up: 'rumo', course: null, heading: null, compass: false, compassAt: 0, trackId: null, flipped: false, active: false, watchId: null, pos: null, session: {}, wake: null, arrivedId: null, ticker: 0 };
 
   function monitorData() {
-    const cur = app.cur, sc = cur.sc, tasks = new Map();
-    (cur.split?.pessoas || []).forEach((p, i) => p.tarefas.forEach(t => tasks.set(t.id, `Pessoa ${i + 1}`)));
-    const tracks = sc.selected.filter(t => sc.units.some(u => u.trackId === t.id)).map(t => ({ id: t.id, person: tasks.get(t.id) }));
+    const cur = app.cur, sc = cur.sc;
+    const tracks = sc.selected.filter(t => sc.units.some(u => u.trackId === t.id)).map(t => ({ id: t.id, person: null }));
     if (!tracks.some(t => t.id === mon.trackId)) mon.trackId = tracks[0]?.id ?? null;
     // 3.20 · antes do primeiro ponto, entra pela ponta mais perto (o "Inverter" à mão desliga a escolha automática)
     if (mon.active && mon.trackId && mon.pos && !mon.manualDir && !mon.startedTrack) {
@@ -29,11 +28,10 @@ export function installMonitor(app) {
       { arrivalRadiusM: cur.sc.params.monitor?.arrivalRadiusM ?? 10, speedMps: mon.pos?.speedMps ?? 0 });
     Object.assign(mon, al.mem);
     for (const e of al.effects) { if (e.vibrate !== null) { try { window.navigator.vibrate?.(e.vibrate); } catch { /* sem vibração */ } } say(e.say); }
-    // 3.13 (V3) · terminou o tiro: oferece o próximo tiro da mesma pessoa (equipe do Plano); sem equipe, o seguinte da lista
+    // 3.13 (V3) · terminou o tiro: oferece o seguinte da lista (5.0: 1 tiro por pessoa, sem divisão por pessoa)
     /** @type {any} */ let nextTrack = null;
     if (model && route && (model.state === 'done' || (model.state === 'arrived' && model.next?.seq === route.nPoints))) {
-      const mine = (cur.split?.pessoas || []).find(p => p.tarefas.some(t => t.id === mon.trackId));
-      const order = mine ? mine.tarefas.map(t => t.id) : tracks.map(t => t.id), i = order.indexOf(mon.trackId);
+      const order = tracks.map(t => t.id), i = order.indexOf(mon.trackId);
       const id = order[i + 1] ?? null, t = tracks.find(x => x.id === id);
       if (t) nextTrack = t;
     }

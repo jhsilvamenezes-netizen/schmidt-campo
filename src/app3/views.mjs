@@ -13,7 +13,6 @@ export const ICONS = {
 };
 /** 4.0-c · alça da folha (só aparece no design 4.0): toque alterna a altura; arrastar escolhe baixa, meia ou cheia. */
 export const GRAB = '<button class="grabber" type="button" data-act="sheet-cycle" aria-label="Mudar a altura do painel"></button>';
-export const icon = name => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
 
 /** 3.12 · cada medida é um botão: tocar abre a frase do glossário (rótulo sublinhado em pontos indica que explica). */
 const metric = (label, value, term = label) => `<button class="m" data-term="${term}"><small>${label}</small> <b>${esc(value)}</b></button>`;

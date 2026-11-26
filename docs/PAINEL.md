@@ -1,10 +1,10 @@
 # Painel do SCHMIDT Campo
 
 Página única de entrada, para ler em 1 minuto. Atualizar a cada versão publicada.
-Atualizado em 26/11/2026.
+Atualizado em 27/11/2026.
 
 ## Estado
-- **No ar:** 4.10.0 (https://jhsilvamenezes-netizen.github.io/schmidt-campo/). Os hashes de `index.html`,
+- **No ar:** 5.0.0 (https://jhsilvamenezes-netizen.github.io/schmidt-campo/). Os hashes de `index.html`,
   `motor.js` e `sw.js` batem com `VERSAO.json`.
 - **Design:** 4.0 é o único (o visual anterior saiu na 4.2.0).
 - **Transição completa (código, lógica, testes, CI, respostas):** `docs/TRANSICAO.md`.
@@ -22,9 +22,11 @@ Atualizado em 26/11/2026.
 | Bordadura | Ideal ≥ 41 m. Mínimo de 15 m garantido pelo motor (4.0.2) |
 | Tiro | Pode ser feito por qualquer ponta |
 | Tiro de 1 ponto | Aceito em lote pequeno e irregular (RA9, RB9). Nos maiores, só no bico. RB8 fica como está |
+| Regra de pontos | A escolhida (ha por ponto) vale para todas as culturas, sem alerta (27/11) |
 | Dados | Não inventar valor (o que não foi conferido fica "a confirmar"). Não inferir divisa. Sem marcação de coleta |
-| Fora de escopo | Arquivos e fichas, versões, cópia, qualidade do GPS, vitrine (saíram na 4.2), cadastro de pessoas, resumo por pessoa, lote novo, KML novo, drone, envio do arquivo de GPS, alertas em selo, textura de plantio |
+| Fora de escopo | Pessoas e divisão por pessoa, ajustes avançados, outras opções (saíram na 5.0), arquivos e fichas, versões, cópia, qualidade do GPS, vitrine (saíram na 4.2), cadastro de pessoas, resumo por pessoa, lote novo, KML novo, drone, envio do arquivo de GPS, alertas em selo, textura de plantio |
 | Satélite | Esri World Imagery, desligado por padrão. A licença está "a confirmar" com a Esri |
+| Publicação | Auditar antes de publicar: juntar as correções da auditoria e só então publicar (decisão de 27/11) |
 | Versões antigas | Saíram na 4.9 (decisão de 26/11: a 4.x é a base validada). Ficam só no histórico do Git |
 
 ## Fila (por valor, com o porquê)

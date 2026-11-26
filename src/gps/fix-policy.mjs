@@ -8,16 +8,3 @@ export function validateSchmidtGPSFix(position, { now, lastTimestamp = 0, maxAge
     || !Number.isFinite(coords.accuracy) || coords.accuracy < 0) return null;
   return { timestamp, coords };
 }
-
-export function startSchmidtGPSWatch(geolocation, state, onPosition, onError, options) {
-  const generation = state.schmidtGPSGeneration = (state.schmidtGPSGeneration || 0) + 1;
-  const current = () => state.schmidtGPSGeneration === generation && state.watchId !== null;
-  return geolocation.watchPosition(
-    position => { if (current()) onPosition(position); },
-    error => { if (current()) onError(error); }, options);
-}
-
-export function stopSchmidtGPSWatch(geolocation, state, id) {
-  state.schmidtGPSGeneration = (state.schmidtGPSGeneration || 0) + 1;
-  geolocation.clearWatch(id);
-}

@@ -103,14 +103,14 @@ try {
     await p.click('[data-act="gps-stop"]');
     assert.deepStrictEqual(errors, []); await ctx.close();
   }
-  { // 3.13 (V3) · ao chegar ao último ponto do tiro: "Próximo tiro" da mesma pessoa (1 pessoa = todos os tiros), sem parar a guia
-    const sc1 = P.planInUse(f, P.recommend(f, {}, 1, false).chosen.params, null), r1 = buildRoute(sc1, f, 'T1');
-    const ids = P.team(sc1, 1).pessoas[0].tarefas.map(t => t.id), want = ids[ids.indexOf('T1') + 1];
-    assert.ok(want, 'uma pessoa tem mais de um tiro');
+  { // 3.13 (V3) · ao chegar ao último ponto do tiro: "Próximo tiro" (5.0: o seguinte da lista), sem parar a guia
+    const sc1 = P.planInUse(f, P.recommend(f, {}, 5, false).chosen.params, null), r1 = buildRoute(sc1, f, 'T1');
+    const ids = sc1.selected.filter(t => sc1.units.some(u => u.trackId === t.id)).map(t => t.id), want = ids[ids.indexOf('T1') + 1];
+    assert.ok(want, 'há um tiro depois do T1');
     const [lon0, lat0] = localToLonLat(r1.points[0].x, r1.points[0].y, f.centroidUTM);
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block', geolocation: { longitude: lon0, latitude: lat0, accuracy: 5 }, permissions: ['geolocation'] });
     const p = await ctx.newPage(), errors = []; p.on('pageerror', e => errors.push(e.message));
-    await p.goto(`http://127.0.0.1:${server.address().port}/`); await p.evaluate(() => localStorage.setItem('monitoramento.v03', JSON.stringify({ fieldKey: 'Bananal|BC1', quickMonitors: 1 }))); await p.reload();
+    await p.goto(`http://127.0.0.1:${server.address().port}/`); await p.evaluate(() => localStorage.setItem('monitoramento.v03', JSON.stringify({ fieldKey: 'Bananal|BC1' }))); await p.reload();
     await p.waitForSelector('[data-map="full"] .pt'); await p.click('[data-tab="monitorar"]'); await p.click('[data-track="T1"]'); await p.click('[data-act="gps-start"]');
     for (const pt of r1.points) {
       const [lon, lat] = localToLonLat(pt.x, pt.y, f.centroidUTM); await ctx.setGeolocation({ longitude: lon, latitude: lat, accuracy: 5 });
@@ -176,6 +176,7 @@ try {
     assert.match(t, /Dentro de BC1/); assert.match(t, /tiro mais perto: T1 a \d+ m/); assert.match(t, /ponto mais perto: nº \d+ \(T1\)/);
     await p.waitForSelector('[data-map="full"] .me');
     await p.click('[data-tab="monitorar"]');
+    await p.click('[data-k="semguia"] > summary');
     const [dl] = await Promise.all([p.waitForEvent('download'), p.click('[data-act="gpx-track"]')]);
     assert.match(dl.suggestedFilename(), /BC1_T1_SIMULADO\.gpx$/);
     const gpx = await (await import('node:fs/promises')).readFile(await dl.path(), 'utf8');

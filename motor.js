@@ -2236,7 +2236,7 @@ function buildWarnings(field, sc, assessField) {
   const p = sc.params, out = [];
   const add = (level, code, message, action) => out.push({ level, code, message, ...(action ? { action } : {}) });
   for (const w of assessField(field)) add(w.level, w.code, w.message, w.action);
-  if (!field.isSoy) add(LEVEL.ALERTA, 'protocolo_nao_soja', 'Regra 1 ponto/20 ha informada apenas para soja: neste lote é exploratória.');
+  // 5.0 · a regra escolhida (ha por ponto) vale para todas as culturas (decisão do proprietário, 27/11): sem alerta
   if (sc.samples.length < sc.minPoints)
     add(LEVEL.ERRO, 'abaixo_minimo', `Pontos planejados (${sc.samples.length}) abaixo do mínimo por área (${sc.minPoints}). Não reduzido automaticamente: aumente os pontos.`);
   if (sc.allocation.status === 'conflito') add(LEVEL.ERRO, 'conflito_tiros_pontos', `Conflito: ${sc.allocation.suggestions.join(' · ')}`);
@@ -2669,7 +2669,7 @@ function explainScenario(sc, field) {
         ? [`Retas na direção ${one(sc.bearing)}°. A largura do lote foi dividida em ${p.trackCount} faixas iguais de ${int(sc.deltaM)} m, com um tiro no meio de cada uma${sc.anchored ? ', ajustado para o múltiplo de barra mais próximo' : ''}.`]
         : [`Retas na direção ${one(sc.bearing)}° (${p.bearingDeg === null ? 'da planilha' : 'alterada à mão'}).`,
           sc.anchored && sc.passes
-            ? `Distância máxima pedida: ${int(p.trackSpacingM)} m → ${sc.passes} larguras de barra de ${two(p.boomWidthM)} m = ${two(sc.deltaM)} m entre tiros, contadas a partir do ponto A.`
+            ? `Tiros a ${int(sc.deltaM)} m um do outro: ${sc.passes} passadas da barra de ${two(p.boomWidthM)} m, contadas a partir do ponto A.`
             : `Tiros a cada ${int(sc.deltaM)} m (no máximo ${int(p.trackSpacingM)} m).`];
   add('Tiros', [...trackLines, `${plural(inside, 'tiro atravessa', 'tiros atravessam')} o lote.`]);
   const split = sc.selected.filter(t => sc.units.filter(u => u.trackId === t.id).length > 1);
@@ -2697,18 +2697,18 @@ function explainScenario(sc, field) {
   add('Posição dos pontos', [`Regra das pontas: ${rule}`,
     longest ? `Exemplo: ${longest.unitId} tem ${int(longest.lengthM)} m e ${longest.n} pontos → um ponto a cada ${int(gap)} m, o 1º a ${int(longest.startMarginM)} m da borda.` : '',
     'As distâncias são medidas andando sobre o tiro (vale também para curvas).']);
-  if (sc.optimization) {
+  // 5.0 · só aparece quando a busca mudou o plano (antes também explicava quando não mudava nada)
+  if (sc.optimization?.accepted) {
     const o = sc.optimization;
     add('Busca de distribuição melhor', [
-      o.accepted ? `Aceita: a maior distância até um ponto (95% do lote) caiu de ${int(o.baseline.p95M)} m para ${int(o.optimized.p95M)} m.` : 'Mantido o plano original: a busca não melhorou sem piorar a regularidade.',
-      `Limites respeitados: maior intervalo até ${int(o.limits.maxGapM ?? 0)} m e nenhuma parte sem ponto.`,
+      `A maior distância até um ponto (95% do lote) caiu de ${int(o.baseline.p95M)} m para ${int(o.optimized.p95M)} m.`,
       o.moves.length ? `Pontos trocados de tiro: ${o.moves.map(m => `${m.from}→${m.to}`).join(', ')}.` : '']);
   }
   const g = sc.longitudinal.global, nErr = sc.warnings.filter(w => w.level === LEVEL.ERRO).length, nWarn = sc.warnings.filter(w => w.level === LEVEL.ALERTA).length;
   add('Resultado', [
     g.max === null ? 'Nenhum tiro tem dois pontos (sem intervalos para medir).' : `Maior distância entre dois pontos do mesmo tiro: ${int(g.max)} m. Distribuição ${regularityWord(g.cv)}.`,
     sc.coverage.p95 === null ? '' : `95% do lote fica a menos de ${int(sc.coverage.p95)} m de algum ponto.`,
-    nErr || nWarn ? `Antes de ir a campo: ${plural(nErr, 'erro', 'erros')} e ${plural(nWarn, 'alerta', 'alertas')} para conferir na lista abaixo.` : 'Nenhum erro ou alerta.']);
+    nErr || nWarn ? `Antes de ir a campo: ${plural(nErr, 'erro', 'erros')} e ${plural(nWarn, 'alerta', 'alertas')} para conferir (veja a Conferência no Plano).` : 'Nenhum erro ou alerta.']);
   return steps;
 }
 
@@ -3418,7 +3418,6 @@ const { DEFAULT_PARAMS, paramsSignature } = schmidtEngine2.params;
 const { coverageGrid, nearestDistances, quickP95 } = schmidtEngine2.metrics;
 const { recommendPlan, SHAPE_KEYS, metricsOf } = schmidtEngine2.recommend;
 const { restoreSamples, withSamples, moveSample, addSample } = schmidtEngine2.editing;
-const { teamPlan } = schmidtEngine2.team;
 const { buildRoute } = schmidtEngine2.guidance;
 const { exactCoverage } = schmidtEngine2.voronoi;
 const { pointInGeom } = schmidtEngine2.geometry;
@@ -3427,7 +3426,7 @@ const { num, range, km, plural } = __m_app3_format;
 // 3.0 · aplicação: monta o plano de um lote com o motor 2, a recomendação, a conferência, a equipe e a área
 // descoberta. Sem DOM: testável no Node com os 51 lotes.
 
-const ENGINE_LABEL = '4.10.0';
+const ENGINE_LABEL = '5.0.0';
 const deps = { assertParams, buildWarnings: (f, sc) => buildWarnings(f, sc, assessField), optimizeDistribution, engineVersion: ENGINE_LABEL };
 const metrics = (f, sc) => withMetrics(f, sc, deps.buildWarnings);
 /** @type {any} */ (deps).metrics = metrics;
@@ -3533,6 +3532,37 @@ function* balanceSteps(field, base, rec) {
     equilibrio: { antes: { cv: now.cv, p95M: now.p95, piorVazioM: now.worst, km: now.km }, depois: { cv: best.cv, p95M: best.p95, piorVazioM: best.worst, km: best.km } } };
 }
 
+/**
+ * 5.0 · plano com exatamente `n` tiros (o planejador escolhe quantos). Entre os espaçamentos na barra (perto do que
+ * daria n tiros) e todas as fases a partir do ponto A, fica com o que tem: bordadura melhor, menos tiros de 1 ponto,
+ * menor maior vazio e áreas por ponto mais iguais, nesta ordem. Medido (51 lotes, recomendado ± 1 tiro): maior vazio
+ * menor que o das faixas iguais da 4.10 em 76 de 100 casos. Sem nenhum candidato exato: faixas iguais (modo quantidade).
+ * Em passos (um candidato por passo), para a tela calcular aos poucos sem travar.
+ */
+function* tracksSteps(field, base, cp, n) {
+  const fallback = { ...base, ...cp, trackMode: 'quantidade', trackCount: n, trackPhaseM: 0, alignToBoom: true, selectionMode: 'todos', pointMode: 'total', totalPoints: null };
+  const now = Number.isFinite(cp?.trackSpacingM) && cp.trackMode === 'espacamento' ? cp.trackSpacingM : null;
+  let n0 = 0; try { n0 = planScenario(field, { ...base, ...cp }, deps).selected.length; } catch { n0 = 0; }
+  if (!now || !n0) return fallback;
+  const k0 = Math.round((now / BOOM) * (n0 / n)), score = (/** @type {any} */ c) => [-c.bf, c.ones, c.worst, c.cv];
+  /** @type {any} */ let best = null;
+  for (let k = Math.max(1, k0 - 3); k <= k0 + 3; k++) for (let ph = 0; ph < k; ph++) {
+    const params = { ...base, ...cp, trackMode: 'espacamento', trackSpacingM: Math.round((k * BOOM + 0.01) * 100) / 100, trackPhaseM: Math.round(ph * BOOM * 100) / 100, selectionMode: 'todos', pointMode: 'total', totalPoints: null };
+    yield;
+    let c0; try { c0 = planScenario(field, params, deps); } catch { continue; }
+    if (new Set(c0.samples.map((/** @type {any} */ x) => x.trackId)).size !== n) continue;
+    const c = balanceStats(field, params);
+    if (!c || c.sc.selected.length !== n) continue;
+    const cand = { params, ...c, bf: bordaFaixa(borderStats(field, c.sc).minM) }, a = score(cand), b = best && score(best);
+    let better = !best;
+    if (b) for (let i = 0; i < a.length; i++) { if (a[i] < b[i] - 1e-9) { better = true; break; } if (a[i] > b[i] + 1e-9) break; }
+    if (better) best = cand;
+  }
+  return best ? best.params : fallback;
+}
+/** O mesmo, de uma vez (testes e motor). */
+function tracksPlan(field, base, cp, n) { const it = tracksSteps(field, base, cp, n); let r = it.next(); while (!r.done) r = it.next(); return r.value; }
+
 /** Plano em uso: parâmetros salvos (ou recomendados), ajustes manuais válidos para a mesma assinatura. */
 function planInUse(field, params, edits) {
   let sc = scenarioOf(field, params);
@@ -3556,18 +3586,16 @@ function uncovered(field, sc, k = 0.85) {
 }
 
 /** Conferência antes de enviar: [{level: ok|alerta|erro, text}]. */
-function checks(sc, people, blind) {
+function checks(sc, blind) {
   const out = [], extra = sc.samples.length - sc.minPoints;
   out.push(extra < 0 ? { level: 'erro', text: `Faltam ${plural(-extra, 'ponto', 'pontos')} para o mínimo` } : { level: 'ok', text: `${num(sc.samples.length)} pontos (mínimo ${num(sc.minPoints)})` });
   const empty = sc.trackRows.filter(r => r.empty);
   out.push(empty.length ? { level: 'erro', text: `${empty.map(r => r.trackId).join(', ')} sem ponto` } : { level: 'ok', text: 'Todos os tiros com ponto' });
-  const tiros = sc.selected.length;
-  out.push(tiros > people ? { level: 'alerta', text: `${plural(tiros, 'tiro', 'tiros')} para ${plural(people, 'pessoa', 'pessoas')}` } : { level: 'ok', text: tiros === people ? '1 tiro por pessoa' : `1 tiro por pessoa · sobra ${plural(people - tiros, 'pessoa', 'pessoas')}` });
-  if (blind) out.push(blind.haBlind > blind.limitHa ? { level: 'alerta', text: `${num(blind.haBlind, 1)} ha a mais de ${num(blind.limitM)} m de um ponto` } : { level: 'ok', text: 'Sem área descoberta' });
+  if (blind) out.push(blind.haBlind > blind.limitHa ? { level: 'alerta', text: `${num(blind.haBlind, 1)} ha do lote ficam a mais de ${num(blind.limitM)} m do ponto mais perto` } : { level: 'ok', text: 'Sem área descoberta' });
   // 4.0.2 · a guarda da bordadura deslizou um tiro: diz qual e quanto (o ponto saiu da faixa de 15 m da borda)
   for (const f of sc.borderFix || []) out.push({ level: 'ok', text: `${f.trackId}: pontos deslizados ${num(Math.abs(f.shiftM))} m para longe da borda` });
-  const errors = sc.warnings.filter(w => w.level === 'erro').length, alerts = sc.warnings.filter(w => w.level === 'alerta').length;
-  if (errors || alerts) out.push({ level: errors ? 'erro' : 'alerta', text: [errors && plural(errors, 'erro', 'erros'), alerts && plural(alerts, 'alerta', 'alertas')].filter(Boolean).join(' e ') + ' nos dados' });
+  // 5.0 · avisos dos dados com o próprio texto (antes só "1 alerta nos dados", sem dizer qual)
+  for (const w of sc.warnings.filter(w => w.level === 'erro' || w.level === 'alerta')) out.push({ level: w.level, text: `Dados: ${w.message}` });
   return out;
 }
 
@@ -3577,17 +3605,6 @@ function figures(sc) {
   return { pontos: sc.samples.length, tiros: sc.selected.length, entreTiros: sc.deltaM ? `${num(sc.deltaM)} m` : '—',
     entrePontos: gaps.length ? `${range(Math.min(...gaps), Math.max(...gaps))} m` : '—', p95: sc.coverage.p95 == null ? '—' : `< ${num(sc.coverage.p95)} m`,
     caminhada: `${km(sc.route.totalEstimatedM)} km` };
-}
-
-const team = (sc, people) => teamPlan(sc, people);
-
-/** Resumo em texto para colar no WhatsApp. */
-function summaryText(field, sc, people, list, split) {
-  const f = figures(sc), lines = [`*SCHMIDT CAMPO · Plano* · ${field.farm} / ${field.code} (${num(field.areaOfficialHa, 2)} ha)`,
-    `${plural(f.pontos, 'ponto', 'pontos')} · ${plural(f.tiros, 'tiro', 'tiros')} · ${plural(people, 'pessoa', 'pessoas')}`, `Entre tiros ${f.entreTiros} · entre pontos ${f.entrePontos} · 95% do lote ${f.p95}`, ''];
-  if (split) split.pessoas.forEach((p, i) => lines.push(`- Pessoa ${i + 1} (${km(p.m)} km): ${p.tarefas.map(t => `${t.id}, entra a ${t.entra || '—'}, pontos ${t.de ?? '—'}–${t.ate ?? '—'}`).join('; ')}`));
-  lines.push('', ...list.map(c => `[${c.level === 'ok' ? 'ok' : c.level.toUpperCase()}] ${c.text}`), '', 'Simulação: pontos planejados, não coletados.');
-  return lines.join('\n');
 }
 
 
@@ -3661,18 +3678,6 @@ function pointInfo(field, sc, id) {
 function exactStats(field, samples) {
   const cov = exactCoverage(field.geom, samples), a = cov.cells.map(c => c.areaM2), mean = a.reduce((x, y) => x + y, 0) / a.length;
   return { worst: cov.worstGapM, cv: mean ? Math.sqrt(a.reduce((x, y) => x + (y - mean) ** 2, 0) / a.length) / mean : 0 };
-}
-
-/** "Buscar distribuição melhor" (mesma busca da 2.x): devolve os pontos como ajuste gravável ou null se não melhorou. */
-function optimizeEdits(field, params) {
-  const sc = buildScenario(field, params, { optimize: true }, deps), o = sc.optimization;
-  if (!o?.accepted) return { edits: null, report: o };
-  // 3.2: a busca da 2.x só olha o "95% do lote"; nos 51 lotes ela aumentava o pior vazio em 27 de 34 (364 → 383 m em
-  // média) e deixava as áreas mais desiguais. Agora só vale se o pior vazio (exato) e a variação das áreas não pioram.
-  const before = exactStats(field, planInUse(field, params, null).samples), after = exactStats(field, sc.samples);
-  if (after.worst > before.worst + 1 || after.cv > before.cv + 0.005) return { edits: null, report: { ...o, accepted: false, rejectedBy: 'piora o pior vazio ou a igualdade das áreas', before, after } };
-  const samples = sc.samples.map(s => ({ id: s.id, x: s.x, y: s.y, unitId: s.unitId, s: s.s, manual: false, offTrack: !!s.offTrack }));
-  return { edits: { signature: paramsSignature(sc.params), samples }, report: o };
 }
 
 /**
@@ -3842,10 +3847,25 @@ function friendly(err) {
 }
 
 /** Confere parâmetros (faixas do catálogo) e monta o plano sem deixar erro escapar: {sc} ou {error}. */
+/** 5.0 · plano gravado com ajuste avançado (saiu da tela): barra diferente de 36,48 m, tiros fora da barra, outra forma de
+ *  repartir os pontos, de escolher os tiros ou da borda. Esse plano não tem mais como ser visto nem desfeito: volta ao recomendado. */
+function legacyAdvanced(params) {
+  if (!params) return false;
+  const d = DEFAULT_PARAMS, diff = (/** @type {string} */ k) => params[k] !== undefined && params[k] !== d[k];
+  return ['boomWidthM', 'alignToBoom', 'pointMode', 'selectionMode', 'edgePolicy'].some(diff) || !['espacamento', 'quantidade', undefined].includes(params.trackMode);
+}
+
+const tryCache = new Map();
 function tryPlan(field, params, edits) {
+  // 5.0 · a troca de plano conferia (setParams) e depois refazia o mesmo plano para mostrar: os últimos 8 ficam guardados
+  const key = `${field?.farm}|${field?.code}|${JSON.stringify(params ?? null)}|${JSON.stringify(edits ?? null)}`;
+  if (tryCache.has(key)) return tryCache.get(key);
   const { removed } = sanitizeParams(params || {});
-  if (removed.length) return { error: `valor fora da faixa (${removed[0]})` };
-  try { return { sc: planInUse(field, params, edits) }; } catch (e) { return { error: friendly(e) }; }
+  let r;
+  if (removed.length) r = { error: `valor fora da faixa (${removed[0]})` };
+  else try { r = { sc: planInUse(field, params, edits) }; } catch (e) { r = { error: friendly(e) }; }
+  tryCache.set(key, r); if (tryCache.size > 8) tryCache.delete(tryCache.keys().next().value);
+  return r;
 }
 
 /** U04 · tiro completo, como na 2.5: comprimento, régua (borda → pontos → borda), tiros vizinhos (medidos de lado) e por
@@ -3884,7 +3904,7 @@ function whereAmI(field, sc, pos) {
   return { inside, edgeM, track, point, accuracyM: pos.accuracyM };
 }
 
-return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BORDADURA_M,BORDA_MIN_M,bordaFaixa,BALANCE,balanceStats,balanceAreas,balanceSteps,planInUse,uncovered,checks,figures,team,summaryText,pointAreas,edgeDistance,borderStats,pointInfo,optimizeEdits,minimaxEdits,PLUS_ONE,middleOnes,plusOneHere,plusOne,friendly,tryPlan,trackDetail,whereAmI,DEFAULT_PARAMS,paramsSignature});
+return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BORDADURA_M,BORDA_MIN_M,bordaFaixa,BALANCE,balanceStats,balanceAreas,balanceSteps,tracksSteps,tracksPlan,planInUse,uncovered,checks,figures,pointAreas,edgeDistance,borderStats,pointInfo,minimaxEdits,PLUS_ONE,middleOnes,plusOneHere,plusOne,friendly,legacyAdvanced,tryPlan,trackDetail,whereAmI,DEFAULT_PARAMS,paramsSignature});
 })();
 // src/app3/worker.mjs
 const __m_app3_worker=(()=>{

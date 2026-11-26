@@ -1,6 +1,6 @@
 # Transição: SCHMIDT Campo de ponta a ponta
 
-Para quem vai assumir ou ajudar no projeto (pessoa ou outra IA). Atualizado em 26/11/2026, versão 4.9.0.
+Para quem vai assumir ou ajudar no projeto (pessoa ou outra IA). Atualizado em 27/11/2026, versão 5.0.0.
 
 Ordem de leitura:
 1. `docs/PAINEL.md`: estado e regras do proprietário.
@@ -31,7 +31,7 @@ O código é a fonte da verdade. Se este texto divergir dele, vale o código.
 | `src/engine3/` | Motor 4.x: geometria, tiros, pontos, cobertura exata (Voronoi), otimização, equipe e rota | Sim, com testes |
 | `src/app3/` | Tela 4.x: serviços sem DOM (planner, monitor, map, views-*) e telas (`screen-*`, `main`) | Sim |
 | `src/gps/` | Política do fix de GPS e próximo ponto | Sim |
-| `src/dados/` | `lotes.json` (51 lotes) e `safra.json`: os dados que entram no app | Só com dado conferido |
+| `src/dados/` | `lotes.json` (51 lotes) e `culturas.json` (cultura e variedade, safra 2026/27): os dados que entram no app | Só com dado conferido |
 | `src/engine/boundary.mjs`, `src/application/block-planning.mjs` | Contorno e planejamento em bloco (vieram da 2.x; a 4.x usa) | Sim, com testes |
 | `src/platform/` | Trava entre abas e modelo do service worker | Com cuidado |
 | `audit/` | Testes (`npm test`, `npm run test:browser`), referências de imagem (`visual/`) e resultados gravados (`gravado/`) | Sim |
@@ -39,8 +39,8 @@ O código é a fonte da verdade. Se este texto divergir dele, vale o código.
 | `docs/` | Só documentos vivos (lista no `PAINEL.md`) | Sim |
 
 ## 3. De onde vêm os dados
-- `scripts/build-3.mjs` (`build3`) lê os **dados dos 51 lotes e da safra** de `src/dados/lotes.json` e
-  `src/dados/safra.json` (os mesmos bytes que vinham da 2.5; o `index.html` saiu idêntico na troca).
+- `scripts/build-3.mjs` (`build3`) lê os **dados dos 51 lotes** de `src/dados/lotes.json` e a cultura e variedade de
+  `src/dados/culturas.json` (5.0; chuva, stand e sementes saíram da tela).
 - Cada lote tem:
   - geometria em metros (UTM 23S, relativa ao centroide);
   - área oficial;
@@ -64,7 +64,7 @@ O código é a fonte da verdade. Se este texto divergir dele, vale o código.
 | 9. Medidas | `engine3/metrics.mjs` (`coverage`), `voronoi.mjs` (`exactCoverage`) | "95% do lote" (p95 da distância ao ponto mais perto, em grade fina) e maior vazio **exato** (Voronoi recortado) |
 | 10. Recomendação | `engine3/recommend.mjs` (`recommendPlan`) + `app3/planner.mjs` (`recommend`, `balanceSteps`) | Escolhe o espaçamento. Depois testa fases e espaçamentos vizinhos para igualar a área de cada ponto, sem piorar a cobertura (p95 ≤ +3%, maior vazio nunca maior, caminhada ≤ +10%). A bordadura desempata |
 | 11. Sugestões | `planner.mjs`: `minimaxEdits`, `plusOne`, `plusOneHere` | "Distribuir melhor os pontos" (encurta o maior vazio) e "Ponto no maior vazio" (+1 ponto onde mais falta). Rodam no worker |
-| 12. Equipe | `engine3/team.mjs` (`teamPlan`) | Reparte os tiros entre as pessoas. Na mesma pessoa, a ordem serpentina minimiza a caminhada |
+| 12. Escolher tiros | `app3/planner.mjs` (`tracksSteps`) | Com N tiros pedidos: espaçamento na barra × fase com exatamente N tiros; fica com bordadura, tiros de 1 ponto, maior vazio e áreas iguais, nesta ordem (5.0) |
 | 13. Rota e guia | `engine3/guidance.mjs` (`buildRoute`); `app3/monitor.mjs` (`guideModel`, `nearEndFlipped`, `speedStep`, `modeStep`, `courseStep`, `guideAlerts`) | Ordem dos pontos no tiro, a ponta mais perto, distância andando, moto ou a pé, vibração e voz, e o rumo do deslocamento para girar o mapa |
 
 O motor (`engine3`) não conhece a tela. A tela chama o motor por `planner.mjs` (plano) e `monitor.mjs` (guia).
@@ -79,7 +79,7 @@ O motor (`engine3`) não conhece a tela. A tela chama o motor por `planner.mjs` 
   - pinça de 0,25× a 12×;
   - "rumo para cima" gira o mapa pelo rumo do GPS ou da bússola, com os textos em pé.
 - **Estado salvo** em `localStorage['monitoramento.v03']`:
-  - lote, parâmetros e ajustes por lote, pessoas, modo Sol e camadas.
+  - lote, parâmetros e ajustes por lote, modo Sol e camadas (5.0: pessoas e "limitar à equipe" gravados por versões antigas são ignorados).
   - Formato herdado da 2.x; a 4.x preserva o que não usa (quem tinha dados da 2.x abre igual).
 - **Segurança:** CSP por hash. Nada de `style=` inline (o build reprova). Imagens só de `services.arcgisonline.com`
   (satélite opcional, desligado por padrão).

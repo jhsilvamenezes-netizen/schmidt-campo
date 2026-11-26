@@ -26,7 +26,7 @@ export function explainScenario(sc, field) {
         ? [`Retas na direção ${one(sc.bearing)}°. A largura do lote foi dividida em ${p.trackCount} faixas iguais de ${int(sc.deltaM)} m, com um tiro no meio de cada uma${sc.anchored ? ', ajustado para o múltiplo de barra mais próximo' : ''}.`]
         : [`Retas na direção ${one(sc.bearing)}° (${p.bearingDeg === null ? 'da planilha' : 'alterada à mão'}).`,
           sc.anchored && sc.passes
-            ? `Distância máxima pedida: ${int(p.trackSpacingM)} m → ${sc.passes} larguras de barra de ${two(p.boomWidthM)} m = ${two(sc.deltaM)} m entre tiros, contadas a partir do ponto A.`
+            ? `Tiros a ${int(sc.deltaM)} m um do outro: ${sc.passes} passadas da barra de ${two(p.boomWidthM)} m, contadas a partir do ponto A.`
             : `Tiros a cada ${int(sc.deltaM)} m (no máximo ${int(p.trackSpacingM)} m).`];
   add('Tiros', [...trackLines, `${plural(inside, 'tiro atravessa', 'tiros atravessam')} o lote.`]);
   const split = sc.selected.filter(t => sc.units.filter(u => u.trackId === t.id).length > 1);
@@ -54,17 +54,17 @@ export function explainScenario(sc, field) {
   add('Posição dos pontos', [`Regra das pontas: ${rule}`,
     longest ? `Exemplo: ${longest.unitId} tem ${int(longest.lengthM)} m e ${longest.n} pontos → um ponto a cada ${int(gap)} m, o 1º a ${int(longest.startMarginM)} m da borda.` : '',
     'As distâncias são medidas andando sobre o tiro (vale também para curvas).']);
-  if (sc.optimization) {
+  // 5.0 · só aparece quando a busca mudou o plano (antes também explicava quando não mudava nada)
+  if (sc.optimization?.accepted) {
     const o = sc.optimization;
     add('Busca de distribuição melhor', [
-      o.accepted ? `Aceita: a maior distância até um ponto (95% do lote) caiu de ${int(o.baseline.p95M)} m para ${int(o.optimized.p95M)} m.` : 'Mantido o plano original: a busca não melhorou sem piorar a regularidade.',
-      `Limites respeitados: maior intervalo até ${int(o.limits.maxGapM ?? 0)} m e nenhuma parte sem ponto.`,
+      `A maior distância até um ponto (95% do lote) caiu de ${int(o.baseline.p95M)} m para ${int(o.optimized.p95M)} m.`,
       o.moves.length ? `Pontos trocados de tiro: ${o.moves.map(m => `${m.from}→${m.to}`).join(', ')}.` : '']);
   }
   const g = sc.longitudinal.global, nErr = sc.warnings.filter(w => w.level === LEVEL.ERRO).length, nWarn = sc.warnings.filter(w => w.level === LEVEL.ALERTA).length;
   add('Resultado', [
     g.max === null ? 'Nenhum tiro tem dois pontos (sem intervalos para medir).' : `Maior distância entre dois pontos do mesmo tiro: ${int(g.max)} m. Distribuição ${regularityWord(g.cv)}.`,
     sc.coverage.p95 === null ? '' : `95% do lote fica a menos de ${int(sc.coverage.p95)} m de algum ponto.`,
-    nErr || nWarn ? `Antes de ir a campo: ${plural(nErr, 'erro', 'erros')} e ${plural(nWarn, 'alerta', 'alertas')} para conferir na lista abaixo.` : 'Nenhum erro ou alerta.']);
+    nErr || nWarn ? `Antes de ir a campo: ${plural(nErr, 'erro', 'erros')} e ${plural(nWarn, 'alerta', 'alertas')} para conferir (veja a Conferência no Plano).` : 'Nenhum erro ou alerta.']);
   return steps;
 }

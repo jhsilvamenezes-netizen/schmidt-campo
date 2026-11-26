@@ -20,14 +20,12 @@ test('recomendação base nos 51 lotes = resultado gravado (espaçamento, fase e
 test('plano em uso, números e conferência nos 51 lotes', () => {
   for (const k of keys) {
     const f = fields[k], rec = P.recommend(f, {}, 5, false), sc = P.planInUse(f, rec.chosen.params, null);
-    const fig = P.figures(sc), blind = P.uncovered(f, sc), list = P.checks(sc, 5, blind);
+    const fig = P.figures(sc), blind = P.uncovered(f, sc), list = P.checks(sc, blind);
     assert.equal(fig.pontos, sc.samples.length); assert.ok(sc.samples.length >= sc.minPoints, k);
-    assert.ok(list.length >= 4 && list.every(c => ['ok', 'alerta', 'erro'].includes(c.level) && c.text), k);
+    assert.ok(list.length >= 3 && list.every(c => ['ok', 'alerta', 'erro'].includes(c.level) && c.text), k);
     assert.ok(blind.limitHa >= 0.5 && blind.haBlind >= 0, k);
     assert.ok(P.sameShape(sc.params, rec.chosen.params), k);
     for (const a of rec.alternatives.filter(Boolean)) assert.ok(!P.sameShape(sc.params, a.params), `${k} ${a.id}`);
-    const team = P.team(sc, 5); assert.equal(team.pessoas.length, Math.min(5, sc.selected.length) || 5, k);
-    assert.match(P.summaryText(f, sc, 5, list, team), /SCHMIDT CAMPO · Plano/);
   }
 });
 
@@ -43,19 +41,6 @@ test('estado salvo: lê o da 2.x e grava sem apagar o que não usa', () => {
   const s = createStore(storage); s.update({ quickMonitors: 7 });
   assert.deepStrictEqual(JSON.parse(mem.get(STATE_KEY)), { planningBlocks: { a: 1 }, editsByField: { x: 2 }, monitor: { m: 3 }, sunMode: false, quickMonitors: 7 });
   mem.set(STATE_KEY, 'corrompido'); assert.deepStrictEqual(createStore(storage).get(), {});
-});
-
-test('buscar distribuição melhor: ajuste gravado reabre igual e não piora o p95', () => {
-  let improved = 0;
-  for (const k of keys) { // 3.2: com a proteção do pior vazio, só RB8 ainda melhora
-    const f = fields[k], rec = P.recommend(f, {}, 5, false), params = rec.chosen.params, r = P.optimizeEdits(f, params);
-    if (!r.edits) continue;
-    improved++;
-    const sc = P.planInUse(f, params, r.edits), plain = P.planInUse(f, params, null);
-    assert.equal(sc.samples.length, plain.samples.length, k);
-    assert.ok(sc.coverage.p95 <= r.report.baseline.p95M + 1e-6, k);
-  }
-  assert.ok(improved >= 1, 'ao menos um lote melhora');
 });
 
 test('cores do mapa: contraste ≥ 3:1 com o lote e pontos distintos dos tiros também para daltônicos', async () => {
@@ -161,36 +146,6 @@ test('3.20 · o tiro pode ser feito pelas duas pontas: a guia entra pela ponta m
   assert.ok(n >= 150, `tiros testados: ${n}`);
 });
 
-test('3.21 · equipe em zigue-zague: cada pessoa anda o mínimo (todas as combinações de pontas), 1 tiro igual ao motor', async () => {
-  const { teamPlan: legacyTeam } = await import('../src/engine3/team.mjs');
-  const { cumulative, pointAt } = await import('../src/engine3/polyline.mjs');
-  let multi = 0;
-  for (const k of keys) for (const ppl of [1, 2, 3]) {
-    const f = fields[k], sc = P.planInUse(f, P.recommend(f, {}, 5, false).chosen.params, null), A = legacyTeam(sc, ppl), B = P.team(sc, ppl);
-    if (!A) continue;
-    assert.deepStrictEqual(B.pessoas.map(p => p.tarefas.map(t => t.id)), A.pessoas.map(p => p.tarefas.map(t => t.id)), `${k} ${ppl}: mesma divisão`);
-    B.pessoas.forEach((pb, i) => {
-      if (pb.tarefas.length < 2) { assert.deepStrictEqual(pb, A.pessoas[i], `${k} ${ppl}: 1 tiro igual ao motor`); return; }
-      const ts = pb.tarefas.map(t => { const tr = sc.selected.find(x => x.id === t.id), us = sc.units.filter(u => u.trackId === t.id), cum = cumulative(tr.line);
-        const a = Math.min(...us.map(u => u.s0Track)), b = Math.max(...us.map(u => u.s0Track + u.len)), pts = sc.samples.filter(q => q.trackId === t.id && Number.isFinite(q.sTrack)).map(q => q.sTrack).sort((x, y) => x - y);
-        return { a, b, pts, end: { a: pointAt(tr.line, a, cum), b: pointAt(tr.line, b, cum) } }; });
-      if (ts.length > 8) return;
-      // força bruta: toda entrada e toda saída de cada tiro; passagem em linha reta da saída à próxima entrada
-      const walkIn = (t, e, x) => e !== x ? t.b - t.a : !t.pts.length ? 0 : e === 'a' ? 2 * (t.pts.at(-1) - t.a) : 2 * (t.b - t.pts[0]);
-      let best = Infinity;
-      for (let m = 0; m < 4 ** ts.length; m++) {
-        let c = 0, prev = null;
-        ts.forEach((t, j) => { const e = (m >> (2 * j)) & 1 ? 'b' : 'a', x = (m >> (2 * j + 1)) & 1 ? 'b' : 'a';
-          if (prev) c += Math.hypot(prev[0] - t.end[e][0], prev[1] - t.end[e][1]); c += walkIn(t, e, x); prev = t.end[x]; });
-        best = Math.min(best, c);
-      }
-      assert.ok(Math.abs(pb.m - best) < 0.5, `${k} ${ppl} pessoa ${i + 1}: ${pb.m.toFixed(1)} m ≠ mínimo ${best.toFixed(1)} m`);
-      multi++;
-    });
-  }
-  assert.ok(multi >= 150, `pessoas com 2+ tiros: ${multi}`);
-});
-
 test('U05 · recomendações embutidas no arquivo = motor da tela, nos 51 lotes (5 pessoas, sem limitar à equipe)', async () => {
   const { recsData, RECS_PEOPLE } = await import('../scripts/build-3.mjs');
   const data = JSON.parse(await recsData(fields));
@@ -198,7 +153,7 @@ test('U05 · recomendações embutidas no arquivo = motor da tela, nos 51 lotes 
   assert.deepStrictEqual(Object.keys(data.recs).sort(), keys);
   for (const k of keys) {
     const { linha, ...rec } = data.recs[k], want = P.recommend(fields[k], {}, RECS_PEOPLE, false), sc = P.planInUse(fields[k], want.chosen.params, null);
-    assert.deepStrictEqual(rec, JSON.parse(JSON.stringify(want)), k);
+    assert.deepStrictEqual(rec, { ...JSON.parse(JSON.stringify(want)), alternatives: [] }, k); // 5.0: alternativas não vão no arquivo
     // 4.2 · linha pronta da aba Lotes = plano em uso calculado na hora
     assert.deepStrictEqual(linha, { pontos: sc.samples.length, tiros: sc.selected.length, p95: sc.coverage.p95, alerts: sc.warnings.filter(w => w.level !== 'info').length }, k);
   }
@@ -292,15 +247,6 @@ test('3.3 · melhorar a distribuição: nos 51 lotes nunca piora (pior vazio, 95
   }
 });
 
-test('3.2 · "Buscar distribuição melhor" não aceita piorar o pior vazio nem a igualdade das áreas', () => {
-  for (const k of keys) {
-    const f = fields[k], params = P.recommend(f, {}, 5).chosen.params, r = P.optimizeEdits(f, params);
-    if (!r.edits) continue;
-    const before = P.pointAreas(f, P.planInUse(f, params, null)), after = P.pointAreas(f, P.planInUse(f, params, r.edits));
-    assert.ok(after.worstGapM <= before.worstGapM + 1, `${k}: pior vazio ${before.worstGapM} → ${after.worstGapM}`);
-  }
-});
-
 test('3.15 · lote irregular: +1 ponto só onde o maior vazio passa de 1,2 × o lado ideal e o ganho é ≥ 8% (BD5, RB9); 4.0.1: BD5 no próprio vazio', () => {
   const hit = [];
   for (const k of keys) {
@@ -325,4 +271,22 @@ test('3.15 · lote irregular: +1 ponto só onde o maior vazio passa de 1,2 × o 
   assert.deepEqual(hit.sort(), ['BD5', 'BE1', 'RB9']);
   const bd5 = P.plusOne(fields['Bananal|BD5'], P.recommend(fields['Bananal|BD5'], {}, 5, false).chosen.params, 5);
   assert.equal(bd5.reason, 'vazio', 'BD5: o ponto no vazio vence o plano refeito');
+});
+
+test('5.0 · escolher N tiros: exatamente N e maior vazio melhor que faixas iguais na maioria (51 lotes, recomendado ± 1)', () => {
+  let exact = 0, total = 0, better = 0, worse = 0;
+  for (const k of keys) {
+    const f = fields[k], rec = P.recommend(f, {}, 5, false), n0 = rec.chosen.m.tiros, cp = rec.chosen.params;
+    for (const n of [n0 - 1, n0 + 1]) {
+      if (n < 1) continue; total++;
+      const params = P.tracksPlan(f, {}, cp, n), sc = P.planInUse(f, params, null);
+      if (sc.selected.length === n) exact++;
+      if (params.trackMode !== 'espacamento') continue;
+      const a = P.balanceStats(f, params), q = P.balanceStats(f, { ...cp, trackMode: 'quantidade', trackCount: n, trackPhaseM: 0 });
+      if (!a || !q) continue;
+      if (a.worst < q.worst - 1e-6) better++; else if (a.worst > q.worst + 1e-6) worse++;
+    }
+  }
+  assert.ok(exact / total >= 0.98, `${exact} de ${total} com o número pedido`);
+  assert.ok(better >= 3 * worse, `maior vazio: melhor em ${better}, pior em ${worse}`);
 });
