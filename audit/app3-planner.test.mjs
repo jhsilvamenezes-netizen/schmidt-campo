@@ -99,6 +99,17 @@ test('Monitorar: estados da guia nos 51 lotes (sem GPS, chegada, a caminho, GPS 
     const mid = guideModel(route, sc, f, at((p1.x + p2.x) / 2, (p1.y + p2.y) / 2), now, {});
     assert.equal(mid.state, 'go', k); assert.match(mid.title, /Ponto 2/); assert.ok(Number.isFinite(mid.azimuth));
     assert.equal(guideModel(route, sc, f, at(p1.x, p1.y, 4, 60000), now, {}).state, 'stale', k);
+    // 4.8 · N5 · 1ª leitura fraca (± 25 m) no meio do tiro: espera firmar (antes mandava voltar ao ponto 1); ± 15 m guia
+    const meio = (acc, ss = {}) => guideModel(route, sc, f, at((p1.x + p2.x) / 2, (p1.y + p2.y) / 2, acc), now, ss);
+    assert.equal(meio(25).state, 'wait', k); assert.match(meio(25).title, /firmar/);
+    assert.match(meio(15).title, /Ponto 2/, k);
+    // 4.8 · ponto alcançado não manda voltar; passar ao lado (fora do raio) sem chegar ainda avisa "Passou do ponto"
+    const L = Math.hypot(p2.x - p1.x, p2.y - p1.y), vx = (p2.x - p1.x) / L, vy = (p2.y - p1.y) / L, s2 = {};
+    guideModel(route, sc, f, at(p1.x - vx * 40, p1.y - vy * 40), now, s2); guideModel(route, sc, f, at(p1.x, p1.y), now, s2);
+    assert.ok(!(guideModel(route, sc, f, at(p1.x + vx * 13, p1.y + vy * 13), now, s2).warn || []).some(w => /Passou/.test(w)), `${k} alcançou o ponto 1, sem "volte"`);
+    const s3 = {}; guideModel(route, sc, f, at(p1.x - vx * 40, p1.y - vy * 40), now, s3);
+    assert.ok((guideModel(route, sc, f, at(p1.x + vx * 13 - vy * 12, p1.y + vy * 13 + vx * 12), now, s3).warn || []).some(w => /Passou do ponto 1/.test(w)), `${k} passou ao lado sem chegar: avisa`);
+    const ses = {}; meio(8, ses); assert.notEqual(meio(25, ses).state, 'wait', `${k} depois de firmar, leitura fraca não volta a esperar`);
     // 3.16 · chegada pela precisão do GPS: a 12 m do ponto, ± 4 m ainda não chegou; ± 13 m chegou, com aviso de conferir
     const ux = (p2.x - p1.x) / Math.hypot(p2.x - p1.x, p2.y - p1.y), uy = (p2.y - p1.y) / Math.hypot(p2.x - p1.x, p2.y - p1.y);
     const ar4 = guideModel(route, sc, f, at(p1.x - uy * 12, p1.y + ux * 12, 4), now, {}), ar13 = guideModel(route, sc, f, at(p1.x - uy * 12, p1.y + ux * 12, 13), now, {});

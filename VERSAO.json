@@ -1,16 +1,17 @@
 {
-  "entrega": "4.7.0",
+  "entrega": "4.8.0",
   "nome": "SCHMIDT Campo",
   "data": "2026-11-25",
-  "versaoDoApp": "4.7.0",
+  "versaoDoApp": "4.8.0",
   "versaoLegado": "2.5.0",
   "baselineCommit": "a1ad502c315b4b3d484444f9e2734400abd0b72a",
-  "htmlSha256": "3cd013f77c1a4500c302f5cfd4697c9dbb9c5d45ceaa7934ab569b7e256bc736",
-  "workerSha256": "5df2f66f5aa3868e4a6cc864450d7d2e651f9b936d7bca600cd1192b06b54e13",
+  "htmlSha256": "c354cf9a77b9d5312affe740e64e4d8ac2e25d5704816d10fb18224a19e5549b",
+  "workerSha256": "5a13e0b5b0e36aaceeeb360fe938aeab5d23795fdc12d4ee627fdc5215a105eb",
   "legadoSha256": "3cca612fbb2d3530b0724536c4f351c4ad1e1e3d1b1459846e97fb7aa5c42adf",
   "linkWeb": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/",
   "linkLegado": "https://jhsilvamenezes-netizen.github.io/schmidt-campo/legado/",
   "incluidoNoRuntime": [
+    "4.8.0: guia mais confiável — (1) GPS fraco (> 15 m) no início: a guia espera firmar, sem seta (antes a 1ª leitura ruim no meio do tiro mandava voltar ao ponto 1); (2) ponto já alcançado não gera mais \"Passou do ponto: volte\" e, seguindo após o último, aparece \"Tiro concluído\" com o botão do próximo tiro. Simulação nos 198 tiros dos 51 lotes, GPS oscilando: avisos falsos de \"volte\" 38.858 → 2 leituras; chegadas 740 de 740 (igual)",
     "4.7.0: detalhes — marca única \"SCHMIDT CAMPO\" (mesma escrita e mesmo peso no topo, abertura, Mais, título da aba, app instalado e resumo para WhatsApp); a 360 px os 3 rótulos de medida cabem em uma linha, subtítulos das opções vão a 2 linhas em vez de cortar, \"igual por pessoa\" e \"os pontos\" não se separam, \"Hectares / por ponto\" quebra equilibrado; na guia de moto o nome da pessoa dá lugar à velocidade",
     "4.6.0: GPS com filtro de Kalman (posição e velocidade, ruído pela precisão de cada leitura): em simulação (900 trajetos a pé e de moto, ruído 4–8 m) o erro da posição cai 35–55%, a chegada ao ponto não atrasa (a pé deixa de avisar ~1,4 s antes por tremor) e não há aviso falso; recomeça após 10 s sem sinal ou salto grande",
     "4.5.1: auditoria completa (código, HTML, acessibilidade, visual, PWA) — janelas no computador ficam na coluna do app (abriam na tela inteira); glossário com o nome que a tela usa (\"Distribuir melhor os pontos\"); título para leitor de tela na guia; HTML válido (DOCTYPE, botões com type); manifesto do app instalável completo (id, idioma, descrição, ícone maskable separado); código morto removido; varredura de acessibilidade (axe, 3 temas, 11 telas) vira teste permanente: 0 violações",
@@ -113,5 +114,5 @@
     "2.5: ícone desenhado no botão de ferramentas do mapa (no lugar do caractere ☷); subtítulo de 9 px fora do celular"
   ],
   "runtimeBlocks": true,
-  "motorSha256": "fa28a777391c9ee7dec0c1baf46bb358c719b9e1185b50ecc6090707db193c50"
+  "motorSha256": "a95e2bf591ad19a7d078732f080fe58e77e516a668bfe0ad25df70d50c19f3ef"
 }

@@ -493,3 +493,19 @@ Pedido do proprietário: "SCHMIDT Campo" aparecia em maiúsculas num lugar e nã
 
 Medido com varredura automática das 4 abas a 360 px: nenhum texto curto quebrado ou cortado.
 
+## 32. 4.8.0 · guia: GPS fraco no início e "volte" falso (25/11)
+Pedido do proprietário: só o N5 (aviso de GPS fraco); N1, N2 e M5 ficam de fora por serem subjetivos.
+
+Simulação: os 198 tiros dos 51 lotes andados a 1,2 m/s, GPS bom (± 4–8 m) com 15 s fracos (± 18–24 m) a cada minuto.
+| Medida | 4.7.0 | 4.8.0 |
+|---|---|---|
+| Leituras com "Passou do ponto: volte" andando certo | 38.858 de 286.494 | 2 |
+| Delas, depois do último ponto (indo à cabeceira) | ~27.300 | 0 ("Tiro concluído") |
+| Chegadas aos pontos | 740 de 740 | 740 de 740 |
+
+- **N5:** até a 1ª posição boa (± 15 m ou menos), a guia mostra "Aguardando o GPS firmar" com a precisão atual,
+  sem seta. Antes, a 1ª leitura fraca caía no ponto 1 e, no meio do tiro, mandava voltar centenas de metros.
+- **Ponto alcançado:** a guia lembra o ponto em que a pessoa chegou; passar dele não gera "volte". Quem passa ao lado
+  sem chegar (fora do raio) continua avisado. Depois do último ponto: "Tiro concluído" e o botão do próximo tiro.
+- Testes nos 51 lotes: espera com ± 25 m, guia com ± 15 m, sem "volte" após chegar, aviso ao passar sem chegar.
+
