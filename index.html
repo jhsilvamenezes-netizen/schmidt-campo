@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-IY6ZIPXtrbOAVqvucPkj7t4xNbGUqHj1DpnJAlR1FHg=' 'sha256-3t7fg8UsuReofVlFdM9QYvg7HcQvu2iS5CKHtoBzXKk='; style-src 'sha256-8qngPmcv6CAhURba59Qshsg29tozV5KvvnvuXSkI4SM='; img-src 'self' data: blob: https://services.arcgisonline.com; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-IY6ZIPXtrbOAVqvucPkj7t4xNbGUqHj1DpnJAlR1FHg=' 'sha256-3t7fg8UsuReofVlFdM9QYvg7HcQvu2iS5CKHtoBzXKk='; style-src 'sha256-ahPg037xP/RvMeaaMiFLPMs01GkSfmgrnYU10/crN+c='; img-src 'self' data: blob: https://services.arcgisonline.com; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#023628" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#01261c" media="(prefers-color-scheme: dark)">
 <title>SCHMIDT CAMPO</title>
 <link rel="preload" href="inter.woff2" as="font" type="font/woff2" crossorigin><link rel="icon" href="marca.svg"><link rel="apple-touch-icon" href="marca-180.png"><link rel="manifest" href="app.webmanifest">
@@ -464,6 +464,22 @@ main.tab-in>*:not(.map){animation:entra 180ms cubic-bezier(.2,.7,.2,1)}
 @keyframes lotin{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
 [data-design="4"] .map-svg.lotin{animation:lotin .22s ease-out;transform-origin:50% 45%}
 @media (prefers-reduced-motion:reduce){[data-design="4"] .map-svg.lotin{animation:none}}
+/* 5.1 · tipografia única (revisão de 27/11): tamanhos 13 · 14 · 16 · 18 · 22 · 30 px (o número grande cresce até 36 px em
+   tela larga); pesos 400 · 600 · 700 (800 só na marca); espaçamento: títulos de seção .1em, números grandes −.02em, o
+   resto o do corpo. O mesmo número de destaque tem o mesmo tamanho em todas as abas. */
+[data-design="4"] :is(.eyebrow,.h,.lpanel .lh){letter-spacing:.1em}
+[data-design="4"] .big{font-weight:700;letter-spacing:-.02em}
+[data-design="4"] .big span{font-weight:400}
+[data-design="4"] #view>.sheet .big{font-size:clamp(30px,8.2vw,36px)}
+[data-design="4"] .m b{font-size:min(18px,4.8vw);letter-spacing:-.02em}
+[data-design="4"] .lot{font-size:18px;letter-spacing:normal}
+[data-design="4"] .btn{font-weight:600;letter-spacing:normal}
+[data-design="4"] .gsheet.moto .guide>.gtxt>.mu:first-child{font-weight:600}
+[data-design="4"] .stp button{font-weight:600}
+[data-design="4"] .fold>summary .x .sub{font-size:13px}
+.skip:focus{color:var(--br);font-weight:600}
+[data-design="4"] .m3{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1.06fr)}[data-design="4"] .m small{white-space:nowrap}
+[data-design="4"] :is(.li .id,nav button){letter-spacing:normal}
 </style></head>
 <body>
 <div id="splash" aria-hidden="true"><img src="marca-logo.png" alt="" width="168" height="168"><b class="wm">SCHMIDT CAMPO</b><small>Planejamento de amostragem</small></div>
