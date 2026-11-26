@@ -25,6 +25,7 @@ Atualizado em 26/11/2026.
 | Dados | Não inventar valor (o que não foi conferido fica "a confirmar"). Não inferir divisa. Sem marcação de coleta |
 | Fora de escopo | Arquivos e fichas, versões, cópia, qualidade do GPS, vitrine (saíram na 4.2), cadastro de pessoas, resumo por pessoa, lote novo, KML novo, drone, envio do arquivo de GPS, alertas em selo, textura de plantio |
 | Satélite | Esri World Imagery, desligado por padrão. A licença está "a confirmar" com a Esri |
+| Publicação | Auditar antes de publicar: juntar as correções da auditoria e só então publicar (decisão de 27/11) |
 | Versões antigas | Saíram na 4.9 (decisão de 26/11: a 4.x é a base validada). Ficam só no histórico do Git |
 
 ## Fila (por valor, com o porquê)

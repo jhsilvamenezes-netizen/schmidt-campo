@@ -13,7 +13,7 @@ export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', '
   'app3/gestures', 'app3/monitor', 'app3/compass', 'platform/browser-session-lock',
   'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/offline',
   'app3/screen-mapa', 'app3/screen-monitor', 'app3/screen-plano', 'app3/screen-mais', 'app3/screen-lotes', 'app3/screen-bloco', 'app3/main'];
-export const APP_VERSION = '4.10.0';
+export const APP_VERSION = '5.0.0';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
 /** Cada módulo no seu escopo; importações do motor viram o namespace schmidtEngine2. */
@@ -60,7 +60,8 @@ export async function recsData(fields) {
   for (const k of Object.keys(fields).sort()) {
     const rec = P.recommend(fields[k], {}, RECS_PEOPLE, false), sc = P.planInUse(fields[k], rec.chosen.params, null);
     // 4.2 · linha pronta da aba Lotes (plano recomendado): a lista abre sem recalcular a cobertura de cada lote
-    recs[k] = { ...rec, linha: { pontos: sc.samples.length, tiros: sc.selected.length, p95: sc.coverage.p95, alerts: sc.warnings.filter(w => w.level !== 'info').length } };
+    // 5.0 · sem "Outras opções" na tela: as alternativas não vão no arquivo (−74 KB)
+    recs[k] = { ...rec, alternatives: [], linha: { pontos: sc.samples.length, tiros: sc.selected.length, p95: sc.coverage.p95, alerts: sc.warnings.filter(w => w.level !== 'info').length } };
   }
   return JSON.stringify({ schema: 'schmidt3.recomendacoes.v1', motor: P.ENGINE_LABEL, pessoas: RECS_PEOPLE, recs });
 }

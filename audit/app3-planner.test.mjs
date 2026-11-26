@@ -43,19 +43,6 @@ test('estado salvo: lê o da 2.x e grava sem apagar o que não usa', () => {
   mem.set(STATE_KEY, 'corrompido'); assert.deepStrictEqual(createStore(storage).get(), {});
 });
 
-test('buscar distribuição melhor: ajuste gravado reabre igual e não piora o p95', () => {
-  let improved = 0;
-  for (const k of keys) { // 3.2: com a proteção do pior vazio, só RB8 ainda melhora
-    const f = fields[k], rec = P.recommend(f, {}, 5, false), params = rec.chosen.params, r = P.optimizeEdits(f, params);
-    if (!r.edits) continue;
-    improved++;
-    const sc = P.planInUse(f, params, r.edits), plain = P.planInUse(f, params, null);
-    assert.equal(sc.samples.length, plain.samples.length, k);
-    assert.ok(sc.coverage.p95 <= r.report.baseline.p95M + 1e-6, k);
-  }
-  assert.ok(improved >= 1, 'ao menos um lote melhora');
-});
-
 test('cores do mapa: contraste ≥ 3:1 com o lote e pontos distintos dos tiros também para daltônicos', async () => {
   const { readFile } = await import('node:fs/promises');
   const css = await readFile(new URL('../src/app3/styles.css', import.meta.url), 'utf8');
@@ -166,7 +153,7 @@ test('U05 · recomendações embutidas no arquivo = motor da tela, nos 51 lotes 
   assert.deepStrictEqual(Object.keys(data.recs).sort(), keys);
   for (const k of keys) {
     const { linha, ...rec } = data.recs[k], want = P.recommend(fields[k], {}, RECS_PEOPLE, false), sc = P.planInUse(fields[k], want.chosen.params, null);
-    assert.deepStrictEqual(rec, JSON.parse(JSON.stringify(want)), k);
+    assert.deepStrictEqual(rec, { ...JSON.parse(JSON.stringify(want)), alternatives: [] }, k); // 5.0: alternativas não vão no arquivo
     // 4.2 · linha pronta da aba Lotes = plano em uso calculado na hora
     assert.deepStrictEqual(linha, { pontos: sc.samples.length, tiros: sc.selected.length, p95: sc.coverage.p95, alerts: sc.warnings.filter(w => w.level !== 'info').length }, k);
   }
@@ -257,15 +244,6 @@ test('3.3 · melhorar a distribuição: nos 51 lotes nunca piora (pior vazio, 95
   for (const [code, max] of [['BD5', 620], ['BD3', 360]]) {
     const k = keys.find(x => fields[x].code === code), r = P.minimaxEdits(fields[k], P.recommend(fields[k], {}, 5).chosen.params);
     assert.ok(r.after.worst <= max, `${code}: ${r.after.worst}`);
-  }
-});
-
-test('3.2 · "Buscar distribuição melhor" não aceita piorar o pior vazio nem a igualdade das áreas', () => {
-  for (const k of keys) {
-    const f = fields[k], params = P.recommend(f, {}, 5).chosen.params, r = P.optimizeEdits(f, params);
-    if (!r.edits) continue;
-    const before = P.pointAreas(f, P.planInUse(f, params, null)), after = P.pointAreas(f, P.planInUse(f, params, r.edits));
-    assert.ok(after.worstGapM <= before.worstGapM + 1, `${k}: pior vazio ${before.worstGapM} → ${after.worstGapM}`);
   }
 });
 

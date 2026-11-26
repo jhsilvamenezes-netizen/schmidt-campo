@@ -87,7 +87,7 @@ try {
     await p.click('[data-tab="plano"]');
     const before = await p.evaluate(() => JSON.stringify(JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3']));
     await p.click('[data-ha-set="10"]'); await p.waitForSelector('#toast [data-toast]'); await p.click('#toast [data-toast]');
-    assert.equal(await p.evaluate(() => JSON.stringify(JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3'])), before, 'Desfazer volta o plano');
+    assert.deepStrictEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('monitoramento.v03')).paramsByField['Bananal|BD3']), JSON.parse(before), 'Desfazer volta o plano');
     // busca de lote e recentes
     await p.click('button.lot'); await p.fill('[data-search]', 'bd'); assert.ok(await p.locator('[data-lots] .lotb').count() >= 3);
     await p.fill('[data-search]', 'zzz'); assert.match(await p.textContent('[data-lots]'), /Nenhum lote/);

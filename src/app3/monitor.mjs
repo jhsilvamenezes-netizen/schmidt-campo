@@ -162,7 +162,6 @@ export const ENTRY_REACHED_M = 30;
 
 /** 3.17 · de moto ou a pé, pela velocidade (≥ 2,5 m/s ≈ 9 km/h: moto; parado ou andando: a pé). */
 export const MOTO_MPS = 2.5;
-export const modeOf = speedMps => (Number.isFinite(speedMps) && speedMps >= MOTO_MPS ? 'moto' : 'pe');
 /** Tempo até o ponto na velocidade atual (só em movimento). */
 const eta = (m, speedMps) => {
   if (!Number.isFinite(speedMps) || speedMps < 0.8 || !(m > 0)) return '';
