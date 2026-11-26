@@ -2,17 +2,18 @@
 // compatível com a 2.x e estado salvo preservado.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadLegacyEngine, loadFields } from './legacy-engine.mjs';
+import { loadFields } from './lotes.mjs';
+import { readFileSync } from 'node:fs';
 import * as P from '../src/app3/planner.mjs';
-import { buildPlanFile, parsePlanFile } from '../src/app3/plan-file.mjs';
 import { createStore, STATE_KEY } from '../src/app3/store.mjs';
 
-const old = await loadLegacyEngine(), fields = await loadFields(), keys = Object.keys(fields).sort();
+const gravado = JSON.parse(readFileSync(new URL('./gravado/recomendacao-base.json', import.meta.url), 'utf8')), fields = await loadFields(), keys = Object.keys(fields).sort();
 
-test('recomendação base da tela nova = motor 0.5.1 nos 51 lotes (espaçamento, fase e alternativas)', () => {
+// 4.9 · a 2.5 saiu: a referência é o resultado gravado do motor atual (validado pela equipe). Mudou de propósito? Regravar.
+test('recomendação base nos 51 lotes = resultado gravado (espaçamento, fase e alternativas)', () => {
   for (const k of keys) {
-    const a = P.recommendBase(fields[k], {}, 5, false), b = old.recommend.recommendPlan(fields[k], {}, { monitors: 5, fitTeam: false });
-    assert.deepStrictEqual(JSON.parse(JSON.stringify(a)), JSON.parse(JSON.stringify(b)), k);
+    const a = P.recommendBase(fields[k], {}, 5, false);
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(a)), gravado[k], k);
   }
 });
 
@@ -34,16 +35,6 @@ test('BD3: mesmos números que a 2.5 mostra', () => {
   const f = fields['Bananal|BD3'], rec = P.recommend(f, {}, 5, false), sc = P.planInUse(f, rec.chosen.params, null), b = P.uncovered(f, sc);
   assert.deepStrictEqual(P.figures(sc), { pontos: 24, tiros: 5, entreTiros: '438 m', entrePontos: '438–515 m', p95: '< 261 m', caminhada: '12,7 km' });
   assert.equal(Math.round(b.limitM), 376); assert.equal(b.limitHa.toFixed(1), '4.7');
-});
-
-test('arquivo de plano: ida e volta, e recusa de arquivo ruim', () => {
-  const f = fields['Bananal|BD3'], rec = P.recommend(f, {}, 5, false);
-  const file = buildPlanFile({ engineVersion: '2.0.0', appVersion: '3.0.0', fieldKey: 'Bananal|BD3', summary: {}, params: { ...rec.chosen.params, haPerPoint: 20 } });
-  const back = parsePlanFile(JSON.stringify(file), fields);
-  assert.equal(back.fieldKey, 'Bananal|BD3'); assert.equal(back.params.trackSpacingM, rec.chosen.params.trackSpacingM);
-  for (const [bad, re] of [['x', /não é JSON/], ['{}', /não é um plano/], [JSON.stringify({ ...file, lote: 'Nada|X' }), /não existe/],
-    [JSON.stringify({ ...file, parametros: { haPerPoint: -3 } }), /fora da faixa/], [JSON.stringify({ ...file, ajustes: { samples: [{ id: '<x>' }], signature: 's' } }), /corrompidos/]])
-    assert.throws(() => parsePlanFile(bad, fields), re);
 });
 
 test('estado salvo: lê o da 2.x e grava sem apagar o que não usa', () => {
@@ -87,7 +78,7 @@ test('cores do mapa: contraste ≥ 3:1 com o lote e pontos distintos dos tiros t
 
 test('Monitorar: estados da guia nos 51 lotes (sem GPS, chegada, a caminho, GPS antigo, fora da linha)', async () => {
   const { routeFor, guideModel, fixToPos } = await import('../src/app3/monitor.mjs');
-  const { localToLonLat } = await import('../src/engine/projection.mjs');
+  const { localToLonLat } = await import('../src/engine3/projection.mjs');
   let n = 0;
   for (const k of keys) {
     const f = fields[k], sc = P.planInUse(f, P.recommend(f, {}, 5, false).chosen.params, null);
@@ -171,7 +162,7 @@ test('3.20 · o tiro pode ser feito pelas duas pontas: a guia entra pela ponta m
 });
 
 test('3.21 · equipe em zigue-zague: cada pessoa anda o mínimo (todas as combinações de pontas), 1 tiro igual ao motor', async () => {
-  const { teamPlan: legacyTeam } = await import('../src/engine/team.mjs');
+  const { teamPlan: legacyTeam } = await import('../src/engine3/team.mjs');
   const { cumulative, pointAt } = await import('../src/engine3/polyline.mjs');
   let multi = 0;
   for (const k of keys) for (const ppl of [1, 2, 3]) {

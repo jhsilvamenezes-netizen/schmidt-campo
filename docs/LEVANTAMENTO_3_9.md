@@ -509,3 +509,17 @@ Simulação: os 198 tiros dos 51 lotes andados a 1,2 m/s, GPS bom (± 4–8 m) c
   sem chegar (fora do raio) continua avisado. Depois do último ponto: "Tiro concluído" e o botão do próximo tiro.
 - Testes nos 51 lotes: espera com ± 25 m, guia com ± 15 m, sem "volte" após chegar, aviso ao passar sem chegar.
 
+
+## 33. 4.9.0 · base única na 4.x (26/11)
+Decisão do proprietário: a 4.x tem tudo o que a equipe precisa e já é medida e testada; as versões antigas saem.
+| O que saiu | Por que podia sair |
+|---|---|
+| `legado/` (2.5) e o link `/legado/` | Os dados dos lotes passaram para `src/dados/`; a página gerada ficou idêntica (mesmo SHA-256) |
+| Motor e telas da 2.x sem uso (`src/engine/*` exceto `boundary`, `src/ui`, `src/persistence`…) | Nenhum módulo do app importa (grafo de importação a partir do build) |
+| ~130 testes e estudos da 2.x, 2 workflows de CI | Testavam a 2.5 montada na raiz só no CI |
+| Comparação com o motor 0.5.1 | Virou `audit/gravado/recomendacao-base.json`: o resultado atual, igual ao antigo no dia da troca |
+| Casca Android (`app/`) e ícones da 2.x | Montava o HTML da 2.x; não funciona com a 4.x |
+| 42 documentos e o protocolo de retomada | Histórico de fases encerradas |
+
+Ficou: `npm test` (motor, guia, blocos, arquitetura, tipos, qualidade dos 51 lotes) e `npm run test:browser` (telas,
+contraste, 16 imagens, axe), no CI `testes.yml` com os mesmos nomes de verificação (`validacao`, `blocos`).

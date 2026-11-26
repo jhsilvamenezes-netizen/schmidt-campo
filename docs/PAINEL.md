@@ -1,10 +1,10 @@
 # Painel do SCHMIDT Campo
 
 Página única de entrada, para ler em 1 minuto. Atualizar a cada versão publicada.
-Atualizado em 25/11/2026.
+Atualizado em 26/11/2026.
 
 ## Estado
-- **No ar:** 4.8.0 (https://jhsilvamenezes-netizen.github.io/schmidt-campo/). Os hashes de `index.html`,
+- **No ar:** 4.9.0 (https://jhsilvamenezes-netizen.github.io/schmidt-campo/). Os hashes de `index.html`,
   `motor.js` e `sw.js` batem com `VERSAO.json`.
 - **Design:** 4.0 é o único (o visual anterior saiu na 4.2.0).
 - **Transição completa (código, lógica, testes, CI, respostas):** `docs/TRANSICAO.md`.
@@ -13,7 +13,6 @@ Atualizado em 25/11/2026.
   - camadas do código (`app3-arquitetura`);
   - 24 telas (`app3-visual-browser`);
   - contraste;
-  - legado 2.5 intocado (`build-preserved --check`).
 
 ## Regras do proprietário (não mudar sem ele)
 | Tema | Regra |
@@ -26,15 +25,15 @@ Atualizado em 25/11/2026.
 | Dados | Não inventar valor (o que não foi conferido fica "a confirmar"). Não inferir divisa. Sem marcação de coleta |
 | Fora de escopo | Arquivos e fichas, versões, cópia, qualidade do GPS, vitrine (saíram na 4.2), cadastro de pessoas, resumo por pessoa, lote novo, KML novo, drone, envio do arquivo de GPS, alertas em selo, textura de plantio |
 | Satélite | Esri World Imagery, desligado por padrão. A licença está "a confirmar" com a Esri |
-| Legado | `legado/`, `src/engine/` e `src/application/block-planning.mjs` não mudam |
+| Versões antigas | Saíram na 4.9 (decisão de 26/11: a 4.x é a base validada). Ficam só no histórico do Git |
 
 ## Fila (por valor, com o porquê)
-1. Plano 4.3–4.5 entregue na 4.5.0 (`docs/LEVANTAMENTO_3_9.md`, seção 28). Próximo: teste da equipe e ajustes a partir do campo.
-2. Teste da equipe com a guia de moto (giro e pinça).
+1. Melhorias visuais (pedido de 26/11), com prévia aprovada antes de publicar.
+2. Teste da equipe com a guia de moto (giro, pinça, GPS fraco e "Tiro concluído").
 3. Pendências de limpeza do proprietário (branches, PR #24, PR #74): `docs/PLANO_4_3.md`, fase C.
 
-Na 4.2.1 saíram 98 documentos e imagens antigos sem uso (20,6 MB). Os ~45 que ficaram são usados por scripts e
-testes; a tabela abaixo diz quais estão vivos.
+Na 4.9 saíram a 2.5 e tudo o que só existia para ela (código, testes, CI, casca Android, documentos antigos).
+O que ficou está na tabela abaixo; o resto está no histórico do Git.
 
 ## Aguardando o proprietário
 - Laudos de solo com coordenada e mapas de colheita. Destravam a densidade pelo semivariograma e a

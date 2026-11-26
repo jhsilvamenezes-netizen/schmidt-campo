@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { loadFields } from './legacy-engine.mjs';
+import { loadFields } from './lotes.mjs';
 import * as P from '../src/app3/planner.mjs';
 import { reply } from '../src/app3/worker.mjs';
 import { offlineStatus, OFFLINE_FILES } from '../src/app3/offline.mjs';

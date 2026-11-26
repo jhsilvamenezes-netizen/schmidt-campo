@@ -7,7 +7,7 @@ import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { build3 } from '../scripts/build-3.mjs';
-import { loadFields } from './legacy-engine.mjs';
+import { loadFields } from './lotes.mjs';
 
 await build3();
 const keys = Object.keys(await loadFields()).sort();
