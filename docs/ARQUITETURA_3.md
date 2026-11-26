@@ -19,8 +19,8 @@ reprova o que fugir dela.
 - **Motor direto nas telas.** Só nas exceções listadas no teste: arquivos (GPX/CSV), explicações e cópia de segurança.
   O caminho normal passa por `planner.mjs` (plano) ou `monitor.mjs` (guia).
 - **Sem ciclos de importação** em `app3`, `engine3` e `gps`.
-- **Legado preservado.** `legado/`, `src/engine/` e `src/application/block-planning.mjs` ficam intocados
-  (`build-preserved --check`).
+- **Sem legado.** A 2.5 saiu na 4.9. `src/engine/boundary.mjs` e `src/application/block-planning.mjs` (vindos da 2.x)
+  são usados pela 4.x e evoluem com testes.
 
 ## Próximos passos (sem mudar a tela)
 1. ~~Dividir `views.mjs` por tela~~ (3.24: `views.mjs` só com as peças comuns, 3 KB; uma aba por arquivo; 24 telas idênticas).

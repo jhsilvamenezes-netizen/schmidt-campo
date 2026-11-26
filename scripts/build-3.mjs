@@ -1,7 +1,7 @@
 // 3.2 · gera a página nova SÓ a partir de src/: motor próprio da 3.x (src/engine3) + tela (src/app3) + dados dos lotes.
 // Sem HTML da 1.31, sem trocas de texto. Saída: build/3/index.html (fora do Git; não vai ao link até a R5).
 import { cssTokens } from '../src/app3/tokens4.mjs';
-import { readFile, writeFile, mkdir, copyFile, access } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, copyFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { bundleEngine, ENGINE_MODULES } from './bundle-engine.mjs';
@@ -13,7 +13,7 @@ export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', '
   'app3/advanced', 'app3/gestures', 'app3/monitor', 'app3/compass', 'platform/browser-session-lock',
   'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/offline',
   'app3/screen-mapa', 'app3/screen-monitor', 'app3/screen-plano', 'app3/screen-mais', 'app3/screen-lotes', 'app3/screen-bloco', 'app3/main'];
-export const APP_VERSION = '4.8.0';
+export const APP_VERSION = '4.9.0';
 const ident = id => `__m_${id.replace(/[^\w]/g, '_')}`;
 
 /** Cada módulo no seu escopo; importações do motor viram o namespace schmidtEngine2. */
@@ -68,13 +68,8 @@ export async function recsData(fields) {
 const sha = t => `'sha256-${createHash('sha256').update(t).digest('base64')}'`;
 
 export async function build3() {
-  // Dados dos lotes e da safra: os mesmos da 2.5 (legado/index.html); antes da troca, do index.html da raiz.
-  const source = await access(root + 'legado/index.html').then(() => 'legado/index.html', () => 'index.html');
-  const current = await readFile(root + source, 'utf8');
-  const fields = /<script id="fields-data" type="application\/json">([\s\S]*?)<\/script>/.exec(current)?.[1];
-  if (!fields) throw Error('Dados dos lotes não encontrados');
-  const safra = /<script id="safra-dados" type="application\/json">([\s\S]*?)<\/script>/.exec(current)?.[1];
-  if (!safra) throw Error('Dados da safra não encontrados');
+  // Dados dos lotes e da safra: arquivos próprios em src/dados/ (os mesmos bytes que vinham da 2.5, aposentada na 4.9)
+  const fields = await readFile(root + 'src/dados/lotes.json', 'utf8'), safra = await readFile(root + 'src/dados/safra.json', 'utf8');
   const recs = await recsData(JSON.parse(fields).fields);
   const [engine, app, css, shell] = [await bundleEngine('engine3'), await bundleApp(), (await readFile(root + 'src/app3/styles.css', 'utf8')) + cssTokens() + (await readFile(root + 'src/app3/styles-4.css', 'utf8')), await readFile(root + 'src/app3/shell.html', 'utf8')];
   for (const [n, t] of [['motor', engine], ['tela', app], ['dados', fields], ['safra', safra], ['recomendações', recs]]) if (/<\/script/i.test(t)) throw Error(`${n} contém </script>`);
@@ -92,10 +87,6 @@ export async function build3() {
   // service worker: mesmo modelo da 2.x (cache conferido pelo SHA-256 da página; sem troca no meio do uso)
   const tpl = await readFile(root + 'src/platform/service-worker.js', 'utf8'), digest = createHash('sha256').update(html).digest('hex');
   let worker = tpl.replace('__SCHMIDT_CACHE__', `schmidt-3-${digest.slice(0, 10)}`).replace('__SCHMIDT_INDEX_SHA256__', digest);
-  // A reserva 2.5 em legado/ não passa por este worker (senão a navegação cairia na página 3.0 do cache).
-  const hook = "if(request.method!=='GET'||new URL(request.url).origin!==location.origin)return;";
-  if (worker.split(hook).length !== 2) throw Error('Modelo do service worker mudou');
-  worker = worker.replace(hook, hook + "if(new URL(request.url).pathname.includes('/legado/'))return;");
   const files = "const ARQUIVOS = ['./','index.html','manifest.webmanifest','icone.svg','icone-192.png','icone-512.png','icone-180.png'];";
   if (worker.split(files).length !== 2) throw Error('Lista de arquivos do service worker mudou');
   worker = worker.replace(files, "const ARQUIVOS = ['./','index.html','motor.js','app.webmanifest','marca.svg','marca-192.png','marca-512.png','marca-180.png','marca-logo.png','inter.woff2'];");

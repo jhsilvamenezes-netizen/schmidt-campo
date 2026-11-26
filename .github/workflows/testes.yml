@@ -1,0 +1,57 @@
+name: Testes do app (sem publicação)
+
+# 4.9 · só o app atual (4.x): a 2.5 e os testes dela saíram. Os nomes dos trabalhos (validacao, blocos) ficaram iguais.
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: testes-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validacao:
+    name: validacao
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: audit/package-lock.json
+      - name: Ferramentas de teste
+        run: npm --prefix audit ci --ignore-scripts --no-audit --no-fund
+      - name: Página publicada = build de src/
+        run: node scripts/build-3.mjs --check
+      - name: Motor, guia, blocos, arquitetura, tipos e qualidade dos 51 lotes
+        working-directory: audit
+        run: npm test
+
+  blocos:
+    name: blocos
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30   # a instalação do navegador de testes varia de 2 a 10 min no GitHub
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: audit/package-lock.json
+      - name: Ferramentas e navegador de teste
+        run: |
+          npm --prefix audit ci --ignore-scripts --no-audit --no-fund
+          cd audit && npx playwright install --with-deps chromium
+      - name: Telas no navegador (uso, robustez, medidas, desempenho, guia, contraste, imagens, acessibilidade)
+        working-directory: audit
+        run: npm run test:browser

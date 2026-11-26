@@ -1,6 +1,6 @@
 // Atualização controlada: esta versão espera as abas da anterior fecharem.
-const CACHE = 'schmidt-3-c354cf9a77';
-const INDEX_SHA256 = 'c354cf9a77b9d5312affe740e64e4d8ac2e25d5704816d10fb18224a19e5549b';
+const CACHE = 'schmidt-3-bb61f86684';
+const INDEX_SHA256 = 'bb61f8668494acc5cf46c22c0a0385a30523695a5dcd4e091abc1f0872b06307';
 const ARQUIVOS = ['./','index.html','motor.js','app.webmanifest','marca.svg','marca-192.png','marca-512.png','marca-180.png','marca-logo.png','inter.woff2'];
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
@@ -25,7 +25,7 @@ self.addEventListener('activate',event=>{
 });
 self.addEventListener('fetch',event=>{
   const request=event.request;
-  if(request.method!=='GET'||new URL(request.url).origin!==location.origin)return;if(new URL(request.url).pathname.includes('/legado/'))return;
+  if(request.method!=='GET'||new URL(request.url).origin!==location.origin)return;
   event.respondWith(caches.open(CACHE).then(async cache=>{
     const cached=await cache.match(request,{ignoreSearch:true});
     if(cached)return cached;

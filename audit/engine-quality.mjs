@@ -3,7 +3,7 @@
 // novo (só quando a mudança for intencional e medida; o motivo e o que mudou ficam no histórico do arquivo). O teste engine-quality.test.mjs usa as mesmas funções.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { loadFields } from './legacy-engine.mjs';
+import { loadFields } from './lotes.mjs';
 import * as P from '../src/app3/planner.mjs';
 
 export const BASELINE = fileURLToPath(new URL('./engine-quality-baseline.json', import.meta.url));

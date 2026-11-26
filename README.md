@@ -1,82 +1,20 @@
-# SCHMIDT Campo
+# SCHMIDT CAMPO
 
-Planeje os tiros e pontos de amostragem, acompanhe as coletas e consulte o mapa
-no celular. Você pode trabalhar em um lote ou em um bloco de lotes compatíveis.
+Planejamento de amostragem de solo e guia por GPS no celular: tiros e pontos por lote ou bloco de lotes,
+mapa e guia de campo (a pé ou de moto). Funciona sem internet depois de aberto uma vez.
 
-**[Abrir o site](https://jhsilvamenezes-netizen.github.io/schmidt-campo/)**
+**[Abrir o app](https://jhsilvamenezes-netizen.github.io/schmidt-campo/)**
 
-## Começar
+## Usar
+1. Abra o link com internet uma vez.
+2. Escolha o lote, confira o plano e inicie a guia na aba Monitorar.
+3. Para instalar: Android/Chrome → menu → Instalar; iPhone/Safari → Compartilhar → Adicionar à Tela de Início.
 
-1. Abra o site com internet uma vez para carregar o aplicativo.
-2. Escolha a fazenda e o lote.
-3. Em **Planejar**, confira a quantidade de pontos e as distâncias.
-4. Para trabalhar em bloco, escolha os lotes, monte o bloco e confira o resultado.
-5. Use o mapa e a tela **Tiros** para acompanhar a atividade.
-
-Os pontos são planejados. Confira as condições no campo. A marcação de coleta
-registra o progresso neste aparelho; o registro oficial continua no Cropwise.
-
-## Usar sem internet
-
-Depois de carregar o site, ele pode abrir offline. Para instalar como aplicativo:
-
-- **Android/Chrome:** menu do navegador → Adicionar à tela inicial ou Instalar.
-- **iPhone/Safari:** Compartilhar → Adicionar à Tela de Início.
-
-Abra pelo endereço do site e permita a localização para usar o GPS.
-Para receber uma atualização, feche as janelas antigas e reabra com internet.
-Não limpe os dados do site para atualizar.
-
-## Guardar os dados
-
-Em **Plano → Arquivos**, faça uma cópia de segurança e guarde fora do aparelho.
-Faça isso antes de trocar de celular ou reinstalar. Os dados do site e do APK
-não são compartilhados automaticamente.
-
-## APK Android
-
-[Baixar o APK disponível](https://github.com/jhsilvamenezes-netizen/schmidt-campo/releases/latest/download/SCHMIDT-Campo.apk).
-Esse arquivo é a versão Android anterior. As melhorias desta branch ainda não
-foram distribuídas em um novo APK.
-
-A chave de assinatura antiga não está disponível. Um novo APK precisa de
-assinatura própria e de migração com backup testado. Não desinstale o aplicativo
-atual antes de guardar e conferir seus dados.
+Os pontos são planejados (simulação): confira em campo. O registro oficial continua no Cropwise.
 
 ## Para quem desenvolve
-
-- [Estado do projeto e continuidade](docs/CONTINUIDADE.md)
-- [Versão e identificação dos arquivos](VERSAO.json)
-- [Código e funcionamento do build](src/README.md)
-- [Testes](audit/README.md)
-- [Histórico de entregas](docs/VERSOES_E_ENTREGAS.md)
-- [Tarefas do projeto](https://github.com/jhsilvamenezes-netizen/schmidt-campo/issues/1)
-- [Regras do projeto](AGENTS.md)
-
-`index.html` é gerado: altere as fontes legíveis, não o código compilado.
-O projeto-fonte original completo ainda não foi recuperado.
-
-```sh
-node scripts/build-preserved.mjs
-npm --prefix audit test
-npm --prefix audit run test:blocks
-```
-
-A identificação em VERSAO.json informa se os arquivos desta branch são uma
-versão publicada ou uma versão em preparação. Estudos e imagens de proposta
-não significam que a mudança já está no site ou no APK.
-
-## Continuidade do desenvolvimento
-
-Para alternar entre Codex e Claude, use o [protocolo compartilhado](docs/COORDENACAO.md)
-e o [estado do projeto](docs/CONTINUIDADE.md). Cada entrega deixa no PR os commits,
-testes, pendências e a próxima ação.
-
-## Próxima evolução
-
-[Plano da versão 2.0](docs/PLANO_VERSAO_2_0.md): foco no link e navegador móvel, 45 itens de direcionamento e análise espacial, parâmetros e critérios de entrega web. Sem coleta/marcação pela equipe; APK adiado.
-[Mensagem para iniciar com Claude](docs/INICIO_CLAUDE_2_0.md). A 2.0.1 está publicada; consultar a retomada e [correções entregues](docs/CORRECOES_2_0_1.md) para continuar.
-
-[Revisão aprofundada da 2.0 web](docs/APROFUNDAMENTO_2_0_WEB.md): métodos geográficos, medidas verificadas e 12 frentes de design de orientação.
-
-[Retomada vigente](docs/RETOMADA.md) · [Fila de execução](docs/EXECUCAO_2_0.md) · [Troca entre sessões](docs/CONTINUIDADE_SEM_PERDER_TRABALHO.md).
+- Entrada: `docs/PAINEL.md` (estado, regras do proprietário, fila). Tudo de ponta a ponta: `docs/TRANSICAO.md`.
+- Código: `src/app3` (telas), `src/engine3` (motor), `src/dados` (51 lotes e safra). Página gerada:
+  `node scripts/build-3.mjs --root` (grava `index.html`, `motor.js`, `sw.js`).
+- Testes: `npm --prefix audit ci`, depois `npm --prefix audit test` e `npm --prefix audit run test:browser`.
+- Versões antigas (até a 2.5) ficam só no histórico do Git.
