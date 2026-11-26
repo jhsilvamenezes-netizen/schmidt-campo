@@ -36,9 +36,9 @@ export function installMais(app) {
       let row;
       // 4.2 · plano recomendado sem ajuste: a linha já vem pronta no arquivo (mesmos números, conferidos no teste)
       const pre = !st.paramsByField?.[k] && !edits ? app.recNow(f, {}, k)?.linha : null;
-      if (pre) row = { key: k, code: f.code, farm: f.farm, ...pre };
-      else try { const sc = P.planInUse(f, params, edits); row = { key: k, code: f.code, farm: f.farm, pontos: sc.samples.length, tiros: sc.selected.length, p95: sc.coverage.p95, alerts: sc.warnings.filter(w => w.level !== 'info').length }; }
-      catch { row = { key: k, code: f.code, farm: f.farm, pontos: 0, tiros: 0, p95: null, alerts: 1 }; }
+      if (pre) row = { key: k, code: f.code, farm: f.farm, cultura: culturas?.[k]?.cultura, ...pre };
+      else try { const sc = P.planInUse(f, params, edits); row = { key: k, code: f.code, farm: f.farm, cultura: culturas?.[k]?.cultura, pontos: sc.samples.length, tiros: sc.selected.length, p95: sc.coverage.p95, alerts: sc.warnings.filter(w => w.level !== 'info').length }; }
+      catch { row = { key: k, code: f.code, farm: f.farm, cultura: culturas?.[k]?.cultura, pontos: 0, tiros: 0, p95: null, alerts: 1 }; }
       rowCache.set(id, row);
     }
     return rowCache.get(id);
