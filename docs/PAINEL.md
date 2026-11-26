@@ -4,7 +4,7 @@ Página única de entrada, para ler em 1 minuto. Atualizar a cada versão public
 Atualizado em 27/11/2026.
 
 ## Estado
-- **No ar:** 5.0.0 (https://jhsilvamenezes-netizen.github.io/schmidt-campo/). Os hashes de `index.html`,
+- **No ar:** 5.1.0 (https://jhsilvamenezes-netizen.github.io/schmidt-campo/). Os hashes de `index.html`,
   `motor.js` e `sw.js` batem com `VERSAO.json`.
 - **Design:** 4.0 é o único (o visual anterior saiu na 4.2.0).
 - **Transição completa (código, lógica, testes, CI, respostas):** `docs/TRANSICAO.md`.

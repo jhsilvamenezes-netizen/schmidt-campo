@@ -34,3 +34,8 @@ O tema escuro e o modo Sol usam os mesmos papéis. No satélite (`.sat-on`), os 
 1. Usar só papéis e tokens.
 2. Conferir a tela clara, a escura, o modo Sol e a largura de 360 px (`app3-visual-browser`).
 3. Rodar `design-compare`: empatar ou ganhar em cada medida.
+
+## Tipografia (5.1)
+- Tamanhos: 13 · 14 · 16 · 18 · 20 · 30 px (o número de destaque vai até 36 px em tela larga). Pesos: 400 · 600 · 700; 800 só na marca.
+- Títulos de seção em maiúsculas com espaçamento .1em; números grandes −.02em; o resto, o do corpo.
+- O teste `app3-browser.mjs` reprova tamanho ou peso fora da escala.

@@ -127,3 +127,5 @@
 .skip:focus{color:var(--br);font-weight:600}
 [data-design="4"] .m3{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1.06fr)}[data-design="4"] .m small{white-space:nowrap}
 [data-design="4"] :is(.li .id,nav button){letter-spacing:normal}
+[data-design="4"] .big.md{font-size:22px}
+[data-design="4"] .navpill b{font-weight:700}

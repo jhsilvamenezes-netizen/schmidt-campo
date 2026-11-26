@@ -314,6 +314,19 @@ try {
     assert.deepStrictEqual(errors, []);
     await ctx.close();
   }
+  { // 5.1 · tipografia única: nas 4 abas a 375 px, só a escala (13·14·16·18·20·30 px; 400·600·700, 800 na marca)
+    const ctx = await browser.newContext({ viewport: { width: 375, height: 812 } }), p = await ctx.newPage();
+    await p.goto(url); await ready(p); const fs = new Set(), fw = new Set();
+    for (const t of ['lotes', 'mapa', 'plano', 'monitorar']) {
+      await p.click(`[data-tab="${t}"]`); await p.waitForTimeout(500);
+      const r = await p.evaluate(() => [...document.querySelectorAll('body *')].filter(e => e.offsetParent && !e.closest('svg,.sr,#splash,.skip') && [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())).map(e => { const c = getComputedStyle(e); return [Math.round(parseFloat(c.fontSize)), c.fontWeight]; }));
+      for (const [a, b2] of r) { fs.add(a); fw.add(b2); }
+    }
+    const okFs = new Set([13, 14, 16, 18, 20, 30, 31]), okFw = new Set(['400', '600', '700', '800']);
+    assert.deepStrictEqual([...fs].filter(x => !okFs.has(x)), [], `tamanhos fora da escala: ${[...fs].sort((a, b) => a - b)}`);
+    assert.deepStrictEqual([...fw].filter(x => !okFw.has(x)), [], `pesos fora da escala: ${[...fw]}`);
+    await ctx.close();
+  }
   console.log('3.0 no navegador: claro e escuro, sem erro, sem rolagem lateral, regras de palavras e arquivos ok');
 } finally { await browser.close(); server.close(); }
 await import('./app3-a11y-browser.mjs');

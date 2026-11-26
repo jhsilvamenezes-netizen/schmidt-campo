@@ -575,3 +575,17 @@ Pedido da equipe (clareza das abas) e do proprietário (o número de tiros é qu
 **Guia simulada de ponta a ponta** (5 lotes, a pé e de moto, todos os tiros): 0 avisos "fora da linha" andando sobre o
 tiro; avisos de linha só indo à entrada (instrução correta).
 
+## 36. 5.1.0 · tipografia única (27/11)
+Revisão de página (375, 768 e 1440 px; claro e escuro), medida em todos os textos visíveis das 4 abas, folhas e guia.
+| Medida (375 px) | 5.0 | 5.1 |
+|---|---|---|
+| Tamanhos de letra | 10 (17 e 17,25; 28 e 30,75; 12 e 13) | 6: 13 · 14 · 16 · 18 · 20 · 30 |
+| Pesos | 8 (400 a 800, mais 900 na etiqueta da guia) | 3 (400 · 600 · 700) + 800 na marca |
+| Espaçamento entre letras | 13 valores | 6 |
+| Número de destaque | 28 px no Mapa, 30,75 px no Plano | o mesmo nas abas |
+| Títulos das folhas | 30,75 px (estilo de número) | 22 px |
+| "95% do lote" a 375 px | 2 linhas | 1 linha |
+- Sem texto cortado em 360 e 375 px; HTML válido; lint do código: 1 aviso intencional (campo descartado).
+- Guarda: `app3-browser.mjs` reprova tamanho ou peso fora da escala.
+- Coluna no computador já era de 480 px; no tablet o app usa a tela toda (nada a mudar).
+
