@@ -128,29 +128,45 @@ export function* balanceSteps(field, base, rec) {
  * menor que o das faixas iguais da 4.10 em 76 de 100 casos. Sem nenhum candidato exato: faixas iguais (modo quantidade).
  * Em passos (um candidato por passo), para a tela calcular aos poucos sem travar.
  */
-export function* tracksSteps(field, base, cp, n) {
+export function* tracksSteps(field, base, cp, n, { equal = true } = {}) {
   const fallback = { ...base, ...cp, trackMode: 'quantidade', trackCount: n, trackPhaseM: 0, alignToBoom: true, selectionMode: 'todos', pointMode: 'total', totalPoints: null };
   const now = Number.isFinite(cp?.trackSpacingM) && cp.trackMode === 'espacamento' ? cp.trackSpacingM : null;
   let n0 = 0; try { n0 = planScenario(field, { ...base, ...cp }, deps).selected.length; } catch { n0 = 0; }
   if (!now || !n0) return fallback;
-  const k0 = Math.round((now / BOOM) * (n0 / n)), score = (/** @type {any} */ c) => [-c.bf, c.ones, c.worst, c.cv];
+  // 5.2 · sem "tiro-retalho" (tiro com menos de 40% do comprimento mediano, num canto do lote) e, com mais tiros que o
+  // recomendado, o mesmo número de pontos em cada tiro: os pontos formam colunas (com 2 e 3 por tiro misturados ficavam
+  // desencontrados). O total nunca fica abaixo do mínimo da regra.
+  let minPts = 0; try { minPts = planScenario(field, { ...base, ...cp }, deps).minPoints; } catch { minPts = 0; }
+  const per = equal && n > n0 && minPts ? { pointMode: 'por_tiro', pointsPerTrack: Math.ceil(minPts / n) } : { pointMode: 'total', totalPoints: null };
+  const slivers = (/** @type {any} */ sc) => { const L = sc.trackRows.map((/** @type {any} */ r) => r.lengthM).sort((a, b) => a - b), med = L[L.length >> 1] || 0; return L.filter(x => x < 0.4 * med).length; };
+  const k0 = Math.round((now / BOOM) * (n0 / n)), score = (/** @type {any} */ c) => [c.sl, -c.bf, c.ones, c.worst, c.cv];
   /** @type {any} */ let best = null;
   for (let k = Math.max(1, k0 - 3); k <= k0 + 3; k++) for (let ph = 0; ph < k; ph++) {
-    const params = { ...base, ...cp, trackMode: 'espacamento', trackSpacingM: Math.round((k * BOOM + 0.01) * 100) / 100, trackPhaseM: Math.round(ph * BOOM * 100) / 100, selectionMode: 'todos', pointMode: 'total', totalPoints: null };
+    const params = { ...base, ...cp, trackMode: 'espacamento', trackSpacingM: Math.round((k * BOOM + 0.01) * 100) / 100, trackPhaseM: Math.round(ph * BOOM * 100) / 100, selectionMode: 'todos', totalPoints: null, ...per };
     yield;
     let c0; try { c0 = planScenario(field, params, deps); } catch { continue; }
     if (new Set(c0.samples.map((/** @type {any} */ x) => x.trackId)).size !== n) continue;
     const c = balanceStats(field, params);
     if (!c || c.sc.selected.length !== n) continue;
-    const cand = { params, ...c, bf: bordaFaixa(borderStats(field, c.sc).minM) }, a = score(cand), b = best && score(best);
+    const cand = { params, ...c, sl: slivers(c.sc), bf: bordaFaixa(borderStats(field, c.sc).minM) }, a = score(cand), b = best && score(best);
     let better = !best;
     if (b) for (let i = 0; i < a.length; i++) { if (a[i] < b[i] - 1e-9) { better = true; break; } if (a[i] > b[i] + 1e-9) break; }
     if (better) best = cand;
   }
-  return best ? best.params : fallback;
+  // 5.2 · se o melhor ainda tem retalho ou ponto colado na borda (ex.: RB6 com 10 tiros: só 1 espaçamento na barra dá 10,
+  // com retalho de 408 m e ponto a 0 m da borda), compara com as faixas iguais e fica com o melhor
+  const fb = { ...fallback, ...per };
+  if (!best || best.sl > 0 || best.bf === 0) {
+    const c = balanceStats(field, fb);
+    if (c && c.sc.selected.length === n) {
+      const cand = { params: fb, ...c, sl: slivers(c.sc), bf: bordaFaixa(borderStats(field, c.sc).minM) };
+      if (!best) best = cand; else { const a = score(cand), b = score(best); for (let i = 0; i < a.length; i++) { if (a[i] < b[i] - 1e-9) { best = cand; break; } if (a[i] > b[i] + 1e-9) break; } }
+    }
+  }
+  return best ? best.params : fb;
 }
 /** O mesmo, de uma vez (testes e motor). */
-export function tracksPlan(field, base, cp, n) { const it = tracksSteps(field, base, cp, n); let r = it.next(); while (!r.done) r = it.next(); return r.value; }
+export function tracksPlan(field, base, cp, n, opts) { const it = tracksSteps(field, base, cp, n, opts); let r = it.next(); while (!r.done) r = it.next(); return r.value; }
 
 /** Plano em uso: parâmetros salvos (ou recomendados), ajustes manuais válidos para a mesma assinatura. */
 export function planInUse(field, params, edits) {

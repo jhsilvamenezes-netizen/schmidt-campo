@@ -69,7 +69,8 @@ export function installPlano(app) {
         const t0 = Date.now(); let r = steps.next();
         while (!r.done && Date.now() - t0 < 25) r = steps.next();
         if (!r.done) { setTimeout(run, 0); return; }
-        if (!app.setParams(r.value, `${plural(v, 'tiro', 'tiros')}, escolhido`, null)) return;
+        const per = r.value.pointMode === 'por_tiro' ? r.value.pointsPerTrack : null;
+        if (!app.setParams(r.value, `${plural(v, 'tiro', 'tiros')}${per ? ` · ${per} pontos em cada` : ''}, escolhido`, null)) return;
         const got = app.cur.sc.selected.length;
         if (got !== v) app.toast(`Neste lote cabem ${plural(got, 'tiro', 'tiros')} na barra (pedido: ${v}).`);
       };
