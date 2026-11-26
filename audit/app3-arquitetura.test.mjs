@@ -173,6 +173,18 @@ test('4.1 · rumo do deslocamento para girar o mapa: GPS andando, reta entre lei
   st = courseStep(st, { x: 30, y: 3, accuracyM: 20, speedMps: 1 }); assert.equal(st.deg, 200, 'precisão ruim pede deslocamento maior');
 });
 
+test('4.10 · rumo pela velocidade do Kalman: vira na curva, parado não gira, moto continua pelo GPS', () => {
+  const P0 = { x: 0, y: 0, accuracyM: 6, speedMps: 1.2 };
+  let st = null; for (let i = 0; i < 10; i++) st = courseStep(st, P0, [0, 1.2]);
+  assert.equal(Math.round(st.deg), 0, 'andando para o norte');
+  let n = 0; for (; n < 30 && Math.abs(st.deg - 90) > 20; n++) st = courseStep(st, P0, [1.2, 0]);
+  assert.ok(n <= 6, `virou para leste em ${n} leituras`);
+  for (let i = 0; i < 8; i++) st = courseStep(st, P0, [0, 0]);
+  const parado = st.deg; for (let i = 0; i < 20; i++) st = courseStep(st, P0, [0.3 * Math.cos(i), 0.3 * Math.sin(i * 1.7)]);
+  assert.equal(st.deg, parado, 'tremor de velocidade parado não gira o mapa');
+  assert.equal(courseStep(st, { ...P0, speedMps: 8, gpsHeading: 200 }, [1, 0]).deg, 200, 'de moto vale o rumo do GPS');
+});
+
 test('4.3 · número inteiro rápido = Intl pt-BR (milhar, arredondamento, negativo e -0)', () => {
   const I0 = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 }), I3 = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 3 });
   const vals = [0, -0, 0.5, -0.5, 1.5, 2.5, -2.5, -0.4, 999.5, 1000, 999999.5, -1234567.5, 1e14 + 0.5];

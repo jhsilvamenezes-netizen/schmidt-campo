@@ -305,6 +305,22 @@ try {
     assert.deepStrictEqual(errors, []);
     await ctx.close();
   }
+  { // 4.10 · escolher quantos tiros (pedido de campo): + recalcula com 1 tiro a mais; Desfazer e "Usar recomendado" voltam
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'pt-BR' });
+    const p = await ctx.newPage(), errors = []; p.on('pageerror', e => errors.push(e.message));
+    await p.goto(url); await ready(p);
+    await p.click('button.lot'); await p.click('[data-lot="Bananal|BD3"]'); await p.click('[data-tab="plano"]');
+    const n0 = +(await p.inputValue('#tiros'));
+    assert.match(await p.textContent('.card.res .big'), new RegExp(`${n0} tiros`));
+    await p.click('[data-inc="tiros"]');
+    await p.waitForFunction(n => /(\d+) tiros/.exec(document.querySelector('.card.res .big').textContent)?.[1] === String(n), n0 + 1);
+    assert.equal(+(await p.inputValue('#tiros')), n0 + 1); assert.match(await p.textContent('#toast'), /escolhido/);
+    assert.match(await p.textContent('.card.res'), /Plano em uso/);
+    await p.click('[data-use="rec"]');
+    await p.waitForFunction(n => +document.querySelector('#tiros').value === n, n0);
+    assert.deepStrictEqual(errors, []);
+    await ctx.close();
+  }
   console.log('3.0 no navegador: claro e escuro, sem erro, sem rolagem lateral, regras de palavras e arquivos ok');
 } finally { await browser.close(); server.close(); }
 await import('./app3-a11y-browser.mjs');

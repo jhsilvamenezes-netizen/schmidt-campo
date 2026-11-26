@@ -1,0 +1,14 @@
+# 4.10 · atualizações automáticas (substitui o PR #74). Mensal para não gerar ruído; cada PR passa pelo CI (testes.yml).
+# Atenção: atualizar o Playwright troca o Chromium; regravar as imagens com `node app3-visual-browser.mjs --update`.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /audit
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3

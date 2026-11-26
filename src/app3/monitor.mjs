@@ -61,11 +61,19 @@ export function kalmanStep(st, pos) {
  *  Com o celular andando (≥ 1,5 m/s) vale o rumo do próprio GPS; senão, o da reta entre a última âncora e a posição
  *  nova, só quando andou o bastante para não ser tremor (≥ 8 m e ≥ 2 × a precisão). Parado, mantém o último rumo.
  *  Na moto a bússola do celular erra (ímã e motor perto); o rumo do GPS não. */
-export const COURSE = Object.freeze({ gpsMinMps: 1.5, minM: 8 });
-export function courseStep(st, pos) {
+export const COURSE = Object.freeze({ gpsMinMps: 1.5, minM: 8, kfMinMps: 0.6, kfAlpha: 0.3 });
+/** 4.10 · `vel` ([vx, vy] m/s do filtro de Kalman): sem rumo do GPS, a velocidade filtrada é suavizada (30% da nova a
+ *  cada leitura) e, passando de 0,6 m/s, dá o rumo. Simulação a pé, curva de 90°, ± 5–8 m: o mapa acerta o rumo novo em
+ *  9–11 s (antes 12–19 s; pior caso 11–15 s, antes 20–30 s), mesmo tremor; parado, giro falso em ≤ 0,2% das leituras. */
+/** @param {any} st @param {any} pos @param {number[]|null} [vel] */
+export function courseStep(st, pos, vel = null) {
   const s = st || { at: null, deg: null };
   if (!pos) return s;
-  if (Number.isFinite(pos.gpsHeading) && (pos.speedMps ?? 0) >= COURSE.gpsMinMps) return { at: [pos.x, pos.y], deg: pos.gpsHeading };
+  if (Number.isFinite(pos.gpsHeading) && (pos.speedMps ?? 0) >= COURSE.gpsMinMps) return { ...s, at: [pos.x, pos.y], deg: pos.gpsHeading };
+  if (vel) {
+    const a = COURSE.kfAlpha, v0 = s.v || [0, 0], v = [v0[0] + a * (vel[0] - v0[0]), v0[1] + a * (vel[1] - v0[1])];
+    return { at: [pos.x, pos.y], v, deg: Math.hypot(v[0], v[1]) >= COURSE.kfMinMps ? ((Math.atan2(v[0], v[1]) * 180) / Math.PI + 360) % 360 : s.deg };
+  }
   if (!s.at) return { at: [pos.x, pos.y], deg: s.deg };
   const dx = pos.x - s.at[0], dy = pos.y - s.at[1];
   if (Math.hypot(dx, dy) < Math.max(COURSE.minM, 2 * (pos.accuracyM ?? 0))) return s;
@@ -175,7 +183,7 @@ function guideModelCore(route, sc, field, pos, now, session, opts = {}) {
   if (g.stale) return { state: 'stale', title: label, big: 'Aguardando posição', warn: [`GPS sem atualização há ${num(ageMs / 1000)} s.`], next: n };
   // 4.8 · N5 · GPS fraco (> 15 m) antes da 1ª posição boa da guia: espera firmar, sem seta. Antes, a 1ª leitura ruim
   // caía no ponto 1 e, no meio do tiro, mandava "voltar" centenas de metros. Depois de firmar, só o aviso curto.
-  if (!g.accuracyOk && !state.targetId) return { state: 'wait', title: 'Aguardando o GPS firmar', info: `Agora ± ${num(pos.accuracyM)} m; a guia começa com até ${num(monitor.gpsAccuracyMaxM)} m. Fique a céu aberto.`, warn: [], next: n };
+  if (!g.accuracyOk && !state.targetId) return { state: 'wait', title: 'Aguardando o GPS firmar', big: `± ${num(pos.accuracyM)} m`, dir: 'de erro', info: `A guia começa com até ${num(monitor.gpsAccuracyMaxM)} m. Fique a céu aberto.`, warn: [], next: n };
   if (!g.accuracyOk) warn.push(`GPS impreciso (± ${num(pos.accuracyM)} m).`);
   // Longe do tiro (chegando ao lote): a guia leva à entrada do tiro, no início do sentido escolhido, sem avisos de linha.
   const farM = Math.max(150, 5 * (monitor.offLineWarnM || 0)), start = route.parts?.[0]?.entry;
@@ -199,7 +207,7 @@ function guideModelCore(route, sc, field, pos, now, session, opts = {}) {
   // 4.8 · ponto já alcançado nesta guia não gera "volte": seguindo após o último, o tiro está concluído (antes, quem
   // andava até a cabeceira para o próximo tiro via "Passou do ponto N: volte" em ~10% das leituras, na simulação)
   if (g.arrived) state.reached = n.id;
-  if (g.trecho?.passouM > 0 && state.reached === n.id && n.seq === route.nPoints) return { state: 'done', title: `Tiro ${route.trackId} concluído`, info: `Os ${route.nPoints} pontos foram alcançados.`, next: n };
+  if (g.trecho?.passouM > 0 && state.reached === n.id && n.seq === route.nPoints) return { state: 'done', title: `Tiro ${route.trackId} concluído`, big: `${route.nPoints} de ${route.nPoints}`, dir: 'pontos', info: 'Todos os pontos do tiro foram alcançados.', next: n };
   if (g.trecho?.passouM > 0 && state.reached !== n.id) warn.push(`Passou do ponto ${n.seq} em ${num(g.trecho.passouM)} m: volte pela linha.`);
   // 3.4: ao chegar, já diz o que vem depois (ponto seguinte e a distância andando no tiro)
   const after = route.points.find(p => p.seq === n.seq + 1);

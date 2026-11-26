@@ -70,6 +70,7 @@ export function installMais(app) {
       ['Entre tiros', `Distância de lado de um tiro ao vizinho${f ? ` (${f.entreTiros})` : ''}.`],
       ['Entre pontos', `Distância andando no mesmo tiro de um ponto ao seguinte${f ? ` (${f.entrePontos})` : ''}.`],
       ['Hectares por ponto', 'A regra: 1 ponto a cada tantos hectares, arredondando para cima. Dá o mínimo de pontos do lote.'],
+      ['Tiros', 'Quantos tiros o lote terá. O app recomenda; você pode escolher outro número e ele recalcula: divide a largura do lote em faixas iguais, um tiro no meio de cada, na passada da barra. O rumo e o mínimo de pontos não mudam.'],
       ['95% do lote', `95% da área está a menos desta distância de um ponto${f ? ` (${f.p95})` : ''}. Quanto menor, melhor coberto.`],
       ['Maior vazio', `O lugar do lote mais longe de qualquer ponto${a ? ` (${num(a.worstGapM)} m)` : ''}. Ligue a camada Área no mapa para ver onde fica.`],
       ['Área de cada ponto', `Parte do lote mais perto de cada ponto${a ? ` (${num(a.minHa, 1)} a ${num(a.maxHa, 1)} ha)` : ''}. Quanto mais iguais, mais equilibrada a amostragem.`],
@@ -87,7 +88,7 @@ export function installMais(app) {
     return true;
   });
   Object.assign(app.SHEETS, {
-    menu: () => app.openSheet('Mais', `<div class="brand"><img src="marca-logo.png" alt="SCHMIDT" width="88" height="88"><span><b class="wm">SCHMIDT CAMPO</b><small>Planejamento de amostragem · versão ${app.appVersion}</small></span></div>`
+    menu: () => app.openSheet('Mais', `<div class="brand"><img src="marca-logo.png" alt="SCHMIDT" width="88" height="88"><span><b class="wm">SCHMIDT CAMPO</b><small>Planejamento de amostragem</small><small>Versão ${app.appVersion}</small></span></div>`
       // 3.24 · selo: o app já está guardado no celular para abrir sem sinal?
       + `<p class="ck${app.offline?.state === 'pronto' ? '' : ' alerta'}" data-offline="${esc(app.offline?.state || 'sem')}">${esc(offlineText(app.offline?.state || 'sem'))}</p>`
       // 4.2 · só o que a equipe usa: glossário, dados do lote, como foi calculado e todos os lotes

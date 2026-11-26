@@ -86,7 +86,9 @@ export function mapMarkup(field, sc, w, h, opts = {}) {
   // `focus`: enquadra só estes pontos (guia: posição e alvo), com folga mínima de 250 m; senão o lote (e o bloco)
   // 4.1 · guia seguindo quem anda: quadro em volta da posição (vê o alvo), com o zoom da pinça e, se pedido, girado
   const fol = follow && pos ? follow : null, rot = fol ? (((Number(rot0) || 0) % 360) + 360) % 360 : 0;
-  const half = fol && pos ? Math.max(150, 1.1 * (to ? Math.hypot(to[0] - pos.x, to[1] - pos.y) : 0)) : 0;
+  // 4.10 · zoom em degraus (150, 225, 340… m): o mapa não "respira" a cada leitura enquanto a distância ao alvo cai
+  const need = fol && pos ? Math.max(150, 1.1 * (to ? Math.hypot(to[0] - pos.x, to[1] - pos.y) : 0)) : 0;
+  const half = need ? 150 * 1.5 ** Math.ceil(Math.log(need / 150) / Math.log(1.5) - 1e-9) : 0;
   const pts = fol && pos ? [[pos.x - half, pos.y - half], [pos.x + half, pos.y + half]] : focus?.length ? focus.flatMap(([x, y]) => [[x - 125, y - 125], [x + 125, y + 125]])
     : [...field.geom.flat(2), ...extra.flatMap(o => o.field.geom.flat(2).map(([x, y]) => [x + o.d[0], y + o.d[1]]))], xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
   const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
