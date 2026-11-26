@@ -20,7 +20,7 @@ export function installBloco(app) {
     if (!block) return null;
     try {
       const { field, sc } = blockScenario(fields, block, ui.key);
-      const list = P.checks(sc, app.people(), P.uncovered(field, sc)), split = P.team(sc, app.people());
+      const list = P.checks(sc, P.uncovered(field, sc)), split = null;
       const members = block.members.map(k => ({ key: k, code: fields[k].code, on: k === ui.key, pontos: block.state.paramsByField[k].totalPoints }));
       return { field, params: sc.params, base: P.baseOf(sc.params), rec: null, sc, f: P.figures(sc), list, split, inUseIsRec: true,
         block: { title: block.members.map(k => fields[k].code).join(' + '), members, passes: Math.round(block.common.spacingM / 36.48), spacingM: block.common.spacingM },

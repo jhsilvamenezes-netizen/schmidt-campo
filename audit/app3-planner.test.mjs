@@ -20,14 +20,12 @@ test('recomendação base nos 51 lotes = resultado gravado (espaçamento, fase e
 test('plano em uso, números e conferência nos 51 lotes', () => {
   for (const k of keys) {
     const f = fields[k], rec = P.recommend(f, {}, 5, false), sc = P.planInUse(f, rec.chosen.params, null);
-    const fig = P.figures(sc), blind = P.uncovered(f, sc), list = P.checks(sc, 5, blind);
+    const fig = P.figures(sc), blind = P.uncovered(f, sc), list = P.checks(sc, blind);
     assert.equal(fig.pontos, sc.samples.length); assert.ok(sc.samples.length >= sc.minPoints, k);
-    assert.ok(list.length >= 4 && list.every(c => ['ok', 'alerta', 'erro'].includes(c.level) && c.text), k);
+    assert.ok(list.length >= 3 && list.every(c => ['ok', 'alerta', 'erro'].includes(c.level) && c.text), k);
     assert.ok(blind.limitHa >= 0.5 && blind.haBlind >= 0, k);
     assert.ok(P.sameShape(sc.params, rec.chosen.params), k);
     for (const a of rec.alternatives.filter(Boolean)) assert.ok(!P.sameShape(sc.params, a.params), `${k} ${a.id}`);
-    const team = P.team(sc, 5); assert.equal(team.pessoas.length, Math.min(5, sc.selected.length) || 5, k);
-    assert.match(P.summaryText(f, sc, 5, list, team), /SCHMIDT CAMPO · Plano/);
   }
 });
 
@@ -159,36 +157,6 @@ test('3.20 · o tiro pode ser feito pelas duas pontas: a guia entra pela ponta m
     }
   }
   assert.ok(n >= 150, `tiros testados: ${n}`);
-});
-
-test('3.21 · equipe em zigue-zague: cada pessoa anda o mínimo (todas as combinações de pontas), 1 tiro igual ao motor', async () => {
-  const { teamPlan: legacyTeam } = await import('../src/engine3/team.mjs');
-  const { cumulative, pointAt } = await import('../src/engine3/polyline.mjs');
-  let multi = 0;
-  for (const k of keys) for (const ppl of [1, 2, 3]) {
-    const f = fields[k], sc = P.planInUse(f, P.recommend(f, {}, 5, false).chosen.params, null), A = legacyTeam(sc, ppl), B = P.team(sc, ppl);
-    if (!A) continue;
-    assert.deepStrictEqual(B.pessoas.map(p => p.tarefas.map(t => t.id)), A.pessoas.map(p => p.tarefas.map(t => t.id)), `${k} ${ppl}: mesma divisão`);
-    B.pessoas.forEach((pb, i) => {
-      if (pb.tarefas.length < 2) { assert.deepStrictEqual(pb, A.pessoas[i], `${k} ${ppl}: 1 tiro igual ao motor`); return; }
-      const ts = pb.tarefas.map(t => { const tr = sc.selected.find(x => x.id === t.id), us = sc.units.filter(u => u.trackId === t.id), cum = cumulative(tr.line);
-        const a = Math.min(...us.map(u => u.s0Track)), b = Math.max(...us.map(u => u.s0Track + u.len)), pts = sc.samples.filter(q => q.trackId === t.id && Number.isFinite(q.sTrack)).map(q => q.sTrack).sort((x, y) => x - y);
-        return { a, b, pts, end: { a: pointAt(tr.line, a, cum), b: pointAt(tr.line, b, cum) } }; });
-      if (ts.length > 8) return;
-      // força bruta: toda entrada e toda saída de cada tiro; passagem em linha reta da saída à próxima entrada
-      const walkIn = (t, e, x) => e !== x ? t.b - t.a : !t.pts.length ? 0 : e === 'a' ? 2 * (t.pts.at(-1) - t.a) : 2 * (t.b - t.pts[0]);
-      let best = Infinity;
-      for (let m = 0; m < 4 ** ts.length; m++) {
-        let c = 0, prev = null;
-        ts.forEach((t, j) => { const e = (m >> (2 * j)) & 1 ? 'b' : 'a', x = (m >> (2 * j + 1)) & 1 ? 'b' : 'a';
-          if (prev) c += Math.hypot(prev[0] - t.end[e][0], prev[1] - t.end[e][1]); c += walkIn(t, e, x); prev = t.end[x]; });
-        best = Math.min(best, c);
-      }
-      assert.ok(Math.abs(pb.m - best) < 0.5, `${k} ${ppl} pessoa ${i + 1}: ${pb.m.toFixed(1)} m ≠ mínimo ${best.toFixed(1)} m`);
-      multi++;
-    });
-  }
-  assert.ok(multi >= 150, `pessoas com 2+ tiros: ${multi}`);
 });
 
 test('U05 · recomendações embutidas no arquivo = motor da tela, nos 51 lotes (5 pessoas, sem limitar à equipe)', async () => {
@@ -325,4 +293,22 @@ test('3.15 · lote irregular: +1 ponto só onde o maior vazio passa de 1,2 × o 
   assert.deepEqual(hit.sort(), ['BD5', 'BE1', 'RB9']);
   const bd5 = P.plusOne(fields['Bananal|BD5'], P.recommend(fields['Bananal|BD5'], {}, 5, false).chosen.params, 5);
   assert.equal(bd5.reason, 'vazio', 'BD5: o ponto no vazio vence o plano refeito');
+});
+
+test('5.0 · escolher N tiros: exatamente N e maior vazio melhor que faixas iguais na maioria (51 lotes, recomendado ± 1)', () => {
+  let exact = 0, total = 0, better = 0, worse = 0;
+  for (const k of keys) {
+    const f = fields[k], rec = P.recommend(f, {}, 5, false), n0 = rec.chosen.m.tiros, cp = rec.chosen.params;
+    for (const n of [n0 - 1, n0 + 1]) {
+      if (n < 1) continue; total++;
+      const params = P.tracksPlan(f, {}, cp, n), sc = P.planInUse(f, params, null);
+      if (sc.selected.length === n) exact++;
+      if (params.trackMode !== 'espacamento') continue;
+      const a = P.balanceStats(f, params), q = P.balanceStats(f, { ...cp, trackMode: 'quantidade', trackCount: n, trackPhaseM: 0 });
+      if (!a || !q) continue;
+      if (a.worst < q.worst - 1e-6) better++; else if (a.worst > q.worst + 1e-6) worse++;
+    }
+  }
+  assert.ok(exact / total >= 0.98, `${exact} de ${total} com o número pedido`);
+  assert.ok(better >= 3 * worse, `maior vazio: melhor em ${better}, pior em ${worse}`);
 });

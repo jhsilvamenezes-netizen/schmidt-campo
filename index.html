@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-J6bMPn2ipJ8t31+l0T24QtG+fc9fdKiLivq4hGq2t5A=' 'sha256-wi6ddMw7JqgyWiu/OJWJGasPCqk1P8vY6+lvl+r1QKw='; style-src 'sha256-PnKY4awowh5zd9phNLntURotTkiPlth703O22TSsQ58='; img-src 'self' data: blob: https://services.arcgisonline.com; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-J6bMPn2ipJ8t31+l0T24QtG+fc9fdKiLivq4hGq2t5A=' 'sha256-CJ7MVo3RexnbYj5UsbyITsMwHAJeKg5SNsntym96zPo='; style-src 'sha256-PnKY4awowh5zd9phNLntURotTkiPlth703O22TSsQ58='; img-src 'self' data: blob: https://services.arcgisonline.com; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#023628" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#01261c" media="(prefers-color-scheme: dark)">
 <title>SCHMIDT CAMPO</title>
 <link rel="preload" href="inter.woff2" as="font" type="font/woff2" crossorigin><link rel="icon" href="marca.svg"><link rel="apple-touch-icon" href="marca-180.png"><link rel="manifest" href="app.webmanifest">
@@ -4048,7 +4048,6 @@ const { DEFAULT_PARAMS, paramsSignature } = schmidtEngine2.params;
 const { coverageGrid, nearestDistances, quickP95 } = schmidtEngine2.metrics;
 const { recommendPlan, SHAPE_KEYS, metricsOf } = schmidtEngine2.recommend;
 const { restoreSamples, withSamples, moveSample, addSample } = schmidtEngine2.editing;
-const { teamPlan } = schmidtEngine2.team;
 const { buildRoute } = schmidtEngine2.guidance;
 const { exactCoverage } = schmidtEngine2.voronoi;
 const { pointInGeom } = schmidtEngine2.geometry;
@@ -4163,6 +4162,37 @@ function* balanceSteps(field, base, rec) {
     equilibrio: { antes: { cv: now.cv, p95M: now.p95, piorVazioM: now.worst, km: now.km }, depois: { cv: best.cv, p95M: best.p95, piorVazioM: best.worst, km: best.km } } };
 }
 
+/**
+ * 5.0 · plano com exatamente `n` tiros (o planejador escolhe quantos). Entre os espaçamentos na barra (perto do que
+ * daria n tiros) e todas as fases a partir do ponto A, fica com o que tem: bordadura melhor, menos tiros de 1 ponto,
+ * menor maior vazio e áreas por ponto mais iguais, nesta ordem. Medido (51 lotes, recomendado ± 1 tiro): maior vazio
+ * menor que o das faixas iguais da 4.10 em 76 de 100 casos. Sem nenhum candidato exato: faixas iguais (modo quantidade).
+ * Em passos (um candidato por passo), para a tela calcular aos poucos sem travar.
+ */
+function* tracksSteps(field, base, cp, n) {
+  const fallback = { ...base, ...cp, trackMode: 'quantidade', trackCount: n, trackPhaseM: 0, alignToBoom: true, selectionMode: 'todos', pointMode: 'total', totalPoints: null };
+  const now = Number.isFinite(cp?.trackSpacingM) && cp.trackMode === 'espacamento' ? cp.trackSpacingM : null;
+  let n0 = 0; try { n0 = planScenario(field, { ...base, ...cp }, deps).selected.length; } catch { n0 = 0; }
+  if (!now || !n0) return fallback;
+  const k0 = Math.round((now / BOOM) * (n0 / n)), score = (/** @type {any} */ c) => [-c.bf, c.ones, c.worst, c.cv];
+  /** @type {any} */ let best = null;
+  for (let k = Math.max(1, k0 - 3); k <= k0 + 3; k++) for (let ph = 0; ph < k; ph++) {
+    const params = { ...base, ...cp, trackMode: 'espacamento', trackSpacingM: Math.round((k * BOOM + 0.01) * 100) / 100, trackPhaseM: Math.round(ph * BOOM * 100) / 100, selectionMode: 'todos', pointMode: 'total', totalPoints: null };
+    yield;
+    let c0; try { c0 = planScenario(field, params, deps); } catch { continue; }
+    if (new Set(c0.samples.map((/** @type {any} */ x) => x.trackId)).size !== n) continue;
+    const c = balanceStats(field, params);
+    if (!c || c.sc.selected.length !== n) continue;
+    const cand = { params, ...c, bf: bordaFaixa(borderStats(field, c.sc).minM) }, a = score(cand), b = best && score(best);
+    let better = !best;
+    if (b) for (let i = 0; i < a.length; i++) { if (a[i] < b[i] - 1e-9) { better = true; break; } if (a[i] > b[i] + 1e-9) break; }
+    if (better) best = cand;
+  }
+  return best ? best.params : fallback;
+}
+/** O mesmo, de uma vez (testes e motor). */
+function tracksPlan(field, base, cp, n) { const it = tracksSteps(field, base, cp, n); let r = it.next(); while (!r.done) r = it.next(); return r.value; }
+
 /** Plano em uso: parâmetros salvos (ou recomendados), ajustes manuais válidos para a mesma assinatura. */
 function planInUse(field, params, edits) {
   let sc = scenarioOf(field, params);
@@ -4186,13 +4216,11 @@ function uncovered(field, sc, k = 0.85) {
 }
 
 /** Conferência antes de enviar: [{level: ok|alerta|erro, text}]. */
-function checks(sc, people, blind) {
+function checks(sc, blind) {
   const out = [], extra = sc.samples.length - sc.minPoints;
   out.push(extra < 0 ? { level: 'erro', text: `Faltam ${plural(-extra, 'ponto', 'pontos')} para o mínimo` } : { level: 'ok', text: `${num(sc.samples.length)} pontos (mínimo ${num(sc.minPoints)})` });
   const empty = sc.trackRows.filter(r => r.empty);
   out.push(empty.length ? { level: 'erro', text: `${empty.map(r => r.trackId).join(', ')} sem ponto` } : { level: 'ok', text: 'Todos os tiros com ponto' });
-  const tiros = sc.selected.length;
-  out.push(tiros > people ? { level: 'alerta', text: `${plural(tiros, 'tiro', 'tiros')} para ${plural(people, 'pessoa', 'pessoas')}` } : { level: 'ok', text: tiros === people ? '1 tiro por pessoa' : `1 tiro por pessoa · sobra ${plural(people - tiros, 'pessoa', 'pessoas')}` });
   if (blind) out.push(blind.haBlind > blind.limitHa ? { level: 'alerta', text: `${num(blind.haBlind, 1)} ha a mais de ${num(blind.limitM)} m de um ponto` } : { level: 'ok', text: 'Sem área descoberta' });
   // 4.0.2 · a guarda da bordadura deslizou um tiro: diz qual e quanto (o ponto saiu da faixa de 15 m da borda)
   for (const f of sc.borderFix || []) out.push({ level: 'ok', text: `${f.trackId}: pontos deslizados ${num(Math.abs(f.shiftM))} m para longe da borda` });
@@ -4207,17 +4235,6 @@ function figures(sc) {
   return { pontos: sc.samples.length, tiros: sc.selected.length, entreTiros: sc.deltaM ? `${num(sc.deltaM)} m` : '—',
     entrePontos: gaps.length ? `${range(Math.min(...gaps), Math.max(...gaps))} m` : '—', p95: sc.coverage.p95 == null ? '—' : `< ${num(sc.coverage.p95)} m`,
     caminhada: `${km(sc.route.totalEstimatedM)} km` };
-}
-
-const team = (sc, people) => teamPlan(sc, people);
-
-/** Resumo em texto para colar no WhatsApp. */
-function summaryText(field, sc, people, list, split) {
-  const f = figures(sc), lines = [`*SCHMIDT CAMPO · Plano* · ${field.farm} / ${field.code} (${num(field.areaOfficialHa, 2)} ha)`,
-    `${plural(f.pontos, 'ponto', 'pontos')} · ${plural(f.tiros, 'tiro', 'tiros')} · ${plural(people, 'pessoa', 'pessoas')}`, `Entre tiros ${f.entreTiros} · entre pontos ${f.entrePontos} · 95% do lote ${f.p95}`, ''];
-  if (split) split.pessoas.forEach((p, i) => lines.push(`- Pessoa ${i + 1} (${km(p.m)} km): ${p.tarefas.map(t => `${t.id}, entra a ${t.entra || '—'}, pontos ${t.de ?? '—'}–${t.ate ?? '—'}`).join('; ')}`));
-  lines.push('', ...list.map(c => `[${c.level === 'ok' ? 'ok' : c.level.toUpperCase()}] ${c.text}`), '', 'Simulação: pontos planejados, não coletados.');
-  return lines.join('\n');
 }
 
 
@@ -4472,10 +4489,17 @@ function friendly(err) {
 }
 
 /** Confere parâmetros (faixas do catálogo) e monta o plano sem deixar erro escapar: {sc} ou {error}. */
+const tryCache = new Map();
 function tryPlan(field, params, edits) {
+  // 5.0 · a troca de plano conferia (setParams) e depois refazia o mesmo plano para mostrar: os últimos 8 ficam guardados
+  const key = `${field?.farm}|${field?.code}|${JSON.stringify(params ?? null)}|${JSON.stringify(edits ?? null)}`;
+  if (tryCache.has(key)) return tryCache.get(key);
   const { removed } = sanitizeParams(params || {});
-  if (removed.length) return { error: `valor fora da faixa (${removed[0]})` };
-  try { return { sc: planInUse(field, params, edits) }; } catch (e) { return { error: friendly(e) }; }
+  let r;
+  if (removed.length) r = { error: `valor fora da faixa (${removed[0]})` };
+  else try { r = { sc: planInUse(field, params, edits) }; } catch (e) { r = { error: friendly(e) }; }
+  tryCache.set(key, r); if (tryCache.size > 8) tryCache.delete(tryCache.keys().next().value);
+  return r;
 }
 
 /** U04 · tiro completo, como na 2.5: comprimento, régua (borda → pontos → borda), tiros vizinhos (medidos de lado) e por
@@ -4514,7 +4538,7 @@ function whereAmI(field, sc, pos) {
   return { inside, edgeM, track, point, accuracyM: pos.accuracyM };
 }
 
-return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BORDADURA_M,BORDA_MIN_M,bordaFaixa,BALANCE,balanceStats,balanceAreas,balanceSteps,planInUse,uncovered,checks,figures,team,summaryText,pointAreas,edgeDistance,borderStats,pointInfo,optimizeEdits,minimaxEdits,PLUS_ONE,middleOnes,plusOneHere,plusOne,friendly,tryPlan,trackDetail,whereAmI,DEFAULT_PARAMS,paramsSignature});
+return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BORDADURA_M,BORDA_MIN_M,bordaFaixa,BALANCE,balanceStats,balanceAreas,balanceSteps,tracksSteps,tracksPlan,planInUse,uncovered,checks,figures,pointAreas,edgeDistance,borderStats,pointInfo,optimizeEdits,minimaxEdits,PLUS_ONE,middleOnes,plusOneHere,plusOne,friendly,tryPlan,trackDetail,whereAmI,DEFAULT_PARAMS,paramsSignature});
 })();
 // src/app3/satellite.mjs
 const __m_app3_satellite=(()=>{
@@ -4980,9 +5004,9 @@ return Object.freeze({mapaView,legend,mapTools});
 })();
 // src/app3/views-plano.mjs
 const __m_app3_views_plano=(()=>{
-const { esc, num, km, plural } = __m_app3_format;
-const { GRAB, chip, metrics } = __m_app3_views;
-// 3.24 · aba Plano em HTML (resultado, ajustes, tiros, equipe e bloco). Sem DOM; recebe dados prontos.
+const { esc, num, plural } = __m_app3_format;
+const { GRAB, metrics } = __m_app3_views;
+// 3.24 · aba Plano em HTML. 5.0: 4 blocos (resultado, ajustar, tiros, conferência) e o bloco. Sem DOM; recebe dados prontos.
 
 
 const stepper = (id, label, hint, value) => `<div class="step"><label for="${id}">${label}${hint ? `<small>${hint}</small>` : ''}</label><div class="stp">
@@ -4994,30 +5018,25 @@ const hintMarkup = hint => (hint?.r ? `<button class="sug" data-act="minimax"><s
   + (hint?.plus ? `<button class="sug" data-act="plus1"><span class="x"><b>${hint.plus.reason === 'meio' ? 'Sugestão' : hint.plus.reason === 'vazio' ? 'Ponto no maior vazio' : 'Lote irregular'}: ${hint.plus.n} pontos (1 a mais)</b><small class="sub">${esc(hint.plus.text)}</small></span><span class="go">Usar</span></button>` : '');
 
 /** @param {any} o */
-function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, block, hiTrack = null, list = [], split = null, hint = null, border = null, bigMap = false }) {
+function planoView({ f, sc, haPerPoint, rec, inUseIsRec, rows, busy, block, hiTrack = null, list = [], hint = null, border = null, bigMap = false }) {
   if (block) return blockPlanoView({ f, sc, rows, block });
-  const alts = (rec?.alternatives || []).filter(a => a);
   return `<div class="map sm${bigMap ? ' big' : ''}" data-map="small"></div><div class="scroll">${GRAB}
 <section class="card res"><div class="row-sb"><h2 class="h">${inUseIsRec ? 'Plano recomendado' : 'Plano em uso'}</h2>${inUseIsRec ? '<span class="tag">em uso</span>' : rec ? '<button class="link" data-use="rec">Usar recomendado</button>' : '<span class="mu sk">calculando o recomendado…</span>'}</div>
 <p class="big">${plural(f.pontos, 'ponto', 'pontos')} <span>· ${plural(f.tiros, 'tiro', 'tiros')}</span></p>${metrics(f)}<p class="mu">Caminhada ${esc(f.caminhada)}${border ? (border.near ? ` · <span class="${border.low ? 'warn' : 'note'}">ponto ${num(border.n)} a ${num(border.minM)} m da borda</span>` : ` · borda ≥ ${num(border.minM)} m`) : ''}</p>${busy ? '<p class="mu"><span class="sk">Calculando…</span></p>' : ''}
 <div data-hint>${hintMarkup(hint)}</div></section>
-<section class="card regra">${stepper('ha', 'Hectares por ponto', `mínimo ${num(sc.minPoints)} pontos`, haPerPoint)}<div class="presets" role="group" aria-label="Regras comuns">${[10, 15, 20, 25, 30].map(v => `<button data-ha-set="${v}" aria-pressed="${String(v) === String(haPerPoint)}">${v} ha</button>`).join('')}</div>${stepper('tiros', 'Tiros', inUseIsRec ? 'o recomendado' : rec?.chosen?.m ? `recomendado: ${num(rec.chosen.m.tiros)}` : 'escolhido', f.tiros)}${stepper('people', 'Pessoas', '', people)}
+<section class="card regra"><h2 class="h">Ajustar</h2>${stepper('ha', 'Hectares por ponto', `mínimo ${num(sc.minPoints)} pontos`, haPerPoint)}<div class="presets" role="group" aria-label="Regras comuns">${[10, 15, 20, 25, 30].map(v => `<button data-ha-set="${v}" aria-pressed="${String(v) === String(haPerPoint)}">${v} ha</button>`).join('')}</div>${stepper('tiros', 'Tiros', inUseIsRec ? 'o recomendado' : rec?.chosen?.m ? `recomendado: ${num(rec.chosen.m.tiros)}` : '', f.tiros)}
 <div class="seg" role="group" aria-label="Planejar"><button class="on" aria-pressed="true">Lote</button><button data-open="bloco" aria-pressed="false">Bloco</button></div></section>
 ${trackRows(rows, hiTrack)}
-${checkAndTeam(list, split)}
-<section class="card list"><h2 class="h">Outras opções</h2>${alts.length ? alts.map((a, i) => `<div class="li"><span class="x">${plural(a.m.tiros, 'tiro', 'tiros')} · ${plural(a.m.pontos, 'ponto', 'pontos')}<br><small>95% &lt; ${num(a.m.p95M)} m · ${num(a.m.caminhadaKm, 1)} km${a.id === 'equipe' ? ' · igual por pessoa' : ''}</small></span><button class="use" data-alt="${i}">Usar</button></div>`).join('') : '<p class="mu">Sem outra opção melhor.</p>'}
-<button class="lnk" data-open="ajustes">Ajustes avançados</button><button class="lnk" data-open="calculo">Como foi calculado</button></section></div>`;
+${checkCard(list)}
+<section class="card list"><button class="lnk" data-open="calculo">Como foi calculado</button></section></div>`;
 }
 
-/** Equipe: cada pessoa com o(s) tiro(s) inteiro(s), pontos e entrada. */
-const teamList = split => split.pessoas.map((p, i) => `<div class="li"><span class="id">${esc(p.tarefas.map(t => t.id).join('+'))}</span><span class="x"><b>Pessoa ${i + 1}</b><small class="sub">${esc(p.tarefas.map(t => `pontos\u00a0${t.de ?? '—'}–${t.ate ?? '—'}${t.entra ? ` · entra a ${t.entra}` : ''}`).join(' · '))}</small></span><span class="r">${km(p.m)} km</span></div>`).join('');
-
-/** Conferência e equipe no Plano (antes na aba Enviar): fechadas, com o resumo à vista. */
-function checkAndTeam(list, split) {
-  const ok = list.filter(c => c.level === 'ok').length, all = ok === list.length;
-  const kms = split ? split.pessoas.map(p => p.m / 1000) : [];
-  return `<details class="card fold" data-k="conf"><summary class="sumc"><span class="x"><b>${all ? 'Plano conferido' : 'Conferir o plano'}</b><small class="sub">${esc(list.filter(c => c.level !== 'ok').map(c => c.text).join(' · ') || list.map(c => c.text).slice(0, 2).join(' · '))}</small></span>${chip(all ? 'ok' : 'alerta', `${ok} de ${list.length}`)}</summary>${list.map(c => `<p class="ck ${c.level}">${esc(c.text)}</p>`).join('')}</details>`
-    + (split ? `<details class="card fold list" data-k="equipe"><summary class="sumc"><span class="x"><b>Equipe</b><small class="sub">${num(split.pessoas.length)} ${split.pessoas.length === 1 ? 'pessoa' : 'pessoas'} · ${num(Math.min(...kms), 1)} a ${num(Math.max(...kms), 1)} km cada</small></span></summary>${teamList(split)}</details>` : '');
+/** 5.0 · conferência: tudo certo = uma linha; com problema, só os problemas (o que está certo vira contagem). */
+function checkCard(list) {
+  const bad = list.filter(c => c.level !== 'ok'), ok = list.filter(c => c.level === 'ok');
+  return `<section class="card conf"><h2 class="h">Conferência</h2>${bad.length
+    ? `${bad.map(c => `<p class="ck ${c.level}">${esc(c.text)}</p>`).join('')}<p class="mu sm">${num(ok.length)} de ${num(list.length)} itens certos</p>`
+    : `<p class="ck ok">Plano conferido</p><p class="mu sm">${esc(ok.map(c => c.text).join(' · '))}</p>`}</section>`;
 }
 
 /** U04 · lista de tiros que abre cada um, como na 2.5: régua (borda → pontos → borda), vizinhos e por onde entrar. */
@@ -5060,7 +5079,7 @@ ${prepared.alternatives.map((a, i) => [a, i]).sort((x, y) => Number(y[0].chosen)
   return groups.length ? groups.map((g, i) => `<button class="lnk" data-block="${i}">${esc(g.title)}</button>`).join('') : '<p class="mu">Este lote não tem vizinho com a mesma referência A/B.</p>';
 }
 
-return Object.freeze({hintMarkup,planoView,checkAndTeam,blockPickBody});
+return Object.freeze({hintMarkup,planoView,checkCard,blockPickBody});
 })();
 // src/app3/views-monitor.mjs
 const __m_app3_views_monitor=(()=>{
@@ -5074,8 +5093,8 @@ function monitorView({ mode = /** @type {string|null} */ (null), nextTrack = /**
   const pick = `<div class="chips" role="group" aria-label="Tiro">${tracks.map(t => `<button class="chipb${t.id === trackId ? ' on' : ''}" data-track="${esc(t.id)}" aria-pressed="${t.id === trackId}">${esc(t.id)}${t.person ? `<small>${esc(t.person)}</small>` : ''}</button>`).join('')}</div>`;
   const head = `<section class="card"><h2 class="h">Tiro</h2>${pick}<div class="row-sb"><p class="mu">Sentido: ${autoDir ? 'pela ponta mais perto' : flipped ? 'invertido' : 'do plano'}</p><button class="link" data-act="flip">Inverter</button></div></section>`;
   if (!active) return `<div class="map sm" data-map="guide"></div><div class="scroll">${GRAB}${head}<button class="btn p" data-act="gps-start">Iniciar guia</button>
-<section class="card list"><h2 class="h">Sem o guia</h2><button class="lnk" data-act="gpx-track"><span>GPX do ${esc(trackId || 'tiro')}<small>para outro app de GPS</small></span></button>
-<details class="ex trk"><summary class="sumc">Roteiro sem GPS</summary>${steps.map(t => `<p>${esc(t)}</p>`).join('')}</details></section></div>`;
+<details class="card fold list" data-k="semguia"><summary class="sumc"><span class="x"><b>Sem o guia</b><small class="sub">GPX para outro app ou roteiro a pé</small></span></summary><button class="lnk" data-act="gpx-track"><span>GPX do ${esc(trackId || 'tiro')}<small>para outro app de GPS</small></span></button>
+<details class="ex trk"><summary class="sumc">Roteiro sem GPS</summary>${steps.map(t => `<p>${esc(t)}</p>`).join('')}</details></details></div>`;
   const cur = tracks.find(t => t.id === trackId), m = model;
   // seta pequena ao lado da distância: o mapa (grande, acima) fica livre para contornar e se orientar
   // com bússola, a seta aponta para onde andar com o celular na mão; sem ela, norte para cima
@@ -5123,58 +5142,6 @@ const allLotsBody = rows => `<div class="card list">${rows.map(r => `<button cla
 
 
 return Object.freeze({dadosBody,calculoBody,allLotsBody});
-})();
-// src/app3/advanced.mjs
-const __m_app3_advanced=(()=>{
-const { checkParams } = schmidtEngine2.paramCatalog;
-const { DEFAULT_PARAMS } = schmidtEngine2.params;
-const { esc, num } = __m_app3_format;
-// 3.0 · ajustes avançados: formulário curto, valores conferidos pelo catálogo do motor (mesmos limites da 2.x).
-
-const POINT_MODES = [['total', 'Pelo tamanho do tiro'], ['por_tiro', 'Mesmo número por tiro'], ['espacamento', 'Pela distância']];
-const EDGES = [['meia_margem', 'Meio intervalo'], ['margens_iguais', 'Iguais'], ['margem_fixa', 'Fixa']];
-const val = (p, k) => p[k] ?? DEFAULT_PARAMS[k];
-
-const numberRow = (id, label, value, unit, hint = '') => `<label class="fr"><span>${label}${hint ? `<small>${hint}</small>` : ''}</span><span class="in"><input name="${id}" inputmode="decimal" value="${value == null ? '' : esc(String(value).replace('.', ','))}">${unit ? `<i>${unit}</i>` : ''}</span></label>`;
-const choice = (id, label, opts, cur) => `<fieldset class="fr col"><legend>${label}</legend><div class="seg s${opts.length}">${opts.map(([v, t]) => `<button type="button" data-set="${id}" data-v="${v}" class="${v === cur ? 'on' : ''}" aria-pressed="${v === cur}">${t}</button>`).join('')}</div></fieldset>`;
-
-/** Formulário dos ajustes a partir dos parâmetros em uso e do cenário (para mostrar o efeito real). */
-function advancedForm(params, sc, fitTeam) {
-  const pm = val(params, 'pointMode'), edge = val(params, 'edgePolicy');
-  return `<form class="adv" data-adv novalidate>
-${numberRow('trackSpacingM', 'Distância máxima entre tiros', val(params, 'trackSpacingM'), 'm', `no plano: ${num(sc.deltaM)} m · ${num(sc.selected.length)} tiros`)}
-<label class="sw-row"><span>Tiros em múltiplos da barra</span><input type="checkbox" name="alignToBoom" ${val(params, 'alignToBoom') ? 'checked' : ''}></label>
-${numberRow('boomWidthM', 'Largura da barra', val(params, 'boomWidthM'), 'm')}
-${choice('pointMode', 'Repartir os pontos', POINT_MODES, pm)}
-${pm === 'total' ? numberRow('totalPoints', 'Total de pontos', params.totalPoints, '', `vazio = mínimo (${num(sc.minPoints)})`) : ''}
-${pm === 'por_tiro' ? numberRow('pointsPerTrack', 'Pontos por tiro', val(params, 'pointsPerTrack'), '') : ''}
-${pm === 'espacamento' ? numberRow('targetSpacingM', 'Distância entre pontos', val(params, 'targetSpacingM'), 'm') : ''}
-${choice('edgePolicy', 'Primeiro ponto a partir da borda', EDGES, edge)}
-${edge === 'margem_fixa' ? numberRow('edgeMarginM', 'Margem da borda', val(params, 'edgeMarginM'), 'm') : ''}
-<label class="sw-row"><span>Limitar tiros ao número de pessoas</span><input type="checkbox" name="fitTeam" ${fitTeam ? 'checked' : ''}></label>
-<p class="err" role="alert" data-err></p>
-<div class="two"><button type="button" class="btn" data-act="optimize">Buscar distribuição melhor</button><button type="button" class="btn" data-act="restore">Restaurar padrões</button></div>
-</form>`;
-}
-
-const parseNum = t => { const s = String(t).trim().replace(/\./g, '').replace(',', '.'); return s === '' ? null : Number(s); };
-
-/** Lê um campo do formulário e devolve {params} novos ou {error}. Nulo onde o catálogo aceita vazio. */
-function applyField(params, name, raw) {
-  const next = { ...params };
-  if (name === 'alignToBoom') next.alignToBoom = !!raw;
-  else if (name === 'pointMode' || name === 'edgePolicy') next[name] = raw;
-  else {
-    const v = parseNum(raw);
-    if (v === null && name !== 'totalPoints') return { error: 'Informe um número.' };
-    if (v !== null && !Number.isFinite(v)) return { error: 'Informe um número.' };
-    next[name] = v;
-  }
-  const problems = checkParams(next).filter(p => p.field === name);
-  return problems.length ? { error: problems[0].message } : { params: next };
-}
-
-return Object.freeze({advancedForm,applyField});
 })();
 // src/app3/gestures.mjs
 const __m_app3_gestures=(()=>{
@@ -6407,9 +6374,8 @@ function installMonitor(app) {
   /** @type {any} */ const mon = { mode: 'pe', modeN: 0, voice: false, follow: true, up: 'rumo', course: null, heading: null, compass: false, compassAt: 0, trackId: null, flipped: false, active: false, watchId: null, pos: null, session: {}, wake: null, arrivedId: null, ticker: 0 };
 
   function monitorData() {
-    const cur = app.cur, sc = cur.sc, tasks = new Map();
-    (cur.split?.pessoas || []).forEach((p, i) => p.tarefas.forEach(t => tasks.set(t.id, `Pessoa ${i + 1}`)));
-    const tracks = sc.selected.filter(t => sc.units.some(u => u.trackId === t.id)).map(t => ({ id: t.id, person: tasks.get(t.id) }));
+    const cur = app.cur, sc = cur.sc;
+    const tracks = sc.selected.filter(t => sc.units.some(u => u.trackId === t.id)).map(t => ({ id: t.id, person: null }));
     if (!tracks.some(t => t.id === mon.trackId)) mon.trackId = tracks[0]?.id ?? null;
     // 3.20 · antes do primeiro ponto, entra pela ponta mais perto (o "Inverter" à mão desliga a escolha automática)
     if (mon.active && mon.trackId && mon.pos && !mon.manualDir && !mon.startedTrack) {
@@ -6426,11 +6392,10 @@ function installMonitor(app) {
       { arrivalRadiusM: cur.sc.params.monitor?.arrivalRadiusM ?? 10, speedMps: mon.pos?.speedMps ?? 0 });
     Object.assign(mon, al.mem);
     for (const e of al.effects) { if (e.vibrate !== null) { try { window.navigator.vibrate?.(e.vibrate); } catch { /* sem vibração */ } } say(e.say); }
-    // 3.13 (V3) · terminou o tiro: oferece o próximo tiro da mesma pessoa (equipe do Plano); sem equipe, o seguinte da lista
+    // 3.13 (V3) · terminou o tiro: oferece o seguinte da lista (5.0: 1 tiro por pessoa, sem divisão por pessoa)
     /** @type {any} */ let nextTrack = null;
     if (model && route && (model.state === 'done' || (model.state === 'arrived' && model.next?.seq === route.nPoints))) {
-      const mine = (cur.split?.pessoas || []).find(p => p.tarefas.some(t => t.id === mon.trackId));
-      const order = mine ? mine.tarefas.map(t => t.id) : tracks.map(t => t.id), i = order.indexOf(mon.trackId);
+      const order = tracks.map(t => t.id), i = order.indexOf(mon.trackId);
       const id = order[i + 1] ?? null, t = tracks.find(x => x.id === id);
       if (t) nextTrack = t;
     }
@@ -6544,21 +6509,12 @@ const __m_app3_screen_plano=(()=>{
 const P = __m_app3_planner;
 const { num, plural } = __m_app3_format;
 const { hintMarkup } = __m_app3_views_plano;
-const { advancedForm, applyField } = __m_app3_advanced;
-// 3.1 (U02) · tela Plano: hectares por ponto, pessoas, recomendado e outras opções, ajustes avançados.
+// 3.1 (U02) · tela Plano: hectares por ponto, tiros e o recomendado (5.0: sem pessoas, outras opções e ajustes avançados).
 
 /** @param {any} app */
 function installPlano(app) {
   const { document, store } = app;
-  const reopenAdvanced = () => { if (app.host.querySelector('[data-adv]')) app.SHEETS.ajustes(); };
-  function advancedChange(name, raw) {
-    const err = app.host.querySelector('[data-err]'), cur = app.cur;
-    if (name === 'fitTeam') { store.update({ fitTeam: !!raw }); app.render(); setTimeout(reopenAdvanced, 0); return; }
-    const r = applyField(cur.params, name, raw);
-    if (r.error) { if (err) err.textContent = r.error; return; }
-    if (JSON.stringify(r.params) === JSON.stringify(cur.params)) return;
-    app.setParams(r.params, 'Ajuste aplicado'); setTimeout(reopenAdvanced, 0);
-  }
+  let tirosSeq = 0;
 
   // 3.4 · sugestão do motor: a melhoria da distribuição é calculada em segundo plano (motor.js) para o plano em uso;
   // o Plano mostra o ganho pronto ("maior vazio 689 → 610 m") e um toque aplica, com Desfazer
@@ -6575,15 +6531,12 @@ function installPlano(app) {
     const r = h.r, parts = r?.edits ? [r.after.worst < r.before.worst - 1 && `maior vazio ${num(r.before.worst)} → ${num(r.after.worst)} m`, r.after.cv < r.before.cv - 0.004 && 'áreas por ponto mais iguais'].filter(Boolean) : [];
     return parts.length || plus ? { text: parts.join(' · '), r: parts.length ? r : null, plus } : null;
   };
-  app.SHEETS.ajustes = () => app.openSheet('Ajustes avançados', advancedForm(app.cur.params, app.cur.sc, app.saved().fitTeam));
   app.clicks.push(t => {
     const cur = app.cur;
     // U04: destaca o tiro no mapa do Plano (tocar de novo tira o destaque)
     if (t.dataset.hitrack) { app.hiTrack = app.hiTrack === t.dataset.hitrack ? null : t.dataset.hitrack; t.setAttribute('aria-pressed', String(app.hiTrack === t.dataset.hitrack)); t.textContent = app.hiTrack ? 'Destacado no mapa' : 'Ver no mapa'; app.drawMaps(); return true; }
     // 3.5 · regra comum com um toque (mesmo caminho do campo "Hectares por ponto")
     if (t.dataset.haSet) { const inp = document.querySelector('#ha'); if (inp) { inp.value = t.dataset.haSet; inp.dispatchEvent(new Event('change', { bubbles: true })); } return true; }
-    if (t.dataset.set) { advancedChange(t.dataset.set, t.dataset.v); return true; }
-    if (t.dataset.alt) { const a = cur.rec.alternatives.filter(Boolean)[+t.dataset.alt]; if (a) app.setParams({ ...cur.base, ...a.params }, `Usando ${plural(a.m.tiros, 'tiro', 'tiros')} · ${plural(a.m.pontos, 'ponto', 'pontos')}`, null); return true; }
     if (t.dataset.use === 'rec') { app.setParams({ ...cur.base, ...cur.rec.chosen.params }, 'Usando o plano recomendado', null); return true; }
     if (t.dataset.inc || t.dataset.dec) {
       const id = t.dataset.inc || t.dataset.dec, inp = document.querySelector(`#${id}`);
@@ -6610,24 +6563,27 @@ function installPlano(app) {
       }, key);
       return true;
     }
-    // 4.10 · pedido de campo (Gean, 26/11): escolher quantos tiros e o app recalcula. Modo "quantidade" do motor: a largura
-    // do lote em N faixas iguais, um tiro no meio de cada, na passada da barra mais perto; rumo e regra de pontos iguais
+    // 4.10 · pedido de campo (Gean, 26/11): escolher quantos tiros e o app recalcula. 5.0: busca o melhor plano com
+    // exatamente N tiros (espaçamento na barra × fase), aos poucos para não travar; rumo e regra de pontos iguais
     if (t.id === 'tiros') {
       const v = Number(String(t.value).trim()), now = cur.sc.selected.length;
       if (!(Number.isInteger(v) && v >= 1 && v <= 60)) { t.value = String(now); app.toast('Tiros: número inteiro de 1 a 60.'); return true; }
       if (v === now) return true;
-      const params = { ...cur.base, trackMode: 'quantidade', trackCount: v, trackPhaseM: 0, alignToBoom: true, selectionMode: 'todos', pointMode: 'total', totalPoints: null };
-      if (!app.setParams(params, `${plural(v, 'tiro', 'tiros')}, escolhido`, null)) return true;
-      const got = app.cur.sc.selected.length;
-      if (got !== v) app.toast(`Neste lote cabem ${plural(got, 'tiro', 'tiros')} na barra (pedido: ${v}).`);
+      const key = app.ui.key, token = ++tirosSeq, rec = app.recNow(cur.field, cur.base, key), cp = rec?.chosen?.params ?? cur.params;
+      const steps = P.tracksSteps(cur.field, cur.base, cp, v);
+      app.toast(`Calculando ${plural(v, 'tiro', 'tiros')}…`);
+      const run = () => {
+        if (token !== tirosSeq || app.ui.key !== key) return;
+        const t0 = Date.now(); let r = steps.next();
+        while (!r.done && Date.now() - t0 < 25) r = steps.next();
+        if (!r.done) { setTimeout(run, 0); return; }
+        if (!app.setParams(r.value, `${plural(v, 'tiro', 'tiros')}, escolhido`, null)) return;
+        const got = app.cur.sc.selected.length;
+        if (got !== v) app.toast(`Neste lote cabem ${plural(got, 'tiro', 'tiros')} na barra (pedido: ${v}).`);
+      };
+      setTimeout(run, 0);
       return true;
     }
-    if (t.id === 'people') {
-      const v = Number(String(t.value).trim().replace(',', '.'));
-      if (!(Number.isInteger(v) && v >= 1 && v <= 60)) { t.value = app.people(); app.toast('Pessoas: número inteiro de 1 a 60.'); return true; }
-      store.update({ quickMonitors: v }); app.render(); return true;
-    }
-    if (t.form?.hasAttribute('data-adv')) { advancedChange(t.name, t.type === 'checkbox' ? t.checked : t.value); return true; }
     return false;
   });
   Object.assign(app.ACTIONS, {
@@ -6650,15 +6606,6 @@ function installPlano(app) {
       if (!pl) { app.toast('Neste lote, 1 ponto a mais não melhora o bastante.'); return; }
       // 4.0.1 · "vazio": mesmo plano + 1 ponto no lugar do maior vazio (vai como ajuste, com Desfazer)
       app.setParams(pl.params, `${pl.after.n} pontos (1 acima do mínimo${pl.reason === 'vazio' ? ', no maior vazio' : ''}): maior vazio ${num(pl.before.worst)} → ${num(pl.after.worst)} m`, pl.edits ?? null);
-    },
-    optimize() {
-      const cur = app.cur, r = P.optimizeEdits(cur.field, cur.params);
-      if (!r.edits) { app.toast('Nenhuma distribuição melhor sem piorar a regularidade.'); return; }
-      app.setParams(cur.params, `95% do lote: ${num(r.report.baseline.p95M)} → ${num(r.report.optimized.p95M)} m`, r.edits); setTimeout(reopenAdvanced, 0);
-    },
-    restore() {
-      const cur = app.cur, base = { haPerPoint: cur.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint };
-      app.whenRec(cur.field, base, rec => { app.setParams(rec ? { ...base, ...rec.chosen.params } : base, 'Padrões do lote restaurados', null); setTimeout(reopenAdvanced, 0); });
     },
   });
 }
@@ -6733,13 +6680,13 @@ function installMais(app) {
   function glossTerms() {
     const cur = app.cur, f = cur ? P.figures(cur.sc) : null, a = cur ? P.pointAreas(cur.field, cur.sc) : null, bd = cur ? P.borderStats(cur.field, cur.sc) : null;
     const terms = [
-      ['Tiro', 'Linha reta que a pessoa caminha dentro do lote, na direção das passadas da máquina. Cada pessoa anda o tiro inteiro.'],
+      ['Tiro', 'Linha reta que a pessoa caminha dentro do lote, na direção das passadas da máquina. Cada pessoa faz um tiro inteiro.'],
       ['Passada', `Largura da barra do pulverizador (36,48 m). Os tiros ficam a um número inteiro de passadas um do outro${f ? ` — aqui, ${f.entreTiros}` : ''}.`],
       ['Ponto', 'Lugar onde se faz a amostra. O número do ponto segue a ordem de caminhada.'],
       ['Entre tiros', `Distância de lado de um tiro ao vizinho${f ? ` (${f.entreTiros})` : ''}.`],
       ['Entre pontos', `Distância andando no mesmo tiro de um ponto ao seguinte${f ? ` (${f.entrePontos})` : ''}.`],
       ['Hectares por ponto', 'A regra: 1 ponto a cada tantos hectares, arredondando para cima. Dá o mínimo de pontos do lote.'],
-      ['Tiros', 'Quantos tiros o lote terá. O app recomenda; você pode escolher outro número e ele recalcula: divide a largura do lote em faixas iguais, um tiro no meio de cada, na passada da barra. O rumo e o mínimo de pontos não mudam.'],
+      ['Tiros', 'Quantos tiros o lote terá (1 tiro por pessoa). O app recomenda; você pode escolher outro número e ele recalcula o melhor plano com esse número de tiros, sempre na passada da barra. O rumo e o mínimo de pontos não mudam.'],
       ['95% do lote', `95% da área está a menos desta distância de um ponto${f ? ` (${f.p95})` : ''}. Quanto menor, melhor coberto.`],
       ['Maior vazio', `O lugar do lote mais longe de qualquer ponto${a ? ` (${num(a.worstGapM)} m)` : ''}. Ligue a camada Área no mapa para ver onde fica.`],
       ['Área de cada ponto', `Parte do lote mais perto de cada ponto${a ? ` (${num(a.minHa, 1)} a ${num(a.maxHa, 1)} ha)` : ''}. Quanto mais iguais, mais equilibrada a amostragem.`],
@@ -6938,7 +6885,7 @@ function installBloco(app) {
     if (!block) return null;
     try {
       const { field, sc } = blockScenario(fields, block, ui.key);
-      const list = P.checks(sc, app.people(), P.uncovered(field, sc)), split = P.team(sc, app.people());
+      const list = P.checks(sc, P.uncovered(field, sc)), split = null;
       const members = block.members.map(k => ({ key: k, code: fields[k].code, on: k === ui.key, pontos: block.state.paramsByField[k].totalPoints }));
       return { field, params: sc.params, base: P.baseOf(sc.params), rec: null, sc, f: P.figures(sc), list, split, inUseIsRec: true,
         block: { title: block.members.map(k => fields[k].code).join(' + '), members, passes: Math.round(block.common.spacingM / 36.48), spacingM: block.common.spacingM },
@@ -7069,18 +7016,20 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.innerHTML = ''; toastAction = null; }, action ? 6000 : 4000);
   };
   const saved = () => store.get();
-  const people = () => Math.max(1, Math.min(60, Math.round(saved().quickMonitors ?? 5)));
+  // 5.0 · "Pessoas" saiu da tela: não muda o plano recomendado (0 de 357 casos medidos). Valor interno fixo (mesmo das
+  // recomendações prontas do arquivo), e "limitar à equipe" desligado (1 tiro = 1 pessoa)
+  const people = () => 5;
   /** Recomendação do lote. Vem pronta do arquivo (regra padrão) ou é montada no motor em segundo plano (motor.js,
    *  Web Worker): a tela não trava; enquanto isso o lote mostra o plano gravado e "calculando o recomendado".
    *  Sem worker (navegador antigo ou arquivo local): recomendação base na hora e equilíbrio aos poucos. */
-  const recId = (base, key) => `${key}|${JSON.stringify(base)}|${people()}|${!!saved().fitTeam}`;
+  const recId = (base, key) => `${key}|${JSON.stringify(base)}|${people()}|false`;
   /** @type {Map<string, {field:any, base:any, key:string, fns:Function[]}>} */ const pending = new Map();
   /** @type {any} */ let worker = null;
   try {
     if (/^https?:$/.test(window.location.protocol) && window.Worker) {
       worker = new window.Worker('motor.js');
-      worker.onmessage = e => { const { id, rec, error } = e.data || {}; const p = pending.get(id); if (!p) return; pending.delete(id); done(id, error ? P.recommendBase(p.field, p.base, people(), saved().fitTeam) : rec, p); };
-      worker.onerror = () => { worker = null; for (const [id, p] of [...pending]) { pending.delete(id); done(id, P.recommend(p.field, p.base, people(), saved().fitTeam), p); } };
+      worker.onmessage = e => { const { id, rec, error } = e.data || {}; const p = pending.get(id); if (!p) return; pending.delete(id); done(id, error ? P.recommendBase(p.field, p.base, people(), false) : rec, p); };
+      worker.onerror = () => { worker = null; for (const [id, p] of [...pending]) { pending.delete(id); done(id, P.recommend(p.field, p.base, people(), false), p); } };
     }
   } catch { worker = null; }
   function done(id, rec, p) {
@@ -7092,10 +7041,10 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     const id = recId(base, key);
     if (recCache.has(id)) return recCache.get(id);
     if (worker) {
-      if (!pending.has(id)) { pending.set(id, { field, base, key, fns: [] }); worker.postMessage({ id, field, base, people: people(), fitTeam: !!saved().fitTeam }); }
+      if (!pending.has(id)) { pending.set(id, { field, base, key, fns: [] }); worker.postMessage({ id, field, base, people: people(), fitTeam: false }); }
       return null;
     }
-    const first = P.recommendBase(field, base, people(), saved().fitTeam);
+    const first = P.recommendBase(field, base, people(), false);
     recCache.set(id, first);
     if (first) balanceLater(id, field, base, key, first);
     return first;
@@ -7134,8 +7083,8 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     cur: null, hiTrack: null, toast, saved, people, recFor, whenRec, render, setParams,
     /** Recomendação já pronta (sem calcular), ou undefined. */
     /** Recomendação já pronta ou feita na hora (para listas e bloco, que precisam do valor já). */
-    recNow: (field, base, key = ui.key) => recFor(field, base, key) ?? P.recommendBase(field, base, people(), saved().fitTeam),
-    peekRec: (field, base, key = ui.key) => recCache.get(`${key}|${JSON.stringify(base)}|${people()}|${!!saved().fitTeam}`),
+    recNow: (field, base, key = ui.key) => recFor(field, base, key) ?? P.recommendBase(field, base, people(), false),
+    peekRec: (field, base, key = ui.key) => recCache.get(recId(base, key)),
     SHEETS: {}, ACTIONS: {}, clicks: [], changes: [], inputs: [], onLotChange: [], onCloseSheet: [],
     // 3.13 (X3) · janela aberta ocupa uma entrada no histórico: o Voltar do celular fecha a janela em vez de sair do app
     openSheet: (title, body) => {
@@ -7177,12 +7126,12 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     if (!params && rec) { params = { ...base, ...rec.chosen.params }; if (!invalid) store.update({ paramsByField: { ...(st.paramsByField || {}), [ui.key]: params } }); }
     const sc = tried?.sc || P.planInUse(field, params || base, edits);
     if (invalid && warnedInvalid !== ui.key) { warnedInvalid = ui.key; setTimeout(() => toast(`O plano gravado de ${field.code} não abre (${invalid}). Mostrando o recomendado.`), 0); }
-    const blind = P.uncovered(field, sc), list = P.checks(sc, people(), blind), split = P.team(sc, people());
+    const blind = P.uncovered(field, sc), list = P.checks(sc, blind), split = null;
     // 3.8 · bordadura na conferência: o ponto mais perto da borda (atenção se a menos do mínimo)
     const bd = P.borderStats(field, sc);
     if (bd) list.push(bd.minM < P.BORDA_MIN_M ? { level: 'alerta', text: `Ponto ${bd.min.number} (${bd.min.trackId}) a ${num(bd.minM)} m da borda (mínimo ${P.BORDA_MIN_M} m)` }
       : bd.minM < P.BORDADURA_M ? { level: 'ok', text: `Ponto ${bd.min.number} a ${num(bd.minM)} m da borda (bordadura do plantio: ${P.BORDADURA_M} m)` }
-        : { level: 'ok', text: `Pontos fora da bordadura (${num(bd.minM)} m ou mais da borda)` });
+        : { level: 'ok', text: `Bordadura ok (≥ ${num(bd.minM)} m da borda)` });
     return { field, params: params || base, base, rec, recPending: rec === null && !!worker, sc, f: P.figures(sc), blind, list, split, inUseIsRec: !!rec && P.sameShape(params, rec.chosen.params), block: null, others: [] };
   }
   /** Troca o plano do lote (com Desfazer). `edits`: undefined = manter, null = apagar, objeto = gravar. */
@@ -7227,7 +7176,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     for (const a of document.querySelectorAll('[data-tab]')) { const on = a.dataset.tab === ui.view; a.classList.toggle('on', on); a.setAttribute('aria-current', on ? 'page' : 'false'); }
     main.dataset.view = ui.view; app.applySnap?.();
     if (ui.view === 'mapa') main.innerHTML = VMa.mapaView(c);
-    else if (ui.view === 'plano') main.innerHTML = VP.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), people: people(), hiTrack: app.hiTrack, bigMap: !!app.planBig, hint: c.block ? null : app.hint?.(), border: (b => (b ? { minM: b.minM, n: b.min.number, near: b.minM < P.BORDADURA_M, low: b.minM < P.BORDA_MIN_M } : null))(P.borderStats(c.field, c.sc)),
+    else if (ui.view === 'plano') main.innerHTML = VP.planoView({ ...c, haPerPoint: String(c.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint).replace('.', ','), hiTrack: app.hiTrack, bigMap: !!app.planBig, hint: c.block ? null : app.hint?.(), border: (b => (b ? { minM: b.minM, n: b.min.number, near: b.minM < P.BORDADURA_M, low: b.minM < P.BORDA_MIN_M } : null))(P.borderStats(c.field, c.sc)),
       rows: c.sc.trackRows.map(r => ({ ...r, d: c.block ? null : (c.details ??= new Map()).get(r.trackId) ?? c.details.set(r.trackId, P.trackDetail(c.field, c.sc, r.trackId)).get(r.trackId) })) });
     else if (ui.view === 'lotes') main.innerHTML = app.lotesView();
     else main.innerHTML = VMo.monitorView(app.monitorData());

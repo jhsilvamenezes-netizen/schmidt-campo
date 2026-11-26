@@ -1,21 +1,12 @@
-// 3.1 (U02) · tela Plano: hectares por ponto, pessoas, recomendado e outras opções, ajustes avançados.
+// 3.1 (U02) · tela Plano: hectares por ponto, tiros e o recomendado (5.0: sem pessoas, outras opções e ajustes avançados).
 import * as P from './planner.mjs';
 import { num, plural } from './format.mjs';
 import { hintMarkup } from './views-plano.mjs';
-import { advancedForm, applyField } from './advanced.mjs';
 
 /** @param {any} app */
 export function installPlano(app) {
   const { document, store } = app;
-  const reopenAdvanced = () => { if (app.host.querySelector('[data-adv]')) app.SHEETS.ajustes(); };
-  function advancedChange(name, raw) {
-    const err = app.host.querySelector('[data-err]'), cur = app.cur;
-    if (name === 'fitTeam') { store.update({ fitTeam: !!raw }); app.render(); setTimeout(reopenAdvanced, 0); return; }
-    const r = applyField(cur.params, name, raw);
-    if (r.error) { if (err) err.textContent = r.error; return; }
-    if (JSON.stringify(r.params) === JSON.stringify(cur.params)) return;
-    app.setParams(r.params, 'Ajuste aplicado'); setTimeout(reopenAdvanced, 0);
-  }
+  let tirosSeq = 0;
 
   // 3.4 · sugestão do motor: a melhoria da distribuição é calculada em segundo plano (motor.js) para o plano em uso;
   // o Plano mostra o ganho pronto ("maior vazio 689 → 610 m") e um toque aplica, com Desfazer
@@ -32,15 +23,12 @@ export function installPlano(app) {
     const r = h.r, parts = r?.edits ? [r.after.worst < r.before.worst - 1 && `maior vazio ${num(r.before.worst)} → ${num(r.after.worst)} m`, r.after.cv < r.before.cv - 0.004 && 'áreas por ponto mais iguais'].filter(Boolean) : [];
     return parts.length || plus ? { text: parts.join(' · '), r: parts.length ? r : null, plus } : null;
   };
-  app.SHEETS.ajustes = () => app.openSheet('Ajustes avançados', advancedForm(app.cur.params, app.cur.sc, app.saved().fitTeam));
   app.clicks.push(t => {
     const cur = app.cur;
     // U04: destaca o tiro no mapa do Plano (tocar de novo tira o destaque)
     if (t.dataset.hitrack) { app.hiTrack = app.hiTrack === t.dataset.hitrack ? null : t.dataset.hitrack; t.setAttribute('aria-pressed', String(app.hiTrack === t.dataset.hitrack)); t.textContent = app.hiTrack ? 'Destacado no mapa' : 'Ver no mapa'; app.drawMaps(); return true; }
     // 3.5 · regra comum com um toque (mesmo caminho do campo "Hectares por ponto")
     if (t.dataset.haSet) { const inp = document.querySelector('#ha'); if (inp) { inp.value = t.dataset.haSet; inp.dispatchEvent(new Event('change', { bubbles: true })); } return true; }
-    if (t.dataset.set) { advancedChange(t.dataset.set, t.dataset.v); return true; }
-    if (t.dataset.alt) { const a = cur.rec.alternatives.filter(Boolean)[+t.dataset.alt]; if (a) app.setParams({ ...cur.base, ...a.params }, `Usando ${plural(a.m.tiros, 'tiro', 'tiros')} · ${plural(a.m.pontos, 'ponto', 'pontos')}`, null); return true; }
     if (t.dataset.use === 'rec') { app.setParams({ ...cur.base, ...cur.rec.chosen.params }, 'Usando o plano recomendado', null); return true; }
     if (t.dataset.inc || t.dataset.dec) {
       const id = t.dataset.inc || t.dataset.dec, inp = document.querySelector(`#${id}`);
@@ -67,24 +55,27 @@ export function installPlano(app) {
       }, key);
       return true;
     }
-    // 4.10 · pedido de campo (Gean, 26/11): escolher quantos tiros e o app recalcula. Modo "quantidade" do motor: a largura
-    // do lote em N faixas iguais, um tiro no meio de cada, na passada da barra mais perto; rumo e regra de pontos iguais
+    // 4.10 · pedido de campo (Gean, 26/11): escolher quantos tiros e o app recalcula. 5.0: busca o melhor plano com
+    // exatamente N tiros (espaçamento na barra × fase), aos poucos para não travar; rumo e regra de pontos iguais
     if (t.id === 'tiros') {
       const v = Number(String(t.value).trim()), now = cur.sc.selected.length;
       if (!(Number.isInteger(v) && v >= 1 && v <= 60)) { t.value = String(now); app.toast('Tiros: número inteiro de 1 a 60.'); return true; }
       if (v === now) return true;
-      const params = { ...cur.base, trackMode: 'quantidade', trackCount: v, trackPhaseM: 0, alignToBoom: true, selectionMode: 'todos', pointMode: 'total', totalPoints: null };
-      if (!app.setParams(params, `${plural(v, 'tiro', 'tiros')}, escolhido`, null)) return true;
-      const got = app.cur.sc.selected.length;
-      if (got !== v) app.toast(`Neste lote cabem ${plural(got, 'tiro', 'tiros')} na barra (pedido: ${v}).`);
+      const key = app.ui.key, token = ++tirosSeq, rec = app.recNow(cur.field, cur.base, key), cp = rec?.chosen?.params ?? cur.params;
+      const steps = P.tracksSteps(cur.field, cur.base, cp, v);
+      app.toast(`Calculando ${plural(v, 'tiro', 'tiros')}…`);
+      const run = () => {
+        if (token !== tirosSeq || app.ui.key !== key) return;
+        const t0 = Date.now(); let r = steps.next();
+        while (!r.done && Date.now() - t0 < 25) r = steps.next();
+        if (!r.done) { setTimeout(run, 0); return; }
+        if (!app.setParams(r.value, `${plural(v, 'tiro', 'tiros')}, escolhido`, null)) return;
+        const got = app.cur.sc.selected.length;
+        if (got !== v) app.toast(`Neste lote cabem ${plural(got, 'tiro', 'tiros')} na barra (pedido: ${v}).`);
+      };
+      setTimeout(run, 0);
       return true;
     }
-    if (t.id === 'people') {
-      const v = Number(String(t.value).trim().replace(',', '.'));
-      if (!(Number.isInteger(v) && v >= 1 && v <= 60)) { t.value = app.people(); app.toast('Pessoas: número inteiro de 1 a 60.'); return true; }
-      store.update({ quickMonitors: v }); app.render(); return true;
-    }
-    if (t.form?.hasAttribute('data-adv')) { advancedChange(t.name, t.type === 'checkbox' ? t.checked : t.value); return true; }
     return false;
   });
   Object.assign(app.ACTIONS, {
@@ -107,15 +98,6 @@ export function installPlano(app) {
       if (!pl) { app.toast('Neste lote, 1 ponto a mais não melhora o bastante.'); return; }
       // 4.0.1 · "vazio": mesmo plano + 1 ponto no lugar do maior vazio (vai como ajuste, com Desfazer)
       app.setParams(pl.params, `${pl.after.n} pontos (1 acima do mínimo${pl.reason === 'vazio' ? ', no maior vazio' : ''}): maior vazio ${num(pl.before.worst)} → ${num(pl.after.worst)} m`, pl.edits ?? null);
-    },
-    optimize() {
-      const cur = app.cur, r = P.optimizeEdits(cur.field, cur.params);
-      if (!r.edits) { app.toast('Nenhuma distribuição melhor sem piorar a regularidade.'); return; }
-      app.setParams(cur.params, `95% do lote: ${num(r.report.baseline.p95M)} → ${num(r.report.optimized.p95M)} m`, r.edits); setTimeout(reopenAdvanced, 0);
-    },
-    restore() {
-      const cur = app.cur, base = { haPerPoint: cur.params.haPerPoint ?? P.DEFAULT_PARAMS.haPerPoint };
-      app.whenRec(cur.field, base, rec => { app.setParams(rec ? { ...base, ...rec.chosen.params } : base, 'Padrões do lote restaurados', null); setTimeout(reopenAdvanced, 0); });
     },
   });
 }

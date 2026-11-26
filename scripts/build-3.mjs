@@ -10,7 +10,7 @@ import { ICONS } from '../src/app3/views.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
 /** Módulos da tela, caminho relativo a src/ (ordem: dependências primeiro). Motor: src/engine via schmidtEngine2. */
 export const APP_MODULES = ['gps/fix-policy', 'gps/guide-next', 'app3/format', 'app3/store', 'app3/planner', 'app3/satellite', 'app3/map', 'app3/views', 'app3/views-mapa', 'app3/views-plano', 'app3/views-monitor', 'app3/views-mais',
-  'app3/advanced', 'app3/gestures', 'app3/monitor', 'app3/compass', 'platform/browser-session-lock',
+  'app3/gestures', 'app3/monitor', 'app3/compass', 'platform/browser-session-lock',
   'engine/boundary', 'application/block-planning', 'app3/blocks', 'app3/offline',
   'app3/screen-mapa', 'app3/screen-monitor', 'app3/screen-plano', 'app3/screen-mais', 'app3/screen-lotes', 'app3/screen-bloco', 'app3/main'];
 export const APP_VERSION = '4.10.0';

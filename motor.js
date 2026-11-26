@@ -3418,7 +3418,6 @@ const { DEFAULT_PARAMS, paramsSignature } = schmidtEngine2.params;
 const { coverageGrid, nearestDistances, quickP95 } = schmidtEngine2.metrics;
 const { recommendPlan, SHAPE_KEYS, metricsOf } = schmidtEngine2.recommend;
 const { restoreSamples, withSamples, moveSample, addSample } = schmidtEngine2.editing;
-const { teamPlan } = schmidtEngine2.team;
 const { buildRoute } = schmidtEngine2.guidance;
 const { exactCoverage } = schmidtEngine2.voronoi;
 const { pointInGeom } = schmidtEngine2.geometry;
@@ -3533,6 +3532,37 @@ function* balanceSteps(field, base, rec) {
     equilibrio: { antes: { cv: now.cv, p95M: now.p95, piorVazioM: now.worst, km: now.km }, depois: { cv: best.cv, p95M: best.p95, piorVazioM: best.worst, km: best.km } } };
 }
 
+/**
+ * 5.0 · plano com exatamente `n` tiros (o planejador escolhe quantos). Entre os espaçamentos na barra (perto do que
+ * daria n tiros) e todas as fases a partir do ponto A, fica com o que tem: bordadura melhor, menos tiros de 1 ponto,
+ * menor maior vazio e áreas por ponto mais iguais, nesta ordem. Medido (51 lotes, recomendado ± 1 tiro): maior vazio
+ * menor que o das faixas iguais da 4.10 em 76 de 100 casos. Sem nenhum candidato exato: faixas iguais (modo quantidade).
+ * Em passos (um candidato por passo), para a tela calcular aos poucos sem travar.
+ */
+function* tracksSteps(field, base, cp, n) {
+  const fallback = { ...base, ...cp, trackMode: 'quantidade', trackCount: n, trackPhaseM: 0, alignToBoom: true, selectionMode: 'todos', pointMode: 'total', totalPoints: null };
+  const now = Number.isFinite(cp?.trackSpacingM) && cp.trackMode === 'espacamento' ? cp.trackSpacingM : null;
+  let n0 = 0; try { n0 = planScenario(field, { ...base, ...cp }, deps).selected.length; } catch { n0 = 0; }
+  if (!now || !n0) return fallback;
+  const k0 = Math.round((now / BOOM) * (n0 / n)), score = (/** @type {any} */ c) => [-c.bf, c.ones, c.worst, c.cv];
+  /** @type {any} */ let best = null;
+  for (let k = Math.max(1, k0 - 3); k <= k0 + 3; k++) for (let ph = 0; ph < k; ph++) {
+    const params = { ...base, ...cp, trackMode: 'espacamento', trackSpacingM: Math.round((k * BOOM + 0.01) * 100) / 100, trackPhaseM: Math.round(ph * BOOM * 100) / 100, selectionMode: 'todos', pointMode: 'total', totalPoints: null };
+    yield;
+    let c0; try { c0 = planScenario(field, params, deps); } catch { continue; }
+    if (new Set(c0.samples.map((/** @type {any} */ x) => x.trackId)).size !== n) continue;
+    const c = balanceStats(field, params);
+    if (!c || c.sc.selected.length !== n) continue;
+    const cand = { params, ...c, bf: bordaFaixa(borderStats(field, c.sc).minM) }, a = score(cand), b = best && score(best);
+    let better = !best;
+    if (b) for (let i = 0; i < a.length; i++) { if (a[i] < b[i] - 1e-9) { better = true; break; } if (a[i] > b[i] + 1e-9) break; }
+    if (better) best = cand;
+  }
+  return best ? best.params : fallback;
+}
+/** O mesmo, de uma vez (testes e motor). */
+function tracksPlan(field, base, cp, n) { const it = tracksSteps(field, base, cp, n); let r = it.next(); while (!r.done) r = it.next(); return r.value; }
+
 /** Plano em uso: parâmetros salvos (ou recomendados), ajustes manuais válidos para a mesma assinatura. */
 function planInUse(field, params, edits) {
   let sc = scenarioOf(field, params);
@@ -3556,13 +3586,11 @@ function uncovered(field, sc, k = 0.85) {
 }
 
 /** Conferência antes de enviar: [{level: ok|alerta|erro, text}]. */
-function checks(sc, people, blind) {
+function checks(sc, blind) {
   const out = [], extra = sc.samples.length - sc.minPoints;
   out.push(extra < 0 ? { level: 'erro', text: `Faltam ${plural(-extra, 'ponto', 'pontos')} para o mínimo` } : { level: 'ok', text: `${num(sc.samples.length)} pontos (mínimo ${num(sc.minPoints)})` });
   const empty = sc.trackRows.filter(r => r.empty);
   out.push(empty.length ? { level: 'erro', text: `${empty.map(r => r.trackId).join(', ')} sem ponto` } : { level: 'ok', text: 'Todos os tiros com ponto' });
-  const tiros = sc.selected.length;
-  out.push(tiros > people ? { level: 'alerta', text: `${plural(tiros, 'tiro', 'tiros')} para ${plural(people, 'pessoa', 'pessoas')}` } : { level: 'ok', text: tiros === people ? '1 tiro por pessoa' : `1 tiro por pessoa · sobra ${plural(people - tiros, 'pessoa', 'pessoas')}` });
   if (blind) out.push(blind.haBlind > blind.limitHa ? { level: 'alerta', text: `${num(blind.haBlind, 1)} ha a mais de ${num(blind.limitM)} m de um ponto` } : { level: 'ok', text: 'Sem área descoberta' });
   // 4.0.2 · a guarda da bordadura deslizou um tiro: diz qual e quanto (o ponto saiu da faixa de 15 m da borda)
   for (const f of sc.borderFix || []) out.push({ level: 'ok', text: `${f.trackId}: pontos deslizados ${num(Math.abs(f.shiftM))} m para longe da borda` });
@@ -3577,17 +3605,6 @@ function figures(sc) {
   return { pontos: sc.samples.length, tiros: sc.selected.length, entreTiros: sc.deltaM ? `${num(sc.deltaM)} m` : '—',
     entrePontos: gaps.length ? `${range(Math.min(...gaps), Math.max(...gaps))} m` : '—', p95: sc.coverage.p95 == null ? '—' : `< ${num(sc.coverage.p95)} m`,
     caminhada: `${km(sc.route.totalEstimatedM)} km` };
-}
-
-const team = (sc, people) => teamPlan(sc, people);
-
-/** Resumo em texto para colar no WhatsApp. */
-function summaryText(field, sc, people, list, split) {
-  const f = figures(sc), lines = [`*SCHMIDT CAMPO · Plano* · ${field.farm} / ${field.code} (${num(field.areaOfficialHa, 2)} ha)`,
-    `${plural(f.pontos, 'ponto', 'pontos')} · ${plural(f.tiros, 'tiro', 'tiros')} · ${plural(people, 'pessoa', 'pessoas')}`, `Entre tiros ${f.entreTiros} · entre pontos ${f.entrePontos} · 95% do lote ${f.p95}`, ''];
-  if (split) split.pessoas.forEach((p, i) => lines.push(`- Pessoa ${i + 1} (${km(p.m)} km): ${p.tarefas.map(t => `${t.id}, entra a ${t.entra || '—'}, pontos ${t.de ?? '—'}–${t.ate ?? '—'}`).join('; ')}`));
-  lines.push('', ...list.map(c => `[${c.level === 'ok' ? 'ok' : c.level.toUpperCase()}] ${c.text}`), '', 'Simulação: pontos planejados, não coletados.');
-  return lines.join('\n');
 }
 
 
@@ -3842,10 +3859,17 @@ function friendly(err) {
 }
 
 /** Confere parâmetros (faixas do catálogo) e monta o plano sem deixar erro escapar: {sc} ou {error}. */
+const tryCache = new Map();
 function tryPlan(field, params, edits) {
+  // 5.0 · a troca de plano conferia (setParams) e depois refazia o mesmo plano para mostrar: os últimos 8 ficam guardados
+  const key = `${field?.farm}|${field?.code}|${JSON.stringify(params ?? null)}|${JSON.stringify(edits ?? null)}`;
+  if (tryCache.has(key)) return tryCache.get(key);
   const { removed } = sanitizeParams(params || {});
-  if (removed.length) return { error: `valor fora da faixa (${removed[0]})` };
-  try { return { sc: planInUse(field, params, edits) }; } catch (e) { return { error: friendly(e) }; }
+  let r;
+  if (removed.length) r = { error: `valor fora da faixa (${removed[0]})` };
+  else try { r = { sc: planInUse(field, params, edits) }; } catch (e) { r = { error: friendly(e) }; }
+  tryCache.set(key, r); if (tryCache.size > 8) tryCache.delete(tryCache.keys().next().value);
+  return r;
 }
 
 /** U04 · tiro completo, como na 2.5: comprimento, régua (borda → pontos → borda), tiros vizinhos (medidos de lado) e por
@@ -3884,7 +3908,7 @@ function whereAmI(field, sc, pos) {
   return { inside, edgeM, track, point, accuracyM: pos.accuracyM };
 }
 
-return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BORDADURA_M,BORDA_MIN_M,bordaFaixa,BALANCE,balanceStats,balanceAreas,balanceSteps,planInUse,uncovered,checks,figures,team,summaryText,pointAreas,edgeDistance,borderStats,pointInfo,optimizeEdits,minimaxEdits,PLUS_ONE,middleOnes,plusOneHere,plusOne,friendly,tryPlan,trackDetail,whereAmI,DEFAULT_PARAMS,paramsSignature});
+return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BORDADURA_M,BORDA_MIN_M,bordaFaixa,BALANCE,balanceStats,balanceAreas,balanceSteps,tracksSteps,tracksPlan,planInUse,uncovered,checks,figures,pointAreas,edgeDistance,borderStats,pointInfo,optimizeEdits,minimaxEdits,PLUS_ONE,middleOnes,plusOneHere,plusOne,friendly,tryPlan,trackDetail,whereAmI,DEFAULT_PARAMS,paramsSignature});
 })();
 // src/app3/worker.mjs
 const __m_app3_worker=(()=>{

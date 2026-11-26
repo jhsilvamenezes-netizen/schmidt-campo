@@ -8,8 +8,8 @@ export function monitorView({ mode = /** @type {string|null} */ (null), nextTrac
   const pick = `<div class="chips" role="group" aria-label="Tiro">${tracks.map(t => `<button class="chipb${t.id === trackId ? ' on' : ''}" data-track="${esc(t.id)}" aria-pressed="${t.id === trackId}">${esc(t.id)}${t.person ? `<small>${esc(t.person)}</small>` : ''}</button>`).join('')}</div>`;
   const head = `<section class="card"><h2 class="h">Tiro</h2>${pick}<div class="row-sb"><p class="mu">Sentido: ${autoDir ? 'pela ponta mais perto' : flipped ? 'invertido' : 'do plano'}</p><button class="link" data-act="flip">Inverter</button></div></section>`;
   if (!active) return `<div class="map sm" data-map="guide"></div><div class="scroll">${GRAB}${head}<button class="btn p" data-act="gps-start">Iniciar guia</button>
-<section class="card list"><h2 class="h">Sem o guia</h2><button class="lnk" data-act="gpx-track"><span>GPX do ${esc(trackId || 'tiro')}<small>para outro app de GPS</small></span></button>
-<details class="ex trk"><summary class="sumc">Roteiro sem GPS</summary>${steps.map(t => `<p>${esc(t)}</p>`).join('')}</details></section></div>`;
+<details class="card fold list" data-k="semguia"><summary class="sumc"><span class="x"><b>Sem o guia</b><small class="sub">GPX para outro app ou roteiro a pé</small></span></summary><button class="lnk" data-act="gpx-track"><span>GPX do ${esc(trackId || 'tiro')}<small>para outro app de GPS</small></span></button>
+<details class="ex trk"><summary class="sumc">Roteiro sem GPS</summary>${steps.map(t => `<p>${esc(t)}</p>`).join('')}</details></details></div>`;
   const cur = tracks.find(t => t.id === trackId), m = model;
   // seta pequena ao lado da distância: o mapa (grande, acima) fica livre para contornar e se orientar
   // com bússola, a seta aponta para onde andar com o celular na mão; sem ela, norte para cima

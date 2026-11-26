@@ -1,6 +1,6 @@
-// 3.24 · aba Plano em HTML (resultado, ajustes, tiros, equipe e bloco). Sem DOM; recebe dados prontos.
-import { esc, num, km, plural } from './format.mjs';
-import { GRAB, chip, metrics } from './views.mjs';
+// 3.24 · aba Plano em HTML. 5.0: 4 blocos (resultado, ajustar, tiros, conferência) e o bloco. Sem DOM; recebe dados prontos.
+import { esc, num, plural } from './format.mjs';
+import { GRAB, metrics } from './views.mjs';
 
 
 const stepper = (id, label, hint, value) => `<div class="step"><label for="${id}">${label}${hint ? `<small>${hint}</small>` : ''}</label><div class="stp">
@@ -12,30 +12,25 @@ export const hintMarkup = hint => (hint?.r ? `<button class="sug" data-act="mini
   + (hint?.plus ? `<button class="sug" data-act="plus1"><span class="x"><b>${hint.plus.reason === 'meio' ? 'Sugestão' : hint.plus.reason === 'vazio' ? 'Ponto no maior vazio' : 'Lote irregular'}: ${hint.plus.n} pontos (1 a mais)</b><small class="sub">${esc(hint.plus.text)}</small></span><span class="go">Usar</span></button>` : '');
 
 /** @param {any} o */
-export function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, block, hiTrack = null, list = [], split = null, hint = null, border = null, bigMap = false }) {
+export function planoView({ f, sc, haPerPoint, rec, inUseIsRec, rows, busy, block, hiTrack = null, list = [], hint = null, border = null, bigMap = false }) {
   if (block) return blockPlanoView({ f, sc, rows, block });
-  const alts = (rec?.alternatives || []).filter(a => a);
   return `<div class="map sm${bigMap ? ' big' : ''}" data-map="small"></div><div class="scroll">${GRAB}
 <section class="card res"><div class="row-sb"><h2 class="h">${inUseIsRec ? 'Plano recomendado' : 'Plano em uso'}</h2>${inUseIsRec ? '<span class="tag">em uso</span>' : rec ? '<button class="link" data-use="rec">Usar recomendado</button>' : '<span class="mu sk">calculando o recomendado…</span>'}</div>
 <p class="big">${plural(f.pontos, 'ponto', 'pontos')} <span>· ${plural(f.tiros, 'tiro', 'tiros')}</span></p>${metrics(f)}<p class="mu">Caminhada ${esc(f.caminhada)}${border ? (border.near ? ` · <span class="${border.low ? 'warn' : 'note'}">ponto ${num(border.n)} a ${num(border.minM)} m da borda</span>` : ` · borda ≥ ${num(border.minM)} m`) : ''}</p>${busy ? '<p class="mu"><span class="sk">Calculando…</span></p>' : ''}
 <div data-hint>${hintMarkup(hint)}</div></section>
-<section class="card regra">${stepper('ha', 'Hectares por ponto', `mínimo ${num(sc.minPoints)} pontos`, haPerPoint)}<div class="presets" role="group" aria-label="Regras comuns">${[10, 15, 20, 25, 30].map(v => `<button data-ha-set="${v}" aria-pressed="${String(v) === String(haPerPoint)}">${v} ha</button>`).join('')}</div>${stepper('tiros', 'Tiros', inUseIsRec ? 'o recomendado' : rec?.chosen?.m ? `recomendado: ${num(rec.chosen.m.tiros)}` : 'escolhido', f.tiros)}${stepper('people', 'Pessoas', '', people)}
+<section class="card regra"><h2 class="h">Ajustar</h2>${stepper('ha', 'Hectares por ponto', `mínimo ${num(sc.minPoints)} pontos`, haPerPoint)}<div class="presets" role="group" aria-label="Regras comuns">${[10, 15, 20, 25, 30].map(v => `<button data-ha-set="${v}" aria-pressed="${String(v) === String(haPerPoint)}">${v} ha</button>`).join('')}</div>${stepper('tiros', 'Tiros', inUseIsRec ? 'o recomendado' : rec?.chosen?.m ? `recomendado: ${num(rec.chosen.m.tiros)}` : '', f.tiros)}
 <div class="seg" role="group" aria-label="Planejar"><button class="on" aria-pressed="true">Lote</button><button data-open="bloco" aria-pressed="false">Bloco</button></div></section>
 ${trackRows(rows, hiTrack)}
-${checkAndTeam(list, split)}
-<section class="card list"><h2 class="h">Outras opções</h2>${alts.length ? alts.map((a, i) => `<div class="li"><span class="x">${plural(a.m.tiros, 'tiro', 'tiros')} · ${plural(a.m.pontos, 'ponto', 'pontos')}<br><small>95% &lt; ${num(a.m.p95M)} m · ${num(a.m.caminhadaKm, 1)} km${a.id === 'equipe' ? ' · igual por pessoa' : ''}</small></span><button class="use" data-alt="${i}">Usar</button></div>`).join('') : '<p class="mu">Sem outra opção melhor.</p>'}
-<button class="lnk" data-open="ajustes">Ajustes avançados</button><button class="lnk" data-open="calculo">Como foi calculado</button></section></div>`;
+${checkCard(list)}
+<section class="card list"><button class="lnk" data-open="calculo">Como foi calculado</button></section></div>`;
 }
 
-/** Equipe: cada pessoa com o(s) tiro(s) inteiro(s), pontos e entrada. */
-const teamList = split => split.pessoas.map((p, i) => `<div class="li"><span class="id">${esc(p.tarefas.map(t => t.id).join('+'))}</span><span class="x"><b>Pessoa ${i + 1}</b><small class="sub">${esc(p.tarefas.map(t => `pontos\u00a0${t.de ?? '—'}–${t.ate ?? '—'}${t.entra ? ` · entra a ${t.entra}` : ''}`).join(' · '))}</small></span><span class="r">${km(p.m)} km</span></div>`).join('');
-
-/** Conferência e equipe no Plano (antes na aba Enviar): fechadas, com o resumo à vista. */
-export function checkAndTeam(list, split) {
-  const ok = list.filter(c => c.level === 'ok').length, all = ok === list.length;
-  const kms = split ? split.pessoas.map(p => p.m / 1000) : [];
-  return `<details class="card fold" data-k="conf"><summary class="sumc"><span class="x"><b>${all ? 'Plano conferido' : 'Conferir o plano'}</b><small class="sub">${esc(list.filter(c => c.level !== 'ok').map(c => c.text).join(' · ') || list.map(c => c.text).slice(0, 2).join(' · '))}</small></span>${chip(all ? 'ok' : 'alerta', `${ok} de ${list.length}`)}</summary>${list.map(c => `<p class="ck ${c.level}">${esc(c.text)}</p>`).join('')}</details>`
-    + (split ? `<details class="card fold list" data-k="equipe"><summary class="sumc"><span class="x"><b>Equipe</b><small class="sub">${num(split.pessoas.length)} ${split.pessoas.length === 1 ? 'pessoa' : 'pessoas'} · ${num(Math.min(...kms), 1)} a ${num(Math.max(...kms), 1)} km cada</small></span></summary>${teamList(split)}</details>` : '');
+/** 5.0 · conferência: tudo certo = uma linha; com problema, só os problemas (o que está certo vira contagem). */
+export function checkCard(list) {
+  const bad = list.filter(c => c.level !== 'ok'), ok = list.filter(c => c.level === 'ok');
+  return `<section class="card conf"><h2 class="h">Conferência</h2>${bad.length
+    ? `${bad.map(c => `<p class="ck ${c.level}">${esc(c.text)}</p>`).join('')}<p class="mu sm">${num(ok.length)} de ${num(list.length)} itens certos</p>`
+    : `<p class="ck ok">Plano conferido</p><p class="mu sm">${esc(ok.map(c => c.text).join(' · '))}</p>`}</section>`;
 }
 
 /** U04 · lista de tiros que abre cada um, como na 2.5: régua (borda → pontos → borda), vizinhos e por onde entrar. */

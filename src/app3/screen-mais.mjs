@@ -64,13 +64,13 @@ export function installMais(app) {
   function glossTerms() {
     const cur = app.cur, f = cur ? P.figures(cur.sc) : null, a = cur ? P.pointAreas(cur.field, cur.sc) : null, bd = cur ? P.borderStats(cur.field, cur.sc) : null;
     const terms = [
-      ['Tiro', 'Linha reta que a pessoa caminha dentro do lote, na direção das passadas da máquina. Cada pessoa anda o tiro inteiro.'],
+      ['Tiro', 'Linha reta que a pessoa caminha dentro do lote, na direção das passadas da máquina. Cada pessoa faz um tiro inteiro.'],
       ['Passada', `Largura da barra do pulverizador (36,48 m). Os tiros ficam a um número inteiro de passadas um do outro${f ? ` — aqui, ${f.entreTiros}` : ''}.`],
       ['Ponto', 'Lugar onde se faz a amostra. O número do ponto segue a ordem de caminhada.'],
       ['Entre tiros', `Distância de lado de um tiro ao vizinho${f ? ` (${f.entreTiros})` : ''}.`],
       ['Entre pontos', `Distância andando no mesmo tiro de um ponto ao seguinte${f ? ` (${f.entrePontos})` : ''}.`],
       ['Hectares por ponto', 'A regra: 1 ponto a cada tantos hectares, arredondando para cima. Dá o mínimo de pontos do lote.'],
-      ['Tiros', 'Quantos tiros o lote terá. O app recomenda; você pode escolher outro número e ele recalcula: divide a largura do lote em faixas iguais, um tiro no meio de cada, na passada da barra. O rumo e o mínimo de pontos não mudam.'],
+      ['Tiros', 'Quantos tiros o lote terá (1 tiro por pessoa). O app recomenda; você pode escolher outro número e ele recalcula o melhor plano com esse número de tiros, sempre na passada da barra. O rumo e o mínimo de pontos não mudam.'],
       ['95% do lote', `95% da área está a menos desta distância de um ponto${f ? ` (${f.p95})` : ''}. Quanto menor, melhor coberto.`],
       ['Maior vazio', `O lugar do lote mais longe de qualquer ponto${a ? ` (${num(a.worstGapM)} m)` : ''}. Ligue a camada Área no mapa para ver onde fica.`],
       ['Área de cada ponto', `Parte do lote mais perto de cada ponto${a ? ` (${num(a.minHa, 1)} a ${num(a.maxHa, 1)} ha)` : ''}. Quanto mais iguais, mais equilibrada a amostragem.`],
