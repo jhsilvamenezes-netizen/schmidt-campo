@@ -12,7 +12,7 @@ const RECENT_KEY = 'schmidt3.recentes';
 
 /** @param {any} app */
 export function installMais(app) {
-  const { fields, keys, ui, store, storage, safra } = app;
+  const { fields, keys, ui, store, storage, culturas } = app;
   const recents = () => { try { return JSON.parse(storage.getItem(RECENT_KEY) || '[]').filter(k => fields[k]); } catch { return []; } };
   const pushRecent = k => { try { storage.setItem(RECENT_KEY, JSON.stringify([k, ...recents().filter(x => x !== k)].slice(0, 4))); } catch { /* sem armazenamento: só não lembra */ } };
   const lotButton = k => `<button class="lotb${k === ui.key ? ' on' : ''}" data-lot="${esc(k)}">${esc(fields[k].code)}<small>${num(fields[k].areaOfficialHa)} ha</small></button>`;
@@ -96,7 +96,7 @@ export function installMais(app) {
     glossario: () => app.openSheet('Glossário', `<dl class="glos">${glossTerms().map(([t, d]) => `<dt>${esc(t)}</dt><dd>${esc(d)}</dd>`).join('')}</dl>`),
     todos: openAll,
     lote: () => app.openSheet('Escolher lote', lotPicker()),
-    dados: () => app.openSheet(`Dados · ${app.cur.field.code}`, VX.dadosBody(app.cur.field, assessField(app.cur.field), safra?.data?.[ui.key], safra?.source)),
+    dados: () => app.openSheet(`Dados · ${app.cur.field.code}`, VX.dadosBody(app.cur.field, assessField(app.cur.field), culturas?.[ui.key])),
     calculo: () => app.openSheet('Como foi calculado', VX.calculoBody(explainScenario(app.cur.sc, app.cur.field))),
   });
   app.clicks.push(t => {

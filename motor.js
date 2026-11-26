@@ -2236,7 +2236,7 @@ function buildWarnings(field, sc, assessField) {
   const p = sc.params, out = [];
   const add = (level, code, message, action) => out.push({ level, code, message, ...(action ? { action } : {}) });
   for (const w of assessField(field)) add(w.level, w.code, w.message, w.action);
-  if (!field.isSoy) add(LEVEL.ALERTA, 'protocolo_nao_soja', 'Regra 1 ponto/20 ha informada apenas para soja: neste lote é exploratória.');
+  // 5.0 · a regra escolhida (ha por ponto) vale para todas as culturas (decisão do proprietário, 27/11): sem alerta
   if (sc.samples.length < sc.minPoints)
     add(LEVEL.ERRO, 'abaixo_minimo', `Pontos planejados (${sc.samples.length}) abaixo do mínimo por área (${sc.minPoints}). Não reduzido automaticamente: aumente os pontos.`);
   if (sc.allocation.status === 'conflito') add(LEVEL.ERRO, 'conflito_tiros_pontos', `Conflito: ${sc.allocation.suggestions.join(' · ')}`);
@@ -3591,7 +3591,7 @@ function checks(sc, blind) {
   out.push(extra < 0 ? { level: 'erro', text: `Faltam ${plural(-extra, 'ponto', 'pontos')} para o mínimo` } : { level: 'ok', text: `${num(sc.samples.length)} pontos (mínimo ${num(sc.minPoints)})` });
   const empty = sc.trackRows.filter(r => r.empty);
   out.push(empty.length ? { level: 'erro', text: `${empty.map(r => r.trackId).join(', ')} sem ponto` } : { level: 'ok', text: 'Todos os tiros com ponto' });
-  if (blind) out.push(blind.haBlind > blind.limitHa ? { level: 'alerta', text: `${num(blind.haBlind, 1)} ha a mais de ${num(blind.limitM)} m de um ponto` } : { level: 'ok', text: 'Sem área descoberta' });
+  if (blind) out.push(blind.haBlind > blind.limitHa ? { level: 'alerta', text: `${num(blind.haBlind, 1)} ha do lote ficam a mais de ${num(blind.limitM)} m do ponto mais perto` } : { level: 'ok', text: 'Sem área descoberta' });
   // 4.0.2 · a guarda da bordadura deslizou um tiro: diz qual e quanto (o ponto saiu da faixa de 15 m da borda)
   for (const f of sc.borderFix || []) out.push({ level: 'ok', text: `${f.trackId}: pontos deslizados ${num(Math.abs(f.shiftM))} m para longe da borda` });
   // 5.0 · avisos dos dados com o próprio texto (antes só "1 alerta nos dados", sem dizer qual)
@@ -3847,6 +3847,14 @@ function friendly(err) {
 }
 
 /** Confere parâmetros (faixas do catálogo) e monta o plano sem deixar erro escapar: {sc} ou {error}. */
+/** 5.0 · plano gravado com ajuste avançado (saiu da tela): barra diferente de 36,48 m, tiros fora da barra, outra forma de
+ *  repartir os pontos, de escolher os tiros ou da borda. Esse plano não tem mais como ser visto nem desfeito: volta ao recomendado. */
+function legacyAdvanced(params) {
+  if (!params) return false;
+  const d = DEFAULT_PARAMS, diff = (/** @type {string} */ k) => params[k] !== undefined && params[k] !== d[k];
+  return ['boomWidthM', 'alignToBoom', 'pointMode', 'selectionMode', 'edgePolicy'].some(diff) || !['espacamento', 'quantidade', undefined].includes(params.trackMode);
+}
+
 const tryCache = new Map();
 function tryPlan(field, params, edits) {
   // 5.0 · a troca de plano conferia (setParams) e depois refazia o mesmo plano para mostrar: os últimos 8 ficam guardados
@@ -3896,7 +3904,7 @@ function whereAmI(field, sc, pos) {
   return { inside, edgeM, track, point, accuracyM: pos.accuracyM };
 }
 
-return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BORDADURA_M,BORDA_MIN_M,bordaFaixa,BALANCE,balanceStats,balanceAreas,balanceSteps,tracksSteps,tracksPlan,planInUse,uncovered,checks,figures,pointAreas,edgeDistance,borderStats,pointInfo,minimaxEdits,PLUS_ONE,middleOnes,plusOneHere,plusOne,friendly,tryPlan,trackDetail,whereAmI,DEFAULT_PARAMS,paramsSignature});
+return Object.freeze({ENGINE_LABEL,deps,scenarioOf,baseOf,sameShape,recommendBase,recommend,BORDADURA_M,BORDA_MIN_M,bordaFaixa,BALANCE,balanceStats,balanceAreas,balanceSteps,tracksSteps,tracksPlan,planInUse,uncovered,checks,figures,pointAreas,edgeDistance,borderStats,pointInfo,minimaxEdits,PLUS_ONE,middleOnes,plusOneHere,plusOne,friendly,legacyAdvanced,tryPlan,trackDetail,whereAmI,DEFAULT_PARAMS,paramsSignature});
 })();
 // src/app3/worker.mjs
 const __m_app3_worker=(()=>{

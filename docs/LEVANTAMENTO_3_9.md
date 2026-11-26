@@ -546,3 +546,32 @@ versão em linha própria no menu Mais.
 
 **GitHub:** `.github/dependabot.yml` (npm de `audit/` e Actions, mensal) substitui o PR #74.
 
+## 35. 5.0.0 · repaginada: clareza, enxugamento e correção geral (27/11)
+Pedido da equipe (clareza das abas) e do proprietário (o número de tiros é quem dita; auditar antes de publicar).
+
+**Medido antes de mudar**
+| Medida | Resultado |
+|---|---|
+| "Pessoas" muda o plano recomendado? | 0 de 357 casos (51 lotes × 7 valores); só "limitar à equipe" mudava (22 de 357) |
+| Escolher N tiros por faixas iguais (4.10) × recomendado | Maior vazio pior em 27 de 51 lotes |
+| Busca do melhor plano com exatamente N tiros (5.0) × faixas iguais | Maior vazio melhor em 76 de 100 casos, pior em 8; 6 tiros de 1 ponto a menos; ~0,14 s |
+
+**O que mudou**
+| Área | Mudança |
+|---|---|
+| Plano | 4 blocos (Resultado, Ajustar, Tiros, Conferência); controles 25 → 19 (sem a folha de ajustes, ~20 a menos); palavras visíveis 162 → 140 |
+| Saíram | Pessoas, Equipe, Outras opções, Ajustes avançados, "Buscar distribuição melhor", divisão de vários tiros por pessoa |
+| Conferência | Uma linha quando está tudo certo; avisos dos dados com o próprio texto (antes "1 alerta nos dados") |
+| Regra | Sem alerta "regra informada só para soja": a regra escolhida vale para todas as culturas (decisão de 27/11) |
+| Dados do lote | Área, cultura, variedade (2ª safra quando houver) e rumo; saem chuva, stand, sementes, germinação e notas técnicas |
+| Culturas | `src/dados/culturas.json`: milho BB2/BC2 (B 2801 PWU); algodão por variedade (TMG 91 WS3, TMG 44 B2RF, TMG 88 B3XF); P1, P2, P4–P6 com 2ª safra FM 911 GLTP; soja pela planilha |
+| Lotes | Linha de cada lote com a cultura (sai o "95% <"); cartão do lote com cultura e variedade |
+| Planos antigos | Com ajuste avançado (barra ≠ 36,48 m, outra repartição, outra borda): voltam ao recomendado com aviso |
+| Guia | "Primeiro: vá até a entrada do T2" (antes às vezes sem o número) |
+| Como foi calculado | Sem jargão ("Tiros a 438 m um do outro: 12 passadas da barra"); a busca só aparece se mudou o plano; aviso aponta a Conferência |
+| Tamanho | 741 → 658 KB (alternativas e safra fora do arquivo) |
+| Celular lento (6×) | Trocar a regra: 0,18–0,23 → 0,08–0,15 s; trocar de lote: até 0,19 s |
+
+**Guia simulada de ponta a ponta** (5 lotes, a pé e de moto, todos os tiros): 0 avisos "fora da linha" andando sobre o
+tiro; avisos de linha só indo à entrada (instrução correta).
+

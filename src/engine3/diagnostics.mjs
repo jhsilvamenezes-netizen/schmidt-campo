@@ -10,7 +10,7 @@ export function buildWarnings(field, sc, assessField) {
   const p = sc.params, out = [];
   const add = (level, code, message, action) => out.push({ level, code, message, ...(action ? { action } : {}) });
   for (const w of assessField(field)) add(w.level, w.code, w.message, w.action);
-  if (!field.isSoy) add(LEVEL.ALERTA, 'protocolo_nao_soja', 'Regra 1 ponto/20 ha informada apenas para soja: neste lote é exploratória.');
+  // 5.0 · a regra escolhida (ha por ponto) vale para todas as culturas (decisão do proprietário, 27/11): sem alerta
   if (sc.samples.length < sc.minPoints)
     add(LEVEL.ERRO, 'abaixo_minimo', `Pontos planejados (${sc.samples.length}) abaixo do mínimo por área (${sc.minPoints}). Não reduzido automaticamente: aumente os pontos.`);
   if (sc.allocation.status === 'conflito') add(LEVEL.ERRO, 'conflito_tiros_pontos', `Conflito: ${sc.allocation.suggestions.join(' · ')}`);

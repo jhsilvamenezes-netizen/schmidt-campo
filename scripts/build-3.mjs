@@ -44,7 +44,7 @@ async function bundleModules(MODULES, tail) {
   }
   return `(()=>{\n'use strict';\n${parts.join('\n')}\n${tail}\n})();`;
 }
-const bundleApp = () => bundleModules(APP_MODULES, `${ident('app3/main')}.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,safra:JSON.parse(document.getElementById('safra-dados').textContent),recs:JSON.parse(document.getElementById('recs-data').textContent),appVersion:'${APP_VERSION}'});`);
+const bundleApp = () => bundleModules(APP_MODULES, `${ident('app3/main')}.startApp({document,window,fields:JSON.parse(document.getElementById('fields-data').textContent).fields,culturas:JSON.parse(document.getElementById('culturas-dados').textContent).lotes,recs:JSON.parse(document.getElementById('recs-data').textContent),appVersion:'${APP_VERSION}'});`);
 
 /** U17/A6 · motor em segundo plano (Web Worker): recomendação equilibrada sem travar a tela. Mesmo código da tela. */
 export const WORKER_MODULES = ['app3/format', 'app3/planner', 'app3/worker'];
@@ -69,16 +69,16 @@ export async function recsData(fields) {
 const sha = t => `'sha256-${createHash('sha256').update(t).digest('base64')}'`;
 
 export async function build3() {
-  // Dados dos lotes e da safra: arquivos próprios em src/dados/ (os mesmos bytes que vinham da 2.5, aposentada na 4.9)
-  const fields = await readFile(root + 'src/dados/lotes.json', 'utf8'), safra = await readFile(root + 'src/dados/safra.json', 'utf8');
+  // Dados dos lotes e cultura/variedade de cada um (5.0: chuva, stand e sementes saíram da tela)
+  const fields = await readFile(root + 'src/dados/lotes.json', 'utf8'), culturas = await readFile(root + 'src/dados/culturas.json', 'utf8');
   const recs = await recsData(JSON.parse(fields).fields);
   const [engine, app, css, shell] = [await bundleEngine('engine3'), await bundleApp(), (await readFile(root + 'src/app3/styles.css', 'utf8')) + cssTokens() + (await readFile(root + 'src/app3/styles-4.css', 'utf8')), await readFile(root + 'src/app3/shell.html', 'utf8')];
-  for (const [n, t] of [['motor', engine], ['tela', app], ['dados', fields], ['safra', safra], ['recomendações', recs]]) if (/<\/script/i.test(t)) throw Error(`${n} contém </script>`);
+  for (const [n, t] of [['motor', engine], ['tela', app], ['dados', fields], ['culturas', culturas], ['recomendações', recs]]) if (/<\/script/i.test(t)) throw Error(`${n} contém </script>`);
   const nav = [['lotes', 'Lotes'], ['mapa', 'Mapa'], ['plano', 'Plano'], ['monitorar', 'Monitorar']]
     .map(([k, l]) => `<button type="button" data-tab="${k}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>${l}</button>`).join('');
   const csp = `default-src 'self'; script-src ${sha(engine)} ${sha(app)}; style-src ${sha(css)}; img-src 'self' data: blob: https://services.arcgisonline.com; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'`;
   const html = shell.replace('__CSP__', csp).replace('__CSS__', () => css).replace('__ICON_SOL__', ICONS.sol).replace('__ICON_MAIS__', ICONS.mais)
-    .replace('__NAV__', nav).replace('__FIELDS__', () => fields).replace('__SAFRA__', () => safra).replace('__RECS__', () => recs).replace('__ENGINE__', () => engine).replace('__APP__', () => app);
+    .replace('__NAV__', nav).replace('__FIELDS__', () => fields).replace('__CULTURAS__', () => culturas).replace('__RECS__', () => recs).replace('__ENGINE__', () => engine).replace('__APP__', () => app);
   if (/__[A-Z_]+__/.test(html)) throw Error('Marcador do modelo sem valor');
   if (/\sstyle=/.test(html.replace(/<script[\s\S]*?<\/script>/g, ''))) throw Error('Estilo inline no HTML (CSP)');
   await mkdir(root + 'build/3', { recursive: true });

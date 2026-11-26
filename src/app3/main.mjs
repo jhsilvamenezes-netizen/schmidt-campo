@@ -61,8 +61,8 @@ function registerWorker(window, toast, setOffline) {
   });
 }
 
-/** @param {{document:any, window:any, fields:any, appVersion:string, safra?:any, recs?:any, session:any}} opts */
-function runApp({ document, window, fields, appVersion, safra = null, recs = null, session }) {
+/** @param {{document:any, window:any, fields:any, appVersion:string, culturas?:any, recs?:any, session:any}} opts */
+function runApp({ document, window, fields, appVersion, culturas = null, recs = null, session }) {
   const $ = s => document.querySelector(s);
   let blockedShown = false;
   // C2: sem armazenamento (modo privado restrito) o app abre igual, só não guarda depois de fechar.
@@ -154,7 +154,7 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
   let ignorePop = 0;
   /** Contexto comum: cada tela (screen-*.mjs) lê daqui e registra as suas folhas, ações e eventos. */
   /** @type {any} */ const app = {
-    document, window, fields, keys, ui, store, storage, persistent, session, safra, appVersion, host,
+    document, window, fields, keys, ui, store, storage, persistent, session, culturas, appVersion, host,
     cur: null, hiTrack: null, toast, saved, people, recFor, whenRec, render, setParams,
     /** Recomendação já pronta (sem calcular), ou undefined. */
     /** Recomendação já pronta ou feita na hora (para listas e bloco, que precisam do valor já). */
@@ -194,12 +194,16 @@ function runApp({ document, window, fields, appVersion, safra = null, recs = nul
     /** @type {string|null} */ let invalid = null;
     // C1/C4/C6: um plano gravado que não abre (valor fora da faixa, trajeto importado, versão antiga) não derruba o app:
     // abre com o recomendado e avisa; o gravado só é trocado quando a pessoa mudar algo.
+    // 5.0 · plano com ajuste avançado (saiu da tela) volta ao recomendado e grava; avisa uma vez
+    let legacy = false;
+    if (P.legacyAdvanced(params)) { legacy = true; params = undefined; edits = undefined; const ed = { ...(st.editsByField || {}) }; delete ed[ui.key]; store.update({ editsByField: ed }); }
     let tried = params ? P.tryPlan(field, params, edits) : null;
     if (tried?.error) { invalid = tried.error; params = undefined; edits = undefined; tried = null; }
     const base = P.baseOf(params);
     const rec = recFor(field, base);
     if (!params && rec) { params = { ...base, ...rec.chosen.params }; if (!invalid) store.update({ paramsByField: { ...(st.paramsByField || {}), [ui.key]: params } }); }
     const sc = tried?.sc || P.planInUse(field, params || base, edits);
+    if (legacy && warnedInvalid !== ui.key) { warnedInvalid = ui.key; setTimeout(() => toast(`O plano gravado de ${field.code} usava ajustes avançados (saíram na 5.0): agora é o recomendado.`), 0); }
     if (invalid && warnedInvalid !== ui.key) { warnedInvalid = ui.key; setTimeout(() => toast(`O plano gravado de ${field.code} não abre (${invalid}). Mostrando o recomendado.`), 0); }
     const blind = P.uncovered(field, sc), list = P.checks(sc, blind), split = null;
     // 3.8 · bordadura na conferência: o ponto mais perto da borda (atenção se a menos do mínimo)

@@ -128,7 +128,7 @@ try {
     assert.deepStrictEqual(errors, [], `${colorScheme}: erros no console`);
     await ctx.close();
   }
-  // R4.4 · dados da safra e aba Lotes (4.2: versões, cópia e fichas saíram do app)
+  // R4.4 · dados do lote e aba Lotes (4.2: versões, cópia e fichas saíram do app)
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'pt-BR', acceptDownloads: true });
     const p = await ctx.newPage(), errors = [];
@@ -137,7 +137,8 @@ try {
     await p.click('button.lot'); await p.click('[data-lot="Bananal|BD3"]');
     await p.click('[data-tab="plano"]'); await p.fill('#ha', '15'); await p.dispatchEvent('#ha', 'change');
     await p.click('[data-open="menu"]'); await p.click('.sheet [data-open="dados"]');
-    assert.match(await p.textContent('.sheet'), /ATAQUE I2X.*73,0 mm/s); await p.keyboard.press('Escape');
+    // 5.0 · dados do lote: cultura e variedade; sem chuva, stand e sementes
+    assert.match(await p.textContent('.sheet'), /Soja.*ATAQUE I2X/s); assert.doesNotMatch(await p.textContent('.sheet'), /Chuva|Stand|Sementes/); await p.keyboard.press('Escape');
     // 3.1 · aba Lotes (no lugar de Enviar): fazenda desenhada, lote em uso em destaque e a lista com o plano de cada lote
     await p.click('[data-tab="lotes"]'); await p.waitForSelector('[data-farm] .flot.on');
     const fazenda = await p.locator('[data-farm-pick][aria-pressed="true"]').textContent();
