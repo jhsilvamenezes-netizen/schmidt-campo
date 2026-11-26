@@ -6,7 +6,7 @@
     "test:browser": "python3 contraste-paleta.py && node app3-browser.mjs && node app3-robust-browser.mjs && node app3-map-measures-browser.mjs && node app3-perf-browser.mjs && node app3-monitor-browser.mjs && node app3-visual-browser.mjs"
   },
   "devDependencies": {
-    "axe-core": "4.14.0",
+    "axe-core": "4.14.1",
     "fast-check": "4.10.2",
     "playwright": "1.56.1",
     "pngjs": "7.0.0",
