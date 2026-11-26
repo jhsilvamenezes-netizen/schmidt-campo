@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-J6bMPn2ipJ8t31+l0T24QtG+fc9fdKiLivq4hGq2t5A=' 'sha256-HXi0PJBJ9PsYDkb6DZXRcjvybr6D3zsg08sMR63KKKs='; style-src 'sha256-PnKY4awowh5zd9phNLntURotTkiPlth703O22TSsQ58='; img-src 'self' data: blob: https://services.arcgisonline.com; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-J6bMPn2ipJ8t31+l0T24QtG+fc9fdKiLivq4hGq2t5A=' 'sha256-wi6ddMw7JqgyWiu/OJWJGasPCqk1P8vY6+lvl+r1QKw='; style-src 'sha256-PnKY4awowh5zd9phNLntURotTkiPlth703O22TSsQ58='; img-src 'self' data: blob: https://services.arcgisonline.com; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#023628" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#01261c" media="(prefers-color-scheme: dark)">
 <title>SCHMIDT CAMPO</title>
 <link rel="preload" href="inter.woff2" as="font" type="font/woff2" crossorigin><link rel="icon" href="marca.svg"><link rel="apple-touch-icon" href="marca-180.png"><link rel="manifest" href="app.webmanifest">
@@ -4649,7 +4649,9 @@ function mapMarkup(field, sc, w, h, opts = {}) {
   // `focus`: enquadra só estes pontos (guia: posição e alvo), com folga mínima de 250 m; senão o lote (e o bloco)
   // 4.1 · guia seguindo quem anda: quadro em volta da posição (vê o alvo), com o zoom da pinça e, se pedido, girado
   const fol = follow && pos ? follow : null, rot = fol ? (((Number(rot0) || 0) % 360) + 360) % 360 : 0;
-  const half = fol && pos ? Math.max(150, 1.1 * (to ? Math.hypot(to[0] - pos.x, to[1] - pos.y) : 0)) : 0;
+  // 4.10 · zoom em degraus (150, 225, 340… m): o mapa não "respira" a cada leitura enquanto a distância ao alvo cai
+  const need = fol && pos ? Math.max(150, 1.1 * (to ? Math.hypot(to[0] - pos.x, to[1] - pos.y) : 0)) : 0;
+  const half = need ? 150 * 1.5 ** Math.ceil(Math.log(need / 150) / Math.log(1.5) - 1e-9) : 0;
   const pts = fol && pos ? [[pos.x - half, pos.y - half], [pos.x + half, pos.y + half]] : focus?.length ? focus.flatMap(([x, y]) => [[x - 125, y - 125], [x + 125, y + 125]])
     : [...field.geom.flat(2), ...extra.flatMap(o => o.field.geom.flat(2).map(([x, y]) => [x + o.d[0], y + o.d[1]]))], xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
   const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
@@ -4999,7 +5001,7 @@ function planoView({ f, sc, haPerPoint, people, rec, inUseIsRec, rows, busy, blo
 <section class="card res"><div class="row-sb"><h2 class="h">${inUseIsRec ? 'Plano recomendado' : 'Plano em uso'}</h2>${inUseIsRec ? '<span class="tag">em uso</span>' : rec ? '<button class="link" data-use="rec">Usar recomendado</button>' : '<span class="mu sk">calculando o recomendado…</span>'}</div>
 <p class="big">${plural(f.pontos, 'ponto', 'pontos')} <span>· ${plural(f.tiros, 'tiro', 'tiros')}</span></p>${metrics(f)}<p class="mu">Caminhada ${esc(f.caminhada)}${border ? (border.near ? ` · <span class="${border.low ? 'warn' : 'note'}">ponto ${num(border.n)} a ${num(border.minM)} m da borda</span>` : ` · borda ≥ ${num(border.minM)} m`) : ''}</p>${busy ? '<p class="mu"><span class="sk">Calculando…</span></p>' : ''}
 <div data-hint>${hintMarkup(hint)}</div></section>
-<section class="card regra">${stepper('ha', 'Hectares por ponto', `mínimo ${num(sc.minPoints)} pontos`, haPerPoint)}<div class="presets" role="group" aria-label="Regras comuns">${[10, 15, 20, 25, 30].map(v => `<button data-ha-set="${v}" aria-pressed="${String(v) === String(haPerPoint)}">${v} ha</button>`).join('')}</div>${stepper('people', 'Pessoas', '', people)}
+<section class="card regra">${stepper('ha', 'Hectares por ponto', `mínimo ${num(sc.minPoints)} pontos`, haPerPoint)}<div class="presets" role="group" aria-label="Regras comuns">${[10, 15, 20, 25, 30].map(v => `<button data-ha-set="${v}" aria-pressed="${String(v) === String(haPerPoint)}">${v} ha</button>`).join('')}</div>${stepper('tiros', 'Tiros', inUseIsRec ? 'o recomendado' : rec?.chosen?.m ? `recomendado: ${num(rec.chosen.m.tiros)}` : 'escolhido', f.tiros)}${stepper('people', 'Pessoas', '', people)}
 <div class="seg" role="group" aria-label="Planejar"><button class="on" aria-pressed="true">Lote</button><button data-open="bloco" aria-pressed="false">Bloco</button></div></section>
 ${trackRows(rows, hiTrack)}
 ${checkAndTeam(list, split)}
@@ -5292,11 +5294,19 @@ function kalmanStep(st, pos) {
  *  Com o celular andando (≥ 1,5 m/s) vale o rumo do próprio GPS; senão, o da reta entre a última âncora e a posição
  *  nova, só quando andou o bastante para não ser tremor (≥ 8 m e ≥ 2 × a precisão). Parado, mantém o último rumo.
  *  Na moto a bússola do celular erra (ímã e motor perto); o rumo do GPS não. */
-const COURSE = Object.freeze({ gpsMinMps: 1.5, minM: 8 });
-function courseStep(st, pos) {
+const COURSE = Object.freeze({ gpsMinMps: 1.5, minM: 8, kfMinMps: 0.6, kfAlpha: 0.3 });
+/** 4.10 · `vel` ([vx, vy] m/s do filtro de Kalman): sem rumo do GPS, a velocidade filtrada é suavizada (30% da nova a
+ *  cada leitura) e, passando de 0,6 m/s, dá o rumo. Simulação a pé, curva de 90°, ± 5–8 m: o mapa acerta o rumo novo em
+ *  9–11 s (antes 12–19 s; pior caso 11–15 s, antes 20–30 s), mesmo tremor; parado, giro falso em ≤ 0,2% das leituras. */
+/** @param {any} st @param {any} pos @param {number[]|null} [vel] */
+function courseStep(st, pos, vel = null) {
   const s = st || { at: null, deg: null };
   if (!pos) return s;
-  if (Number.isFinite(pos.gpsHeading) && (pos.speedMps ?? 0) >= COURSE.gpsMinMps) return { at: [pos.x, pos.y], deg: pos.gpsHeading };
+  if (Number.isFinite(pos.gpsHeading) && (pos.speedMps ?? 0) >= COURSE.gpsMinMps) return { ...s, at: [pos.x, pos.y], deg: pos.gpsHeading };
+  if (vel) {
+    const a = COURSE.kfAlpha, v0 = s.v || [0, 0], v = [v0[0] + a * (vel[0] - v0[0]), v0[1] + a * (vel[1] - v0[1])];
+    return { at: [pos.x, pos.y], v, deg: Math.hypot(v[0], v[1]) >= COURSE.kfMinMps ? ((Math.atan2(v[0], v[1]) * 180) / Math.PI + 360) % 360 : s.deg };
+  }
   if (!s.at) return { at: [pos.x, pos.y], deg: s.deg };
   const dx = pos.x - s.at[0], dy = pos.y - s.at[1];
   if (Math.hypot(dx, dy) < Math.max(COURSE.minM, 2 * (pos.accuracyM ?? 0))) return s;
@@ -6464,7 +6474,7 @@ function installMonitor(app) {
     mon.watchId = geo.watchPosition(position => {
       const raw = fixToPos(position, app.cur.field, mon.pos?.at ?? 0, Date.now()), kf = raw ? kalmanStep(mon.kf, raw) : null, pos = kf?.pos ?? null;
       if (kf) mon.kf = kf.st;
-      if (pos) { const sp = speedStep(mon.hist, mon.pos, pos), md = modeStep({ mode: mon.mode, n: mon.modeN }, sp.speed); mon.hist = sp.hist; mon.mode = md.mode; mon.modeN = md.n; pos.speedMps = sp.speed; pos.mode = md.mode; mon.course = courseStep(mon.course, pos); mon.pos = pos; if (ui.view === 'monitorar') app.render(); }
+      if (pos) { const sp = speedStep(mon.hist, mon.pos, pos), md = modeStep({ mode: mon.mode, n: mon.modeN }, sp.speed); mon.hist = sp.hist; mon.mode = md.mode; mon.modeN = md.n; pos.speedMps = sp.speed; pos.mode = md.mode; mon.course = courseStep(mon.course, pos, mon.kf ? [mon.kf.x[1], mon.kf.y[1]] : null); mon.pos = pos; if (ui.view === 'monitorar') app.render(); }
       // 3.17 · parado no ponto (coletando), o GPS não manda leitura nova: antes vinha "GPS indisponível" a cada 20 s.
       // Sem tempo-limite; leitura velha já aparece como "GPS sem atualização há N s" (guia)
     }, err => { if (err.code === 1) app.toast('Permita a localização para usar a guia.'); else if (!mon.pos) app.toast('Sem sinal do GPS ainda: fique a céu aberto.'); }, { enableHighAccuracy: true, maximumAge: 0 });
@@ -6499,7 +6509,7 @@ function installMonitor(app) {
     const d = mon.active ? monitorData() : null, to = d?.model?.to || null;
     // 4.1 · seguindo: mapa centrado em quem anda, com a pinça livre (zoom próprio) e, em "rumo para cima", girado no
     // sentido do deslocamento (GPS); andando devagar sem rumo ainda, vale a bússola; sem nada, norte para cima
-    const follow = mon.follow && !!mon.pos, moving = (mon.pos?.speedMps ?? 0) >= 1;
+    const follow = mon.follow && !!mon.pos, moving = (mon.pos?.speedMps ?? 0) >= 1 || Math.hypot(...(mon.course?.v ?? [0, 0])) >= 0.6; // 4.10: andando devagar também vale o rumo do deslocamento
     const rot = follow && mon.up === 'rumo' ? (moving && Number.isFinite(mon.course?.deg) ? mon.course.deg : Number.isFinite(mon.heading) ? mon.heading : mon.course?.deg ?? 0) : 0;
     // 4.5 · tiro em andamento destacado no mapa, com setas no sentido da caminhada
     const rt = mon.active && mon.trackId ? routeFor(app.cur.sc, app.cur.field, mon.trackId, mon.flipped) : null, pts = rt?.points || [];
@@ -6598,6 +6608,18 @@ function installPlano(app) {
         if (!rec || JSON.stringify(st.paramsByField?.[key]) !== JSON.stringify(quick)) return;
         if (store.update({ paramsByField: { ...(st.paramsByField || {}), [key]: { ...base, ...rec.chosen.params } } }) && app.ui.key === key) app.render();
       }, key);
+      return true;
+    }
+    // 4.10 · pedido de campo (Gean, 26/11): escolher quantos tiros e o app recalcula. Modo "quantidade" do motor: a largura
+    // do lote em N faixas iguais, um tiro no meio de cada, na passada da barra mais perto; rumo e regra de pontos iguais
+    if (t.id === 'tiros') {
+      const v = Number(String(t.value).trim()), now = cur.sc.selected.length;
+      if (!(Number.isInteger(v) && v >= 1 && v <= 60)) { t.value = String(now); app.toast('Tiros: número inteiro de 1 a 60.'); return true; }
+      if (v === now) return true;
+      const params = { ...cur.base, trackMode: 'quantidade', trackCount: v, trackPhaseM: 0, alignToBoom: true, selectionMode: 'todos', pointMode: 'total', totalPoints: null };
+      if (!app.setParams(params, `${plural(v, 'tiro', 'tiros')}, escolhido`, null)) return true;
+      const got = app.cur.sc.selected.length;
+      if (got !== v) app.toast(`Neste lote cabem ${plural(got, 'tiro', 'tiros')} na barra (pedido: ${v}).`);
       return true;
     }
     if (t.id === 'people') {
@@ -6717,6 +6739,7 @@ function installMais(app) {
       ['Entre tiros', `Distância de lado de um tiro ao vizinho${f ? ` (${f.entreTiros})` : ''}.`],
       ['Entre pontos', `Distância andando no mesmo tiro de um ponto ao seguinte${f ? ` (${f.entrePontos})` : ''}.`],
       ['Hectares por ponto', 'A regra: 1 ponto a cada tantos hectares, arredondando para cima. Dá o mínimo de pontos do lote.'],
+      ['Tiros', 'Quantos tiros o lote terá. O app recomenda; você pode escolher outro número e ele recalcula: divide a largura do lote em faixas iguais, um tiro no meio de cada, na passada da barra. O rumo e o mínimo de pontos não mudam.'],
       ['95% do lote', `95% da área está a menos desta distância de um ponto${f ? ` (${f.p95})` : ''}. Quanto menor, melhor coberto.`],
       ['Maior vazio', `O lugar do lote mais longe de qualquer ponto${a ? ` (${num(a.worstGapM)} m)` : ''}. Ligue a camada Área no mapa para ver onde fica.`],
       ['Área de cada ponto', `Parte do lote mais perto de cada ponto${a ? ` (${num(a.minHa, 1)} a ${num(a.maxHa, 1)} ha)` : ''}. Quanto mais iguais, mais equilibrada a amostragem.`],

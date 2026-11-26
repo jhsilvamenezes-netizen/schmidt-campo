@@ -77,7 +77,7 @@ export function installMonitor(app) {
     mon.watchId = geo.watchPosition(position => {
       const raw = fixToPos(position, app.cur.field, mon.pos?.at ?? 0, Date.now()), kf = raw ? kalmanStep(mon.kf, raw) : null, pos = kf?.pos ?? null;
       if (kf) mon.kf = kf.st;
-      if (pos) { const sp = speedStep(mon.hist, mon.pos, pos), md = modeStep({ mode: mon.mode, n: mon.modeN }, sp.speed); mon.hist = sp.hist; mon.mode = md.mode; mon.modeN = md.n; pos.speedMps = sp.speed; pos.mode = md.mode; mon.course = courseStep(mon.course, pos); mon.pos = pos; if (ui.view === 'monitorar') app.render(); }
+      if (pos) { const sp = speedStep(mon.hist, mon.pos, pos), md = modeStep({ mode: mon.mode, n: mon.modeN }, sp.speed); mon.hist = sp.hist; mon.mode = md.mode; mon.modeN = md.n; pos.speedMps = sp.speed; pos.mode = md.mode; mon.course = courseStep(mon.course, pos, mon.kf ? [mon.kf.x[1], mon.kf.y[1]] : null); mon.pos = pos; if (ui.view === 'monitorar') app.render(); }
       // 3.17 · parado no ponto (coletando), o GPS não manda leitura nova: antes vinha "GPS indisponível" a cada 20 s.
       // Sem tempo-limite; leitura velha já aparece como "GPS sem atualização há N s" (guia)
     }, err => { if (err.code === 1) app.toast('Permita a localização para usar a guia.'); else if (!mon.pos) app.toast('Sem sinal do GPS ainda: fique a céu aberto.'); }, { enableHighAccuracy: true, maximumAge: 0 });
@@ -112,7 +112,7 @@ export function installMonitor(app) {
     const d = mon.active ? monitorData() : null, to = d?.model?.to || null;
     // 4.1 · seguindo: mapa centrado em quem anda, com a pinça livre (zoom próprio) e, em "rumo para cima", girado no
     // sentido do deslocamento (GPS); andando devagar sem rumo ainda, vale a bússola; sem nada, norte para cima
-    const follow = mon.follow && !!mon.pos, moving = (mon.pos?.speedMps ?? 0) >= 1;
+    const follow = mon.follow && !!mon.pos, moving = (mon.pos?.speedMps ?? 0) >= 1 || Math.hypot(...(mon.course?.v ?? [0, 0])) >= 0.6; // 4.10: andando devagar também vale o rumo do deslocamento
     const rot = follow && mon.up === 'rumo' ? (moving && Number.isFinite(mon.course?.deg) ? mon.course.deg : Number.isFinite(mon.heading) ? mon.heading : mon.course?.deg ?? 0) : 0;
     // 4.5 · tiro em andamento destacado no mapa, com setas no sentido da caminhada
     const rt = mon.active && mon.trackId ? routeFor(app.cur.sc, app.cur.field, mon.trackId, mon.flipped) : null, pts = rt?.points || [];

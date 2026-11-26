@@ -67,6 +67,18 @@ export function installPlano(app) {
       }, key);
       return true;
     }
+    // 4.10 · pedido de campo (Gean, 26/11): escolher quantos tiros e o app recalcula. Modo "quantidade" do motor: a largura
+    // do lote em N faixas iguais, um tiro no meio de cada, na passada da barra mais perto; rumo e regra de pontos iguais
+    if (t.id === 'tiros') {
+      const v = Number(String(t.value).trim()), now = cur.sc.selected.length;
+      if (!(Number.isInteger(v) && v >= 1 && v <= 60)) { t.value = String(now); app.toast('Tiros: número inteiro de 1 a 60.'); return true; }
+      if (v === now) return true;
+      const params = { ...cur.base, trackMode: 'quantidade', trackCount: v, trackPhaseM: 0, alignToBoom: true, selectionMode: 'todos', pointMode: 'total', totalPoints: null };
+      if (!app.setParams(params, `${plural(v, 'tiro', 'tiros')}, escolhido`, null)) return true;
+      const got = app.cur.sc.selected.length;
+      if (got !== v) app.toast(`Neste lote cabem ${plural(got, 'tiro', 'tiros')} na barra (pedido: ${v}).`);
+      return true;
+    }
     if (t.id === 'people') {
       const v = Number(String(t.value).trim().replace(',', '.'));
       if (!(Number.isInteger(v) && v >= 1 && v <= 60)) { t.value = app.people(); app.toast('Pessoas: número inteiro de 1 a 60.'); return true; }

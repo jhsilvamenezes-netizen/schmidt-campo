@@ -61,11 +61,19 @@ export function kalmanStep(st, pos) {
  *  Com o celular andando (≥ 1,5 m/s) vale o rumo do próprio GPS; senão, o da reta entre a última âncora e a posição
  *  nova, só quando andou o bastante para não ser tremor (≥ 8 m e ≥ 2 × a precisão). Parado, mantém o último rumo.
  *  Na moto a bússola do celular erra (ímã e motor perto); o rumo do GPS não. */
-export const COURSE = Object.freeze({ gpsMinMps: 1.5, minM: 8 });
-export function courseStep(st, pos) {
+export const COURSE = Object.freeze({ gpsMinMps: 1.5, minM: 8, kfMinMps: 0.6, kfAlpha: 0.3 });
+/** 4.10 · `vel` ([vx, vy] m/s do filtro de Kalman): sem rumo do GPS, a velocidade filtrada é suavizada (30% da nova a
+ *  cada leitura) e, passando de 0,6 m/s, dá o rumo. Simulação a pé, curva de 90°, ± 5–8 m: o mapa acerta o rumo novo em
+ *  9–11 s (antes 12–19 s; pior caso 11–15 s, antes 20–30 s), mesmo tremor; parado, giro falso em ≤ 0,2% das leituras. */
+/** @param {any} st @param {any} pos @param {number[]|null} [vel] */
+export function courseStep(st, pos, vel = null) {
   const s = st || { at: null, deg: null };
   if (!pos) return s;
-  if (Number.isFinite(pos.gpsHeading) && (pos.speedMps ?? 0) >= COURSE.gpsMinMps) return { at: [pos.x, pos.y], deg: pos.gpsHeading };
+  if (Number.isFinite(pos.gpsHeading) && (pos.speedMps ?? 0) >= COURSE.gpsMinMps) return { ...s, at: [pos.x, pos.y], deg: pos.gpsHeading };
+  if (vel) {
+    const a = COURSE.kfAlpha, v0 = s.v || [0, 0], v = [v0[0] + a * (vel[0] - v0[0]), v0[1] + a * (vel[1] - v0[1])];
+    return { at: [pos.x, pos.y], v, deg: Math.hypot(v[0], v[1]) >= COURSE.kfMinMps ? ((Math.atan2(v[0], v[1]) * 180) / Math.PI + 360) % 360 : s.deg };
+  }
   if (!s.at) return { at: [pos.x, pos.y], deg: s.deg };
   const dx = pos.x - s.at[0], dy = pos.y - s.at[1];
   if (Math.hypot(dx, dy) < Math.max(COURSE.minM, 2 * (pos.accuracyM ?? 0))) return s;

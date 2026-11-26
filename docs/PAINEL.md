@@ -4,7 +4,7 @@ Página única de entrada, para ler em 1 minuto. Atualizar a cada versão public
 Atualizado em 26/11/2026.
 
 ## Estado
-- **No ar:** 4.9.0 (https://jhsilvamenezes-netizen.github.io/schmidt-campo/). Os hashes de `index.html`,
+- **No ar:** 4.10.0 (https://jhsilvamenezes-netizen.github.io/schmidt-campo/). Os hashes de `index.html`,
   `motor.js` e `sw.js` batem com `VERSAO.json`.
 - **Design:** 4.0 é o único (o visual anterior saiu na 4.2.0).
 - **Transição completa (código, lógica, testes, CI, respostas):** `docs/TRANSICAO.md`.
@@ -28,7 +28,7 @@ Atualizado em 26/11/2026.
 | Versões antigas | Saíram na 4.9 (decisão de 26/11: a 4.x é a base validada). Ficam só no histórico do Git |
 
 ## Fila (por valor, com o porquê)
-1. Melhorias visuais (pedido de 26/11), com prévia aprovada antes de publicar.
+1. Teste da equipe: escolher tiros (Gean) e o mapa girando com o deslocamento.
 2. Teste da equipe com a guia de moto (giro, pinça, GPS fraco e "Tiro concluído").
 3. Pendências de limpeza do proprietário (branches, PR #24, PR #74): `docs/PLANO_4_3.md`, fase C.
 

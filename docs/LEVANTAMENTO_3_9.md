@@ -523,3 +523,26 @@ Decisão do proprietário: a 4.x tem tudo o que a equipe precisa e já é medida
 
 Ficou: `npm test` (motor, guia, blocos, arquitetura, tipos, qualidade dos 51 lotes) e `npm run test:browser` (telas,
 contraste, 16 imagens, axe), no CI `testes.yml` com os mesmos nomes de verificação (`validacao`, `blocos`).
+
+## 34. 4.10.0 · escolher os tiros e mapa que acompanha (26/11)
+**Escolher quantos tiros** (pedido do Gean, campo): as opções eram prontas. Agora a aba Plano tem o controle "Tiros"
+(− / +). O app recalcula pelo modo "quantidade" do motor: a largura do lote em N faixas iguais, um tiro no meio de cada,
+na passada da barra mais perto. O rumo da planilha e o mínimo de pontos não mudam; "Usar recomendado" e Desfazer voltam.
+- 51 lotes × (recomendado − 1, + 1, + 2) = 153 pedidos: 153 com o número exato de tiros, ~60 ms cada.
+
+**Mapa da guia acompanhando o movimento.** Simulação a pé (curva de 90°, GPS ± 5–8 m, 200 trajetos por caso):
+| Medida | 4.9 | 4.10 |
+|---|---|---|
+| Tempo para o mapa girar para o rumo novo (mediana) | 12–19 s | 9–11 s |
+| Pior caso (p90) | 20–30 s | 11–15 s |
+| Parado, sem bússola: leituras com giro falso | 0% | ≤ 0,2% |
+| Tremor do rumo andando reto (p95) | 21–22° | 16–25° |
+- Como: sem rumo do GPS (a pé), o rumo vem da velocidade do filtro de Kalman, suavizada (30% por leitura), só acima de
+  0,6 m/s. De moto continua o rumo do próprio GPS. Andando devagar, vale o rumo do deslocamento (antes, a bússola).
+- Zoom seguindo em degraus (150, 225, 340… m): antes mudava a cada leitura conforme a distância ao alvo.
+
+**Visual (prévia de 26/11):** GPS fraco e tiro concluído em destaque; lista de tiros some na borda em vez de cortar;
+versão em linha própria no menu Mais.
+
+**GitHub:** `.github/dependabot.yml` (npm de `audit/` e Actions, mensal) substitui o PR #74.
+
