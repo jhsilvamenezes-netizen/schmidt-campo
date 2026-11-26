@@ -173,6 +173,9 @@ function guideModelCore(route, sc, field, pos, now, session, opts = {}) {
   if (g.done) return { state: 'done', title: 'Tiro sem pontos à frente' };
   const n = g.next, label = `Ponto ${n.seq} de ${route.nPoints}`, warn = [];
   if (g.stale) return { state: 'stale', title: label, big: 'Aguardando posição', warn: [`GPS sem atualização há ${num(ageMs / 1000)} s.`], next: n };
+  // 4.8 · N5 · GPS fraco (> 15 m) antes da 1ª posição boa da guia: espera firmar, sem seta. Antes, a 1ª leitura ruim
+  // caía no ponto 1 e, no meio do tiro, mandava "voltar" centenas de metros. Depois de firmar, só o aviso curto.
+  if (!g.accuracyOk && !state.targetId) return { state: 'wait', title: 'Aguardando o GPS firmar', info: `Agora ± ${num(pos.accuracyM)} m; a guia começa com até ${num(monitor.gpsAccuracyMaxM)} m. Fique a céu aberto.`, warn: [], next: n };
   if (!g.accuracyOk) warn.push(`GPS impreciso (± ${num(pos.accuracyM)} m).`);
   // Longe do tiro (chegando ao lote): a guia leva à entrada do tiro, no início do sentido escolhido, sem avisos de linha.
   const farM = Math.max(150, 5 * (monitor.offLineWarnM || 0)), start = route.parts?.[0]?.entry;
@@ -193,7 +196,11 @@ function guideModelCore(route, sc, field, pos, now, session, opts = {}) {
     warn.push(wrong ? `Você está na linha do ${wrong.trackId}, não do ${route.trackId}. Ande de lado até o ${route.trackId} (${num(wrong.meuM)} m).`
       : `Você está ${num(g.lateralM)} m à ${g.lado} da linha: volte ${g.lado === 'direita' ? 'para a esquerda' : 'para a direita'}.`);
   }
-  if (g.trecho?.passouM > 0) warn.push(`Passou do ponto ${n.seq} em ${num(g.trecho.passouM)} m: volte pela linha.`);
+  // 4.8 · ponto já alcançado nesta guia não gera "volte": seguindo após o último, o tiro está concluído (antes, quem
+  // andava até a cabeceira para o próximo tiro via "Passou do ponto N: volte" em ~10% das leituras, na simulação)
+  if (g.arrived) state.reached = n.id;
+  if (g.trecho?.passouM > 0 && state.reached === n.id && n.seq === route.nPoints) return { state: 'done', title: `Tiro ${route.trackId} concluído`, info: `Os ${route.nPoints} pontos foram alcançados.`, next: n };
+  if (g.trecho?.passouM > 0 && state.reached !== n.id) warn.push(`Passou do ponto ${n.seq} em ${num(g.trecho.passouM)} m: volte pela linha.`);
   // 3.4: ao chegar, já diz o que vem depois (ponto seguinte e a distância andando no tiro)
   const after = route.points.find(p => p.seq === n.seq + 1);
   if (g.arrived) return { state: 'arrived', title: `Chegou ao ponto ${n.seq} de ${route.nPoints}`, big: `nº ${n.number}`, info: after ? `Depois: ponto ${after.seq} de ${route.nPoints}${Number.isFinite(after.deltaM) ? `, a ${num(after.deltaM)} m` : ''}` : 'Último ponto do tiro', warn: g.arrivalUncertain ? [`GPS impreciso (± ${num(pos.accuracyM)} m): confira pelos passos.`] : [], next: n };
