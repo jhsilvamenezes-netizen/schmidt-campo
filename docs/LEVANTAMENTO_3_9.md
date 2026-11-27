@@ -589,3 +589,27 @@ Revisão de página (375, 768 e 1440 px; claro e escuro), medida em todos os tex
 - Guarda: `app3-browser.mjs` reprova tamanho ou peso fora da escala.
 - Coluna no computador já era de 480 px; no tablet o app usa a tela toda (nada a mudar).
 
+## 37. 5.2.0 · tiros escolhidos organizados (27/11)
+Pedido do proprietário: no RB6, com mais de 8 tiros, os pontos ficavam "bagunçados".
+
+**Causa (medida):** a regra fixa os pontos (RB6: 21). Com mais tiros, cada um ficava com 2 ou 3 pontos misturados,
+cada tiro repartindo os seus pelo próprio comprimento (desencontrados entre vizinhos). A cobertura também piorava
+(maior vazio 379 m com 7 tiros → 525–577 m com 8–12). Com 10 tiros, a única malha na barra criava um tiro-retalho de
+408 m num canto e um ponto a 0 m da borda.
+
+**Testado e descartado:** grade em zigue-zague comum a todos os tiros: mais "bonita", mas o maior vazio piorou em 48 de
+51 lotes no número recomendado (mediana 343 → 412 m).
+
+**Adotado (aprovado em 27/11; "melhor a mais que a menos, pensando em organização"):**
+- Acima do recomendado, o mesmo número de pontos em cada tiro (⌈mínimo ÷ tiros⌉); o total pode passar do mínimo.
+- A escolha evita tiro-retalho (< 40% do comprimento mediano) e ponto colado na borda; se a barra não permite, compara
+  com faixas iguais e fica com o melhor.
+
+| Medida (51 lotes, +1/+2/+4 tiros, 139 casos) | 5.1 | 5.2 |
+|---|---|---|
+| Maior vazio, mediana | 407 m | 356 m (menor em 104, maior em 17) |
+| Pontos acima do mínimo | 0 | 3 na mediana (máx. 8) |
+
+RB6: 8 tiros 21 → 24 pontos (vazio 525 → 372 m); 10 tiros 21 → 30 pontos (473 → 362 m, sem retalho, borda ≥ 94 m).
+O recomendado e o bloco não mudam. Teste: `app3-planner.test.mjs` (pontos iguais, nunca abaixo do mínimo, RB6 com 10).
+

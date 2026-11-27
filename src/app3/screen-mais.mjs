@@ -70,7 +70,7 @@ export function installMais(app) {
       ['Entre tiros', `Distância de lado de um tiro ao vizinho${f ? ` (${f.entreTiros})` : ''}.`],
       ['Entre pontos', `Distância andando no mesmo tiro de um ponto ao seguinte${f ? ` (${f.entrePontos})` : ''}.`],
       ['Hectares por ponto', 'A regra: 1 ponto a cada tantos hectares, arredondando para cima. Dá o mínimo de pontos do lote.'],
-      ['Tiros', 'Quantos tiros o lote terá (1 tiro por pessoa). O app recomenda; você pode escolher outro número e ele recalcula o melhor plano com esse número de tiros, sempre na passada da barra. O rumo e o mínimo de pontos não mudam.'],
+      ['Tiros', 'Quantos tiros o lote terá (1 tiro por pessoa). O app recomenda; você pode escolher outro número e ele recalcula o melhor plano com esse número de tiros, sempre na passada da barra. Com mais tiros que o recomendado, cada tiro recebe o mesmo número de pontos (o total pode passar do mínimo, para ficar organizado). O rumo não muda.'],
       ['95% do lote', `95% da área está a menos desta distância de um ponto${f ? ` (${f.p95})` : ''}. Quanto menor, melhor coberto.`],
       ['Maior vazio', `O lugar do lote mais longe de qualquer ponto${a ? ` (${num(a.worstGapM)} m)` : ''}. Ligue a camada Área no mapa para ver onde fica.`],
       ['Área de cada ponto', `Parte do lote mais perto de cada ponto${a ? ` (${num(a.minHa, 1)} a ${num(a.maxHa, 1)} ha)` : ''}. Quanto mais iguais, mais equilibrada a amostragem.`],
