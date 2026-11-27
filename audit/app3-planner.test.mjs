@@ -290,3 +290,17 @@ test('5.0 · escolher N tiros: exatamente N e maior vazio melhor que faixas igua
   assert.ok(exact / total >= 0.98, `${exact} de ${total} com o número pedido`);
   assert.ok(better >= 3 * worse, `maior vazio: melhor em ${better}, pior em ${worse}`);
 });
+
+test('5.2 · tiros acima do recomendado: mesmo número de pontos em cada tiro, nunca abaixo do mínimo (51 lotes, +2 e +4)', () => {
+  for (const k of keys) {
+    const f = fields[k], rec = P.recommend(f, {}, 5, false), cp = rec.chosen.params, n0 = rec.chosen.m.tiros;
+    for (const n of [n0 + 2, n0 + 4]) {
+      const sc = P.planInUse(f, P.tracksPlan(f, {}, cp, n), null), per = sc.trackRows.filter(r => r.n > 0).map(r => r.n);
+      assert.ok(sc.samples.length >= sc.minPoints, `${k} ${n}: ${sc.samples.length} < mínimo ${sc.minPoints}`);
+      assert.ok(Math.max(...per) - Math.min(...per) <= 0 || sc.trackRows.some(r => r.lengthM < 300), `${k} ${n}: pontos por tiro ${per}`);
+    }
+  }
+  // RB6 com 10 tiros: sem tiro-retalho e sem ponto colado na borda (antes: retalho de 408 m e ponto a 0 m)
+  const f = fields['Rio de Janeiro|RB6'], sc = P.planInUse(f, P.tracksPlan(f, {}, P.recommend(f, {}, 5, false).chosen.params, 10), null);
+  assert.equal(sc.selected.length, 10); assert.ok(P.borderStats(f, sc).minM >= 15); assert.ok(Math.min(...sc.trackRows.map(r => r.lengthM)) > 1000);
+});
